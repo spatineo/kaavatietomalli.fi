@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PageData } from '../lib/blog';
 import { Mermaid } from './Mermaid';
 import { CONFIG } from '../config';
+import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 
 interface PageViewProps {
   page: PageData;

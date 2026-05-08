@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { format, parseISO } from 'date-fns';
 import { Calendar, User, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PostData, PostMetadata } from '../lib/blog';
 import { Mermaid } from './Mermaid';
 import { CONFIG } from '../config';
+import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 
 interface PostViewProps {
   post: PostData;
