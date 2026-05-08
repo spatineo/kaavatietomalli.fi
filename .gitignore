@@ -4,6 +4,7 @@ dist/
 public/content
 public/sitemap.xml
 public/llms.txt
+public/llms-full.txt
 coverage/
 .DS_Store
 *.log
