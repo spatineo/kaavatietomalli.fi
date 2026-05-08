@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Linkedin, Twitter, Globe, Mail } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AuthorData } from '../lib/blog';
+import { CONFIG } from '../config';
 
 interface AuthorViewProps {
   author: AuthorData;
@@ -16,7 +17,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
     link.rel = 'alternate';
     link.type = 'text/markdown';
     link.title = 'Raw Markdown';
-    link.href = `https://raw.githubusercontent.com/spatineo/kaavatietomalli.fi/refs/heads/main/src/content/authors/${author.slug}.md`;
+    link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/authors/${author.slug}.md`;
     document.head.appendChild(link);
 
     return () => {
@@ -89,17 +90,12 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
             <p className="text-2xl text-brand-accent font-bold leading-tight">
               {author.title}
             </p>
-            {author.company &&
-             <p className="text-2xl text-brand-accent font-bold leading-tight">
-              {author.company}
-            </p>
-            }
           </header>
 
           <div className="markdown-body">
             <ReactMarkdown>{author.content}</ReactMarkdown>
           </div>
-          {author.company == 'Spatineo Oy' &&
+
           <div className="mt-20 p-10 rounded-3xl bg-white/5 border border-white/10">
             <h4 className="text-lg font-bold text-white mb-4">Haluatko keskustella yhteistyöstä?</h4>
             <p className="text-slate-400 mb-8">
@@ -109,7 +105,6 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
               Ota yhteyttä
             </button>
           </div>
-          }
         </section>
       </div>
 

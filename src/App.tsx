@@ -12,6 +12,7 @@ import { Header, Footer } from './components/Navigation';
 import { HistoryHero } from './components/HistoryHero';
 import { AuthorView } from './components/AuthorView';
 import { getAllPostMetadata, getPostBySlug, getPageBySlug, getAuthorBySlug, getPostsByTag, getTagPageSlugs, PostMetadata, PostData, PageData, AuthorData } from './lib/blog';
+import { CONFIG } from './config';
 
 export default function App() {
   const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null);
@@ -32,7 +33,14 @@ export default function App() {
   // URL Synchronization
   useEffect(() => {
     const handleLocationChange = () => {
-      const path = window.location.pathname.replace(/\/$/, ''); // Remove trailing slash
+      let path = window.location.pathname;
+      
+      // Remove base path if present
+      if (CONFIG.basePath !== '/' && path.startsWith(CONFIG.basePath)) {
+        path = path.substring(CONFIG.basePath.length - 1); // Keep the leading slash
+      }
+      
+      path = path.replace(/\/$/, ''); // Remove trailing slash
       
       if (path.startsWith('/post/')) {
         setSelectedPostSlug(path.substring(6));
@@ -70,17 +78,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    let newPath = '/';
-    if (selectedPostSlug) newPath = `/post/${selectedPostSlug}`;
-    else if (selectedPageSlug) newPath = `/page/${selectedPageSlug}`;
-    else if (selectedAuthorSlug) newPath = `/author/${selectedAuthorSlug}`;
-    else if (selectedTag) newPath = `/tag/${selectedTag}`;
+    let subPath = '/';
+    if (selectedPostSlug) subPath = `/post/${selectedPostSlug}`;
+    else if (selectedPageSlug) subPath = `/page/${selectedPageSlug}`;
+    else if (selectedAuthorSlug) subPath = `/author/${selectedAuthorSlug}`;
+    else if (selectedTag) subPath = `/tag/${selectedTag}`;
+
+    const newPath = CONFIG.basePath === '/' ? subPath : `${CONFIG.basePath.replace(/\/$/, '')}${subPath}`;
 
     if (window.location.pathname !== newPath) {
       window.history.pushState(null, '', newPath);
     }
   }, [selectedPostSlug, selectedPageSlug, selectedAuthorSlug, selectedTag]);
-
 
   useEffect(() => {
     // Load all post metadata on mount

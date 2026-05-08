@@ -7,6 +7,7 @@ import { Calendar, User, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PostData, PostMetadata } from '../lib/blog';
 import { Mermaid } from './Mermaid';
+import { CONFIG } from '../config';
 
 interface PostViewProps {
   post: PostData;
@@ -25,7 +26,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
     link.rel = 'alternate';
     link.type = 'text/markdown';
     link.title = 'Raw Markdown';
-    link.href = `https://raw.githubusercontent.com/spatineo/kaavatietomalli.fi/refs/heads/main/src/content/posts/${post.slug}.md`;
+    link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/posts/${post.slug}.md`;
     document.head.appendChild(link);
 
     return () => {

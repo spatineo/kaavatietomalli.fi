@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { History, Github, Twitter, Mail, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import SpatineoLogo from './SpatineoLogo';
+import { CONFIG } from '../config';
 
 interface HeaderProps {
   onNavigatePage: (slug: string | null) => void;
@@ -28,8 +29,25 @@ export function Header({ onNavigatePage, onHome, onBlog }: HeaderProps) {
             className="text-lg md:text-xl font-black tracking-tight text-white hover:text-brand-accent transition-colors flex items-center gap-3"
             aria-label="Etusivu - Kaavatietomalli.fi"
           >
-            <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg bg-brand-accent flex items-center justify-center shadow-lg shadow-brand-accent/20" aria-hidden="true">
-              <div className="w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-brand-primary" />
+            <div className="relative w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
+              {/* Fallback CSS Logo - hidden if image is found or can be replaced by user */}
+              <img 
+                src={`${CONFIG.basePath.replace(/\/$/, '')}/images/logo.svg`} 
+                alt="" 
+                className="absolute inset-0 w-full h-full object-contain hidden"
+                onError={(e) => (e.currentTarget.style.display = 'none')}
+                onLoad={(e) => {
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    const fallback = parent.querySelector('.fallback-logo');
+                    if (fallback) (fallback as HTMLElement).style.display = 'none';
+                    e.currentTarget.style.display = 'block';
+                  }
+                }}
+              />
+              <div className="fallback-logo w-6 h-6 md:w-8 md:h-8 rounded-lg bg-brand-accent flex items-center justify-center shadow-lg shadow-brand-accent/20" aria-hidden="true">
+                <div className="w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-brand-primary" />
+              </div>
             </div>
             <span className="hidden sm:inline">Kaavatietomalli.</span>
             <span className="sm:hidden text-brand-accent">Kaavatietomalli.</span>
@@ -46,7 +64,7 @@ export function Header({ onNavigatePage, onHome, onBlog }: HeaderProps) {
 
         <div className="flex items-center gap-6">
           <div className="hidden sm:flex items-center gap-4 text-slate-400 hover:text-white transition-colors">
-            <a href="https://github.com/spatineo/kaavatietomalli.fi" target="_blank" rel="noopener noreferrer" aria-label="Spatineo Kaavatietomalli.fi GitHub repository">
+            <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
               <Github size={20} strokeWidth={1.5} />
             </a>
           </div>
@@ -109,7 +127,7 @@ export function Header({ onNavigatePage, onHome, onBlog }: HeaderProps) {
               </button>
               
               <div className="flex gap-6 pt-6 border-t border-white/5 mt-2">
-                <a href="https://github.com/spatineo/kaavatietomalli.fi" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium">
+                <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium">
                   <Github size={20} /> GitHub
                 </a>
               </div>

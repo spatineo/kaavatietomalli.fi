@@ -1,8 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import dotenv from 'dotenv';
+import { PROJECT_CONFIG } from '../project.config.js';
 
-const BASE_URL = 'https://kaavatietomalli.fi';
+dotenv.config();
+
+const BASE_URL = (process.env.VITE_BASE_URL || process.env.APP_URL || PROJECT_CONFIG.defaultBaseUrl).replace(/\/$/, '');
+const REPO_OWNER = PROJECT_CONFIG.repoOwner;
+const REPO_NAME = PROJECT_CONFIG.repoName;
+const RAW_GITHUB_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/refs/heads/main/src/content`;
 const CONTENT_DIR = path.join(process.cwd(), 'src', 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
@@ -185,13 +192,13 @@ ${posts.map(post => `  <url>
   llmsTxt += `## Articles (Featured)\n`;
   const featuredPosts = posts.slice(0, 5);
   featuredPosts.forEach(post => {
-    llmsTxt += `- [${post.metadata.title}](${BASE_URL}/post/${post.metadata.slug}) - [Raw Markdown](https://raw.githubusercontent.com/spatineo/kaavatietomalli.fi/refs/heads/main/src/content/posts/${post.metadata.slug}.md)\n`;
+    llmsTxt += `- [${post.metadata.title}](${BASE_URL}/post/${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
   });
   llmsTxt += `\n`;
 
   llmsTxt += `## Pages\n`;
   pages.forEach(page => {
-    llmsTxt += `- [${page.metadata.title}](${BASE_URL}/page/${page.metadata.slug}) - [Raw Markdown](https://raw.githubusercontent.com/spatineo/kaavatietomalli.fi/refs/heads/main/src/content/pages/${page.metadata.slug}.md)\n`;
+    llmsTxt += `- [${page.metadata.title}](${BASE_URL}/page/${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.slug}.md)\n`;
   });
   llmsTxt += `\n`;
 
@@ -208,13 +215,13 @@ ${posts.map(post => `  <url>
 
   llmsFullTxt += `## Articles\n`;
   posts.forEach(post => {
-    llmsFullTxt += `- [${post.metadata.title}](${BASE_URL}/post/${post.metadata.slug}) - [Raw Markdown](https://raw.githubusercontent.com/spatineo/kaavatietomalli.fi/refs/heads/main/src/content/posts/${post.metadata.slug}.md)\n`;
+    llmsFullTxt += `- [${post.metadata.title}](${BASE_URL}/post/${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
   });
   llmsFullTxt += `\n`;
 
   llmsFullTxt += `## Pages\n`;
   pages.forEach(page => {
-    llmsFullTxt += `- [${page.metadata.title}](${BASE_URL}/page/${page.metadata.slug}) - [Raw Markdown](https://raw.githubusercontent.com/spatineo/kaavatietomalli.fi/refs/heads/main/src/content/pages/${page.metadata.slug}.md)\n`;
+    llmsFullTxt += `- [${page.metadata.title}](${BASE_URL}/page/${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.slug}.md)\n`;
   });
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'llms-full.txt'), llmsFullTxt);

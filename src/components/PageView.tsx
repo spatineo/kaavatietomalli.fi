@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PageData } from '../lib/blog';
 import { Mermaid } from './Mermaid';
+import { CONFIG } from '../config';
 
 interface PageViewProps {
   page: PageData;
@@ -22,7 +23,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
     link.rel = 'alternate';
     link.type = 'text/markdown';
     link.title = 'Raw Markdown';
-    link.href = `https://raw.githubusercontent.com/spatineo/kaavatietomalli.fi/refs/heads/main/src/content/pages/${page.slug}.md`;
+    link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/pages/${page.slug}.md`;
     document.head.appendChild(link);
 
     return () => {

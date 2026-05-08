@@ -31,6 +31,8 @@ export interface AuthorData {
   content: string;
 }
 
+import { CONFIG } from '../config';
+
 // Global declaration for JSONP content
 declare global {
   interface Window {
@@ -77,7 +79,7 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
   const globalVarName = `CONTENT_POST_${sanitizedSlug}`;
   
   try {
-    const data = await loadJSONP(`/content/posts/${slug}.js`, globalVarName);
+    const data = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts/${slug}.js`, globalVarName);
     return data || null;
   } catch (error) {
     console.error(`Error loading post ${slug}:`, error);
@@ -90,7 +92,7 @@ export async function getPageBySlug(slug: string): Promise<PageData | null> {
   const globalVarName = `CONTENT_PAGE_${sanitizedSlug}`;
   
   try {
-    const data = await loadJSONP(`/content/pages/${slug}.js`, globalVarName);
+    const data = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/pages/${slug}.js`, globalVarName);
     return data || null;
   } catch (error) {
     console.error(`Error loading page ${slug}:`, error);
@@ -107,7 +109,7 @@ export async function getAuthorBySlug(slug: string): Promise<AuthorData | null> 
   const globalVarName = `CONTENT_AUTHOR_${sanitizedSlug}`;
   
   try {
-    const data = await loadJSONP(`/content/authors/${slug}.js`, globalVarName);
+    const data = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/authors/${slug}.js`, globalVarName);
     return data || null;
   } catch (error) {
     console.error(`Error loading author ${slug}:`, error);
@@ -121,7 +123,7 @@ export async function getTagIndex(): Promise<TagIndex> {
   }
   
   try {
-    await loadJSONP('/content/tags.js', 'CONTENT_TAGS_INDEX');
+    await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/tags.js`, 'CONTENT_TAGS_INDEX');
     return (globalThis as any).CONTENT_TAGS_INDEX || {};
   } catch (error) {
     console.error('Error loading tag index:', error);
