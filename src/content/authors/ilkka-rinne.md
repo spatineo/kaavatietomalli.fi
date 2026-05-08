@@ -2,7 +2,7 @@
 name: "Ilkka Rinne"
 title: "Perustaja ja yhteentoimivuusarkkitehti"
 company: "Spatineo Oy"
-image: "/images/IlkkaRinne_500px.png"
+image: "images/IlkkaRinne_500px.png"
 shortBio: "Rakennetun ympäristön digitalisaation ja tietomallipohjaisen aluesuunnittelun edelläkävijä."
 ---
 
