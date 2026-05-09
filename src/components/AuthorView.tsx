@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Linkedin, Twitter, Globe, Mail } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AuthorData } from '../lib/blog';
+import { resolveImageUrl } from '../lib/utils';
 import { CONFIG } from '../config';
 
 interface AuthorViewProps {
@@ -44,7 +45,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
         <aside className="flex flex-col gap-10">
           <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-white/5">
             <img 
-              src={author.image} 
+              src={resolveImageUrl(author.image)} 
               alt={author.name} 
               className="w-full h-full object-cover"
             />
@@ -93,7 +94,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
           </header>
 
           <div className="markdown-body">
-            <ReactMarkdown>{author.content}</ReactMarkdown>
+            <ReactMarkdown urlTransform={(url) => resolveImageUrl(url)}>{author.content}</ReactMarkdown>
           </div>
 
           <div className="mt-20 p-10 rounded-3xl bg-white/5 border border-white/10">

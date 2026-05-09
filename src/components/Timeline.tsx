@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { motion } from 'motion/react';
 import { Calendar, User, ArrowRight, Tag } from 'lucide-react';
 import { PostMetadata } from '../lib/blog';
+import { resolveImageUrl } from '../lib/utils';
 
 interface TimelineProps {
   posts: PostMetadata[];
@@ -87,7 +88,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                   className="group relative block w-full aspect-[16/8] overflow-hidden rounded-2xl bg-white/5 transition-all duration-700 shadow-2xl"
                 >
                   <img
-                    src={post.coverImage}
+                    src={resolveImageUrl(post.coverImage)}
                     alt={`Kuvituskuva: ${post.title}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
                   />

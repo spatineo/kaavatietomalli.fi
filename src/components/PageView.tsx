@@ -5,6 +5,7 @@ import { motion } from 'motion/react';
 import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
+import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
@@ -36,6 +37,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
     return (
       <div className="markdown-body prose prose-xl prose-stone">
         <ReactMarkdown
+          urlTransform={(url) => resolveImageUrl(url)}
           components={{
             code({ node, className, children, ref, ...props }: any) {
               const match = /language-(\w+)/.exec(className || '');
@@ -108,6 +110,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
 
       <div className="markdown-body prose prose-xl prose-stone">
         <ReactMarkdown
+          urlTransform={(url) => resolveImageUrl(url)}
           components={{
             code({ node, className, children, ref, ...props }: any) {
               const match = /language-(\w+)/.exec(className || '');

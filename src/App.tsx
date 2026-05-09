@@ -13,6 +13,7 @@ import { HistoryHero } from './components/HistoryHero';
 import { AuthorView } from './components/AuthorView';
 import { getAllPostMetadata, getPostBySlug, getPageBySlug, getAuthorBySlug, getPostsByTag, getTagPageSlugs, PostMetadata, PostData, PageData, AuthorData } from './lib/blog';
 import { CONFIG } from './config';
+import { resolveImageUrl } from './lib/utils';
 
 export default function App() {
   const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null);
@@ -400,7 +401,7 @@ export default function App() {
                         >
                           <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden mr-6 border border-white/10 group-hover/profile:border-brand-accent transition-colors relative z-10 shadow-xl flex-shrink-0">
                             <img 
-                              src={editor.image} 
+                              src={resolveImageUrl(editor.image)} 
                               alt={editor.name} 
                               className="w-full h-full object-cover transition-transform duration-500 group-hover/profile:scale-110" 
                             />
