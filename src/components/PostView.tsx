@@ -4,10 +4,11 @@ import { format, parseISO } from 'date-fns';
 import { Calendar, User, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PostData, PostMetadata } from '../lib/blog';
-import { Mermaid } from './Mermaid';
 import { CONFIG } from '../config';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
-import { constructFromSymbol } from 'date-fns/constants';
+import { lazy, Suspense } from 'react';
+
+const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 
 interface PostViewProps {
   post: PostData;
@@ -28,6 +29,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
     link.title = 'Raw Markdown';
     link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/posts/${post.slug}.md`;
     document.head.appendChild(link);
+
     return () => {
       document.head.removeChild(link);
     };
@@ -149,7 +151,11 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
               const language = match ? match[1] : '';
 
               if (language === 'mermaid') {
-                return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+                return (
+                  <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-mono text-xs animate-pulse">Ladataan kaaviota...</div>}>
+                    <Mermaid chart={String(children).replace(/\n$/, '')} />
+                  </Suspense>
+                );
               }
 
               return match ? (
@@ -199,7 +205,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
               onClick={onBack}
               className="group flex items-center gap-6 bg-black text-white border border-white/10 px-10 py-5 rounded-xl transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20"
             >
-              <span className="uppercase font-bold tracking-widest text-xs">Palaa alkuun</span>
+              <span className="uppercase font-bold tracking-widest text-xs">Etusivulle</span>
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
             </button>
           </div>

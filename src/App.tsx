@@ -93,8 +93,7 @@ export default function App() {
 
   useEffect(() => {
     // Load all post metadata on mount
-    const allPosts = getAllPostMetadata();
-    setPosts(allPosts);
+    getAllPostMetadata().then(setPosts);
     // Load the featured author data
     getAuthorBySlug('ilkka-rinne').then(setEditor);
   }, []);

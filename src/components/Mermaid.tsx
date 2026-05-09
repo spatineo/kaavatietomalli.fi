@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import mermaid from 'mermaid';
+import mermaid from '../lib/mermaid';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 

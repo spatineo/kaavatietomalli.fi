@@ -70,8 +70,8 @@ async function loadJSONP(url: string, globalVarName: string): Promise<any> {
   });
 }
 
-export function getAllPostMetadata(): PostMetadata[] {
-  const posts = (globalThis as any).CONTENT_POSTS_INDEX as PostMetadata[] || [];
+export async function getAllPostMetadata(): Promise<PostMetadata[]> {
+  const posts = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts.js`, 'CONTENT_POSTS_INDEX') as PostMetadata[] || [];
   return [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
@@ -101,8 +101,8 @@ export async function getPageBySlug(slug: string): Promise<PageData | null> {
   }
 }
 
-export function getAllAuthors(): AuthorData[] {
-  return (globalThis as any).CONTENT_AUTHORS_INDEX as AuthorData[] || [];
+export async function getAllAuthors(): Promise<AuthorData[]> {
+  return await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/authors.js`, 'CONTENT_AUTHORS_INDEX') as AuthorData[] || [];
 }
 
 export async function getAuthorBySlug(slug: string): Promise<AuthorData | null> {
@@ -119,13 +119,9 @@ export async function getAuthorBySlug(slug: string): Promise<AuthorData | null> 
 }
 
 export async function getTagIndex(): Promise<TagIndex> {
-  if ((globalThis as any).CONTENT_TAGS_INDEX) {
-    return (globalThis as any).CONTENT_TAGS_INDEX;
-  }
-  
   try {
-    await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/tags.js`, 'CONTENT_TAGS_INDEX');
-    return (globalThis as any).CONTENT_TAGS_INDEX || {};
+    const index = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/tags.js`, 'CONTENT_TAGS_INDEX');
+    return index || {};
   } catch (error) {
     console.error('Error loading tag index:', error);
     return {};
@@ -139,7 +135,7 @@ export async function getPostsByTag(tag: string, offset: number = 0, limit: numb
   
   if (!entry || !entry.posts.length) return [];
   
-  const allPosts = getAllPostMetadata();
+  const allPosts = await getAllPostMetadata();
   const taggedSlugs = new Set(entry.posts);
   
   return allPosts

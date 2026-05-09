@@ -3,9 +3,11 @@ import ReactMarkdown from 'react-markdown';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PageData } from '../lib/blog';
-import { Mermaid } from './Mermaid';
 import { CONFIG } from '../config';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
+import { lazy, Suspense } from 'react';
+
+const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 
 interface PageViewProps {
   page: PageData;
@@ -40,7 +42,11 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
               const language = match ? match[1] : '';
 
               if (language === 'mermaid') {
-                return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+                return (
+                  <Suspense fallback={<div className="h-48 flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse">Ladataan kaaviota...</div>}>
+                    <Mermaid chart={String(children).replace(/\n$/, '')} />
+                  </Suspense>
+                );
               }
 
               return match ? (
@@ -108,7 +114,11 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
               const language = match ? match[1] : '';
 
               if (language === 'mermaid') {
-                return <Mermaid chart={String(children).replace(/\n$/, '')} />;
+                return (
+                  <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse">Ladataan kaaviota...</div>}>
+                    <Mermaid chart={String(children).replace(/\n$/, '')} />
+                  </Suspense>
+                );
               }
 
               return match ? (
@@ -154,7 +164,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
             onClick={onBack}
             className="bg-black text-white border border-white/10 px-10 py-4 rounded-xl transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20 uppercase font-bold tracking-widest text-[10px]"
           >
-            Takaisin etusivulle
+            Etusivulle
           </button>
         </div>
       </footer>

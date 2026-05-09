@@ -8,9 +8,10 @@
   </head>
   <body>
     <div id="root"></div>
-    <script src="content/posts.js"></script>
-    <script src="content/pages.js"></script>
-    <script src="content/authors.js"></script>
+    <link rel="preload" href="content/posts.js" as="script" />
+    <link rel="preload" href="content/pages.js" as="script" />
+    <link rel="preload" href="content/authors.js" as="script" />
+    <link rel="preload" href="content/tags.js" as="script" />
     <script type="module" src="src/main.tsx"></script>
   </body>
 </html>
