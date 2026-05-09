@@ -356,13 +356,19 @@ export default function App() {
               {visibleTagCount < tagPosts.length && (
                 <div 
                   id="infinite-scroll-trigger" 
-                  className="h-20 flex items-center justify-center mt-20"
+                  className="min-h-32 flex flex-col items-center justify-center mt-20 gap-8"
                 >
                   <div className="flex gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
+                  <button 
+                    onClick={() => setVisibleTagCount((prev) => prev + 10)}
+                    className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-brand-accent transition-colors border border-white/10 px-6 py-3 rounded-full hover:border-brand-accent/30"
+                  >
+                    Lataa lisää
+                  </button>
                 </div>
               )}
             </div>
@@ -479,13 +485,19 @@ export default function App() {
                 {visibleJournalCount < allJournalPosts.length && (
                   <div 
                     id="infinite-scroll-trigger" 
-                    className="h-20 flex items-center justify-center"
+                    className="min-h-32 flex flex-col items-center justify-center mt-20 gap-8"
                   >
                     <div className="flex gap-2">
                       <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
                       <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
                       <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
+                    <button 
+                      onClick={() => setVisibleJournalCount((prev) => prev + 10)}
+                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-brand-accent transition-colors border border-white/10 px-6 py-3 rounded-full hover:border-brand-accent/30"
+                    >
+                      Lataa lisää
+                    </button>
                   </div>
                 )}
               </div>
