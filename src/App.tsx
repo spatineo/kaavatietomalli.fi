@@ -307,22 +307,22 @@ export default function App() {
                   onClick={onHome}
                   className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors mb-12 uppercase font-bold tracking-[0.2em] text-[10px]"
                 >
-                  Palaa alkuun
+                  Etusivulle
                 </button>
                 <div className="flex items-center gap-4 mb-6">
                   <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2 py-1 rounded-md">
-                    Avainsana
+                    Aihepiiri
                   </span>
                   <div className="h-[1px] w-12 bg-white/10" />
                 </div>
-                <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-white mb-10">
+                {tagPage ? (
+                <div className="markdown-body prose prose-stone prose-invert max-w-none border-b border-white/10 pb-20 mb-20">
+                    <PageView page={tagPage} onBack={() => {}} inline />
+                </div>
+                ) : (
+                <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-10">
                   <span className="text-brand-accent opacity-50">#</span>{selectedTag}
                 </h1>
-
-                {tagPage && (
-                  <div className="markdown-body prose prose-stone prose-invert max-w-none border-b border-white/10 pb-20 mb-20">
-                    <PageView page={tagPage} onBack={() => {}} inline />
-                  </div>
                 )}
 
                 <div className="flex items-center gap-6 mb-12">

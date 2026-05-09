@@ -48,12 +48,18 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
               aria-label={`Artikkeli: ${post.title}`}
             >
               <div className="relative mb-8 flex flex-col items-center">
-                <span className="text-3xl font-extrabold text-brand-accent mb-4 transition-transform group-hover:-translate-y-2 group-focus-visible:-translate-y-2">
+                {!post.dateLabel ? (
+                <span className="text-2xl font-extrabold text-brand-accent mb-4 transition-transform group-hover:-translate-y-2 group-focus-visible:-translate-y-2">
                   {format(parseISO(post.date), 'MM')}
                   <span className="text-xl opacity-30 mx-2 text-white">/</span>
                   {format(parseISO(post.date), 'yyyy')}
                 </span>
-                <div className="w-4 h-4 rounded-full bg-black border-4 border-brand-accent group-hover:scale-125 group-focus-visible:scale-125 transition-transform" />
+                ) : (
+                <span className="text-2xl font-extrabold text-brand-accent mb-4 transition-transform group-hover:-translate-y-2 group-focus-visible:-translate-y-2">
+                  {post.dateLabel}
+                </span>
+                )}
+                <div className="w-3 h-3 rounded-full bg-black border-4 border-brand-accent group-hover:scale-125 group-focus-visible:scale-125 transition-transform" />
               </div>
 
               <div className="bg-white/5 p-8 border border-white/10 rounded-2xl group-hover:border-brand-accent/50 group-focus-visible:border-brand-accent transition-all backdrop-blur-sm shadow-2xl">

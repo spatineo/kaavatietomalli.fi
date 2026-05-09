@@ -4,7 +4,7 @@ date: "2024-01-18"
 author: "Ilkka Rinne"
 authorSlug: "ilkka-rinne"
 excerpt: "Tämä on automaattisesti generoitu testipostaus numero 18. Sen tarkoituksena on auttaa testaamaan infinite scroll -toiminnallisuutta."
-tags: ["testi","lataus","suorituskyky"]
+tags: ["testi","lataus","suorituskyky", "kaavatietomalli-ng"]
 category: "journal"
 ---
 

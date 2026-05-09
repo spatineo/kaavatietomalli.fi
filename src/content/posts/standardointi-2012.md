@@ -1,6 +1,7 @@
 ---
 title: "Digitaalisen kaavakartan standardointi"
 date: "2012-10-15"
+dateLabel: "Syksy 2012"
 author: "Kuntaliitto"
 authorSlug: "kuntaliitto"
 excerpt: "Ensimmäiset askeleet kohti yhtenäisiä digitaalisia kaavamerkintöjä ja kuntien välistä tiedonvaihtoa."

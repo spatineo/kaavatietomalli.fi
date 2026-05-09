@@ -41,6 +41,7 @@ function generateAssets() {
         title: data.title || '',
         excerpt: data.excerpt || '',
         date: data.date || '',
+        dateLabel: data.dateLabel || '',
         author: data.author || '',
         authorSlug: data.authorSlug || '',
         tags: data.tags || [],

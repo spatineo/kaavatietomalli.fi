@@ -7,6 +7,7 @@ import { PostData, PostMetadata } from '../lib/blog';
 import { Mermaid } from './Mermaid';
 import { CONFIG } from '../config';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
+import { constructFromSymbol } from 'date-fns/constants';
 
 interface PostViewProps {
   post: PostData;
@@ -27,7 +28,6 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
     link.title = 'Raw Markdown';
     link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/posts/${post.slug}.md`;
     document.head.appendChild(link);
-
     return () => {
       document.head.removeChild(link);
     };
@@ -47,31 +47,39 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           aria-label="Palaa artikkelilistaukseen"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Palaa alkuun
+          Etusivulle
         </button>
 
         <div className="flex gap-4">
-          {prevPost && (
+          {nextPost ? (
             <button
-              onClick={() => onNavigate(prevPost.slug)}
+              onClick={() => onNavigate(nextPost.slug)}
               className="flex items-center gap-2 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
-              aria-label={`Edellinen artikkeli: ${prevPost.title}`}
-              title={prevPost.title}
+              aria-label={`Edellinen artikkeli: ${nextPost.title}`}
+              title={nextPost.title}
             >
               <ArrowLeft size={14} />
               Edellinen
             </button>
+          ) : (
+            <span className="flex items-center gap-2 text-slate-400 transition-colors group px-4 py-2 rounded-lg uppercase font-bold tracking-[0.2em] text-[10px]">
+            Ei edellistä
+            </span>
           )}
-          {nextPost && (
+          {prevPost ? (
             <button
-              onClick={() => onNavigate(nextPost.slug)}
+              onClick={() => onNavigate(prevPost.slug)}
               className="flex items-center gap-2 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
-              aria-label={`Seuraava artikkeli: ${nextPost.title}`}
-              title={nextPost.title}
+              aria-label={`Seuraava artikkeli: ${prevPost.title}`}
+              title={prevPost.title}
             >
               Seuraava
               <ArrowRight size={14} />
             </button>
+          ) : (
+            <span className="flex items-center gap-2 text-slate-400 transition-colors group px-4 py-2 rounded-lg uppercase font-bold tracking-[0.2em] text-[10px]">
+            Ei seuraavaa
+            </span>
           )}
         </div>
       </div>
@@ -79,7 +87,10 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       <header className="mb-20">
         <div className="flex items-center gap-4 mb-10">
           <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2 py-1 rounded-md">
-            {format(parseISO(post.date), 'd.M.yyyy')}
+            {!post.dateLabel ? (format(parseISO(post.date), 'd.M.yyyy')
+            ) : (
+              post.dateLabel
+            )}
           </span>
           <div className="h-[1px] w-12 bg-white/10" />
           <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">

@@ -3,6 +3,7 @@ export interface PostMetadata {
   slug: string;
   title: string;
   date: string;
+  dateLabel?: string;
   author: string;
   authorSlug?: string;
   excerpt: string;
