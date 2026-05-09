@@ -6,11 +6,12 @@ import { CONFIG } from '../config';
 
 interface HeaderProps {
   onNavigatePage: (slug: string | null) => void;
+  onNavigateTag: (tag: string | null) => void;
   onHome: () => void;
   onBlog: () => void;
 }
 
-export function Header({ onNavigatePage, onHome, onBlog }: HeaderProps) {
+export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -18,6 +19,41 @@ export function Header({ onNavigatePage, onHome, onBlog }: HeaderProps) {
   const handleNavClick = (action: () => void) => {
     action();
     setIsMenuOpen(false);
+  };
+
+  const renderNavItems = (isMobile = false) => {
+    return CONFIG.nav.map((item, index) => {
+      const handleClick = () => {
+        if (item.type === 'blog') handleNavClick(onBlog);
+        else if (item.type === 'page' && item.slug) handleNavClick(() => onNavigatePage(item.slug!));
+        else if (item.type === 'tag' && item.slug) handleNavClick(() => onNavigateTag(item.slug!));
+      };
+
+      const label = item.label || item.slug || (item.type === 'blog' ? 'Blogi' : '');
+      
+      if (isMobile) {
+        return (
+          <button 
+            key={index}
+            onClick={handleClick} 
+            className="flex items-center justify-between hover:text-brand-accent transition-colors"
+          >
+            {label}
+            <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-brand-accent' : 'bg-brand-accent/40'}`} />
+          </button>
+        );
+      }
+
+      return (
+        <button 
+          key={index}
+          onClick={handleClick} 
+          className="hover:text-brand-accent transition-colors whitespace-nowrap"
+        >
+          {label}
+        </button>
+      );
+    });
   };
 
   return (
@@ -54,11 +90,7 @@ export function Header({ onNavigatePage, onHome, onBlog }: HeaderProps) {
           </button>
           
           <nav className="hidden md:flex gap-10 text-sm font-semibold text-slate-400" aria-label="Päänavigaatio">
-            <button onClick={onBlog} className="hover:text-brand-accent transition-colors whitespace-nowrap">Blogi</button>
-            <button onClick={() => onNavigatePage('tietomallit')} className="hover:text-brand-accent transition-colors whitespace-nowrap">Tietomallit</button>
-            <button onClick={() => onNavigatePage('sparraus')} className="hover:text-brand-accent transition-colors whitespace-nowrap">Sparrausapua</button>
-            <button onClick={() => onNavigatePage('kumppanit')} className="hover:text-brand-accent transition-colors whitespace-nowrap">Kumppanit</button>
-            <button onClick={() => onNavigatePage('tietoa')} className="hover:text-brand-accent transition-colors whitespace-nowrap">Tietoa sivustosta</button>
+            {renderNavItems()}
           </nav>
         </div>
 
@@ -90,41 +122,7 @@ export function Header({ onNavigatePage, onHome, onBlog }: HeaderProps) {
             className="md:hidden border-t border-white/5 bg-black/95 absolute w-full overflow-hidden"
           >
             <nav className="flex flex-col p-6 gap-6 text-lg font-bold text-slate-200">
-              <button 
-                onClick={() => handleNavClick(onBlog)} 
-                className="flex items-center justify-between hover:text-brand-accent transition-colors"
-              >
-                Blogi
-                <div className="w-2 h-2 rounded-full bg-brand-accent" />
-              </button>
-              <button 
-                onClick={() => handleNavClick(() => onNavigatePage('tietomallit'))} 
-                className="flex items-center justify-between hover:text-brand-accent transition-colors"
-              >
-                Tietomallit
-                <div className="w-2 h-2 rounded-full bg-brand-accent/40" />
-              </button>
-              <button 
-                onClick={() => handleNavClick(() => onNavigatePage('sparraus'))} 
-                className="flex items-center justify-between hover:text-brand-accent transition-colors"
-              >
-                Sparrausapua
-                <div className="w-2 h-2 rounded-full bg-brand-accent/40" />
-              </button>
-              <button 
-                onClick={() => handleNavClick(() => onNavigatePage('kumppanit'))} 
-                className="flex items-center justify-between hover:text-brand-accent transition-colors"
-              >
-                Kumppanit
-                <div className="w-2 h-2 rounded-full bg-brand-accent/40" />
-              </button>
-              <button 
-                onClick={() => handleNavClick(() => onNavigatePage('tietoa'))} 
-                className="flex items-center justify-between hover:text-brand-accent transition-colors"
-              >
-                Tietoa sivustosta
-                <div className="w-2 h-2 rounded-full bg-brand-accent/40" />
-              </button>
+              {renderNavItems(true)}
               
               <div className="flex gap-6 pt-6 border-t border-white/5 mt-2">
                 <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium">

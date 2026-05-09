@@ -256,6 +256,12 @@ export default function App() {
           setSelectedAuthorSlug(null);
           setSelectedTag(null);
         }} 
+        onNavigateTag={(tag) => {
+          setSelectedTag(tag);
+          setSelectedPostSlug(null);
+          setSelectedPageSlug(null);
+          setSelectedAuthorSlug(null);
+        }}
         onHome={onHome} 
         onBlog={scrollToBlog} 
       />
@@ -376,7 +382,7 @@ export default function App() {
                         <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">Tietomallimuotoinen kaavoitus Suomessa</span>
                       </div>
                       <h1 className="text-6xl md:text-[7rem] lg:text-[9rem] font-black tracking-tighter leading-[0.8] text-white">
-                        Kaava<span className="text-brand-accent">tieto</span><span className="text-white/20">malli.</span>
+                        Kaava<span className="text-brand-accent">tieto</span><span className="text-white/20"><wbr/>malli.</span>
                       </h1>
                     </motion.div>
 

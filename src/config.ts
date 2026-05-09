@@ -7,4 +7,17 @@ export const CONFIG = {
   basePath: (import.meta.env.VITE_BASE_PATH || PROJECT_CONFIG.defaultBasePath).replace(/^\/?/, '/').replace(/\/?$/, '/'),
   repoOwner: PROJECT_CONFIG.repoOwner,
   repoName: PROJECT_CONFIG.repoName,
+  nav: [
+    { label: 'Blogi', type: 'blog' },
+    { label: 'Tietomallit', type: 'page', slug: 'tietomallit' },
+    { label: 'Sparrausapua', type: 'page', slug: 'sparraus' },
+    { label: 'Kumppanit', type: 'page', slug: 'kumppanit' },
+    { label: 'Tietoa', type: 'page', slug: 'tietoa' }
+  ] as NavItem[]
 };
+
+export interface NavItem {
+  label?: string;
+  type: 'page' | 'tag' | 'blog';
+  slug?: string;
+}
