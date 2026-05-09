@@ -30,6 +30,14 @@ export interface AuthorData {
   image?: string;
   shortBio?: string;
   content: string;
+  social?: {
+    linkedin?: string;
+    twitter?: string;
+    github?: string;
+    website?: string;
+    email?: string;
+  };
+  skills?: string[];
 }
 
 import { CONFIG } from '../config';

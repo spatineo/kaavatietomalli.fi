@@ -74,8 +74,11 @@ function generateAssets() {
         slug,
         name: data.name || '',
         title: data.title || '',
+        company: data.company || '',
         image: data.image || '',
         shortBio: data.shortBio || '',
+        social: data.social || {},
+        skills: data.skills || [],
         ...data
       },
       content: textContent

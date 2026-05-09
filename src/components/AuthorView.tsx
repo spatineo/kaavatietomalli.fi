@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Linkedin, Twitter, Globe, Mail } from 'lucide-react';
+import { ArrowLeft, Linkedin, Twitter, Github, Globe, Mail } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { AuthorData } from '../lib/blog';
 import { resolveImageUrl } from '../lib/utils';
@@ -9,6 +9,25 @@ import { CONFIG } from '../config';
 interface AuthorViewProps {
   author: AuthorData;
   onBack: () => void;
+}
+
+function ObfuscatedEmailIcon({ email }: { email: string }) {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const decodedEmail = email.replace(' [at] ', '@').replace(' [dot] ', '.');
+    window.location.href = `mailto:${decodedEmail}`;
+  };
+
+  return (
+    <a 
+      href="#" 
+      onClick={handleClick}
+      className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
+      title="Lähetä sähköpostia"
+    >
+      <Mail size={18} />
+    </a>
+  );
 }
 
 export function AuthorView({ author, onBack }: AuthorViewProps) {
@@ -26,6 +45,8 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
     };
   }, [author.slug]);
 
+  const hasSocial = author.social && Object.values(author.social).some(val => !!val);
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -38,7 +59,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
         className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px] mb-20"
       >
         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-        Palaa alkuun
+        Etusivulle
       </button>
 
       <div className="grid md:grid-cols-[1fr_2fr] gap-16 md:gap-24">
@@ -52,34 +73,67 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
           </div>
 
           <div className="flex flex-col gap-6">
-            <div>
-              <h3 className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-3">Yhteystiedot</h3>
-              <div className="flex gap-3">
-                <a href="#" className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5">
-                  <Linkedin size={18} />
-                </a>
-                <a href="#" className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5">
-                  <Twitter size={18} />
-                </a>
-                <a href="#" className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5">
-                  <Globe size={18} />
-                </a>
-                <a href="#" className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5">
-                  <Mail size={18} />
-                </a>
+            {hasSocial && (
+              <div>
+                <h3 className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-3">Yhteystiedot</h3>
+                <div className="flex gap-3">
+                  {author.social?.linkedin && (
+                    <a 
+                      href={author.social.linkedin} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
+                    >
+                      <Linkedin size={18} />
+                    </a>
+                  )}
+                  {author.social?.twitter && (
+                    <a 
+                      href={author.social.twitter} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
+                    >
+                      <Twitter size={18} />
+                    </a>
+                  )}
+                  {author.social?.github && (
+                    <a 
+                      href={author.social.github} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
+                    >
+                      <Github size={18} />
+                    </a>
+                  )}
+                  {author.social?.website && (
+                    <a 
+                      href={author.social.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
+                    >
+                      <Globe size={18} />
+                    </a>
+                  )}
+                  {author.social?.email && <ObfuscatedEmailIcon email={author.social.email} />}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div>
-              <h3 className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-3">Erikoisalat</h3>
-              <div className="flex flex-wrap gap-2">
-                {['Tietomallit', 'Kaavoitus', 'Yhteentoimivuus', 'Digitalisaatio'].map(skill => (
-                  <span key={skill} className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    {skill}
-                  </span>
-                ))}
+            {author.skills && author.skills.length > 0 && (
+              <div>
+                <h3 className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-3">Erikoisalat</h3>
+                <div className="flex flex-wrap gap-2">
+                  {author.skills.map(skill => (
+                    <span key={skill} className="px-3 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      {skill}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </aside>
 
@@ -91,6 +145,11 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
             <p className="text-2xl text-brand-accent font-bold leading-tight">
               {author.title}
             </p>
+            {author.company &&
+            <p className="text-2xl text-brand-accent font-bold leading-tight">
+              {author.company}
+            </p>
+            }
           </header>
 
           <div className="markdown-body">
@@ -116,7 +175,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
           onClick={onBack}
           className="bg-black text-white border border-white/10 px-10 py-4 rounded-xl transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20 uppercase font-bold tracking-widest text-[10px]"
         >
-          Takaisin etusivulle
+          Etusivulle
         </button>
       </footer>
     </motion.article>
