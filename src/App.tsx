@@ -12,7 +12,7 @@ import { Header, Footer } from './components/Navigation';
 import { HistoryHero } from './components/HistoryHero';
 import { AuthorView } from './components/AuthorView';
 import { getAllPostMetadata, getPostBySlug, getPageBySlug, getAuthorBySlug, getPostsByTag, getTagPageSlugs, PostMetadata, PostData, PageData, AuthorData } from './lib/blog';
-import { CONFIG } from './config';
+import { CONFIG, ThemeItem } from './config';
 import { resolveImageUrl } from './lib/utils';
 
 export default function App() {
@@ -20,6 +20,7 @@ export default function App() {
   const [selectedPageSlug, setSelectedPageSlug] = useState<string | null>(null);
   const [selectedAuthorSlug, setSelectedAuthorSlug] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedThemeTag, setSelectedThemeTag] = useState<string | null>(null);
   const [visibleJournalCount, setVisibleJournalCount] = useState(10);
   const [visibleTagCount, setVisibleTagCount] = useState(10);
   const [posts, setPosts] = useState<PostMetadata[]>([]);
@@ -201,7 +202,9 @@ export default function App() {
   }, [selectedAuthorSlug]);
 
   const historyPosts = posts.filter(p => p.category === 'history');
-  const allJournalPosts = posts.filter(p => p.category === 'journal');
+  const allJournalPosts = posts
+    .filter(p => p.category === 'journal')
+    .filter(p => !selectedThemeTag || p.tags.includes(selectedThemeTag));
   const visibleJournalPosts = allJournalPosts.slice(0, visibleJournalCount);
 
   const [pendingScroll, setPendingScroll] = useState(false);
@@ -460,10 +463,49 @@ export default function App() {
                     Kaava<span className="text-brand-accent">tieto</span><span className="text-white/30">blogi.</span>
                   </h2>
                   
-                  <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed">
+                  <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
                     Merkintöjä digitalisoituvan rakennetun ympäristön suunnittelun mahdollistajilta. 
                     Tekstit edustavat kirjoittajien henkilökohtaisia mielipiteitä.
                   </p>
+
+                  {CONFIG.themes && CONFIG.themes.length > 0 && (
+                    <div className="flex flex-col gap-6">
+                      <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 ml-1">Teemat</h3>
+                      <div className="flex flex-wrap gap-3">
+                        <button
+                          onClick={() => {
+                            setSelectedThemeTag(null);
+                            setVisibleJournalCount(10);
+                          }}
+                          className={`px-6 py-3 rounded-xl uppercase font-bold tracking-widest text-[10px] transition-all border ${
+                            !selectedThemeTag 
+                            ? 'bg-brand-accent border-brand-accent text-brand-bg shadow-lg shadow-brand-accent/20' 
+                            : 'bg-white/5 border-white/10 text-slate-400 hover:border-brand-accent/30'
+                          }`}
+                        >
+                          Kaikki
+                        </button>
+                        {CONFIG.themes.map((theme: ThemeItem) => (
+                          <button
+                            key={theme.id}
+                            onClick={() => {
+                              setSelectedThemeTag(theme.tag);
+                              setVisibleJournalCount(10);
+                              // Scroll slightly to update visibility if needed
+                              window.scrollBy(0, 1);
+                            }}
+                            className={`px-6 py-3 rounded-xl uppercase font-bold tracking-widest text-[10px] transition-all border ${
+                              selectedThemeTag === theme.tag 
+                              ? 'bg-brand-accent border-brand-accent text-brand-bg shadow-lg shadow-brand-accent/20' 
+                              : 'bg-white/5 border-white/10 text-slate-400 hover:border-brand-accent/30'
+                            }`}
+                          >
+                            {theme.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <Timeline 
                   posts={visibleJournalPosts} 

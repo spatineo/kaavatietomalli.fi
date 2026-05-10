@@ -13,8 +13,20 @@ export const CONFIG = {
     { label: 'Sparrausapua', type: 'page', slug: 'sparraus' },
     { label: 'Kumppanit', type: 'page', slug: 'kumppanit' },
     { label: 'Tietoa', type: 'page', slug: 'tietoa' }
-  ] as NavItem[]
+  ] as NavItem[],
+  themes: [
+    { id: 'lainsaadanto', label: 'Lainsäädäntö', tag: 'lainsäädäntö' },
+    { id: 'tietomallit', label: 'Tietomallit', tag: 'tietomallit' },
+    { id: 'kaavatietomalli-ng', label: 'Kaavatietomalli NG', tag: 'kaavatietomalli-ng' },
+    { id: 'era-henki', label: 'ERA-henki', tag: 'era-henki' }
+  ] as ThemeItem[]
 };
+
+export interface ThemeItem {
+  id: string;
+  label: string;
+  tag: string;
+}
 
 export interface NavItem {
   label?: string;
