@@ -171,11 +171,11 @@ function generateAssets() {
     <priority>1.0</priority>
   </url>
 ${pages.map(page => `  <url>
-    <loc>${BASE_URL}/page/${page.metadata.slug}</loc>
+    <loc>${BASE_URL}/?page=${page.metadata.slug}</loc>
     <priority>0.8</priority>
   </url>`).join('\n')}
 ${posts.map(post => `  <url>
-    <loc>${BASE_URL}/post/${post.metadata.slug}</loc>
+    <loc>${BASE_URL}/?post=${post.metadata.slug}</loc>
     <lastmod>${post.metadata.date ? new Date(post.metadata.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
     <priority>0.6</priority>
   </url>`).join('\n')}
@@ -196,13 +196,13 @@ ${posts.map(post => `  <url>
   llmsTxt += `## Articles (Featured)\n`;
   const featuredPosts = posts.slice(0, 5);
   featuredPosts.forEach(post => {
-    llmsTxt += `- [${post.metadata.title}](${BASE_URL}/post/${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
+    llmsTxt += `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
   });
   llmsTxt += `\n`;
 
   llmsTxt += `## Pages\n`;
   pages.forEach(page => {
-    llmsTxt += `- [${page.metadata.title}](${BASE_URL}/page/${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.slug}.md)\n`;
+    llmsTxt += `- [${page.metadata.title}](${BASE_URL}/?page=${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.slug}.md)\n`;
   });
   llmsTxt += `\n`;
 
@@ -219,13 +219,13 @@ ${posts.map(post => `  <url>
 
   llmsFullTxt += `## Articles\n`;
   posts.forEach(post => {
-    llmsFullTxt += `- [${post.metadata.title}](${BASE_URL}/post/${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
+    llmsFullTxt += `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
   });
   llmsFullTxt += `\n`;
 
   llmsFullTxt += `## Pages\n`;
   pages.forEach(page => {
-    llmsFullTxt += `- [${page.metadata.title}](${BASE_URL}/page/${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.slug}.md)\n`;
+    llmsFullTxt += `- [${page.metadata.title}](${BASE_URL}/?page=${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.slug}.md)\n`;
   });
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'llms-full.txt'), llmsFullTxt);

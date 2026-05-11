@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Timeline } from './components/Timeline';
 import { PostView } from './components/PostView';
@@ -16,10 +16,27 @@ import { CONFIG, ThemeItem } from './config';
 import { resolveImageUrl } from './lib/utils';
 
 export default function App() {
-  const [selectedPostSlug, setSelectedPostSlug] = useState<string | null>(null);
-  const [selectedPageSlug, setSelectedPageSlug] = useState<string | null>(null);
-  const [selectedAuthorSlug, setSelectedAuthorSlug] = useState<string | null>(null);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [searchString, setSearchString] = useState(() => 
+    typeof window !== 'undefined' ? window.location.search : ''
+  );
+
+  const activeView = useMemo(() => {
+    const params = new URLSearchParams(searchString);
+    const post = params.get('post');
+    const page = params.get('page');
+    const author = params.get('author');
+    const tag = params.get('tag');
+
+    let result: { type: 'home' | 'post' | 'page' | 'author' | 'tag'; slug: string | null };
+    if (post) result = { type: 'post', slug: post };
+    else if (page) result = { type: 'page', slug: page };
+    else if (author) result = { type: 'author', slug: author };
+    else if (tag) result = { type: 'tag', slug: tag };
+    else result = { type: 'home', slug: null };
+
+    return result;
+  }, [searchString]);
+
   const [selectedThemeTag, setSelectedThemeTag] = useState<string | null>(null);
   const [visibleJournalCount, setVisibleJournalCount] = useState(10);
   const [visibleTagCount, setVisibleTagCount] = useState(10);
@@ -31,67 +48,34 @@ export default function App() {
   const [currentAuthor, setCurrentAuthor] = useState<AuthorData | null>(null);
   const [editor, setEditor] = useState<AuthorData | null>(null);
   const [adjacentPosts, setAdjacentPosts] = useState<{ next: PostMetadata | null; prev: PostMetadata | null }>({ next: null, prev: null });
+  const [pendingScroll, setPendingScroll] = useState(false);
 
-  // URL Synchronization
+  // URL Reconciliation helper
+  const navigate = (view: { type: string; slug: string | null }) => {
+    const params = new URLSearchParams();
+    if (view.type !== 'home' && view.slug) {
+      params.set(view.type, view.slug);
+    }
+    
+    const searchPart = params.toString() ? `?${params.toString()}` : '';
+    const finalPath = CONFIG.basePath + searchPart;
+
+    const currentUrl = window.location.pathname + window.location.search;
+    if (currentUrl !== finalPath) {
+      window.history.pushState(null, '', finalPath);
+      setSearchString(searchPart);
+    }
+  };
+
+  // Listen for popstate changes
   useEffect(() => {
-    const handleLocationChange = () => {
-      let path = window.location.pathname;
-      
-      // Remove base path if present
-      if (CONFIG.basePath !== '/' && path.startsWith(CONFIG.basePath)) {
-        path = path.substring(CONFIG.basePath.length - 1); // Keep the leading slash
-      }
-      
-      path = path.replace(/\/$/, ''); // Remove trailing slash
-      
-      if (path.startsWith('/post/')) {
-        setSelectedPostSlug(path.substring(6));
-        setSelectedPageSlug(null);
-        setSelectedAuthorSlug(null);
-        setSelectedTag(null);
-      } else if (path.startsWith('/page/')) {
-        setSelectedPageSlug(path.substring(6));
-        setSelectedPostSlug(null);
-        setSelectedAuthorSlug(null);
-        setSelectedTag(null);
-      } else if (path.startsWith('/author/')) {
-        setSelectedAuthorSlug(path.substring(8));
-        setSelectedPostSlug(null);
-        setSelectedPageSlug(null);
-        setSelectedTag(null);
-      } else if (path.startsWith('/tag/')) {
-        setSelectedTag(path.substring(5));
-        setSelectedPostSlug(null);
-        setSelectedPageSlug(null);
-        setSelectedAuthorSlug(null);
-      } else {
-        setSelectedPostSlug(null);
-        setSelectedPageSlug(null);
-        setSelectedAuthorSlug(null);
-        setSelectedTag(null);
-      }
+    const handlePopState = () => {
+      setSearchString(window.location.search);
     };
 
-    // Initial load
-    handleLocationChange();
-
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-
-  useEffect(() => {
-    let subPath = '/';
-    if (selectedPostSlug) subPath = `/post/${selectedPostSlug}`;
-    else if (selectedPageSlug) subPath = `/page/${selectedPageSlug}`;
-    else if (selectedAuthorSlug) subPath = `/author/${selectedAuthorSlug}`;
-    else if (selectedTag) subPath = `/tag/${selectedTag}`;
-
-    const newPath = CONFIG.basePath === '/' ? subPath : `${CONFIG.basePath.replace(/\/$/, '')}${subPath}`;
-
-    if (window.location.pathname !== newPath) {
-      window.history.pushState(null, '', newPath);
-    }
-  }, [selectedPostSlug, selectedPageSlug, selectedAuthorSlug, selectedTag]);
 
   useEffect(() => {
     // Load all post metadata on mount
@@ -100,14 +84,122 @@ export default function App() {
     getAuthorBySlug('ilkka-rinne').then(setEditor);
   }, []);
 
+  // 1. Unified content loading effect
+  useEffect(() => {
+    let ignore = false;
+
+    const loadData = async () => {
+      // Logic for each view type
+      if (activeView.type === 'post' && activeView.slug) {
+        if (currentPost?.slug !== activeView.slug) {
+          try {
+            const post = await getPostBySlug(activeView.slug);
+            if (!ignore) {
+              setCurrentPost(post);
+              // Neighbors
+              if (posts.length > 0) {
+                const idx = posts.findIndex(p => p.slug === activeView.slug);
+                if (idx !== -1) {
+                  setAdjacentPosts({
+                    prev: idx > 0 ? posts[idx - 1] : null,
+                    next: idx < posts.length - 1 ? posts[idx + 1] : null
+                  });
+                }
+              }
+              window.scrollTo(0, 0);
+            }
+          } catch (err) {
+            console.error('[App] post load failed:', err);
+          }
+        }
+      } else if (activeView.type === 'page' && activeView.slug) {
+        if (currentPage?.slug !== activeView.slug) {
+          try {
+            const page = await getPageBySlug(activeView.slug);
+            if (!ignore) {
+              setCurrentPage(page);
+              window.scrollTo(0, 0);
+            }
+          } catch (err) {
+            console.error('[App] page load failed:', err);
+          }
+        }
+      } else if (activeView.type === 'author' && activeView.slug) {
+        if (currentAuthor?.slug !== activeView.slug) {
+          try {
+            const author = await getAuthorBySlug(activeView.slug);
+            if (!ignore) {
+              setCurrentAuthor(author);
+              window.scrollTo(0, 0);
+            }
+          } catch (err) {
+            console.error('[App] author load failed:', err);
+          }
+        }
+      } else if (activeView.type === 'tag' && activeView.slug) {
+        try {
+          setVisibleTagCount(10);
+          const taggedPosts = await getPostsByTag(activeView.slug, 0, 100);
+          if (!ignore) {
+            setTagPosts(taggedPosts);
+            const pageSlugs = await getTagPageSlugs(activeView.slug);
+            if (pageSlugs.length > 0 && !ignore) {
+              const firstPage = await getPageBySlug(pageSlugs[0]);
+              setTagPage(firstPage);
+            }
+            window.scrollTo(0, 0);
+          }
+        } catch (err) {
+          console.error('[App] tag items load failed:', err);
+        }
+      }
+    };
+
+    loadData();
+    return () => { ignore = true; };
+  }, [activeView.type, activeView.slug, posts.length]);
+
+  // Handle cross-type resets to clear old content when switching view modes
+  useEffect(() => {
+    if (activeView.type !== 'post') setCurrentPost(null);
+    if (activeView.type !== 'page') setCurrentPage(null);
+    if (activeView.type !== 'author') setCurrentAuthor(null);
+    if (activeView.type !== 'tag') {
+      setTagPosts([]);
+      setTagPage(null);
+    }
+  }, [activeView.type]);
+
+  // Determine if the current data matches the requested view
+  const isDataReady = useMemo(() => {
+    if (activeView.type === 'home') return true;
+    if (activeView.type === 'post') return currentPost?.slug === activeView.slug;
+    if (activeView.type === 'page') return currentPage?.slug === activeView.slug;
+    if (activeView.type === 'author') return currentAuthor?.slug === activeView.slug;
+    if (activeView.type === 'tag') return tagPosts.length > 0 || !!tagPage;
+    return false;
+  }, [activeView, currentPost, currentPage, currentAuthor, tagPosts.length, tagPage]);
+
+  // Delayed loader visibility to avoid flash on fast loads
+  const [showLoader, setShowLoader] = useState(false);
+  useEffect(() => {
+    let timer: number;
+    if (!isDataReady && activeView.type !== 'home') {
+      timer = window.setTimeout(() => setShowLoader(true), 150);
+    } else {
+      setShowLoader(false);
+    }
+    return () => clearTimeout(timer);
+  }, [isDataReady, activeView.type]);
+
   // Intersection Observer for infinite scroll
   useEffect(() => {
-    if (selectedPostSlug || selectedPageSlug || selectedAuthorSlug) return;
+    if (activeView.type !== 'home' && activeView.type !== 'tag') return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          if (selectedTag) {
+          if (activeView.type === 'tag') {
             setVisibleTagCount((prev) => prev + 10);
           } else {
             setVisibleJournalCount((prev) => prev + 10);
@@ -123,83 +215,7 @@ export default function App() {
     }
 
     return () => observer.disconnect();
-  }, [selectedPostSlug, selectedPageSlug, selectedAuthorSlug, selectedTag, posts, visibleJournalCount, visibleTagCount, tagPosts]);
-
-  useEffect(() => {
-    const loadTagContent = async () => {
-      if (selectedTag) {
-        setVisibleTagCount(10);
-        // Load posts for tag
-        const taggedPosts = await getPostsByTag(selectedTag, 0, 100);
-        setTagPosts(taggedPosts);
-        
-        // Load matching page for the top
-        const pageSlugs = await getTagPageSlugs(selectedTag);
-        if (pageSlugs.length > 0) {
-          const firstPage = await getPageBySlug(pageSlugs[0]);
-          setTagPage(firstPage);
-        } else {
-          setTagPage(null);
-        }
-        
-        window.scrollTo(0, 0);
-      } else {
-        setTagPosts([]);
-        setTagPage(null);
-      }
-    };
-    loadTagContent();
-  }, [selectedTag]);
-
-  useEffect(() => {
-    const loadPost = async () => {
-      if (selectedPostSlug) {
-        const post = await getPostBySlug(selectedPostSlug);
-        setCurrentPost(post);
-        
-        // Find adjacent posts from metadata
-        const currentIndex = posts.findIndex(p => p.slug === selectedPostSlug);
-        if (currentIndex !== -1) {
-          setAdjacentPosts({
-            prev: currentIndex > 0 ? posts[currentIndex - 1] : null,
-            next: currentIndex < posts.length - 1 ? posts[currentIndex + 1] : null
-          });
-        }
-        
-        window.scrollTo(0, 0);
-      } else {
-        setCurrentPost(null);
-        setAdjacentPosts({ next: null, prev: null });
-      }
-    };
-    loadPost();
-  }, [selectedPostSlug, posts]);
-
-  useEffect(() => {
-    const loadPage = async () => {
-      if (selectedPageSlug) {
-        const page = await getPageBySlug(selectedPageSlug);
-        setCurrentPage(page);
-        window.scrollTo(0, 0);
-      } else {
-        setCurrentPage(null);
-      }
-    };
-    loadPage();
-  }, [selectedPageSlug]);
-
-  useEffect(() => {
-    const loadAuthor = async () => {
-      if (selectedAuthorSlug) {
-        const author = await getAuthorBySlug(selectedAuthorSlug);
-        setCurrentAuthor(author);
-        window.scrollTo(0, 0);
-      } else {
-        setCurrentAuthor(null);
-      }
-    };
-    loadAuthor();
-  }, [selectedAuthorSlug]);
+  }, [activeView, posts, visibleJournalCount, visibleTagCount, tagPosts]);
 
   const historyPosts = posts.filter(p => p.category === 'history');
   const allJournalPosts = posts
@@ -207,11 +223,9 @@ export default function App() {
     .filter(p => !selectedThemeTag || p.tags.includes(selectedThemeTag));
   const visibleJournalPosts = allJournalPosts.slice(0, visibleJournalCount);
 
-  const [pendingScroll, setPendingScroll] = useState(false);
-
   useEffect(() => {
     // If we've returned home and have a pending scroll request
-    if (!selectedPostSlug && !selectedPageSlug && !selectedAuthorSlug && !selectedTag && pendingScroll) {
+    if (activeView.type === 'home' && pendingScroll) {
       const timer = setTimeout(() => {
         const element = document.getElementById('journal-section');
         if (element) {
@@ -221,24 +235,18 @@ export default function App() {
       }, 500); // Wait for transition animation
       return () => clearTimeout(timer);
     }
-  }, [selectedPostSlug, selectedPageSlug, selectedAuthorSlug, pendingScroll]);
+  }, [activeView, pendingScroll]);
 
   const onHome = () => {
     window.scrollTo(0, 0);
-    setSelectedPostSlug(null);
-    setSelectedPageSlug(null);
-    setSelectedAuthorSlug(null);
-    setSelectedTag(null);
+    navigate({ type: 'home', slug: null });
     setPendingScroll(false);
   };
 
   const scrollToBlog = () => {
-    if (selectedPostSlug || selectedPageSlug || selectedAuthorSlug || selectedTag) {
+    if (activeView.type !== 'home') {
       setPendingScroll(true);
-      setSelectedPostSlug(null);
-      setSelectedPageSlug(null);
-      setSelectedAuthorSlug(null);
-      setSelectedTag(null);
+      navigate({ type: 'home', slug: null });
     } else {
       const element = document.getElementById('journal-section');
       if (element) {
@@ -254,16 +262,10 @@ export default function App() {
       </a>
       <Header 
         onNavigatePage={(slug) => {
-          setSelectedPageSlug(slug);
-          setSelectedPostSlug(null);
-          setSelectedAuthorSlug(null);
-          setSelectedTag(null);
+          navigate({ type: 'page', slug });
         }} 
         onNavigateTag={(tag) => {
-          setSelectedTag(tag);
-          setSelectedPostSlug(null);
-          setSelectedPageSlug(null);
-          setSelectedAuthorSlug(null);
+          navigate({ type: 'tag', slug: tag });
         }}
         onHome={onHome} 
         onBlog={scrollToBlog} 
@@ -271,46 +273,113 @@ export default function App() {
       
       <main id="main-content" className="flex-grow">
         <AnimatePresence mode="wait">
-          {selectedPostSlug && currentPost ? (
-            <PostView 
-              key={selectedPostSlug} 
-              post={currentPost} 
-              nextPost={adjacentPosts.next}
-              prevPost={adjacentPosts.prev}
-              onBack={onHome} 
-              onNavigate={(slug) => {
-                setSelectedPostSlug(slug);
-                setSelectedPageSlug(null);
-                setSelectedAuthorSlug(null);
-                setSelectedTag(null);
-              }}
-              onNavigateAuthor={(slug) => {
-                setSelectedAuthorSlug(slug);
-                setSelectedPostSlug(null);
-                setSelectedPageSlug(null);
-                setSelectedTag(null);
-              }}
-              onSelectTag={(tag) => {
-                setSelectedTag(tag);
-                setSelectedPostSlug(null);
-                setSelectedPageSlug(null);
-                setSelectedAuthorSlug(null);
-              }}
-            />
-          ) : selectedPageSlug && currentPage ? (
-            <PageView 
-              key={selectedPageSlug}
-              page={currentPage}
-              onBack={onHome}
-            />
-          ) : selectedAuthorSlug && currentAuthor ? (
-            <AuthorView 
-              key={selectedAuthorSlug}
-              author={currentAuthor}
-              onBack={onHome}
-            />
-          ) : selectedTag ? (
-            <div key={`tag-${selectedTag}`} className="py-24 animate-in fade-in slide-in-from-bottom-5 duration-700">
+          {activeView.type === 'post' ? (
+            isDataReady ? (
+              <motion.div
+                key={`post-${activeView.slug}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <PostView 
+                  post={currentPost!} 
+                  nextPost={adjacentPosts.next}
+                  prevPost={adjacentPosts.prev}
+                  onBack={onHome} 
+                  onNavigate={(slug) => {
+                    navigate({ type: 'post', slug });
+                  }}
+                  onNavigateAuthor={(slug) => {
+                    navigate({ type: 'author', slug });
+                  }}
+                  onSelectTag={(tag) => {
+                    navigate({ type: 'tag', slug: tag });
+                  }}
+                />
+              </motion.div>
+            ) : showLoader ? (
+              <motion.div 
+                key="loader-post" 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="min-h-screen flex items-center justify-center"
+              >
+                <div className="flex gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </motion.div>
+            ) : <div key="pending-post" />
+          ) : activeView.type === 'page' ? (
+            isDataReady ? (
+              <motion.div
+                key={`page-${activeView.slug}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <PageView 
+                  page={currentPage!}
+                  onBack={onHome}
+                />
+              </motion.div>
+            ) : showLoader ? (
+              <motion.div 
+                key="loader-page" 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="min-h-screen flex items-center justify-center"
+              >
+                <div className="flex gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </motion.div>
+            ) : <div key="pending-page" />
+          ) : activeView.type === 'author' ? (
+            isDataReady ? (
+              <motion.div
+                key={`author-${activeView.slug}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <AuthorView 
+                  author={currentAuthor!}
+                  onBack={onHome}
+                />
+              </motion.div>
+            ) : showLoader ? (
+              <motion.div 
+                key="loader-author" 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="min-h-screen flex items-center justify-center"
+              >
+                <div className="flex gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                </div>
+              </motion.div>
+            ) : <div key="pending-author" />
+          ) : activeView.type === 'tag' ? (
+            <motion.div 
+              key={`tag-${activeView.slug}`} 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+              className="py-24"
+            >
               <div className="max-w-5xl mx-auto px-10 mb-20">
                 <button
                   onClick={onHome}
@@ -330,7 +399,7 @@ export default function App() {
                 </div>
                 ) : (
                 <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-10">
-                  <span className="text-brand-accent opacity-50">#</span>{selectedTag}
+                  <span className="text-brand-accent opacity-50">#</span>{activeView.slug}
                 </h1>
                 )}
 
@@ -343,16 +412,10 @@ export default function App() {
               <Timeline 
                 posts={tagPosts.slice(0, visibleTagCount)} 
                 onSelectPost={(slug) => {
-                  setSelectedPostSlug(slug);
-                  setSelectedPageSlug(null);
-                  setSelectedAuthorSlug(null);
-                  setSelectedTag(null);
+                  navigate({ type: 'post', slug });
                 }}
                 onSelectTag={(tag) => {
-                  setSelectedTag(tag);
-                  setSelectedPostSlug(null);
-                  setSelectedPageSlug(null);
-                  setSelectedAuthorSlug(null);
+                  navigate({ type: 'tag', slug: tag });
                 }}
               />
 
@@ -374,9 +437,15 @@ export default function App() {
                   </button>
                 </div>
               )}
-            </div>
+            </motion.div>
           ) : (
-            <div key="timeline">
+            <motion.div 
+              key="home-view"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               {/* Hero Section */}
               <section className="bg-brand-bg pt-20 pb-20 md:pt-32 md:pb-32">
                 <div className="max-w-7xl mx-auto px-6">
@@ -410,7 +479,7 @@ export default function App() {
                           initial={{ opacity: 0, x: 20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.8, delay: 0.4 }}
-                          onClick={() => setSelectedAuthorSlug(editor.slug)}
+                          onClick={() => navigate({ type: 'author', slug: editor.slug })}
                           className="group/profile bg-white/5 border border-white/10 p-6 rounded-3xl flex flex-row items-center text-left hover:border-brand-accent/50 transition-all backdrop-blur-sm shadow-2xl relative overflow-hidden outline-none w-full max-w-[450px] lg:ml-auto"
                           aria-label={`Kirjoittaja-profiili: ${editor.name}`}
                         >
@@ -444,10 +513,7 @@ export default function App() {
               <HistoryHero 
                 posts={historyPosts} 
                 onSelectPost={(slug) => {
-                  setSelectedPostSlug(slug);
-                  setSelectedPageSlug(null);
-                  setSelectedAuthorSlug(null);
-                  setSelectedTag(null);
+                  navigate({ type: 'post', slug });
                 }} 
               />
 
@@ -510,16 +576,10 @@ export default function App() {
                 <Timeline 
                   posts={visibleJournalPosts} 
                   onSelectPost={(slug) => {
-                    setSelectedPostSlug(slug);
-                    setSelectedPageSlug(null);
-                    setSelectedAuthorSlug(null);
-                    setSelectedTag(null);
+                    navigate({ type: 'post', slug });
                   }} 
                   onSelectTag={(tag) => {
-                    setSelectedTag(tag);
-                    setSelectedPostSlug(null);
-                    setSelectedPageSlug(null);
-                    setSelectedAuthorSlug(null);
+                    navigate({ type: 'tag', slug: tag });
                   }}
                 />
                 
@@ -543,7 +603,7 @@ export default function App() {
                   </div>
                 )}
               </div>
-            </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </main>
