@@ -272,14 +272,13 @@ export default function App() {
       />
       
       <main id="main-content" className="flex-grow">
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {activeView.type === 'post' ? (
             isDataReady ? (
               <motion.div
                 key={`post-${activeView.slug}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
                 <PostView 
@@ -303,7 +302,6 @@ export default function App() {
                 key="loader-post" 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
                 className="min-h-screen flex items-center justify-center"
               >
                 <div className="flex gap-2">
@@ -319,7 +317,6 @@ export default function App() {
                 key={`page-${activeView.slug}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
                 <PageView 
@@ -332,7 +329,6 @@ export default function App() {
                 key="loader-page" 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
                 className="min-h-screen flex items-center justify-center"
               >
                 <div className="flex gap-2">
@@ -348,7 +344,6 @@ export default function App() {
                 key={`author-${activeView.slug}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
                 <AuthorView 
@@ -361,7 +356,6 @@ export default function App() {
                 key="loader-author" 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
                 className="min-h-screen flex items-center justify-center"
               >
                 <div className="flex gap-2">
@@ -376,7 +370,6 @@ export default function App() {
               key={`tag-${activeView.slug}`} 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
               className="py-24"
             >
@@ -443,7 +436,6 @@ export default function App() {
               key="home-view"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
               transition={{ duration: 0.5 }}
             >
               {/* Hero Section */}
