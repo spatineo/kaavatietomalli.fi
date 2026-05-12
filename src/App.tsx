@@ -452,7 +452,7 @@ export default function App() {
                         <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">Tietomallimuotoinen kaavoitus Suomessa</span>
                       </div>
                       <h1 className="text-6xl md:text-[7rem] lg:text-[9rem] font-black tracking-tighter leading-[0.8] text-white">
-                        Kaava<span className="text-brand-accent">tieto</span><span className="text-white/20"><wbr/>malli.</span>
+                        Kaava<wbr/><span className="text-brand-accent">tieto</span><wbr/><span className="text-white/20">malli.</span>
                       </h1>
                     </motion.div>
 
@@ -514,11 +514,10 @@ export default function App() {
                   <div className="flex items-center gap-6 mb-12">
                     <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">Rakentavasti rakenteistamisesta</span>
                     <div className="h-[1px] flex-grow bg-white/10" />
-                    <span className="text-[10px] font-mono text-slate-500">Päätoimittaja: Ilkka Rinne / Spatineo</span>
                   </div>
                   
                   <h2 className="text-6xl md:text-7xl font-black leading-[0.8] tracking-tighter mb-12 text-white">
-                    Kaava<span className="text-brand-accent">tieto</span><span className="text-white/30">blogi.</span>
+                    Kaava<wbr/><span className="text-brand-accent">tieto<wbr/></span><span className="text-white/30">blogi.</span>
                   </h2>
                   
                   <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">

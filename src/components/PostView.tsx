@@ -43,47 +43,53 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       exit={{ opacity: 0, y: -20 }}
       className="max-w-4xl mx-auto py-24 px-6 md:px-10"
     >
-      <div className="flex justify-between items-center mb-20" role="navigation" aria-label="Sivun sisäinen navigaatio">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
-          aria-label="Palaa artikkelilistaukseen"
-        >
-          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Etusivulle
-        </button>
+      <div className="flex flex-col gap-6 mb-20" role="navigation" aria-label="Sivun sisäinen navigaatio">
+        <div className="flex">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
+            aria-label="Palaa artikkelilistaukseen"
+          >
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            Etusivulle
+          </button>
+        </div>
 
-        <div className="flex gap-4">
-          {nextPost ? (
-            <button
-              onClick={() => onNavigate(nextPost.slug)}
-              className="flex items-center gap-2 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
-              aria-label={`Edellinen artikkeli: ${nextPost.title}`}
-              title={nextPost.title}
-            >
-              <ArrowLeft size={14} />
-              Edellinen
-            </button>
-          ) : (
-            <span className="flex items-center gap-2 text-slate-400 transition-colors group px-4 py-2 rounded-lg uppercase font-bold tracking-[0.2em] text-[10px]">
-            Ei edellistä
-            </span>
-          )}
-          {prevPost ? (
-            <button
-              onClick={() => onNavigate(prevPost.slug)}
-              className="flex items-center gap-2 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
-              aria-label={`Seuraava artikkeli: ${prevPost.title}`}
-              title={prevPost.title}
-            >
-              Seuraava
-              <ArrowRight size={14} />
-            </button>
-          ) : (
-            <span className="flex items-center gap-2 text-slate-400 transition-colors group px-4 py-2 rounded-lg uppercase font-bold tracking-[0.2em] text-[10px]">
-            Ei seuraavaa
-            </span>
-          )}
+        <div className="flex justify-between items-center w-full pt-4 border-t border-white/5">
+          <div className="flex-1 flex justify-start">
+            {nextPost ? (
+              <button
+                onClick={() => onNavigate(nextPost.slug)}
+                className="flex items-center gap-2 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
+                aria-label={`Edellinen artikkeli: ${nextPost.title}`}
+                title={nextPost.title}
+              >
+                <ArrowLeft size={14} />
+                Edellinen
+              </button>
+            ) : (
+              <span className="flex items-center gap-2 text-slate-400/30 px-4 py-2 rounded-lg uppercase font-bold tracking-[0.2em] text-[10px]">
+                Ei edellistä
+              </span>
+            )}
+          </div>
+          <div className="flex-1 flex justify-end">
+            {prevPost ? (
+              <button
+                onClick={() => onNavigate(prevPost.slug)}
+                className="flex items-center gap-2 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
+                aria-label={`Seuraava artikkeli: ${prevPost.title}`}
+                title={prevPost.title}
+              >
+                Seuraava
+                <ArrowRight size={14} />
+              </button>
+            ) : (
+              <span className="flex items-center gap-2 text-slate-400/30 px-4 py-2 rounded-lg uppercase font-bold tracking-[0.2em] text-[10px]">
+                Ei seuraavaa
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -130,7 +136,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
             </div>
           </button>
 
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             {post.tags.map((tag) => (
               <button
                 key={tag}
