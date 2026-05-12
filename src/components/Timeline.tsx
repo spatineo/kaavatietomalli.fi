@@ -12,7 +12,7 @@ interface TimelineProps {
 
 export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
   return (
-    <section className="relative max-w-4xl mx-auto py-12 px-6" aria-label="Artikkelien aikajana">
+    <section className="relative max-w-6xl mx-auto py-12 px-6" aria-label="Artikkelien aikajana">
       {/* Vertical Line */}
       <div className="absolute left-10 md:left-1/2 top-0 bottom-0 w-[2px] bg-white/10 -translate-x-1/2" aria-hidden="true" />
 
@@ -35,7 +35,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
             </div>
 
             {/* Content Area */}
-            <div className={`w-full md:w-[45%] pl-20 md:pl-0 ${index % 2 === 0 ? 'md:pl-16' : 'md:pr-16'}`}>
+            <div className={`w-full md:w-[48%] pl-20 md:pl-0 ${index % 2 === 0 ? 'md:pl-16' : 'md:pr-16'}`}>
               <div className="mb-6">
                 <button
                   onClick={() => onSelectPost(post.slug)}
