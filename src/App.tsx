@@ -463,7 +463,7 @@ export default function App() {
                         transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
                         className="text-xl md:text-3xl text-slate-400 max-w-3xl font-medium leading-[1.4] tracking-tight"
                       >
-                        Digitalisoituvan alueidenkäytön suunnittelun päättymätön tarina: lainsäädännön merkkipaalut, teknisen toteutuksen kiemurat ja asiantuntijanäkemykset &mdash; tervettä kritiikkiä unohtamatta.
+                        Digitalisoituvan alueidenkäytön suunnittelun päättymätön tarina: lainsäädännön merkkipaalut, asiantuntijanäkemykset, teknisen toteutuksen kiemurat ja menestystarinat &mdash; tervettä kritiikkiä unohtamatta.
                       </motion.p>
 
                       {editor && (
@@ -521,7 +521,7 @@ export default function App() {
                   </h2>
                   
                   <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
-                    Merkintöjä digitalisoituvan rakennetun ympäristön suunnittelun mahdollistajilta. 
+                    Merkintöjä rakennetun ympäristön digitalisaation mahdollistajilta. 
                     Tekstit edustavat kirjoittajien henkilökohtaisia mielipiteitä.
                   </p>
 

@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { History, Github, Twitter, Mail, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { History, Github, Twitter, Mail, Menu, X, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import SpatineoLogo from './SpatineoLogo';
-import { CONFIG } from '../config';
+import { CONFIG, NavItem } from '../config';
 
 interface HeaderProps {
   onNavigatePage: (slug: string | null) => void;
@@ -13,51 +13,175 @@ interface HeaderProps {
 
 export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number | null>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+    setOpenSubmenuIndex(null);
+  };
 
   const handleNavClick = (action: () => void) => {
     action();
     setIsMenuOpen(false);
+    setOpenSubmenuIndex(null);
   };
 
-  const renderNavItems = (isMobile = false) => {
-    return CONFIG.nav.map((item, index) => {
-      const handleClick = () => {
-        if (item.type === 'blog') handleNavClick(onBlog);
-        else if (item.type === 'page' && item.slug) handleNavClick(() => onNavigatePage(item.slug!));
-        else if (item.type === 'tag' && item.slug) handleNavClick(() => onNavigateTag(item.slug!));
-      };
+  const onItemClick = (item: NavItem, index: number) => {
+    const isSubmenu = (item.subitems && item.subitems.length > 0) || item.type === 'menu';
+    
+    if (isSubmenu) {
+      setOpenSubmenuIndex(openSubmenuIndex === index ? null : index);
+    } else {
+      if (item.type === 'blog') handleNavClick(onBlog);
+      else if (item.type === 'page' && item.slug) handleNavClick(() => onNavigatePage(item.slug!));
+      else if (item.type === 'tag' && item.slug) handleNavClick(() => onNavigateTag(item.slug!));
+    }
+  };
 
+  // Close submenus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setOpenSubmenuIndex(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const processedNav: NavItem[] = CONFIG.nav.map(item => {
+    if (item.type === 'blog') {
+      return {
+        ...item,
+        subitems: [
+          { label: 'Uusimmat', type: 'blog' },
+          ...CONFIG.themes.map(theme => ({
+            label: theme.label,
+            type: 'tag' as const,
+            slug: theme.tag
+          }))
+        ]
+      };
+    }
+    if (item.subitems) {
+      return {
+        ...item,
+        subitems: item.subitems.filter(sub => sub.type !== 'blog')
+      };
+    }
+    return item;
+  });
+
+  const renderNavItems = (isMobile = false) => {
+    return processedNav.map((item, index) => {
+      const isSubmenu = (item.subitems && item.subitems.length > 0) || item.type === 'menu';
+      const isOpen = openSubmenuIndex === index;
       const label = item.label || item.slug || (item.type === 'blog' ? 'Blogi' : '');
       
       if (isMobile) {
         return (
-          <button 
-            key={index}
-            onClick={handleClick} 
-            className="flex items-center justify-between hover:text-brand-accent transition-colors"
-          >
-            {label}
-            <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-brand-accent' : 'bg-brand-accent/40'}`} />
-          </button>
+          <div key={index} className="flex flex-col gap-4">
+            <button 
+              onClick={() => onItemClick(item, index)} 
+              className="flex items-center justify-between hover:text-brand-accent transition-colors text-left"
+            >
+              {label}
+              <div className="flex items-center gap-3">
+                {isSubmenu && (
+                  <ChevronDown 
+                    size={20} 
+                    className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} 
+                  />
+                )}
+                <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-brand-accent' : 'bg-brand-accent/40'}`} />
+              </div>
+            </button>
+            <AnimatePresence>
+              {isSubmenu && isOpen && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex flex-col gap-4 pl-6 border-l border-white/10"
+                >
+                  {item.subitems!.map((sub, sIdx) => {
+                    const subLabel = sub.label || sub.slug || '';
+                    return (
+                      <button
+                        key={`${index}-${sIdx}`}
+                        onClick={() => {
+                          if (sub.type === 'blog') handleNavClick(onBlog);
+                          else if (sub.type === 'page' && sub.slug) handleNavClick(() => onNavigatePage(sub.slug!));
+                          else if (sub.type === 'tag' && sub.slug) handleNavClick(() => onNavigateTag(sub.slug!));
+                        }}
+                        className="text-slate-400 hover:text-brand-accent transition-colors text-left text-base font-medium"
+                      >
+                        {subLabel}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         );
       }
 
       return (
-        <button 
-          key={index}
-          onClick={handleClick} 
-          className="hover:text-brand-accent transition-colors whitespace-nowrap"
-        >
-          {label}
-        </button>
+        <div key={index} className="relative">
+          <button 
+            onClick={() => onItemClick(item, index)} 
+            className={`flex items-center gap-1.5 hover:text-brand-accent transition-colors whitespace-nowrap ${isOpen ? 'text-brand-accent' : ''}`}
+          >
+            {label}
+            {isSubmenu && (
+              <ChevronDown 
+                size={14} 
+                className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} 
+              />
+            )}
+          </button>
+
+          <AnimatePresence>
+            {isSubmenu && isOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                className="absolute top-full left-0 mt-4 py-2 min-w-[200px] bg-black/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl shadow-black"
+                role="menu"
+              >
+                {item.subitems!.map((sub, sIdx) => {
+                  const subLabel = sub.label || sub.slug || '';
+                  return (
+                    <button
+                      key={`${index}-${sIdx}`}
+                      onClick={() => {
+                        if (sub.type === 'blog') handleNavClick(onBlog);
+                        else if (sub.type === 'page' && sub.slug) handleNavClick(() => onNavigatePage(sub.slug!));
+                        else if (sub.type === 'tag' && sub.slug) handleNavClick(() => onNavigateTag(sub.slug!));
+                      }}
+                      className="w-full px-6 py-2.5 text-left text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                      role="menuitem"
+                    >
+                      {subLabel}
+                    </button>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       );
     });
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+    <header 
+      ref={headerRef}
+      className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5"
+    >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-12">
           <button 

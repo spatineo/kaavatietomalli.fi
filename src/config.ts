@@ -9,7 +9,11 @@ export const CONFIG = {
   repoName: PROJECT_CONFIG.repoName,
   nav: [
     { label: 'Blogi', type: 'blog' },
-    { label: 'Tietomallit', type: 'page', slug: 'tietomallit' },
+    { 
+      label: 'Tietomallit', 
+      type: 'page',
+      slug: 'tietomallit' 
+    },
     { label: 'Sparrausapua', type: 'page', slug: 'sparraus' },
     { label: 'Kumppanit', type: 'page', slug: 'kumppanit' },
     { label: 'Tietoa', type: 'page', slug: 'tietoa' }
@@ -30,6 +34,7 @@ export interface ThemeItem {
 
 export interface NavItem {
   label?: string;
-  type: 'page' | 'tag' | 'blog';
+  type: 'page' | 'tag' | 'blog' | 'menu';
   slug?: string;
+  subitems?: NavItem[];
 }
