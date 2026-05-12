@@ -468,8 +468,8 @@ export default function App() {
 
                       {editor && (
                         <motion.button
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
                           transition={{ duration: 0.8, delay: 0.4 }}
                           onClick={() => navigate({ type: 'author', slug: editor.slug })}
                           className="group/profile bg-white/5 border border-white/10 p-6 rounded-3xl flex flex-row items-center text-left hover:border-brand-accent/50 transition-all backdrop-blur-sm shadow-2xl relative overflow-hidden outline-none w-full max-w-[450px] lg:ml-auto"
