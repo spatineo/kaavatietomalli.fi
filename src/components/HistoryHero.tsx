@@ -1,4 +1,5 @@
 import { format, parseISO } from 'date-fns';
+import { fi } from 'date-fns/locale';
 import { motion } from 'motion/react';
 import { ArrowRight, History as HistoryIcon, Award } from 'lucide-react';
 import { PostMetadata, AuthorData } from '../lib/blog';
@@ -53,9 +54,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
               <div className="relative mb-8 flex flex-col items-center">
                 {!post.dateLabel ? (
                 <span className="text-2xl font-extrabold text-brand-accent mb-4 transition-transform group-hover:-translate-y-2 group-focus-visible:-translate-y-2">
-                  {format(parseISO(post.date), 'MM')}
-                  <span className="text-xl opacity-30 mx-2 text-white">/</span>
-                  {format(parseISO(post.date), 'yyyy')}
+                  {format(parseISO(post.date), 'MMM yyyy', {locale:fi})}
                 </span>
                 ) : (
                 <span className="text-2xl font-extrabold text-brand-accent mb-4 transition-transform group-hover:-translate-y-2 group-focus-visible:-translate-y-2">

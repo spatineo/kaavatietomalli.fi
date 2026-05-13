@@ -47,7 +47,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                 >
                   <div className="flex items-center gap-4 mb-3">
                     <span className="text-[10px] font-bold tracking-widest text-brand-accent uppercase bg-brand-accent/10 px-2 py-1 rounded-md">
-                      {format(parseISO(post.date), 'MM/yyyy')}
+                      {format(parseISO(post.date), 'dd.MM.yyyy')}
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{post.author}</span>
                   </div>
