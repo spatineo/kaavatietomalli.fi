@@ -69,6 +69,7 @@ export const fi: Translations = {
     ariaLabel: 'Lue artikkeli',
     readMore: 'Lue lisää',
     illustrationAlt: 'Kuvituskuva',
+    comments: 'Keskustelu',
   },
   page: {
   },

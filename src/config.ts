@@ -8,6 +8,20 @@ export const CONFIG = {
   repoOwner: PROJECT_CONFIG.repoOwner,
   repoName: PROJECT_CONFIG.repoName,
   language: 'fi',
+  giscus: {
+    repo: `${PROJECT_CONFIG.repoOwner}/${PROJECT_CONFIG.repoName}`,
+    repoId: import.meta.env.VITE_GISCUS_REPO_ID || 'R_kgDOSWMhAA',
+    category: import.meta.env.VITE_GISCUS_CATEGORY || 'Announcements',
+    categoryId: import.meta.env.VITE_GISCUS_CATEGORY_ID || 'DIC_kwDOSWMhAM4C88or',
+    mapping: 'specific',
+    strict: '1',
+    reactionsEnabled: '1',
+    emitMetadata: '0',
+    inputPosition: 'bottom',
+    theme: 'transparent_dark',
+    lang: 'fi',
+    loading: 'lazy'
+  },
   nav: [
     { label: 'Blogi', type: 'blog' },
     { 

@@ -9,6 +9,7 @@ import { getTranslations, Language } from '../i18n';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
+import Giscus from '@giscus/react';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 
@@ -25,6 +26,10 @@ interface PostViewProps {
 export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavigateAuthor, onSelectTag }: PostViewProps) {
   const t = getTranslations(CONFIG.language as Language);
   useEffect(() => {
+    // Update document title for Giscus and SEO
+    const originalTitle = document.title;
+    document.title = `${post.title} | Kaavatietomalli.fi`;
+    
     // Add discovery link for LLMs
     const link = document.createElement('link');
     link.rel = 'alternate';
@@ -34,9 +39,10 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
     document.head.appendChild(link);
 
     return () => {
+      document.title = originalTitle;
       document.head.removeChild(link);
     };
-  }, [post.slug]);
+  }, [post.title, post.slug]);
 
   return (
     <motion.article
@@ -200,6 +206,31 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         >
           {post.content}
         </ReactMarkdown>
+      </div>
+
+      <div className="mt-32 pt-20 border-t border-white/5">
+        <div className="flex items-center gap-6 mb-12">
+          <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
+            {t.post.comments}
+          </span>
+          <div className="h-[1px] flex-grow bg-white/10" />
+        </div>
+        <Giscus 
+          key={post.slug}
+          repo={CONFIG.giscus.repo as any}
+          repoId={CONFIG.giscus.repoId}
+          category={CONFIG.giscus.category}
+          categoryId={CONFIG.giscus.categoryId}
+          mapping="specific"
+          term={post.slug}
+          strict="1"
+          reactionsEnabled="1"
+          emitMetadata="0"
+          inputPosition="bottom"
+          theme="transparent_dark"
+          lang="fi"
+          loading="lazy"
+        />
       </div>
 
       <footer className="mt-40 pt-20 border-t border-white/10">

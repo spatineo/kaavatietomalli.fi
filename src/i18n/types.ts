@@ -67,6 +67,7 @@ export interface Translations {
     ariaLabel: string;
     readMore: string;
     illustrationAlt: string;
+    comments: string;
   };
   page: {
   };
