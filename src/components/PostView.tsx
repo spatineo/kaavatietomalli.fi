@@ -9,9 +9,9 @@ import { getTranslations, Language } from '../i18n';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
-import Giscus from '@giscus/react';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
+const Giscus = lazy(() => import('@giscus/react'));
 
 interface PostViewProps {
   post: PostData;
@@ -215,22 +215,24 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           </span>
           <div className="h-[1px] flex-grow bg-white/10" />
         </div>
-        <Giscus 
-          key={post.slug}
-          repo={CONFIG.giscus.repo as any}
-          repoId={CONFIG.giscus.repoId}
-          category={CONFIG.giscus.category}
-          categoryId={CONFIG.giscus.categoryId}
-          mapping="specific"
-          term={post.slug}
-          strict="1"
-          reactionsEnabled="1"
-          emitMetadata="0"
-          inputPosition="bottom"
-          theme="transparent_dark"
-          lang="fi"
-          loading="lazy"
-        />
+        <Suspense fallback={<div className="h-32 animate-pulse bg-white/5 rounded-2xl" />}>
+          <Giscus 
+            key={post.slug}
+            repo={CONFIG.giscus.repo as any}
+            repoId={CONFIG.giscus.repoId}
+            category={CONFIG.giscus.category}
+            categoryId={CONFIG.giscus.categoryId}
+            mapping="specific"
+            term={post.slug}
+            strict="1"
+            reactionsEnabled="1"
+            emitMetadata="0"
+            inputPosition="bottom"
+            theme="transparent_dark"
+            lang="fi"
+            loading="lazy"
+          />
+        </Suspense>
       </div>
 
       <footer className="mt-40 pt-20 border-t border-white/10">
