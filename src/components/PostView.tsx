@@ -25,24 +25,6 @@ interface PostViewProps {
 
 export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavigateAuthor, onSelectTag }: PostViewProps) {
   const t = getTranslations(CONFIG.language as Language);
-  useEffect(() => {
-    // Update document title for Giscus and SEO
-    const originalTitle = document.title;
-    document.title = `${post.title} | Kaavatietomalli.fi`;
-    
-    // Add discovery link for LLMs
-    const link = document.createElement('link');
-    link.rel = 'alternate';
-    link.type = 'text/markdown';
-    link.title = 'Raw Markdown';
-    link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/posts/${post.slug}.md`;
-    document.head.appendChild(link);
-
-    return () => {
-      document.title = originalTitle;
-      document.head.removeChild(link);
-    };
-  }, [post.title, post.slug]);
 
   return (
     <motion.article

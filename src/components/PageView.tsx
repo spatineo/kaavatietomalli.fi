@@ -19,21 +19,6 @@ interface PageViewProps {
 
 export function PageView({ page, onBack, inline = false }: PageViewProps) {
   const t = getTranslations(CONFIG.language as Language);
-  useEffect(() => {
-    if (inline) return;
-
-    // Add discovery link for LLMs
-    const link = document.createElement('link');
-    link.rel = 'alternate';
-    link.type = 'text/markdown';
-    link.title = 'Raw Markdown';
-    link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/pages/${page.slug}.md`;
-    document.head.appendChild(link);
-
-    return () => {
-      document.head.removeChild(link);
-    };
-  }, [page.slug, inline]);
 
   if (inline) {
     return (

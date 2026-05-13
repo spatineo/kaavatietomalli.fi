@@ -262,6 +262,93 @@ export default function App() {
     }
   };
 
+  // Sync page metadata
+  useEffect(() => {
+    if (!isDataReady && activeView.type !== 'home') return;
+
+    let title = 'Kaavatietomalli.fi';
+    let description = t.hero.description;
+
+    if (activeView.type === 'home') {
+      title = `Kaavatietomalli.fi | ${t.hero.subtitle}`;
+    } else if (activeView.type === 'post' && currentPost) {
+      title = `${currentPost.title} | Kaavatietomalli.fi`;
+      description = currentPost.excerpt || description;
+    } else if (activeView.type === 'page' && currentPage) {
+      title = `${currentPage.title} | Kaavatietomalli.fi`;
+    } else if (activeView.type === 'author' && currentAuthor) {
+      title = `${currentAuthor.name} | Kaavatietomalli.fi`;
+      description = currentAuthor.shortBio || description;
+    } else if (activeView.type === 'tag' && activeView.slug) {
+      title = `#${activeView.slug} | Kaavatietomalli.fi`;
+      description = `${t.blog.relatedArticles}: #${activeView.slug}`;
+    }
+
+    document.title = title;
+
+    const updateMeta = (selector: string, content: string) => {
+      const el = document.querySelector(selector);
+      if (el) el.setAttribute('content', content);
+    };
+
+    // Canonical / Alternate link handling
+    const currentPath = activeView.type === 'home' ? '' : `?${activeView.type}=${activeView.slug}`;
+    const canonicalUrl = `${CONFIG.baseUrl}${CONFIG.basePath}${currentPath}`;
+
+    updateMeta('meta[name="description"]', description);
+    updateMeta('meta[property="og:title"]', title);
+    updateMeta('meta[property="og:description"]', description);
+    updateMeta('meta[property="og:url"]', canonicalUrl);
+    updateMeta('meta[property="twitter:title"]', title);
+    updateMeta('meta[property="twitter:description"]', description);
+    updateMeta('meta[property="twitter:url"]', canonicalUrl);
+
+    // Image updates
+    let imageUrl = `${CONFIG.baseUrl}/og-image.jpg`;
+    if (activeView.type === 'post' && currentPost?.coverImage) {
+      imageUrl = resolveImageUrl(currentPost.coverImage);
+    } else if (activeView.type === 'author' && currentAuthor?.image) {
+      imageUrl = resolveImageUrl(currentAuthor.image);
+    }
+    updateMeta('meta[property="og:image"]', imageUrl);
+    updateMeta('meta[property="twitter:image"]', imageUrl);
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonical);
+    }
+    canonical.setAttribute('href', canonicalUrl);
+
+    // Discovery links for LLMs
+    const updateDiscoveryLink = (type: string, slug: string | null) => {
+        let dcLink = document.querySelector('link[rel="alternate"][type="text/markdown"]');
+        if (!slug) {
+            if (dcLink) document.head.removeChild(dcLink);
+            return;
+        }
+
+        if (!dcLink) {
+            dcLink = document.createElement('link');
+            dcLink.setAttribute('rel', 'alternate');
+            dcLink.setAttribute('type', 'text/markdown');
+            dcLink.setAttribute('title', 'Raw Markdown');
+            document.head.appendChild(dcLink);
+        }
+        
+        const folder = type === 'post' ? 'posts' : 'pages';
+        dcLink.setAttribute('href', `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/${folder}/${slug}.md`);
+    };
+
+    if (activeView.type === 'post' || activeView.type === 'page') {
+        updateDiscoveryLink(activeView.type, activeView.slug);
+    } else {
+        updateDiscoveryLink('', null);
+    }
+
+  }, [activeView, currentPost, currentPage, currentAuthor, isDataReady, t]);
+
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg text-slate-300">
       <a href="#main-content" className="skip-to-content">
