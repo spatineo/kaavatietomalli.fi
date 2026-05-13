@@ -3,6 +3,8 @@ import { motion } from 'motion/react';
 import { Calendar, User, ArrowRight, Tag } from 'lucide-react';
 import { PostMetadata } from '../lib/blog';
 import { resolveImageUrl } from '../lib/utils';
+import { getTranslations, Language } from '../i18n';
+import { CONFIG } from '../config';
 
 interface TimelineProps {
   posts: PostMetadata[];
@@ -11,8 +13,9 @@ interface TimelineProps {
 }
 
 export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
+  const t = getTranslations(CONFIG.language as Language);
   return (
-    <section className="relative max-w-6xl mx-auto py-12 px-6" aria-label="Artikkelien aikajana">
+    <section className="relative max-w-6xl mx-auto py-12 px-6" aria-label={t.blog.timelineAria}>
       {/* Vertical Line */}
       <div className="absolute left-10 md:left-1/2 top-0 bottom-0 w-[2px] bg-white/10 -translate-x-1/2" aria-hidden="true" />
 
@@ -40,7 +43,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                 <button
                   onClick={() => onSelectPost(post.slug)}
                   className="group w-full text-left transition-all duration-500 outline-none"
-                  aria-label={`Lue artikkeli: ${post.title}`}
+                  aria-label={`${t.post.ariaLabel}: ${post.title}`}
                 >
                   <div className="flex items-center gap-4 mb-3">
                     <span className="text-[10px] font-bold tracking-widest text-brand-accent uppercase bg-brand-accent/10 px-2 py-1 rounded-md">
@@ -77,7 +80,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                   onClick={() => onSelectPost(post.slug)}
                   className="group inline-flex items-center gap-4 bg-black text-white border border-white/10 rounded-xl px-8 py-3 transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20"
                 >
-                  <span className="uppercase font-bold tracking-widest text-[10px]">Lue lisää</span>
+                  <span className="uppercase font-bold tracking-widest text-[10px]">{t.post.readMore}</span>
                   <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
@@ -89,7 +92,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                 >
                   <img
                     src={resolveImageUrl(post.coverImage)}
-                    alt={`Kuvituskuva: ${post.title}`}
+                    alt={`${t.post.illustrationAlt}: ${post.title}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />

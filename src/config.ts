@@ -7,6 +7,7 @@ export const CONFIG = {
   basePath: (import.meta.env.VITE_BASE_PATH || PROJECT_CONFIG.defaultBasePath).replace(/^\/?/, '/').replace(/\/?$/, '/'),
   repoOwner: PROJECT_CONFIG.repoOwner,
   repoName: PROJECT_CONFIG.repoName,
+  language: 'fi',
   nav: [
     { label: 'Blogi', type: 'blog' },
     { 

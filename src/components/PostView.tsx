@@ -5,6 +5,7 @@ import { Calendar, User, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PostData, PostMetadata } from '../lib/blog';
 import { CONFIG } from '../config';
+import { getTranslations, Language } from '../i18n';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
@@ -22,6 +23,7 @@ interface PostViewProps {
 }
 
 export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavigateAuthor, onSelectTag }: PostViewProps) {
+  const t = getTranslations(CONFIG.language as Language);
   useEffect(() => {
     // Add discovery link for LLMs
     const link = document.createElement('link');
@@ -43,15 +45,15 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       exit={{ opacity: 0, y: -20 }}
       className="max-w-4xl mx-auto py-24 px-6 md:px-10"
     >
-      <div className="flex flex-col gap-6 mb-20" role="navigation" aria-label="Sivun sisäinen navigaatio">
+      <div className="flex flex-col gap-6 mb-20" role="navigation" aria-label={t.post.ariaLabel}>
         <div className="flex">
           <button
             onClick={onBack}
             className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
-            aria-label="Palaa artikkelilistaukseen"
+            aria-label={t.post.returnToList}
           >
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-            Etusivulle
+            {t.common.backToHome}
           </button>
         </div>
 
@@ -61,15 +63,15 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
               <button
                 onClick={() => onNavigate(nextPost.slug)}
                 className="flex items-center gap-2 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
-                aria-label={`Edellinen artikkeli: ${nextPost.title}`}
+                aria-label={`${t.post.previous} ${t.blog.timelineAria}: ${nextPost.title}`}
                 title={nextPost.title}
               >
                 <ArrowLeft size={14} />
-                Edellinen
+                {t.post.previous}
               </button>
             ) : (
               <span className="flex items-center gap-2 text-slate-400/30 px-4 py-2 rounded-lg uppercase font-bold tracking-[0.2em] text-[10px]">
-                Ei edellistä
+                {t.post.noPrevious}
               </span>
             )}
           </div>
@@ -78,15 +80,15 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
               <button
                 onClick={() => onNavigate(prevPost.slug)}
                 className="flex items-center gap-2 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
-                aria-label={`Seuraava artikkeli: ${prevPost.title}`}
+                aria-label={`${t.post.next} ${t.blog.timelineAria}: ${prevPost.title}`}
                 title={prevPost.title}
               >
-                Seuraava
+                {t.post.next}
                 <ArrowRight size={14} />
               </button>
             ) : (
               <span className="flex items-center gap-2 text-slate-400/30 px-4 py-2 rounded-lg uppercase font-bold tracking-[0.2em] text-[10px]">
-                Ei seuraavaa
+                {t.post.noNext}
               </span>
             )}
           </div>
@@ -115,7 +117,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           <div className="relative aspect-[21/9] overflow-hidden rounded-3xl mb-20 shadow-2xl">
             <img
               src={resolveImageUrl(post.coverImage)}
-              alt={`Kuvituskuva artikkelille: ${post.title}`}
+              alt={`${t.post.illustrationAlt}: ${post.title}`}
               className="w-full h-full object-cover"
             />
           </div>
@@ -131,7 +133,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
               {post.author.charAt(0)}
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">Kirjoittaja</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">{t.post.author}</span>
               <span className="text-base font-bold text-white transition-colors group-hover/author:text-brand-accent leading-none">{post.author}</span>
             </div>
           </button>
@@ -160,7 +162,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
 
               if (language === 'mermaid') {
                 return (
-                  <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-mono text-xs animate-pulse">Ladataan kaaviota...</div>}>
+                  <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-mono text-xs animate-pulse">{t.common.loadingChart}</div>}>
                     <Mermaid chart={String(children).replace(/\n$/, '')} />
                   </Suspense>
                 );
@@ -203,9 +205,9 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       <footer className="mt-40 pt-20 border-t border-white/10">
         <div className="grid md:grid-cols-2 gap-20">
           <div>
-            <h3 className="text-3xl font-extrabold mb-6 tracking-tighter text-white">Kaavatietomalli.fi</h3>
+            <h3 className="text-3xl font-extrabold mb-6 tracking-tighter text-white">{t.common.footerTitle}</h3>
             <p className="text-slate-400 font-medium text-lg leading-relaxed">
-              Dokumentoimme digitaalista evoluutiota. Jokainen kirjoitus on tallenne yhteisen tietoperintömme historiassa.
+              {t.common.footerText}
             </p>
           </div>
           <div className="flex flex-col justify-end items-start md:items-end">
@@ -213,7 +215,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
               onClick={onBack}
               className="group flex items-center gap-6 bg-black text-white border border-white/10 px-10 py-5 rounded-xl transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20"
             >
-              <span className="uppercase font-bold tracking-widest text-xs">Etusivulle</span>
+              <span className="uppercase font-bold tracking-widest text-xs">{t.common.backToHome}</span>
               <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
             </button>
           </div>

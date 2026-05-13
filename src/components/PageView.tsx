@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
+import { getTranslations, Language } from '../i18n';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
@@ -17,6 +18,7 @@ interface PageViewProps {
 }
 
 export function PageView({ page, onBack, inline = false }: PageViewProps) {
+  const t = getTranslations(CONFIG.language as Language);
   useEffect(() => {
     if (inline) return;
 
@@ -45,7 +47,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
 
               if (language === 'mermaid') {
                 return (
-                  <Suspense fallback={<div className="h-48 flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse">Ladataan kaaviota...</div>}>
+                  <Suspense fallback={<div className="h-48 flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse">{t.common.loadingChart}</div>}>
                     <Mermaid chart={String(children).replace(/\n$/, '')} />
                   </Suspense>
                 );
@@ -98,7 +100,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
         className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px] mb-20"
       >
         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-        Etusivulle
+        {t.common.backToHome}
       </button>
 
       <header className="mb-20">
@@ -118,7 +120,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
 
               if (language === 'mermaid') {
                 return (
-                  <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse">Ladataan kaaviota...</div>}>
+                  <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse">{t.common.loadingChart}</div>}>
                     <Mermaid chart={String(children).replace(/\n$/, '')} />
                   </Suspense>
                 );
@@ -159,15 +161,15 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
 
       <footer className="mt-40 pt-20 border-t border-white/10">
         <div className="flex flex-col items-center text-center">
-          <h3 className="text-3xl font-extrabold mb-4 text-white">Kaavatietomalli.fi</h3>
+          <h3 className="text-3xl font-extrabold mb-4 text-white">{t.common.footerTitle}</h3>
           <p className="text-slate-400 font-medium max-w-lg mb-8">
-            Digitalisoidun rakennetun ympäristön tietopalvelu.
+            {t.common.footerText}
           </p>
           <button
             onClick={onBack}
             className="bg-black text-white border border-white/10 px-10 py-4 rounded-xl transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20 uppercase font-bold tracking-widest text-[10px]"
           >
-            Etusivulle
+            {t.common.backToHome}
           </button>
         </div>
       </footer>

@@ -2,6 +2,8 @@ import { format, parseISO } from 'date-fns';
 import { motion } from 'motion/react';
 import { ArrowRight, History as HistoryIcon, Award } from 'lucide-react';
 import { PostMetadata, AuthorData } from '../lib/blog';
+import { getTranslations, Language } from '../i18n';
+import { CONFIG } from '../config';
 
 interface HistoryHeroProps {
   posts: PostMetadata[];
@@ -9,6 +11,7 @@ interface HistoryHeroProps {
 }
 
 export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
+  const t = getTranslations(CONFIG.language as Language);
   // Sort by date ascending for the hero
   const chronologicalPosts = [...posts].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -18,14 +21,14 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
         <div className="flex flex-col">
           <div className="flex items-center gap-6 mb-8 uppercase">
             <HistoryIcon size={20} className="text-brand-accent" aria-hidden="true" />
-            <span className="text-xs font-bold tracking-[0.4em] text-slate-500">Kaavatietomallin historia</span>
+            <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{t.history.sectionSubtitle}</span>
             <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
           </div>
           <h2 className="text-4xl md:text-6xl font-black tracking-tighter leading-none mb-6">
-            Missä sitä <span className="text-brand-accent">ollaan</span> <span className="text-white/30">oltu?</span>
+            {t.history.titleMain} <span className="text-brand-accent">{t.history.titleAccent}</span> <span className="text-white/30">{t.history.titleOlta}</span>
           </h2>
           <p className="text-slate-400 text-lg max-w-3xl leading-relaxed">
-            Poimintoja tietomallimuotoisen kaavoituksen kehittämisen elinkaarelta. 
+            {t.history.description} 
           </p>
         </div>
       </div>
@@ -45,7 +48,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
               className="flex-shrink-0 w-80 group text-left outline-none cursor-pointer"
               onClick={() => onSelectPost(post.slug)}
               role="listitem"
-              aria-label={`Artikkeli: ${post.title}`}
+              aria-label={`${t.post.readMore}: ${post.title}`}
             >
               <div className="relative mb-8 flex flex-col items-center">
                 {!post.dateLabel ? (
@@ -70,7 +73,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
                   {post.excerpt}
                 </p>
                 <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-brand-accent transition-opacity">
-                  Tutki tietoa <ArrowRight size={12} />
+                  {t.history.exploreData} <ArrowRight size={12} />
                 </div>
               </div>
             </motion.button>

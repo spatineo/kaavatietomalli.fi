@@ -3,6 +3,7 @@ import { History, Github, Twitter, Mail, Menu, X, ChevronDown } from 'lucide-rea
 import { useState, useRef, useEffect } from 'react';
 import SpatineoLogo from './SpatineoLogo';
 import { CONFIG, NavItem } from '../config';
+import { getTranslations, Language } from '../i18n';
 
 interface HeaderProps {
   onNavigatePage: (slug: string | null) => void;
@@ -12,6 +13,7 @@ interface HeaderProps {
 }
 
 export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: HeaderProps) {
+  const t = getTranslations(CONFIG.language as Language);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number | null>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -55,7 +57,7 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
       return {
         ...item,
         subitems: [
-          { label: 'Uusimmat', type: 'blog' },
+          { label: t.navigation.newest, type: 'blog' },
           ...CONFIG.themes.map(theme => ({
             label: theme.label,
             type: 'tag' as const,
@@ -77,7 +79,7 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
     return processedNav.map((item, index) => {
       const isSubmenu = (item.subitems && item.subitems.length > 0) || item.type === 'menu';
       const isOpen = openSubmenuIndex === index;
-      const label = item.label || item.slug || (item.type === 'blog' ? 'Blogi' : '');
+      const label = item.label || item.slug || (item.type === 'blog' ? t.navigation.blog : '');
       
       if (isMobile) {
         return (
@@ -187,7 +189,7 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
           <button 
             onClick={onHome}
             className="text-lg md:text-xl font-black tracking-tight text-white hover:text-brand-accent transition-colors flex items-center gap-3"
-            aria-label="Etusivu - Kaavatietomalli.fi"
+            aria-label={`${t.navigation.home} - Kaavatietomalli.fi`}
           >
             <div className="relative w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
               {/* Fallback CSS Logo - hidden if image is found or can be replaced by user */}
@@ -213,14 +215,14 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
             <span className="sm:hidden text-brand-accent">Kaavatietomalli.</span>
           </button>
           
-          <nav className="hidden md:flex gap-10 text-sm font-semibold text-slate-400" aria-label="Päänavigaatio">
+          <nav className="hidden md:flex gap-10 text-sm font-semibold text-slate-400" aria-label={t.navigation.mainNav}>
             {renderNavItems()}
           </nav>
         </div>
 
         <div className="flex items-center gap-6">
           <div className="hidden sm:flex items-center gap-4 text-slate-400 hover:text-white transition-colors">
-            <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+            <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" aria-label={t.navigation.githubRepo}>
               <Github size={20} strokeWidth={1.5} />
             </a>
           </div>
@@ -229,7 +231,7 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
           <button 
             className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
             onClick={toggleMenu}
-            aria-label={isMenuOpen ? "Sulje valikko" : "Avaa valikko"}
+            aria-label={isMenuOpen ? t.navigation.closeMenu : t.navigation.openMenu}
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -262,16 +264,17 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
 }
 
 export function Footer() {
+  const t = getTranslations(CONFIG.language as Language);
   return (
     <footer className="py-12 border-t border-white/5 bg-black/40">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
         <div className="flex items-center gap-8">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Oikeudet</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.rights}</span>
             <span className="text-sm font-semibold text-slate-200">&copy; Spatineo Oy ja kirjoittajat</span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Yhteys</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.contact}</span>
             <span className="text-sm font-semibold text-slate-200">kaavatietomalli@spatineo.com</span>
           </div>
         </div>

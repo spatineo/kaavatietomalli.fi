@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import mermaid from '../lib/mermaid';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { getTranslations, Language } from '../i18n';
+import { CONFIG } from '../config';
 
 mermaid.initialize({
   startOnLoad: false,
@@ -44,6 +46,7 @@ interface MermaidProps {
 }
 
 export function Mermaid({ chart }: MermaidProps) {
+  const t = getTranslations(CONFIG.language as Language);
   const ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>('');
@@ -107,7 +110,7 @@ export function Mermaid({ chart }: MermaidProps) {
         } catch (error) {
           console.error('Mermaid error:', error);
           if (ref.current) {
-            ref.current.innerHTML = '<div class="text-red-500 text-xs font-mono p-4 border border-red-500/20 rounded bg-red-500/5">Mermaid render error</div>';
+            ref.current.innerHTML = `<div class="text-red-500 text-xs font-mono p-4 border border-red-500/20 rounded bg-red-500/5">${t.mermaid.renderError}</div>`;
           }
         }
       };
@@ -218,7 +221,7 @@ export function Mermaid({ chart }: MermaidProps) {
       <div 
         className="flex justify-center my-12 bg-black/40 backdrop-blur-sm p-10 rounded-3xl border border-white/10 overflow-hidden shadow-2xl group cursor-pointer relative"
         role="button"
-        aria-label="Laajenna kaavio"
+        aria-label={t.mermaid.expand}
         onClick={toggleModal}
       >
         <div className="absolute top-4 right-4 p-2 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
@@ -242,21 +245,21 @@ export function Mermaid({ chart }: MermaidProps) {
                 <button 
                   onClick={handleZoomOut}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
-                  title="Loitonna"
+                  title={t.mermaid.zoomOut}
                 >
                   <ZoomOut size={18} className="text-white/70" />
                 </button>
                 <button 
                   onClick={handleResetZoom}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
-                  title="Palauta"
+                  title={t.mermaid.reset}
                 >
                   <RotateCcw size={18} className="text-white/70" />
                 </button>
                 <button 
                   onClick={handleZoomIn}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
-                  title="Lähennä"
+                  title={t.mermaid.zoomIn}
                 >
                   <ZoomIn size={18} className="text-white/70" />
                 </button>
@@ -265,7 +268,7 @@ export function Mermaid({ chart }: MermaidProps) {
               <button 
                 onClick={toggleModal}
                 className="bg-white/10 border border-white/10 text-white p-3 rounded-full hover:bg-white/20 transition-colors shadow-2xl active:scale-95 group/close"
-                aria-label="Sulje"
+                aria-label={t.mermaid.close}
               >
                 <X size={20} className="group-hover/close:rotate-90 transition-transform duration-300" />
               </button>
@@ -298,7 +301,7 @@ export function Mermaid({ chart }: MermaidProps) {
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
               <div className="px-6 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md shadow-2xl">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
-                  {Math.round(zoom * 100)}% näkymä • Vedä ja rullaa tutkiaksesi
+                  {Math.round(zoom * 100)}% {t.mermaid.viewInfo}
                 </p>
               </div>
             </div>
