@@ -44,7 +44,9 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
     document.head.appendChild(link);
 
     return () => {
-      document.head.removeChild(link);
+      if (link.parentNode === document.head) {
+        document.head.removeChild(link);
+      }
     };
   }, [author.slug]);
 

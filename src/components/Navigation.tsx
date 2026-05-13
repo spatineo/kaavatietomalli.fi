@@ -1,18 +1,21 @@
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { History, Github, Twitter, Mail, Menu, X, ChevronDown } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
 import SpatineoLogo from './SpatineoLogo';
+import { SearchWidget } from './SearchWidget';
 import { CONFIG, NavItem } from '../config';
 import { getTranslations, Language } from '../i18n';
 
 interface HeaderProps {
   onNavigatePage: (slug: string | null) => void;
   onNavigateTag: (tag: string | null) => void;
+  onNavigatePost: (slug: string) => void;
+  onNavigateAuthor: (slug: string) => void;
   onHome: () => void;
   onBlog: () => void;
 }
 
-export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: HeaderProps) {
+export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNavigateAuthor, onHome, onBlog }: HeaderProps) {
   const t = getTranslations(CONFIG.language as Language);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number | null>(null);
@@ -51,6 +54,13 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleSearchNavigate = (type: 'post' | 'page' | 'author', slug: string) => {
+    if (type === 'post') onNavigatePost(slug);
+    else if (type === 'page') onNavigatePage(slug);
+    else if (type === 'author') onNavigateAuthor(slug);
+    setIsMenuOpen(false);
+  };
 
   const processedNav: NavItem[] = CONFIG.nav.map(item => {
     if (item.type === 'blog') {
@@ -221,8 +231,10 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="hidden sm:flex items-center gap-4 text-slate-400 hover:text-white transition-colors">
-            <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" aria-label={t.navigation.githubRepo}>
+          <div className="hidden sm:flex items-center gap-6">
+            <SearchWidget onNavigate={handleSearchNavigate} />
+            <div className="w-[1px] h-4 bg-white/10" />
+            <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors" aria-label={t.navigation.githubRepo}>
               <Github size={20} strokeWidth={1.5} />
             </a>
           </div>
@@ -248,6 +260,9 @@ export function Header({ onNavigatePage, onNavigateTag, onHome, onBlog }: Header
             className="md:hidden border-t border-white/5 bg-black/95 absolute w-full overflow-hidden"
           >
             <nav className="flex flex-col p-6 gap-6 text-lg font-bold text-slate-200">
+              <div className="pb-4 border-b border-white/5">
+                <SearchWidget onNavigate={handleSearchNavigate} isMobile />
+              </div>
               {renderNavItems(true)}
               
               <div className="flex gap-6 pt-6 border-t border-white/5 mt-2">

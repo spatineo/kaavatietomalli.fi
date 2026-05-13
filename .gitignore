@@ -5,6 +5,7 @@ public/content
 public/sitemap.xml
 public/llms.txt
 public/llms-full.txt
+public/search-index.json
 coverage/
 .DS_Store
 *.log

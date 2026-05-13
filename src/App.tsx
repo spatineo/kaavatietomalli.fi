@@ -325,7 +325,9 @@ export default function App() {
     const updateDiscoveryLink = (type: string, slug: string | null) => {
         let dcLink = document.querySelector('link[rel="alternate"][type="text/markdown"]');
         if (!slug) {
-            if (dcLink) document.head.removeChild(dcLink);
+            if (dcLink && dcLink.parentNode === document.head) {
+                document.head.removeChild(dcLink);
+            }
             return;
         }
 
@@ -355,12 +357,10 @@ export default function App() {
         {t.common.skipToContent}
       </a>
       <Header 
-        onNavigatePage={(slug) => {
-          navigate({ type: 'page', slug });
-        }} 
-        onNavigateTag={(tag) => {
-          navigate({ type: 'tag', slug: tag });
-        }}
+        onNavigatePage={(slug) => navigate({ type: 'page', slug })} 
+        onNavigateTag={(tag) => navigate({ type: 'tag', slug: tag })}
+        onNavigatePost={(slug) => navigate({ type: 'post', slug })}
+        onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
         onHome={onHome} 
         onBlog={scrollToBlog} 
       />

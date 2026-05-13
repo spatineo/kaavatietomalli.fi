@@ -50,6 +50,17 @@ export const fi: Translations = {
     description: 'Poimintoja tietomallimuotoisen kaavoituksen kehittämisen elinkaarelta.',
     exploreData: 'Tutki tietoa',
   },
+  search: {
+    title: 'Haku',
+    placeholder: 'Hae artikkeleita, sivuja...',
+    noResults: 'Ei tuloksia haulle',
+    close: 'Sulje',
+    types: {
+      post: 'Artikkeli',
+      page: 'Sivu',
+      author: 'Henkilö',
+    },
+  },
   mermaid: {
     expand: 'Laajenna kaavio',
     zoomIn: 'Lähennä',

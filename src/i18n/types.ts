@@ -13,6 +13,17 @@ export interface Translations {
     footerTitle: string;
     footerText: string;
   };
+  search: {
+    title: string;
+    placeholder: string;
+    noResults: string;
+    close: string;
+    types: {
+      post: string;
+      page: string;
+      author: string;
+    };
+  };
   navigation: {
     blog: string;
     home: string;

@@ -105,7 +105,9 @@ export function Mermaid({ chart }: MermaidProps) {
               }
             }
           } finally {
-            document.body.removeChild(tempDiv);
+            if (tempDiv.parentNode === document.body) {
+              document.body.removeChild(tempDiv);
+            }
           }
         } catch (error) {
           console.error('Mermaid error:', error);

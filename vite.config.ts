@@ -12,7 +12,7 @@ export default defineConfig(({mode}) => {
     plugins: [react(), tailwindcss()],
     publicDir: 'public',
     optimizeDeps: {
-      include: ['mermaid'],
+      include: ['mermaid', '@orama/orama'],
     },
     resolve: {
       alias: {
@@ -20,16 +20,36 @@ export default defineConfig(({mode}) => {
       },
     },
     build: {
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 2000,
       rollupOptions: {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              if (id.includes('react-syntax-highlighter') || id.includes('prismjs')) {
-                return 'vendor-syntax';
+              if (id.includes('mermaid')) {
+                return 'vendor-mermaid';
               }
-              if (id.includes('react') || id.includes('react-dom') || id.includes('motion')) {
+              if (id.includes('react-syntax-highlighter')) {
+                return 'vendor-syntax-highlighter';
+              }
+              if (id.includes('prismjs')) {
+                return 'vendor-syntax-prism';
+              }
+              if (id.includes('katex')) {
+                return 'vendor-katex';
+              }
+              if (
+                id.includes('/node_modules/react/') || 
+                id.includes('/node_modules/react-dom/') || 
+                id.includes('/node_modules/motion/') ||
+                id.includes('/node_modules/@motionone/')
+              ) {
                 return 'vendor-core';
+              }
+              if (id.includes('lucide-react')) {
+                return 'vendor-icons';
+              }
+              if (id.includes('orama')) {
+                return 'vendor-search';
               }
             }
           },

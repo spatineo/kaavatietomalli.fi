@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "prebuild": "tsx scripts/generate-assets.ts",
+    "prebuild": "tsx scripts/generate-assets.ts && tsx scripts/generate-search-index.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",
+    "@orama/orama": "^3.1.18",
+    "@orama/stemmers": "^3.1.18",
     "@tailwindcss/vite": "^4.2.4",
     "@vitejs/plugin-react": "^5.2.0",
     "buffer": "^6.0.3",
