@@ -8,19 +8,27 @@ export interface SearchResult {
   document: any;
 }
 
-export function useOramaSearch(indexPath: string = '/search-index.json') {
+export function useOramaSearch(indexPath: string = 'search-index.json') {
   const [db, setDb] = useState<AnyOrama | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const init = useCallback(async () => {
-    if (db || isInitializing) return;
+    // If we're already initializing, have a DB, or have an error, don't try again
+    if (db || isInitializing || error) return;
     
     setIsInitializing(true);
     try {
-      const response = await fetch(indexPath);
+      // Use BASE_URL to handle deployments in subdirectories (like GitHub Pages)
+      const baseUrl = import.meta.env.BASE_URL.endsWith('/') 
+        ? import.meta.env.BASE_URL 
+        : `${import.meta.env.BASE_URL}/`;
+      const fullPath = indexPath.startsWith('/') ? indexPath.slice(1) : indexPath;
+      const targetUrl = `${baseUrl}${fullPath}`;
+
+      const response = await fetch(targetUrl);
       if (!response.ok) {
-        throw new Error(`Failed to fetch search index: ${response.statusText}`);
+        throw new Error(`Failed to fetch search index: ${response.statusText} (${targetUrl})`);
       }
       const indexData = await response.json();
       
@@ -45,7 +53,7 @@ export function useOramaSearch(indexPath: string = '/search-index.json') {
     } finally {
       setIsInitializing(false);
     }
-  }, [db, isInitializing, indexPath]);
+  }, [indexPath]); // Only depend on indexPath to avoid infinite re-initialization loops
 
   useEffect(() => {
     init();
