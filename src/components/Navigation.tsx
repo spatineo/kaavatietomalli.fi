@@ -221,8 +221,8 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
                 <div className="w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-brand-primary" />
               </div>
             </div>
-            <span className="hidden sm:inline">Kaavatietomalli.</span>
-            <span className="sm:hidden text-brand-accent">Kaavatietomalli.</span>
+            <span className="hidden sm:inline">Kaavatietomalli.fi</span>
+            <span className="sm:hidden text-brand-accent">Kaavatietomalli.fi</span>
           </button>
           
           <nav className="hidden md:flex gap-10 text-sm font-semibold text-slate-400" aria-label={t.navigation.mainNav}>

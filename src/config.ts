@@ -25,11 +25,25 @@ export const CONFIG = {
   nav: [
     { label: 'Blogi', type: 'blog' },
     { 
-      label: 'Tietomallit', 
-      type: 'page',
-      slug: 'tietomallit' 
+      label: 'Yhteentoimivuus', 
+      type: 'menu',
+      subitems: [
+        { label: 'Lait ja asetukset', type: 'page', slug: 'lainsaadanto'},
+        { label: 'Kaavatietomalli', type: 'page', slug: 'kaavatietomalli-yalusta'},
+        { label: 'Soveltamisohjeet', type: 'page', slug: 'soveltamisohjeet'},
+        { label: 'Ryhti-järjestelmä', type: 'page', slug: 'ryhti-jarjestelma'},
+        { label: 'Kaavatieto kuntajärjestelmissä', type: 'page', slug: 'kuntajarjestelmat'}
+      ]
     },
-    { label: 'Sparrausapua', type: 'page', slug: 'sparraus' },
+    { 
+        label: 'Ratkaisut',
+        type: 'menu',
+        subitems: [
+            { label: 'Toimittajat ja ohjelmistot', type: 'tag', slug: 'toimittajat-ohjelmistot'},
+            { label: 'Tietomallisparraukset ja koulutukset', type: 'page', slug: 'sparraus'},
+            { label: 'Markkinaselvitykset', type: 'page', slug: 'markkinaselvitykset'}
+        ]
+    },
     { label: 'Kumppanit', type: 'page', slug: 'kumppanit' },
     { label: 'Tietoa', type: 'page', slug: 'tietoa' }
   ] as NavItem[],
