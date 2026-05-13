@@ -222,15 +222,15 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
             repoId={CONFIG.giscus.repoId}
             category={CONFIG.giscus.category}
             categoryId={CONFIG.giscus.categoryId}
-            mapping="specific"
+            mapping={CONFIG.giscus.mapping as any}
             term={post.slug}
-            strict="1"
-            reactionsEnabled="1"
-            emitMetadata="0"
-            inputPosition="bottom"
-            theme="transparent_dark"
-            lang="fi"
-            loading="lazy"
+            strict={CONFIG.giscus.strict as any}
+            reactionsEnabled={CONFIG.giscus.reactionsEnabled as any}
+            emitMetadata={CONFIG.giscus.emitMetadata as any}
+            inputPosition={CONFIG.giscus.inputPosition as any}
+            theme={CONFIG.giscus.theme as any}
+            lang={CONFIG.giscus.lang as any}
+            loading={CONFIG.giscus.loading as any}
           />
         </Suspense>
       </div>

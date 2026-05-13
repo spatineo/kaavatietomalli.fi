@@ -19,7 +19,7 @@ export const CONFIG = {
     emitMetadata: '0',
     inputPosition: 'bottom',
     theme: 'transparent_dark',
-    lang: 'fi',
+    lang: 'en',
     loading: 'lazy'
   },
   nav: [
