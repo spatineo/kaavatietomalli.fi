@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useOramaSearch } from '../hooks/useOramaSearch';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
+import { getTracker } from '../services/analytics';
 
 interface NotFoundViewProps {
   missingSlug?: string;
@@ -52,10 +53,12 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
   }, [query, performSearch]);
 
   useEffect(() => {
+    getTracker().trackPageView(`${CONFIG.basePath}404`, `404: Not Found`);
     inputRef.current?.focus();
   }, []);
 
   const handleResultClick = (type: string, slug: string) => {
+    getTracker().trackCTA('404 Search Result Click', `${type}:${slug}`, `query:${query}`);
     onNavigate(type as any, slug);
   };
 
@@ -164,7 +167,10 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
         </div>
 
         <button
-          onClick={onHome}
+          onClick={() => {
+            getTracker().trackCTA('404 Back to Home', undefined, '404_page');
+            onHome();
+          }}
           className="inline-flex items-center gap-3 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white font-bold tracking-wider transition-all hover:-translate-y-1 hover:shadow-xl active:translate-y-0"
         >
           <Home size={18} className="text-brand-accent" />

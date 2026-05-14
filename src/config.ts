@@ -52,7 +52,10 @@ export const CONFIG = {
     { id: 'tietomallit', label: 'Tietomallit', tag: 'tietomallit' },
     { id: 'kaavatietomalli-ng', label: 'Kaavatietomalli NG', tag: 'kaavatietomalli-ng' },
     { id: 'era-henki', label: 'ERA-henki', tag: 'era-henki' }
-  ] as ThemeItem[]
+  ] as ThemeItem[],
+  analytics: {
+    gaTrackingId: import.meta.env.VITE_GA_TRACKING_ID || ''
+  }
 };
 
 export interface ThemeItem {

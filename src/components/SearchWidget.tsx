@@ -5,6 +5,8 @@ import { useOramaSearch } from '../hooks/useOramaSearch';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 
+import { getTracker } from '../services/analytics';
+
 interface SearchWidgetProps {
   onNavigate: (type: 'post' | 'page' | 'author', slug: string) => void;
   isMobile?: boolean;
@@ -55,6 +57,7 @@ export function SearchWidget({ onNavigate, isMobile }: SearchWidgetProps) {
   }, [isOpen]);
 
   const handleResultClick = (type: string, slug: string) => {
+    getTracker().trackCTA('Search Result Click', `${type}:${slug}`, `query:${query}`);
     onNavigate(type as any, slug);
     setIsOpen(false);
     setQuery('');

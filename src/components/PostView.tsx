@@ -9,6 +9,7 @@ import { getTranslations, Language } from '../i18n';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
+import { getTracker } from '../services/analytics';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const Giscus = lazy(() => import('@giscus/react'));
@@ -25,6 +26,11 @@ interface PostViewProps {
 
 export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavigateAuthor, onSelectTag }: PostViewProps) {
   const t = getTranslations(CONFIG.language as Language);
+
+  useEffect(() => {
+    getTracker().trackPostView(post.slug, post.title);
+    getTracker().trackPageView(`${CONFIG.basePath}?post=${post.slug}`, post.title);
+  }, [post.slug, post.title]);
 
   return (
     <motion.article

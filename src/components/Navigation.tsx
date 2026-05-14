@@ -5,6 +5,7 @@ import SpatineoLogo from './SpatineoLogo';
 import { SearchWidget } from './SearchWidget';
 import { CONFIG, NavItem } from '../config';
 import { getTranslations, Language } from '../i18n';
+import { getTracker } from '../services/analytics';
 
 interface HeaderProps {
   onNavigatePage: (slug: string | null) => void;
@@ -234,7 +235,14 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
           <div className="hidden sm:flex items-center gap-6">
             <SearchWidget onNavigate={handleSearchNavigate} />
             <div className="w-[1px] h-4 bg-white/10" />
-            <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white transition-colors" aria-label={t.navigation.githubRepo}>
+            <a 
+              href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-slate-400 hover:text-white transition-colors" 
+              aria-label={t.navigation.githubRepo}
+              onClick={() => getTracker().trackCTA('GitHub Repo', `https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`, 'header')}
+            >
               <Github size={20} strokeWidth={1.5} />
             </a>
           </div>
@@ -266,7 +274,13 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
               {renderNavItems(true)}
               
               <div className="flex gap-6 pt-6 border-t border-white/5 mt-2">
-                <a href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium">
+                <a 
+                  href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium"
+                  onClick={() => getTracker().trackCTA('GitHub Repo', `https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`, 'mobile_nav')}
+                >
                   <Github size={20} /> GitHub
                 </a>
               </div>

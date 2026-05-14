@@ -6,6 +6,7 @@ import { AuthorData } from '../lib/blog';
 import { resolveImageUrl } from '../lib/utils';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
+import { getTracker } from '../services/analytics';
 
 interface AuthorViewProps {
   author: AuthorData;
@@ -35,6 +36,9 @@ function ObfuscatedEmailIcon({ email }: { email: string }) {
 export function AuthorView({ author, onBack }: AuthorViewProps) {
   const t = getTranslations(CONFIG.language as Language);
   useEffect(() => {
+    getTracker().trackAuthorView(author.slug, author.name);
+    getTracker().trackPageView(`${CONFIG.basePath}?author=${author.slug}`, author.name);
+
     // Add discovery link for LLMs
     const link = document.createElement('link');
     link.rel = 'alternate';
@@ -166,7 +170,10 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
             <p className="text-slate-400 mb-8">
               {t.author.cooperationText}
             </p>
-            <button className="bg-brand-accent text-brand-primary px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity">
+            <button 
+              onClick={() => getTracker().trackCTA(t.author.contactUs, undefined, `author:${author.slug}`)}
+              className="bg-brand-accent text-brand-primary px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity"
+            >
               {t.author.contactUs}
             </button>
           </div>

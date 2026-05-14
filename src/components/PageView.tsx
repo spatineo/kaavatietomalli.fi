@@ -8,6 +8,7 @@ import { getTranslations, Language } from '../i18n';
 import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
+import { getTracker } from '../services/analytics';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 
@@ -19,6 +20,12 @@ interface PageViewProps {
 
 export function PageView({ page, onBack, inline = false }: PageViewProps) {
   const t = getTranslations(CONFIG.language as Language);
+
+  useEffect(() => {
+    if (!inline) {
+      getTracker().trackPageView(`${CONFIG.basePath}?page=${page.slug}`, page.title);
+    }
+  }, [page.slug, page.title, inline]);
 
   if (inline) {
     return (
