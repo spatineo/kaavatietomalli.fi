@@ -90,4 +90,10 @@ export interface Translations {
     contactUs: string;
     sendEmail: string;
   };
+  notFound: {
+    title: string;
+    message: string;
+    searchPrompt: string;
+    backToHome: string;
+  };
 }

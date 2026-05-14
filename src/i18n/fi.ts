@@ -58,7 +58,7 @@ export const fi: Translations = {
     types: {
       post: 'Artikkeli',
       page: 'Sivu',
-      author: 'Henkilö',
+      author: 'Kirjoittaja',
     },
   },
   mermaid: {
@@ -91,5 +91,11 @@ export const fi: Translations = {
     cooperationText: 'Ilkka ja Spatineon asiantuntijat auttavat organisaatiotanne hyödyntämään rakennetun ympäristön tietoa tehokkaammin.',
     contactUs: 'Ota yhteyttä',
     sendEmail: 'Lähetä sähköpostia',
+  },
+  notFound: {
+    title: 'Sitäpä ei nyt löytynyt',
+    message: 'Hae sivuston muusta sisällöstä',
+    searchPrompt: 'Hae artikkeleita, sivuja...',
+    backToHome: 'Palaa etusivulle',
   },
 };

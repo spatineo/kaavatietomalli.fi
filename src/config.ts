@@ -39,7 +39,7 @@ export const CONFIG = {
         label: 'Ratkaisut',
         type: 'menu',
         subitems: [
-            { label: 'Toimittajat ja ohjelmistot', type: 'tag', slug: 'toimittajat-ohjelmistot'},
+            { label: 'Ohjelmistoratkaisut', type: 'tag', slug: 'ohjelmistot'},
             { label: 'Tietomallisparraukset ja koulutukset', type: 'page', slug: 'sparraus'},
             { label: 'Markkinaselvitykset', type: 'page', slug: 'markkinaselvitykset'}
         ]

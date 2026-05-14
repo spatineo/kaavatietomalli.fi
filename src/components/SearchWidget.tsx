@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, X, Loader2, BookOpen, FileText, User } from 'lucide-react';
+import { Search, X, Loader2, BookOpen, FileText, User, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useOramaSearch } from '../hooks/useOramaSearch';
 import { CONFIG } from '../config';
@@ -94,7 +94,7 @@ export function SearchWidget({ onNavigate, isMobile }: SearchWidgetProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.search.placeholder}
-              className="w-full bg-transparent border-none focus:ring-0 text-sm text-white placeholder:text-slate-500 px-2 h-7"
+              className="w-full bg-transparent border-none focus:ring-0 text-sm text-white placeholder:text-slate-400 px-2 h-7"
             />
             {isSearching || isInitializing ? (
               <Loader2 size={16} className="text-slate-400 animate-spin shrink-0" />
@@ -120,7 +120,7 @@ export function SearchWidget({ onNavigate, isMobile }: SearchWidgetProps) {
                 exit={{ opacity: 0, y: 10 }}
                 className={`${isMobile ? 'relative mt-2' : 'absolute top-full right-0 mt-4'} w-full sm:min-w-[400px] bg-black/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[60]`}
               >
-                <div className="max-h-[60vh] overflow-y-auto">
+                <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
                   {results.length > 0 ? (
                     <div className="p-2 space-y-1">
                       {results.map((result) => (
@@ -152,6 +152,7 @@ export function SearchWidget({ onNavigate, isMobile }: SearchWidgetProps) {
                               </div>
                             )}
                           </div>
+                          <ArrowRight size={14} className="mt-1.5 text-slate-600 group-hover:text-brand-accent group-hover:translate-x-1 transition-all shrink-0" />
                         </button>
                       ))}
                     </div>

@@ -11,6 +11,7 @@ import { PageView } from './components/PageView';
 import { Header, Footer } from './components/Navigation';
 import { HistoryHero } from './components/HistoryHero';
 import { AuthorView } from './components/AuthorView';
+import { NotFoundView } from './components/NotFoundView';
 import { getAllPostMetadata, getPostBySlug, getPageBySlug, getAuthorBySlug, getPostsByTag, getTagPageSlugs, PostMetadata, PostData, PageData, AuthorData } from './lib/blog';
 import { CONFIG, ThemeItem } from './config';
 import { resolveImageUrl } from './lib/utils';
@@ -56,6 +57,7 @@ export default function App() {
   const [editor, setEditor] = useState<AuthorData | null>(null);
   const [adjacentPosts, setAdjacentPosts] = useState<{ next: PostMetadata | null; prev: PostMetadata | null }>({ next: null, prev: null });
   const [pendingScroll, setPendingScroll] = useState(false);
+  const [contentNotFound, setContentNotFound] = useState(false);
 
   // URL Reconciliation helper
   const navigate = (view: { type: string; slug: string | null }) => {
@@ -70,8 +72,8 @@ export default function App() {
     const currentUrl = window.location.pathname + window.location.search;
     if (currentUrl !== finalPath) {
       window.history.pushState(null, '', finalPath);
-      setSearchString(searchPart);
     }
+    setSearchString(searchPart);
   };
 
   // Listen for popstate changes
@@ -94,6 +96,7 @@ export default function App() {
   // 1. Unified content loading effect
   useEffect(() => {
     let ignore = false;
+    setContentNotFound(false);
 
     const loadData = async () => {
       // Logic for each view type
@@ -102,21 +105,30 @@ export default function App() {
           try {
             const post = await getPostBySlug(activeView.slug);
             if (!ignore) {
-              setCurrentPost(post);
-              // Neighbors
-              if (posts.length > 0) {
-                const idx = posts.findIndex(p => p.slug === activeView.slug);
-                if (idx !== -1) {
-                  setAdjacentPosts({
-                    prev: idx > 0 ? posts[idx - 1] : null,
-                    next: idx < posts.length - 1 ? posts[idx + 1] : null
-                  });
+              if (post) {
+                setCurrentPost(post);
+                // Neighbors
+                if (posts.length > 0) {
+                  const idx = posts.findIndex(p => p.slug === activeView.slug);
+                  if (idx !== -1) {
+                    setAdjacentPosts({
+                      prev: idx > 0 ? posts[idx - 1] : null,
+                      next: idx < posts.length - 1 ? posts[idx + 1] : null
+                    });
+                  }
                 }
+                window.scrollTo(0, 0);
+              } else {
+                setContentNotFound(true);
+                window.history.replaceState(null, '', CONFIG.basePath);
               }
-              window.scrollTo(0, 0);
             }
           } catch (err) {
             console.error('[App] post load failed:', err);
+            if (!ignore) {
+              setContentNotFound(true);
+              window.history.replaceState(null, '', CONFIG.basePath);
+            }
           }
         }
       } else if (activeView.type === 'page' && activeView.slug) {
@@ -124,11 +136,20 @@ export default function App() {
           try {
             const page = await getPageBySlug(activeView.slug);
             if (!ignore) {
-              setCurrentPage(page);
-              window.scrollTo(0, 0);
+              if (page) {
+                setCurrentPage(page);
+                window.scrollTo(0, 0);
+              } else {
+                setContentNotFound(true);
+                window.history.replaceState(null, '', CONFIG.basePath);
+              }
             }
           } catch (err) {
             console.error('[App] page load failed:', err);
+            if (!ignore) {
+              setContentNotFound(true);
+              window.history.replaceState(null, '', CONFIG.basePath);
+            }
           }
         }
       } else if (activeView.type === 'author' && activeView.slug) {
@@ -136,11 +157,20 @@ export default function App() {
           try {
             const author = await getAuthorBySlug(activeView.slug);
             if (!ignore) {
-              setCurrentAuthor(author);
-              window.scrollTo(0, 0);
+              if (author) {
+                setCurrentAuthor(author);
+                window.scrollTo(0, 0);
+              } else {
+                setContentNotFound(true);
+                window.history.replaceState(null, '', CONFIG.basePath);
+              }
             }
           } catch (err) {
             console.error('[App] author load failed:', err);
+            if (!ignore) {
+              setContentNotFound(true);
+              window.history.replaceState(null, '', CONFIG.basePath);
+            }
           }
         }
       } else if (activeView.type === 'tag' && activeView.slug) {
@@ -148,16 +178,25 @@ export default function App() {
           setVisibleTagCount(10);
           const taggedPosts = await getPostsByTag(activeView.slug, 0, 100);
           if (!ignore) {
-            setTagPosts(taggedPosts);
-            const pageSlugs = await getTagPageSlugs(activeView.slug);
-            if (pageSlugs.length > 0 && !ignore) {
-              const firstPage = await getPageBySlug(pageSlugs[0]);
-              setTagPage(firstPage);
+            if (taggedPosts.length > 0) {
+              setTagPosts(taggedPosts);
+              const pageSlugs = await getTagPageSlugs(activeView.slug);
+              if (pageSlugs.length > 0 && !ignore) {
+                const firstPage = await getPageBySlug(pageSlugs[0]);
+                setTagPage(firstPage);
+              }
+              window.scrollTo(0, 0);
+            } else {
+              setContentNotFound(true);
+              window.history.replaceState(null, '', CONFIG.basePath);
             }
-            window.scrollTo(0, 0);
           }
         } catch (err) {
           console.error('[App] tag items load failed:', err);
+          if (!ignore) {
+            setContentNotFound(true);
+            window.history.replaceState(null, '', CONFIG.basePath);
+          }
         }
       }
     };
@@ -191,13 +230,13 @@ export default function App() {
   const [showLoader, setShowLoader] = useState(false);
   useEffect(() => {
     let timer: number;
-    if (!isDataReady && activeView.type !== 'home') {
+    if (!isDataReady && activeView.type !== 'home' && !contentNotFound) {
       timer = window.setTimeout(() => setShowLoader(true), 150);
     } else {
       setShowLoader(false);
     }
     return () => clearTimeout(timer);
-  }, [isDataReady, activeView.type]);
+  }, [isDataReady, activeView.type, contentNotFound]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {
@@ -286,6 +325,10 @@ export default function App() {
 
     document.title = title;
 
+    if (contentNotFound) {
+      document.title = `${t.notFound.title} | Kaavatietomalli.fi`;
+    }
+
     const updateMeta = (selector: string, content: string) => {
       const el = document.querySelector(selector);
       if (el) el.setAttribute('content', content);
@@ -366,8 +409,22 @@ export default function App() {
       />
       
       <main id="main-content" className="flex-grow">
-        <AnimatePresence>
-          {activeView.type === 'post' ? (
+        <AnimatePresence mode="wait">
+          {contentNotFound ? (
+            <motion.div
+              key="not-found"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <NotFoundView 
+                missingSlug={activeView.slug || undefined}
+                onNavigate={(type, slug) => navigate({ type, slug })}
+                onHome={onHome}
+              />
+            </motion.div>
+          ) : activeView.type === 'post' ? (
             isDataReady ? (
               <motion.div
                 key={`post-${activeView.slug}`}
@@ -550,7 +607,7 @@ export default function App() {
                         </span>
                       </div>
                       <h1 className="text-6xl md:text-[7rem] lg:text-[9rem] font-black tracking-tighter leading-[0.8] text-white">
-                        {t.hero.titleMain}<span className="text-brand-accent">{t.hero.titleAccent}</span><span className="text-white/20"><wbr/>{t.hero.titleMalli}</span>
+                        {t.hero.titleMain}<span className="text-brand-accent">{t.hero.titleAccent}</span><wbr/><span className="text-white/20"><wbr/>{t.hero.titleMalli}</span>
                       </h1>
                     </motion.div>
 
@@ -618,7 +675,7 @@ export default function App() {
                   </div>
                   
                   <h2 className="text-6xl md:text-7xl font-black leading-[0.8] tracking-tighter mb-12 text-white">
-                    {t.blog.titleMain}<span className="text-brand-accent">{t.blog.titleAccent}</span><span className="text-white/30">{t.blog.titleBlogi}</span>
+                    {t.blog.titleMain}<wbr/><span className="text-brand-accent">{t.blog.titleAccent}</span><wbr/><span className="text-white/30">{t.blog.titleBlogi}</span>
                   </h2>
                   
                   <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
