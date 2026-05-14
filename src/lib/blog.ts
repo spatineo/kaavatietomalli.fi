@@ -59,23 +59,47 @@ export interface TagIndex {
   };
 }
 
+// Keep track of pending loads to avoid duplicate script tags for simultaneous requests
+const pendingLoads = new Map<string, Promise<any>>();
+
 async function loadJSONP(url: string, globalVarName: string): Promise<any> {
-  if ((globalThis as any)[globalVarName]) {
-    return (globalThis as any)[globalVarName];
+  const globalVar = (globalThis as any)[globalVarName];
+  if (globalVar) {
+    return globalVar;
   }
 
-  return new Promise((resolve, reject) => {
+  if (pendingLoads.has(url)) {
+    return pendingLoads.get(url);
+  }
+
+  const promise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = url;
     script.async = true;
-    script.onload = () => {
-      resolve((globalThis as any)[globalVarName]);
+
+    const cleanup = () => {
+      pendingLoads.delete(url);
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
+
+    script.onload = () => {
+      const data = (globalThis as any)[globalVarName];
+      cleanup();
+      resolve(data);
+    };
+
     script.onerror = () => {
+      cleanup();
       reject(new Error(`Failed to load JSONP from ${url}`));
     };
+
     document.body.appendChild(script);
   });
+
+  pendingLoads.set(url, promise);
+  return promise;
 }
 
 export async function getAllPostMetadata(): Promise<PostMetadata[]> {
