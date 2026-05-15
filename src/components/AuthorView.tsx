@@ -164,7 +164,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
           <div className="markdown-body">
             <ReactMarkdown urlTransform={(url) => resolveImageUrl(url)}>{author.content}</ReactMarkdown>
           </div>
-
+          {"Spatineo Oy" == author.company && (
           <div className="mt-20 p-10 rounded-3xl bg-white/5 border border-white/10">
             <h4 className="text-lg font-bold text-white mb-4">{t.author.cooperationTitle}</h4>
             <p className="text-slate-400 mb-8">
@@ -177,6 +177,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
               {t.author.contactUs}
             </button>
           </div>
+          )}
         </section>
       </div>
 
