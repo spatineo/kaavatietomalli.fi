@@ -305,13 +305,15 @@ export default function App() {
 
   // Sync page metadata
   useEffect(() => {
-    if (!isDataReady && activeView.type !== 'home') return;
+    if (!isDataReady && activeView.type !== 'home' && !contentNotFound) return;
 
     let title = 'Kaavatietomalli.fi';
     let description = t.hero.description;
 
     if (activeView.type === 'home') {
       title = `Kaavatietomalli.fi | ${t.hero.subtitle}`;
+    } else if (contentNotFound) {
+      title = `${t.notFound.title} | Kaavatietomalli.fi`;
     } else if (activeView.type === 'post' && currentPost) {
       title = `${currentPost.title} | Kaavatietomalli.fi`;
       description = currentPost.excerpt || description;
@@ -331,10 +333,6 @@ export default function App() {
       getTracker().trackPageView(CONFIG.basePath, `Home | Kaavatietomalli.fi`);
     } else if (activeView.type === 'tag' && activeView.slug) {
       getTracker().trackPageView(`${CONFIG.basePath}?tag=${activeView.slug}`, `#${activeView.slug} | Kaavatietomalli.fi`, [activeView.slug]);
-    }
-
-    if (contentNotFound) {
-      document.title = `${t.notFound.title} | Kaavatietomalli.fi`;
     }
 
     const updateMeta = (selector: string, content: string) => {
@@ -400,7 +398,7 @@ export default function App() {
         updateDiscoveryLink('', null);
     }
 
-  }, [activeView, currentPost, currentPage, currentAuthor, isDataReady, t]);
+  }, [activeView, currentPost, currentPage, currentAuthor, isDataReady, contentNotFound, t]);
 
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg text-slate-300">

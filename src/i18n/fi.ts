@@ -29,7 +29,7 @@ export const fi: Translations = {
     titleMain: 'Kaava',
     titleAccent: 'tieto',
     titleMalli: 'malli',
-    description: 'Digitalisoituvan alueidenkäytön suunnittelun tarina: historia, yhteentoimivuus, tekniset ratkaisut, ajattelumalli ja kehitysideat',
+    description: 'Digitalisoituvan alueidenkäytön suunnittelun tarina: historia, uusi ajattelumalli, yhteentoimivuus, tekniset ratkaisut ja kehitysideat',
     editorChief: 'Päätoimittaja',
   },
   blog: {
