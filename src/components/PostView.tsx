@@ -6,12 +6,12 @@ import { motion } from 'motion/react';
 import { PostData, PostMetadata } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
-import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
 import { getTracker } from '../services/analytics';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
+const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
 const Giscus = lazy(() => import('@giscus/react'));
 
 interface PostViewProps {
@@ -168,21 +168,26 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
                     <span>{language}</span>
                     <span className="text-[8px] opacity-50">src/{post.slug}.md</span>
                   </div>
-                  <SyntaxHighlighter
-                    style={vscDarkPlus as any}
-                    language={language}
-                    PreTag="div"
-                    customStyle={{
-                      margin: 0,
-                      padding: '2rem',
-                      fontSize: '14px',
-                      fontFamily: '"JetBrains Mono", monospace',
-                      background: '#000000',
-                    }}
-                    {...props}
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
+                  <Suspense fallback={
+                    <div className="bg-black p-8 font-mono text-[14px] text-white/40">
+                      {String(children).replace(/\n$/, '')}
+                    </div>
+                  }>
+                    <LazySyntaxHighlighter
+                      language={language}
+                      PreTag="div"
+                      customStyle={{
+                        margin: 0,
+                        padding: '2rem',
+                        fontSize: '14px',
+                        fontFamily: '"JetBrains Mono", monospace',
+                        background: '#000000',
+                      }}
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </LazySyntaxHighlighter>
+                  </Suspense>
                 </div>
               ) : (
                 <code className={className} {...props}>

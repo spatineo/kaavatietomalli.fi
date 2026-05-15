@@ -1,45 +1,58 @@
 import { useEffect, useRef, useState } from 'react';
-import mermaid from '../lib/mermaid';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'base',
-  securityLevel: 'loose',
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-  fontSize: 16,
-  flowchart: {
-    htmlLabels: true,
-    useMaxWidth: false,
-    curve: 'basis',
-    padding: 20
-  },
-  class: {
-    htmlLabels: true,
-    useMaxWidth: false,
-    padding: 20
-  },
-  themeVariables: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-    fontSize: '16px',
-    primaryColor: '#1A1A1C',
-    primaryTextColor: '#FFFFFF',
-    primaryBorderColor: '#FFAF00',
-    lineColor: '#FFAF00',
-    secondaryColor: '#2563EB',
-    tertiaryColor: '#121214',
-    mainBkg: '#1A1A1C',
-    nodeBorder: '#FFAF00',
-    clusterBkg: '#000000',
-    clusterBorder: '#888888',
-    titleColor: '#FFFFFF',
-    edgeLabelBackground: '#121214',
-    nodeTextColor: '#FFFFFF',
+// Lazy load mermaid library
+let mermaidInstance: any = null;
+let isInitialized = false;
+
+async function getMermaid() {
+  if (mermaidInstance) return mermaidInstance;
+  const m = await import('../lib/mermaid');
+  mermaidInstance = m.default;
+  
+  if (!isInitialized) {
+    mermaidInstance.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      securityLevel: 'loose',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+      fontSize: 16,
+      flowchart: {
+        htmlLabels: true,
+        useMaxWidth: false,
+        curve: 'basis',
+        padding: 20
+      },
+      class: {
+        htmlLabels: true,
+        useMaxWidth: false,
+        padding: 20
+      },
+      themeVariables: {
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+        fontSize: '16px',
+        primaryColor: '#1A1A1C',
+        primaryTextColor: '#FFFFFF',
+        primaryBorderColor: '#FFAF00',
+        lineColor: '#FFAF00',
+        secondaryColor: '#2563EB',
+        tertiaryColor: '#121214',
+        mainBkg: '#1A1A1C',
+        nodeBorder: '#FFAF00',
+        clusterBkg: '#000000',
+        clusterBorder: '#888888',
+        titleColor: '#FFFFFF',
+        edgeLabelBackground: '#121214',
+        nodeTextColor: '#FFFFFF',
+      }
+    });
+    isInitialized = true;
   }
-});
+  return mermaidInstance;
+}
 
 interface MermaidProps {
   chart: string;
@@ -56,6 +69,7 @@ export function Mermaid({ chart }: MermaidProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
+  const [isLoading, setIsLoading] = useState(true);
 
   // Prevent background scroll when modal is open
   useEffect(() => {
@@ -72,7 +86,10 @@ export function Mermaid({ chart }: MermaidProps) {
   useEffect(() => {
     if (chart) {
       const renderDiagram = async () => {
+        setIsLoading(true);
         try {
+          const mermaid = await getMermaid();
+          
           if ('fonts' in document) {
             await document.fonts.ready;
           }
@@ -104,6 +121,7 @@ export function Mermaid({ chart }: MermaidProps) {
                 bindFunctions(ref.current);
               }
             }
+            setIsLoading(false);
           } finally {
             if (tempDiv.parentNode === document.body) {
               document.body.removeChild(tempDiv);
@@ -111,6 +129,7 @@ export function Mermaid({ chart }: MermaidProps) {
           }
         } catch (error) {
           console.error('Mermaid error:', error);
+          setIsLoading(false);
           if (ref.current) {
             ref.current.innerHTML = `<div class="text-red-500 text-xs font-mono p-4 border border-red-500/20 rounded bg-red-500/5">${t.mermaid.renderError}</div>`;
           }
@@ -221,12 +240,27 @@ export function Mermaid({ chart }: MermaidProps) {
   return (
     <>
       <div 
-        className="flex justify-center my-12 bg-black/40 backdrop-blur-sm p-10 rounded-3xl border border-white/10 overflow-hidden shadow-2xl group cursor-pointer relative"
+        className="flex justify-center my-12 bg-black/40 backdrop-blur-sm p-10 rounded-3xl border border-white/10 overflow-hidden shadow-2xl group cursor-pointer relative min-h-[200px]"
         role="button"
         aria-label={t.mermaid.expand}
         onClick={toggleModal}
       >
-        <div className="absolute top-4 right-4 p-2 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+        <AnimatePresence>
+          {isLoading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10"
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-8 h-8 border-2 border-brand-accent/20 border-t-brand-accent rounded-full animate-spin" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">{t.common.loadingChart}</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div className="absolute top-4 right-4 p-2 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20">
           <Maximize2 size={16} className="text-brand-accent" />
         </div>
         <div ref={ref} className="mermaid w-full flex justify-center transition-transform duration-500 group-hover:scale-[1.01]" />

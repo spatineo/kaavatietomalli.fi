@@ -5,12 +5,12 @@ import { motion } from 'motion/react';
 import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
-import { SyntaxHighlighter, vscDarkPlus } from '../lib/syntax';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
 import { getTracker } from '../services/analytics';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
+const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
 
 interface PageViewProps {
   page: PageData;
@@ -50,21 +50,26 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
                   <div className="bg-black text-[10px] uppercase font-bold tracking-[0.2em] px-4 py-3 border-b border-white/5 text-white/40 flex justify-between items-center">
                     <span>{language}</span>
                   </div>
-                  <SyntaxHighlighter
-                    style={vscDarkPlus as any}
-                    language={language}
-                    PreTag="div"
-                    customStyle={{
-                      margin: 0,
-                      padding: '2rem',
-                      fontSize: '14px',
-                      fontFamily: '"JetBrains Mono", monospace',
-                      background: '#000000',
-                    }}
-                    {...props}
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
+                  <Suspense fallback={
+                    <div className="bg-black p-8 font-mono text-[14px] text-white/40">
+                      {String(children).replace(/\n$/, '')}
+                    </div>
+                  }>
+                    <LazySyntaxHighlighter
+                      language={language}
+                      PreTag="div"
+                      customStyle={{
+                        margin: 0,
+                        padding: '2rem',
+                        fontSize: '14px',
+                        fontFamily: '"JetBrains Mono", monospace',
+                        background: '#000000',
+                      }}
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </LazySyntaxHighlighter>
+                  </Suspense>
                 </div>
               ) : (
                 <code className={className} {...props}>
@@ -123,21 +128,26 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
                   <div className="bg-black text-[10px] uppercase font-bold tracking-[0.2em] px-4 py-3 border-b border-white/5 text-white/40 flex justify-between items-center">
                     <span>{language}</span>
                   </div>
-                  <SyntaxHighlighter
-                    style={vscDarkPlus as any}
-                    language={language}
-                    PreTag="div"
-                    customStyle={{
-                      margin: 0,
-                      padding: '2rem',
-                      fontSize: '14px',
-                      fontFamily: '"JetBrains Mono", monospace',
-                      background: '#000000',
-                    }}
-                    {...props}
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
+                  <Suspense fallback={
+                    <div className="bg-black p-8 font-mono text-[14px] text-white/40">
+                      {String(children).replace(/\n$/, '')}
+                    </div>
+                  }>
+                    <LazySyntaxHighlighter
+                      language={language}
+                      PreTag="div"
+                      customStyle={{
+                        margin: 0,
+                        padding: '2rem',
+                        fontSize: '14px',
+                        fontFamily: '"JetBrains Mono", monospace',
+                        background: '#000000',
+                      }}
+                      {...props}
+                    >
+                      {String(children).replace(/\n$/, '')}
+                    </LazySyntaxHighlighter>
+                  </Suspense>
                 </div>
               ) : (
                 <code className={className} {...props}>
