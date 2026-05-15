@@ -54,6 +54,7 @@ export default function App() {
   const [posts, setPosts] = useState<PostMetadata[]>([]);
   const [tagPosts, setTagPosts] = useState<PostMetadata[]>([]);
   const [tagPage, setTagPage] = useState<PageData | null>(null);
+  const [activeTagSlug, setActiveTagSlug] = useState<string | null>(null);
   const [currentPost, setCurrentPost] = useState<PostData | null>(null);
   const [currentPage, setCurrentPage] = useState<PageData | null>(null);
   const [currentAuthor, setCurrentAuthor] = useState<AuthorData | null>(null);
@@ -100,9 +101,40 @@ export default function App() {
   useEffect(() => {
     let ignore = false;
     setContentNotFound(false);
-
+ 
+    // Immediate cleanup of "other" detail states to avoid stale renders during transitions
+    if (activeView.type !== 'post') {
+      setCurrentPost(null);
+    }
+    if (activeView.type !== 'page') {
+      setCurrentPage(null);
+    }
+    if (activeView.type !== 'author') {
+      setCurrentAuthor(null);
+    }
+    if (activeView.type !== 'tag') {
+      setTagPosts([]);
+      setTagPage(null);
+      setActiveTagSlug(null);
+    }
+ 
+    // Also clear the current view's state if the slug changed, to ensure isDataReady becomes false immediately
+    if (activeView.type === 'post' && currentPost?.slug !== activeView.slug) {
+        setCurrentPost(null);
+    }
+    if (activeView.type === 'page' && currentPage?.slug !== activeView.slug) {
+        setCurrentPage(null);
+    }
+    if (activeView.type === 'author' && currentAuthor?.slug !== activeView.slug) {
+        setCurrentAuthor(null);
+    }
+    if (activeView.type === 'tag' && activeTagSlug !== activeView.slug) {
+      setTagPosts([]);
+      setTagPage(null);
+      setActiveTagSlug(null);
+    }
+ 
     const loadData = async () => {
-      // Logic for each view type
       if (activeView.type === 'post' && activeView.slug) {
         if (currentPost?.slug !== activeView.slug) {
           try {
@@ -110,7 +142,6 @@ export default function App() {
             if (!ignore) {
               if (post) {
                 setCurrentPost(post);
-                // Neighbors
                 if (posts.length > 0) {
                   const idx = posts.findIndex(p => p.slug === activeView.slug);
                   if (idx !== -1) {
@@ -123,15 +154,11 @@ export default function App() {
                 window.scrollTo(0, 0);
               } else {
                 setContentNotFound(true);
-                window.history.replaceState(null, '', CONFIG.basePath);
               }
             }
           } catch (err) {
             console.error('[App] post load failed:', err);
-            if (!ignore) {
-              setContentNotFound(true);
-              window.history.replaceState(null, '', CONFIG.basePath);
-            }
+            if (!ignore) setContentNotFound(true);
           }
         }
       } else if (activeView.type === 'page' && activeView.slug) {
@@ -144,15 +171,11 @@ export default function App() {
                 window.scrollTo(0, 0);
               } else {
                 setContentNotFound(true);
-                window.history.replaceState(null, '', CONFIG.basePath);
               }
             }
           } catch (err) {
             console.error('[App] page load failed:', err);
-            if (!ignore) {
-              setContentNotFound(true);
-              window.history.replaceState(null, '', CONFIG.basePath);
-            }
+            if (!ignore) setContentNotFound(true);
           }
         }
       } else if (activeView.type === 'author' && activeView.slug) {
@@ -165,69 +188,66 @@ export default function App() {
                 window.scrollTo(0, 0);
               } else {
                 setContentNotFound(true);
-                window.history.replaceState(null, '', CONFIG.basePath);
               }
             }
           } catch (err) {
             console.error('[App] author load failed:', err);
-            if (!ignore) {
-              setContentNotFound(true);
-              window.history.replaceState(null, '', CONFIG.basePath);
-            }
+            if (!ignore) setContentNotFound(true);
           }
         }
       } else if (activeView.type === 'tag' && activeView.slug) {
-        try {
-          setVisibleTagCount(10);
-          const taggedPosts = await getPostsByTag(activeView.slug, 0, 100);
-          if (!ignore) {
-            if (taggedPosts.length > 0) {
-              setTagPosts(taggedPosts);
-              const pageSlugs = await getTagPageSlugs(activeView.slug);
-              if (pageSlugs.length > 0 && !ignore) {
-                const firstPage = await getPageBySlug(pageSlugs[0]);
-                setTagPage(firstPage);
+        if (activeTagSlug !== activeView.slug) {
+          try {
+            setVisibleTagCount(10);
+            const [taggedPosts, pageSlugs] = await Promise.all([
+              getPostsByTag(activeView.slug, 0, 100),
+              getTagPageSlugs(activeView.slug)
+            ]);
+            
+            if (!ignore) {
+              if (taggedPosts.length > 0 || pageSlugs.length > 0) {
+                setTagPosts(taggedPosts);
+                setActiveTagSlug(activeView.slug);
+                if (pageSlugs.length > 0) {
+                  const firstPage = await getPageBySlug(pageSlugs[0]);
+                  if (!ignore) {
+                    setTagPage(firstPage);
+                  }
+                }
+                window.scrollTo(0, 0);
+              } else {
+                setContentNotFound(true);
               }
-              window.scrollTo(0, 0);
-            } else {
-              setContentNotFound(true);
-              window.history.replaceState(null, '', CONFIG.basePath);
             }
-          }
-        } catch (err) {
-          console.error('[App] tag items load failed:', err);
-          if (!ignore) {
-            setContentNotFound(true);
-            window.history.replaceState(null, '', CONFIG.basePath);
+          } catch (err) {
+            console.error('[App] tag items load failed:', err);
+            if (!ignore) setContentNotFound(true);
           }
         }
       }
     };
-
+ 
     loadData();
-    return () => { ignore = true; };
+    return () => { 
+        ignore = true; 
+    };
   }, [activeView.type, activeView.slug, posts.length]);
-
-  // Handle cross-type resets to clear old content when switching view modes
-  useEffect(() => {
-    if (activeView.type !== 'post') setCurrentPost(null);
-    if (activeView.type !== 'page') setCurrentPage(null);
-    if (activeView.type !== 'author') setCurrentAuthor(null);
-    if (activeView.type !== 'tag') {
-      setTagPosts([]);
-      setTagPage(null);
-    }
-  }, [activeView.type]);
 
   // Determine if the current data matches the requested view
   const isDataReady = useMemo(() => {
-    if (activeView.type === 'home') return true;
-    if (activeView.type === 'post') return currentPost?.slug === activeView.slug;
-    if (activeView.type === 'page') return currentPage?.slug === activeView.slug;
-    if (activeView.type === 'author') return currentAuthor?.slug === activeView.slug;
-    if (activeView.type === 'tag') return tagPosts.length > 0 || !!tagPage;
-    return false;
-  }, [activeView, currentPost, currentPage, currentAuthor, tagPosts.length, tagPage]);
+    let ready = false;
+    if (activeView.type === 'home') ready = true;
+    else if (activeView.type === 'post') ready = currentPost?.slug === activeView.slug;
+    else if (activeView.type === 'page') ready = currentPage?.slug === activeView.slug;
+    else if (activeView.type === 'author') ready = currentAuthor?.slug === activeView.slug;
+    else if (activeView.type === 'tag') {
+        ready = activeTagSlug === activeView.slug && (tagPosts.length > 0 || !!tagPage);
+    }
+    
+    return ready;
+  }, [activeView, currentPost, currentPage, currentAuthor, tagPosts, tagPage, activeTagSlug]);
+
+
 
   // Delayed loader visibility to avoid flash on fast loads
   const [showLoader, setShowLoader] = useState(false);
@@ -417,7 +437,7 @@ export default function App() {
         />
         
         <main id="main-content" className="flex-grow">
-          <AnimatePresence mode="wait">
+          <AnimatePresence>
             {contentNotFound ? (
               <motion.div
                 key="not-found"
@@ -525,73 +545,101 @@ export default function App() {
                 </motion.div>
               ) : <div key="pending-author" />
             ) : activeView.type === 'tag' ? (
-              <motion.div 
-                key={`tag-${activeView.slug}`} 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="py-24"
-              >
-                <div className="max-w-5xl mx-auto px-10 mb-20">
-                  <button
-                    onClick={onHome}
-                    className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors mb-12 uppercase font-bold tracking-[0.2em] text-[10px]"
-                  >
-                    {t.common.backToHome}
-                  </button>
-                  <div className="flex items-center gap-4 mb-6">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2 py-1 rounded-md">
-                      {t.blog.topic}
-                    </span>
-                    <div className="h-[1px] w-12 bg-white/10" />
+              !isDataReady ? (
+                <motion.div 
+                  key="tag-loader"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="min-h-screen flex items-center justify-center"
+                >
+                  <div className="flex gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  {tagPage ? (
-                  <div className="markdown-body prose prose-stone prose-invert max-w-none border-b border-white/10 pb-20 mb-20">
-                      <PageView page={tagPage} onBack={() => {}} inline />
-                  </div>
-                  ) : (
-                  <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-10">
-                    <span className="text-brand-accent opacity-50">#</span>{activeView.slug}
-                  </h1>
-                  )}
-  
-                  <div className="flex items-center gap-6 mb-12">
-                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">
-                      {t.blog.relatedArticles}
-                    </span>
-                    <div className="h-[1px] flex-grow bg-white/10" />
-                  </div>
-                </div>
-  
-                <Timeline 
-                  posts={tagPosts.slice(0, visibleTagCount)} 
-                  onSelectPost={(slug) => {
-                    navigate({ type: 'post', slug });
-                  }}
-                  onSelectTag={(tag) => {
-                    navigate({ type: 'tag', slug: tag });
-                  }}
-                />
-  
-                {visibleTagCount < tagPosts.length && (
-                  <div 
-                    id="infinite-scroll-trigger" 
-                    className="min-h-32 flex flex-col items-center justify-center mt-20 gap-8"
-                  >
-                    <div className="flex gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </div>
-                    <button 
-                      onClick={() => setVisibleTagCount((prev) => prev + 10)}
-                      className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-brand-accent transition-colors border border-white/10 px-6 py-3 rounded-full hover:border-brand-accent/30"
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key={`tag-${activeView.slug}`} 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="py-24"
+                >
+                  <div className="max-w-5xl mx-auto px-10 mb-20">
+                    <button
+                      onClick={onHome}
+                      className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors mb-12 uppercase font-bold tracking-[0.2em] text-[10px]"
                     >
-                      {t.common.loadMore}
+                      {t.common.backToHome}
                     </button>
+                    <div className="flex items-center gap-4 mb-6">
+                      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2 py-1 rounded-md">
+                        {t.blog.topic}
+                      </span>
+                      <div className="h-[1px] w-12 bg-white/10" />
+                    </div>
+                    <header className="mb-20">
+                      <h1 className="text-5xl md:text-8xl font-extrabold leading-[1.1] tracking-tighter mb-12 text-white">
+                        {tagPage ? tagPage.title : (
+                          <>
+                            <span className="text-brand-accent opacity-50">#</span>{activeView.slug}
+                          </>
+                        )}
+                      </h1>
+                      <div className="h-1.5 w-24 bg-brand-accent rounded-full" />
+                    </header>
+  
+                    {tagPage && (
+                    <div className="markdown-body prose prose-stone prose-invert max-w-none border-b border-white/10 pb-20 mb-20">
+                        <PageView page={tagPage} onBack={() => {}} inline />
+                    </div>
+                    )}
+    
+                    {tagPosts.length > 0 && (
+                      <>
+                        <div className="flex items-center gap-6 mb-12">
+                          <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">
+                            {t.blog.relatedArticles}
+                          </span>
+                          <div className="h-[1px] flex-grow bg-white/10" />
+                        </div>
+                      </>
+                    )}
                   </div>
-                )}
-              </motion.div>
+    
+                  {tagPosts.length > 0 && (
+                    <Timeline 
+                      posts={tagPosts.slice(0, visibleTagCount)} 
+                      onSelectPost={(slug) => {
+                        navigate({ type: 'post', slug });
+                      }}
+                      onSelectTag={(tag) => {
+                        navigate({ type: 'tag', slug: tag });
+                      }}
+                    />
+                  )}
+    
+                  {tagPosts.length > 0 && visibleTagCount < tagPosts.length && (
+                    <div 
+                      id="infinite-scroll-trigger" 
+                      className="min-h-32 flex flex-col items-center justify-center mt-20 gap-8"
+                    >
+                      <div className="flex gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <button 
+                        onClick={() => setVisibleTagCount((prev) => prev + 10)}
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-brand-accent transition-colors border border-white/10 px-6 py-3 rounded-full hover:border-brand-accent/30"
+                      >
+                        {t.common.loadMore}
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+              )
             ) : (
               <motion.div 
                 key="home-view"
