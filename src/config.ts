@@ -29,7 +29,7 @@ export const CONFIG = {
       type: 'menu',
       subitems: [
         { label: 'Lait ja asetukset', type: 'page', slug: 'lainsaadanto'},
-        { label: 'Kaavatietomalli', type: 'page', slug: 'kaavatietomalli-yalusta'},
+        { label: 'Kansallinen kaavatietomalli', type: 'page', slug: 'kaavatietomalli-yalusta'},
         { label: 'Soveltamisohjeet', type: 'page', slug: 'soveltamisohjeet'},
         { label: 'Ryhti-järjestelmä', type: 'page', slug: 'ryhti-jarjestelma'},
         { label: 'Kaavatieto kuntajärjestelmissä', type: 'page', slug: 'kuntajarjestelmat'}
@@ -40,18 +40,15 @@ export const CONFIG = {
         type: 'menu',
         subitems: [
             { label: 'Ohjelmistoratkaisut', type: 'tag', slug: 'ohjelmistot'},
-            { label: 'Tietomallisparraukset ja koulutukset', type: 'page', slug: 'sparraus'},
-            { label: 'Markkinaselvitykset', type: 'page', slug: 'markkinaselvitykset'}
+            { label: 'Tietomallisparraukset ja koulutukset', type: 'tag', slug: 'sparraus'},
+            { label: 'Markkinaselvitykset', type: 'tag', slug: 'markkinaselvitykset'}
         ]
     },
     { 
         label: 'Kumppanit',
         type: 'menu',
         subitems: [
-            { label: 'Asiantuntijat N+1 Oy', type: 'page', slug: 'asiantuntijat-n-plus-1'},
-            { label: 'Gispo Oy', type: 'page', slug: 'gispo'},
-            { label: 'Spatineo Oy', type: 'page', slug: 'spatineo'},
-            { label: 'Ubigu Oy', type: 'page', slug: 'ubigu'}
+            { label: 'Spatineo Oy', type: 'page', slug: 'spatineo'}
         ]
     },
     { label: 'Tietoa', type: 'page', slug: 'tietoa' }
@@ -60,7 +57,8 @@ export const CONFIG = {
     { id: 'lainsaadanto', label: 'Lainsäädäntö', tag: 'lainsäädäntö' },
     { id: 'tietomallit', label: 'Tietomallit', tag: 'tietomallit' },
     { id: 'kaavatietomalli-ng', label: 'Kaavatietomalli NG', tag: 'kaavatietomalli-ng' },
-    { id: 'era-henki', label: 'ERA-henki', tag: 'era-henki' }
+    { id: 'osallistuminen', label: 'Osallistuminen', tag: 'osallistumien' },
+    { id: 'uusi-ajattelu', label: 'Uusi ajattelutapa', tag: 'uusi-ajattelu' }
   ] as ThemeItem[],
   analytics: {
     gaTrackingId: import.meta.env.VITE_GA_TRACKING_ID || ''
