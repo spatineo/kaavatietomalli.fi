@@ -96,4 +96,20 @@ export interface Translations {
     searchPrompt: string;
     backToHome: string;
   };
+  consent: {
+    title: string;
+    description: string;
+    acceptAll: string;
+    rejectAll: string;
+    customize: string;
+    save: string;
+    essentials: {
+      title: string;
+      description: string;
+    };
+    analytics: {
+      title: string;
+      description: string;
+    };
+  };
 }

@@ -58,7 +58,7 @@ export const fi: Translations = {
     types: {
       post: 'Artikkeli',
       page: 'Sivu',
-      author: 'Kirjoittaja',
+      author: 'Henkilö',
     },
   },
   mermaid: {
@@ -97,5 +97,21 @@ export const fi: Translations = {
     message: 'Hae sivuston muusta sisällöstä',
     searchPrompt: 'Hae artikkeleita, sivuja...',
     backToHome: 'Palaa etusivulle',
+  },
+  consent: {
+    title: 'Evästeasetukset',
+    description: 'Käytämme evästeitä parantaaksemme käyttökokemustasi ja analysoidaksemme sivuston käyttöä. Voit muokata asetuksiasi alta.',
+    acceptAll: 'Hyväksy kaikki',
+    rejectAll: 'Vain välttämättömät',
+    customize: 'Muokkaa asetuksia',
+    save: 'Tallenna valinnat',
+    essentials: {
+      title: 'Välttämättömät evästeet',
+      description: 'Nämä evästeet ovat välttämättömiä sivuston toiminnalle, eikä niitä voi poistaa käytöstä.',
+    },
+    analytics: {
+      title: 'Analytiikka-evästeet',
+      description: 'Näiden evästeiden avulla seuraamme sivuston kävijämääriä ja käyttöä parantaaksemme palvelua.',
+    },
   },
 };

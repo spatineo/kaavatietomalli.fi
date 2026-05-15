@@ -12,6 +12,7 @@ import { Header, Footer } from './components/Navigation';
 import { HistoryHero } from './components/HistoryHero';
 import { AuthorView } from './components/AuthorView';
 import { NotFoundView } from './components/NotFoundView';
+import { CookieConsent } from './components/CookieConsent';
 import { getAllPostMetadata, getPostBySlug, getPageBySlug, getAuthorBySlug, getPostsByTag, getTagPageSlugs, PostMetadata, PostData, PageData, AuthorData } from './lib/blog';
 import { CONFIG, ThemeItem } from './config';
 import { resolveImageUrl } from './lib/utils';
@@ -764,6 +765,7 @@ export default function App() {
       </main>
 
       <Footer />
+      <CookieConsent />
     </div>
   );
 }

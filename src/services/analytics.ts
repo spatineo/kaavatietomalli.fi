@@ -1,4 +1,5 @@
 import { CONFIG } from '../config';
+import { getConsent } from './consent';
 
 export enum AnalyticsEvent {
   PAGE_VIEW = 'page_view',
@@ -98,12 +99,23 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
 }
 
 let activeTracker: AnalyticsTracker | null = null;
+let currentConsent: boolean | null = null;
 
 export function getTracker(): AnalyticsTracker {
+  const consent = getConsent();
+  const consentGranted = consent?.analytics || false;
+
+  // If consent changed, we might need to swap the tracker
+  if (currentConsent !== consentGranted) {
+    activeTracker = null;
+    currentConsent = consentGranted;
+  }
+
   if (activeTracker) return activeTracker;
 
   const gaId = (CONFIG as any).analytics?.gaTrackingId;
-  if (gaId) {
+  
+  if (gaId && consentGranted) {
     activeTracker = new GoogleAnalyticsTracker(gaId);
   } else {
     activeTracker = new NullTracker();
