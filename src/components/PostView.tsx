@@ -28,9 +28,9 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
   const t = getTranslations(CONFIG.language as Language);
 
   useEffect(() => {
-    getTracker().trackPostView(post.slug, post.title);
-    getTracker().trackPageView(`${CONFIG.basePath}?post=${post.slug}`, post.title);
-  }, [post.slug, post.title]);
+    getTracker().trackPostView(post.slug, post.title, post.tags);
+    getTracker().trackPageView(`${CONFIG.basePath}?post=${post.slug}`, post.title, post.tags);
+  }, [post.slug, post.title, post.tags]);
 
   return (
     <motion.article

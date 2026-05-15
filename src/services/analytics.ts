@@ -8,8 +8,8 @@ export enum AnalyticsEvent {
 }
 
 export interface AnalyticsTracker {
-  trackPageView(path: string, title?: string): void;
-  trackPostView(slug: string, title: string): void;
+  trackPageView(path: string, title?: string, tags?: string[]): void;
+  trackPostView(slug: string, title: string, tags?: string[]): void;
   trackAuthorView(slug: string, name: string): void;
   trackCTA(label: string, url?: string, context?: string): void;
 }
@@ -53,21 +53,23 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
     this.initialized = true;
   }
 
-  trackPageView(path: string, title?: string) {
+  trackPageView(path: string, title?: string, tags?: string[]) {
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'page_view', {
         page_path: path,
         page_title: title,
+        content_tags: tags?.join(', '),
         send_to: this.measurementId
       });
     }
   }
 
-  trackPostView(slug: string, title: string) {
+  trackPostView(slug: string, title: string, tags?: string[]) {
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'post_view', {
         post_slug: slug,
         post_title: title,
+        content_tags: tags?.join(', '),
         send_to: this.measurementId
       });
     }

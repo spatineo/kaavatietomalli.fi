@@ -329,7 +329,7 @@ export default function App() {
     if (activeView.type === 'home') {
       getTracker().trackPageView(CONFIG.basePath, `Home | Kaavatietomalli.fi`);
     } else if (activeView.type === 'tag' && activeView.slug) {
-      getTracker().trackPageView(`${CONFIG.basePath}?tag=${activeView.slug}`, `#${activeView.slug} | Kaavatietomalli.fi`);
+      getTracker().trackPageView(`${CONFIG.basePath}?tag=${activeView.slug}`, `#${activeView.slug} | Kaavatietomalli.fi`, [activeView.slug]);
     }
 
     if (contentNotFound) {
