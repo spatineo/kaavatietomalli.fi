@@ -15,9 +15,16 @@ export interface AnalyticsTracker {
   trackCTA(label: string, url?: string, context?: string): void;
 }
 
+let lastTrackedPageView: { path: string; title?: string; tags?: string[] } | null = null;
+let lastTrackedPostView: { slug: string; title: string; tags?: string[] } | null = null;
+
 class NullTracker implements AnalyticsTracker {
-  trackPageView() {}
-  trackPostView() {}
+  trackPageView(path: string, title?: string, tags?: string[]) {
+    lastTrackedPageView = { path, title, tags };
+  }
+  trackPostView(slug: string, title: string, tags?: string[]) {
+    lastTrackedPostView = { slug, title, tags };
+  }
   trackAuthorView() {}
   trackCTA() {}
 }
@@ -29,6 +36,16 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
   constructor(measurementId: string) {
     this.measurementId = measurementId;
     this.init();
+    
+    // Replay last tracked view if it happened before consent was granted
+    if (lastTrackedPostView) {
+      this.trackPostView(lastTrackedPostView.slug, lastTrackedPostView.title, lastTrackedPostView.tags);
+      lastTrackedPostView = null;
+    }
+    if (lastTrackedPageView) {
+      this.trackPageView(lastTrackedPageView.path, lastTrackedPageView.title, lastTrackedPageView.tags);
+      lastTrackedPageView = null;
+    }
   }
 
   private init() {
@@ -109,6 +126,16 @@ export function getTracker(): AnalyticsTracker {
   if (currentConsent !== consentGranted) {
     activeTracker = null;
     currentConsent = consentGranted;
+    
+    // Handle GA-specific unloading/disabling
+    const gaId = (CONFIG as any).analytics?.gaTrackingId;
+    if (gaId && typeof window !== 'undefined') {
+      if (!consentGranted) {
+        (window as any)[`ga-disable-${gaId}`] = true;
+      } else {
+        (window as any)[`ga-disable-${gaId}`] = false;
+      }
+    }
   }
 
   if (activeTracker) return activeTracker;
@@ -122,4 +149,11 @@ export function getTracker(): AnalyticsTracker {
   }
 
   return activeTracker;
+}
+
+// Global listener for consent updates to ensure immediate reaction
+if (typeof window !== 'undefined') {
+  window.addEventListener('cookie_consent_updated', () => {
+    getTracker(); // This will trigger the currentConsent check and disable GA if needed
+  });
 }

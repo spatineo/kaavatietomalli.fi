@@ -13,12 +13,39 @@ export function CookieConsent() {
   const t = getTranslations(CONFIG.language as Language);
 
   useEffect(() => {
+    const handleOpenConsent = () => {
+      console.log('[DEBUG] open_cookie_consent event received');
+      const current = getConsent();
+      if (current) {
+        setAnalyticsEnabled(current.analytics);
+      }
+      setIsVisible(false); // Reset to trigger AnimatePresence if it was already open
+      setTimeout(() => {
+        setIsVisible(true);
+        setIsExpanded(true);
+      }, 50);
+    };
+
+    window.addEventListener('open_cookie_consent', handleOpenConsent);
+    // Add global fallback
+    (window as any).openCookieSettings = handleOpenConsent;
+
     const consent = getConsent();
-    if (!consent) {
-      // Delay showing the banner for better UX
+    if (consent) {
+      setAnalyticsEnabled(consent.analytics);
+    } else {
+      // Delay showing the banner for better UX if no consent yet
       const timer = setTimeout(() => setIsVisible(true), 1500);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener('open_cookie_consent', handleOpenConsent);
+      };
     }
+
+    return () => {
+      window.removeEventListener('open_cookie_consent', handleOpenConsent);
+      delete (window as any).openCookieSettings;
+    };
   }, []);
 
   const handleAcceptAll = () => {
@@ -37,14 +64,50 @@ export function CookieConsent() {
   };
 
   return (
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: 100 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 100 }}
-          className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-6 pointer-events-none"
-        >
+    <>
+      <AnimatePresence>
+        {!isVisible && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed bottom-6 right-6 z-[90] pointer-events-auto"
+          >
+            <motion.button
+              whileHover="hover"
+              initial="initial"
+              onClick={() => setIsVisible(true)}
+              className="flex items-center bg-slate-900 border border-white/10 rounded-full shadow-2xl overflow-hidden group"
+            >
+              <div className="p-3 bg-brand-accent/10 text-brand-accent">
+                <Cookie size={20} />
+              </div>
+              <motion.div
+                variants={{
+                  initial: { width: 0, opacity: 0 },
+                  hover: { width: 'auto', opacity: 1 }
+                }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                className="overflow-hidden whitespace-nowrap"
+              >
+                <span className="pr-5 pl-1 text-[11px] font-black uppercase tracking-wider text-slate-200">
+                  {t.consent.customize}
+                </span>
+              </motion.div>
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            key="cookie-consent-banner"
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-6 pointer-events-none"
+          >
           <div className="max-w-4xl mx-auto bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl pointer-events-auto overflow-hidden">
             <div className="p-6 sm:p-8">
               <div className="flex flex-col md:flex-row gap-6 items-start">
@@ -140,5 +203,6 @@ export function CookieConsent() {
         </motion.div>
       )}
     </AnimatePresence>
+    </>
   );
 }

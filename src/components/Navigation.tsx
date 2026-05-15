@@ -297,7 +297,7 @@ export function Footer() {
   return (
     <footer className="py-12 border-t border-white/5 bg-black/40">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="flex items-center gap-8">
+        <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="flex flex-col gap-1">
             <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.rights}</span>
             <span className="text-sm font-semibold text-slate-200">&copy; Spatineo Oy ja kirjoittajat</span>
