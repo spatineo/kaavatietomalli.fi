@@ -44,7 +44,16 @@ export const CONFIG = {
             { label: 'Markkinaselvitykset', type: 'page', slug: 'markkinaselvitykset'}
         ]
     },
-    { label: 'Kumppanit', type: 'page', slug: 'kumppanit' },
+    { 
+        label: 'Kumppanit',
+        type: 'menu',
+        subitems: [
+            { label: 'Asiantuntijat N+1 Oy', type: 'page', slug: 'asiantuntijat-n-plus-1'},
+            { label: 'Gispo Oy', type: 'page', slug: 'gispo'},
+            { label: 'Spatineo Oy', type: 'page', slug: 'spatineo'},
+            { label: 'Ubigu Oy', type: 'page', slug: 'ubigu'}
+        ]
+    },
     { label: 'Tietoa', type: 'page', slug: 'tietoa' }
   ] as NavItem[],
   themes: [

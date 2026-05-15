@@ -18,6 +18,7 @@ import { CONFIG, ThemeItem } from './config';
 import { resolveImageUrl } from './lib/utils';
 import { getTranslations, Language } from './i18n';
 import { getTracker } from './services/analytics';
+import { PasswordGate } from './components/PasswordGate';
 
 export default function App() {
   const t = getTranslations(CONFIG.language as Language);
@@ -401,344 +402,178 @@ export default function App() {
   }, [activeView, currentPost, currentPage, currentAuthor, isDataReady, contentNotFound, t]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-brand-bg text-slate-300">
-      <a href="#main-content" className="skip-to-content">
-        {t.common.skipToContent}
-      </a>
-      <Header 
-        onNavigatePage={(slug) => navigate({ type: 'page', slug })} 
-        onNavigateTag={(tag) => navigate({ type: 'tag', slug: tag })}
-        onNavigatePost={(slug) => navigate({ type: 'post', slug })}
-        onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
-        onHome={onHome} 
-        onBlog={scrollToBlog} 
-      />
-      
-      <main id="main-content" className="flex-grow">
-        <AnimatePresence mode="wait">
-          {contentNotFound ? (
-            <motion.div
-              key="not-found"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <NotFoundView 
-                missingSlug={activeView.slug || undefined}
-                onNavigate={(type, slug) => navigate({ type, slug })}
-                onHome={onHome}
-              />
-            </motion.div>
-          ) : activeView.type === 'post' ? (
-            isDataReady ? (
+    <PasswordGate>
+      <div className="min-h-screen flex flex-col bg-brand-bg text-slate-300">
+        <a href="#main-content" className="skip-to-content">
+          {t.common.skipToContent}
+        </a>
+        <Header 
+          onNavigatePage={(slug) => navigate({ type: 'page', slug })} 
+          onNavigateTag={(tag) => navigate({ type: 'tag', slug: tag })}
+          onNavigatePost={(slug) => navigate({ type: 'post', slug })}
+          onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
+          onHome={onHome} 
+          onBlog={scrollToBlog} 
+        />
+        
+        <main id="main-content" className="flex-grow">
+          <AnimatePresence mode="wait">
+            {contentNotFound ? (
               <motion.div
-                key={`post-${activeView.slug}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <PostView 
-                  post={currentPost!} 
-                  nextPost={adjacentPosts.next}
-                  prevPost={adjacentPosts.prev}
-                  onBack={onHome} 
-                  onNavigate={(slug) => {
-                    navigate({ type: 'post', slug });
-                  }}
-                  onNavigateAuthor={(slug) => {
-                    navigate({ type: 'author', slug });
-                  }}
-                  onSelectTag={(tag) => {
-                    navigate({ type: 'tag', slug: tag });
-                  }}
-                />
-              </motion.div>
-            ) : showLoader ? (
-              <motion.div 
-                key="loader-post" 
+                key="not-found"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="min-h-screen flex items-center justify-center"
-              >
-                <div className="flex gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </motion.div>
-            ) : <div key="pending-post" />
-          ) : activeView.type === 'page' ? (
-            isDataReady ? (
-              <motion.div
-                key={`page-${activeView.slug}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                <PageView 
-                  page={currentPage!}
-                  onBack={onHome}
+                <NotFoundView 
+                  missingSlug={activeView.slug || undefined}
+                  onNavigate={(type, slug) => navigate({ type, slug })}
+                  onHome={onHome}
                 />
               </motion.div>
-            ) : showLoader ? (
-              <motion.div 
-                key="loader-page" 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="min-h-screen flex items-center justify-center"
-              >
-                <div className="flex gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </motion.div>
-            ) : <div key="pending-page" />
-          ) : activeView.type === 'author' ? (
-            isDataReady ? (
-              <motion.div
-                key={`author-${activeView.slug}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <AuthorView 
-                  author={currentAuthor!}
-                  onBack={onHome}
-                />
-              </motion.div>
-            ) : showLoader ? (
-              <motion.div 
-                key="loader-author" 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="min-h-screen flex items-center justify-center"
-              >
-                <div className="flex gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </motion.div>
-            ) : <div key="pending-author" />
-          ) : activeView.type === 'tag' ? (
-            <motion.div 
-              key={`tag-${activeView.slug}`} 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="py-24"
-            >
-              <div className="max-w-5xl mx-auto px-10 mb-20">
-                <button
-                  onClick={onHome}
-                  className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors mb-12 uppercase font-bold tracking-[0.2em] text-[10px]"
+            ) : activeView.type === 'post' ? (
+              isDataReady ? (
+                <motion.div
+                  key={`post-${activeView.slug}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  {t.common.backToHome}
-                </button>
-                <div className="flex items-center gap-4 mb-6">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2 py-1 rounded-md">
-                    {t.blog.topic}
-                  </span>
-                  <div className="h-[1px] w-12 bg-white/10" />
-                </div>
-                {tagPage ? (
-                <div className="markdown-body prose prose-stone prose-invert max-w-none border-b border-white/10 pb-20 mb-20">
-                    <PageView page={tagPage} onBack={() => {}} inline />
-                </div>
-                ) : (
-                <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-10">
-                  <span className="text-brand-accent opacity-50">#</span>{activeView.slug}
-                </h1>
-                )}
-
-                <div className="flex items-center gap-6 mb-12">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">
-                    {t.blog.relatedArticles}
-                  </span>
-                  <div className="h-[1px] flex-grow bg-white/10" />
-                </div>
-              </div>
-
-              <Timeline 
-                posts={tagPosts.slice(0, visibleTagCount)} 
-                onSelectPost={(slug) => {
-                  navigate({ type: 'post', slug });
-                }}
-                onSelectTag={(tag) => {
-                  navigate({ type: 'tag', slug: tag });
-                }}
-              />
-
-              {visibleTagCount < tagPosts.length && (
-                <div 
-                  id="infinite-scroll-trigger" 
-                  className="min-h-32 flex flex-col items-center justify-center mt-20 gap-8"
+                  <PostView 
+                    post={currentPost!} 
+                    nextPost={adjacentPosts.next}
+                    prevPost={adjacentPosts.prev}
+                    onBack={onHome} 
+                    onNavigate={(slug) => {
+                      navigate({ type: 'post', slug });
+                    }}
+                    onNavigateAuthor={(slug) => {
+                      navigate({ type: 'author', slug });
+                    }}
+                    onSelectTag={(tag) => {
+                      navigate({ type: 'tag', slug: tag });
+                    }}
+                  />
+                </motion.div>
+              ) : showLoader ? (
+                <motion.div 
+                  key="loader-post" 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="min-h-screen flex items-center justify-center"
                 >
                   <div className="flex gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
                     <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  <button 
-                    onClick={() => setVisibleTagCount((prev) => prev + 10)}
-                    className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-brand-accent transition-colors border border-white/10 px-6 py-3 rounded-full hover:border-brand-accent/30"
-                  >
-                    {t.common.loadMore}
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          ) : (
-            <motion.div 
-              key="home-view"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              {/* Hero Section */}
-              <section className="bg-brand-bg pt-20 pb-20 md:pt-32 md:pb-32">
-                <div className="max-w-7xl mx-auto px-6">
-                  <div className="flex flex-col gap-12 md:gap-16">
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                    >
-                      <div className="flex items-center gap-4 mb-8">
-                        <div className="h-[1px] w-8 bg-brand-accent" />
-                        <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
-                          {t.hero.subtitle}
-                        </span>
-                      </div>
-                      <h1 className="text-6xl md:text-[7rem] lg:text-[9rem] font-black tracking-tighter leading-[0.8] text-white">
-                        {t.hero.titleMain}<span className="text-brand-accent">{t.hero.titleAccent}</span><span className="text-white/20"><wbr/>{t.hero.titleMalli}</span>
-                      </h1>
-                    </motion.div>
-
-                    <div className="grid lg:grid-cols-[1fr_450px] gap-12 items-end">
-                      <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                        className="text-xl md:text-3xl text-slate-400 max-w-3xl font-medium leading-[1.4] tracking-tight"
-                      >
-                        {t.hero.description}
-                      </motion.p>
-
-                      {editor && (
-                        <motion.button
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          transition={{ duration: 0.8, delay: 0.4 }}
-                          onClick={() => navigate({ type: 'author', slug: editor.slug })}
-                          className="group/profile bg-white/5 border border-white/10 p-6 rounded-3xl flex flex-row items-center text-left hover:border-brand-accent/50 transition-all backdrop-blur-sm shadow-2xl relative overflow-hidden outline-none w-full max-w-[450px] lg:ml-auto"
-                          aria-label={`${t.common.author}: ${editor.name}`}
-                        >
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden mr-6 border border-white/10 group-hover/profile:border-brand-accent transition-colors relative z-10 shadow-xl flex-shrink-0">
-                            <img 
-                              src={resolveImageUrl(editor.image)} 
-                              alt={editor.name} 
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover/profile:scale-110" 
-                            />
-                          </div>
-                          <div className="relative z-10 flex-1 min-w-0">
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-brand-accent mb-1">{t.common.author}</p>
-                            <h3 className="text-xl font-bold text-white group-hover/profile:text-brand-accent transition-colors leading-tight mb-1 truncate">
-                              {editor.name}
-                            </h3>
-                            <p className="text-s text-slate-400 font-medium leading-tight">
-                              {editor.title}
-                            </p>
-                            <p className="text-s text-slate-400 font-medium leading-tight">
-                              {editor.company}
-                            </p>
-                          </div>
-                        </motion.button>
-                      )}
-                    </div>
+                </motion.div>
+              ) : <div key="pending-post" />
+            ) : activeView.type === 'page' ? (
+              isDataReady ? (
+                <motion.div
+                  key={`page-${activeView.slug}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <PageView 
+                    page={currentPage!}
+                    onBack={onHome}
+                  />
+                </motion.div>
+              ) : showLoader ? (
+                <motion.div 
+                  key="loader-page" 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="min-h-screen flex items-center justify-center"
+                >
+                  <div className="flex gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                </div>
-              </section>
-
-              {/* History Hero Segment with author featured */}
-              <HistoryHero 
-                posts={historyPosts} 
-                onSelectPost={(slug) => {
-                  navigate({ type: 'post', slug });
-                }} 
-              />
-
-              <div id="journal-section" className="py-20 lg:py-40">
-                <div className="max-w-5xl mx-auto px-10 mb-32">
+                </motion.div>
+              ) : <div key="pending-page" />
+            ) : activeView.type === 'author' ? (
+              isDataReady ? (
+                <motion.div
+                  key={`author-${activeView.slug}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <AuthorView 
+                    author={currentAuthor!}
+                    onBack={onHome}
+                  />
+                </motion.div>
+              ) : showLoader ? (
+                <motion.div 
+                  key="loader-author" 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="min-h-screen flex items-center justify-center"
+                >
+                  <div className="flex gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </motion.div>
+              ) : <div key="pending-author" />
+            ) : activeView.type === 'tag' ? (
+              <motion.div 
+                key={`tag-${activeView.slug}`} 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="py-24"
+              >
+                <div className="max-w-5xl mx-auto px-10 mb-20">
+                  <button
+                    onClick={onHome}
+                    className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors mb-12 uppercase font-bold tracking-[0.2em] text-[10px]"
+                  >
+                    {t.common.backToHome}
+                  </button>
+                  <div className="flex items-center gap-4 mb-6">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2 py-1 rounded-md">
+                      {t.blog.topic}
+                    </span>
+                    <div className="h-[1px] w-12 bg-white/10" />
+                  </div>
+                  {tagPage ? (
+                  <div className="markdown-body prose prose-stone prose-invert max-w-none border-b border-white/10 pb-20 mb-20">
+                      <PageView page={tagPage} onBack={() => {}} inline />
+                  </div>
+                  ) : (
+                  <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-10">
+                    <span className="text-brand-accent opacity-50">#</span>{activeView.slug}
+                  </h1>
+                  )}
+  
                   <div className="flex items-center gap-6 mb-12">
-                    <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
-                      {t.blog.sectionSubtitle}
+                    <span className="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-500">
+                      {t.blog.relatedArticles}
                     </span>
                     <div className="h-[1px] flex-grow bg-white/10" />
-                    <span className="text-[10px] font-mono text-slate-500">{t.hero.editorChief}: Ilkka Rinne / Spatineo</span>
                   </div>
-                  
-                  <h2 className="text-6xl md:text-7xl font-black leading-[0.8] tracking-tighter mb-12 text-white">
-                    {t.blog.titleMain}<span className="text-brand-accent">{t.blog.titleAccent}</span><span className="text-white/30">{t.blog.titleBlogi}</span>
-                  </h2>
-                  
-                  <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
-                    {t.blog.description}
-                  </p>
-
-                  {CONFIG.themes && CONFIG.themes.length > 0 && (
-                    <div className="flex flex-col gap-6">
-                      <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 ml-1">{t.common.themes}</h3>
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={() => {
-                            setSelectedThemeTag(null);
-                            setVisibleJournalCount(10);
-                          }}
-                          className={`px-6 py-3 rounded-xl uppercase font-bold tracking-widest text-[10px] transition-all border ${
-                            !selectedThemeTag 
-                            ? 'bg-brand-accent border-brand-accent text-brand-bg shadow-lg shadow-brand-accent/20' 
-                            : 'bg-white/5 border-white/10 text-slate-400 hover:border-brand-accent/30'
-                          }`}
-                        >
-                          {t.common.all}
-                        </button>
-                        {CONFIG.themes.map((theme: ThemeItem) => (
-                          <button
-                            key={theme.id}
-                            onClick={() => {
-                              setSelectedThemeTag(theme.tag);
-                              setVisibleJournalCount(10);
-                              // Scroll slightly to update visibility if needed
-                              window.scrollBy(0, 1);
-                            }}
-                            className={`px-6 py-3 rounded-xl uppercase font-bold tracking-widest text-[10px] transition-all border ${
-                              selectedThemeTag === theme.tag 
-                              ? 'bg-brand-accent border-brand-accent text-brand-bg shadow-lg shadow-brand-accent/20' 
-                              : 'bg-white/5 border-white/10 text-slate-400 hover:border-brand-accent/30'
-                            }`}
-                          >
-                            {theme.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                 </div>
+  
                 <Timeline 
-                  posts={visibleJournalPosts} 
+                  posts={tagPosts.slice(0, visibleTagCount)} 
                   onSelectPost={(slug) => {
                     navigate({ type: 'post', slug });
-                  }} 
+                  }}
                   onSelectTag={(tag) => {
                     navigate({ type: 'tag', slug: tag });
                   }}
                 />
-                
-                {/* Infinite Scroll Trigger */}
-                {visibleJournalCount < allJournalPosts.length && (
+  
+                {visibleTagCount < tagPosts.length && (
                   <div 
                     id="infinite-scroll-trigger" 
                     className="min-h-32 flex flex-col items-center justify-center mt-20 gap-8"
@@ -749,21 +584,189 @@ export default function App() {
                       <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                     <button 
-                      onClick={() => setVisibleJournalCount((prev) => prev + 10)}
+                      onClick={() => setVisibleTagCount((prev) => prev + 10)}
                       className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-brand-accent transition-colors border border-white/10 px-6 py-3 rounded-full hover:border-brand-accent/30"
                     >
                       {t.common.loadMore}
                     </button>
                   </div>
                 )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-
-      <Footer />
-      <CookieConsent />
-    </div>
+              </motion.div>
+            ) : (
+              <motion.div 
+                key="home-view"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                {/* Hero Section */}
+                <section className="bg-brand-bg pt-20 pb-20 md:pt-32 md:pb-32">
+                  <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col gap-12 md:gap-16">
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                      >
+                        <div className="flex items-center gap-4 mb-8">
+                          <div className="h-[1px] w-8 bg-brand-accent" />
+                          <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
+                            {t.hero.subtitle}
+                          </span>
+                        </div>
+                        <h1 className="text-6xl md:text-[7rem] lg:text-[9rem] font-black tracking-tighter leading-[0.8] text-white">
+                          {t.hero.titleMain}<span className="text-brand-accent">{t.hero.titleAccent}</span><span className="text-white/20"><wbr/>{t.hero.titleMalli}</span>
+                        </h1>
+                      </motion.div>
+  
+                      <div className="grid lg:grid-cols-[1fr_450px] gap-12 items-end">
+                        <motion.p
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                          className="text-xl md:text-3xl text-slate-400 max-w-3xl font-medium leading-[1.4] tracking-tight"
+                        >
+                          {t.hero.description}
+                        </motion.p>
+  
+                        {editor && (
+                          <motion.button
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.4 }}
+                            onClick={() => navigate({ type: 'author', slug: editor.slug })}
+                            className="group/profile bg-white/5 border border-white/10 p-6 rounded-3xl flex flex-row items-center text-left hover:border-brand-accent/50 transition-all backdrop-blur-sm shadow-2xl relative overflow-hidden outline-none w-full max-w-[450px] lg:ml-auto"
+                            aria-label={`${t.common.author}: ${editor.name}`}
+                          >
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden mr-6 border border-white/10 group-hover/profile:border-brand-accent transition-colors relative z-10 shadow-xl flex-shrink-0">
+                              <img 
+                                src={resolveImageUrl(editor.image)} 
+                                alt={editor.name} 
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover/profile:scale-110" 
+                              />
+                            </div>
+                            <div className="relative z-10 flex-1 min-w-0">
+                              <p className="text-xs font-black uppercase tracking-[0.2em] text-brand-accent mb-1">{t.common.author}</p>
+                              <h3 className="text-xl font-bold text-white group-hover/profile:text-brand-accent transition-colors leading-tight mb-1 truncate">
+                                {editor.name}
+                              </h3>
+                              <p className="text-s text-slate-400 font-medium leading-tight">
+                                {editor.title}
+                              </p>
+                              <p className="text-s text-slate-400 font-medium leading-tight">
+                                {editor.company}
+                              </p>
+                            </div>
+                          </motion.button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </section>
+  
+                {/* History Hero Segment with author featured */}
+                <HistoryHero 
+                  posts={historyPosts} 
+                  onSelectPost={(slug) => {
+                    navigate({ type: 'post', slug });
+                  }} 
+                />
+  
+                <div id="journal-section" className="py-20 lg:py-40">
+                  <div className="max-w-5xl mx-auto px-10 mb-32">
+                    <div className="flex items-center gap-6 mb-12">
+                      <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
+                        {t.blog.sectionSubtitle}
+                      </span>
+                      <div className="h-[1px] flex-grow bg-white/10" />
+                      <span className="text-[10px] font-mono text-slate-500">{t.hero.editorChief}: Ilkka Rinne / Spatineo</span>
+                    </div>
+                    
+                    <h2 className="text-6xl md:text-7xl font-black leading-[0.8] tracking-tighter mb-12 text-white">
+                      {t.blog.titleMain}<span className="text-brand-accent">{t.blog.titleAccent}</span><span className="text-white/30">{t.blog.titleBlogi}</span>
+                    </h2>
+                    
+                    <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
+                      {t.blog.description}
+                    </p>
+  
+                    {CONFIG.themes && CONFIG.themes.length > 0 && (
+                      <div className="flex flex-col gap-6">
+                        <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 ml-1">{t.common.themes}</h3>
+                        <div className="flex flex-wrap gap-3">
+                          <button
+                            onClick={() => {
+                              setSelectedThemeTag(null);
+                              setVisibleJournalCount(10);
+                            }}
+                            className={`px-6 py-3 rounded-xl uppercase font-bold tracking-widest text-[10px] transition-all border ${
+                              !selectedThemeTag 
+                              ? 'bg-brand-accent border-brand-accent text-brand-bg shadow-lg shadow-brand-accent/20' 
+                              : 'bg-white/5 border-white/10 text-slate-400 hover:border-brand-accent/30'
+                            }`}
+                          >
+                            {t.common.all}
+                          </button>
+                          {CONFIG.themes.map((theme: ThemeItem) => (
+                            <button
+                              key={theme.id}
+                              onClick={() => {
+                                setSelectedThemeTag(theme.tag);
+                                setVisibleJournalCount(10);
+                                // Scroll slightly to update visibility if needed
+                                window.scrollBy(0, 1);
+                              }}
+                              className={`px-6 py-3 rounded-xl uppercase font-bold tracking-widest text-[10px] transition-all border ${
+                                selectedThemeTag === theme.tag 
+                                ? 'bg-brand-accent border-brand-accent text-brand-bg shadow-lg shadow-brand-accent/20' 
+                                : 'bg-white/5 border-white/10 text-slate-400 hover:border-brand-accent/30'
+                              }`}
+                            >
+                              {theme.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <Timeline 
+                    posts={visibleJournalPosts} 
+                    onSelectPost={(slug) => {
+                      navigate({ type: 'post', slug });
+                    }} 
+                    onSelectTag={(tag) => {
+                      navigate({ type: 'tag', slug: tag });
+                    }}
+                  />
+                  
+                  {/* Infinite Scroll Trigger */}
+                  {visibleJournalCount < allJournalPosts.length && (
+                    <div 
+                      id="infinite-scroll-trigger" 
+                      className="min-h-32 flex flex-col items-center justify-center mt-20 gap-8"
+                    >
+                      <div className="flex gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                      <button 
+                        onClick={() => setVisibleJournalCount((prev) => prev + 10)}
+                        className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 hover:text-brand-accent transition-colors border border-white/10 px-6 py-3 rounded-full hover:border-brand-accent/30"
+                      >
+                        {t.common.loadMore}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </main>
+  
+        <Footer />
+        <CookieConsent />
+      </div>
+    </PasswordGate>
   );
 }
