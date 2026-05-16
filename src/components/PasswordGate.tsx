@@ -56,7 +56,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
           </h1>
           
           <p className="text-slate-400 mb-10 leading-relaxed font-medium">
-            Tämä on sivuston vapaan julkaisun esivaihe. Syötä salasana jatkaaksesi.
+            Sivusto on vielä työn alla. Syötä salasana jatkaaksesi.
           </p>
           
           <form onSubmit={handleSubmit} className="w-full space-y-6">
@@ -91,7 +91,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
           
           <div className="mt-12 pt-8 border-t border-white/5 w-full">
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">
-              Spatineo Oy & Kumppanit
+              Spatineo Oy
             </p>
           </div>
         </div>
