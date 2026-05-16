@@ -663,7 +663,7 @@ export default function App() {
                           </span>
                         </div>
                         <h1 className="text-6xl md:text-[7rem] lg:text-[9rem] font-black tracking-tighter leading-[0.8] text-white">
-                          {t.hero.titleMain}<span className="text-brand-accent">{t.hero.titleAccent}</span><span className="text-white/20"><wbr/>{t.hero.titleMalli}</span>
+                          {t.hero.titleMain}<span className="text-brand-accent">{t.hero.titleAccent}</span><wbr/><span className="text-white/20"><wbr/>{t.hero.titleMalli}</span>
                         </h1>
                       </motion.div>
   
@@ -731,7 +731,7 @@ export default function App() {
                     </div>
                     
                     <h2 className="text-6xl md:text-7xl font-black leading-[0.8] tracking-tighter mb-12 text-white">
-                      {t.blog.titleMain}<span className="text-brand-accent">{t.blog.titleAccent}</span><span className="text-white/30">{t.blog.titleBlogi}</span>
+                      {t.blog.titleMain}<wbr/><span className="text-brand-accent">{t.blog.titleAccent}</span><wbr/><span className="text-white/30">{t.blog.titleBlogi}</span>
                     </h2>
                     
                     <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
