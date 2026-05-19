@@ -51,22 +51,23 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
   private init() {
     if (typeof window === 'undefined' || this.initialized) return;
 
-    // Load GA4 script
+    (window as any).dataLayer = (window as any).dataLayer || [];
+    
+    const gtag = function(...args: any[]) {
+      (window as any).dataLayer.push(arguments); 
+    };
+    
+    (window as any).gtag = gtag;
+
+    gtag('js', new Date());
+    gtag('config', this.measurementId, {
+      send_page_view: false // Correctly handled manually later
+    });
+    
     const script = document.createElement('script');
     script.src = `https://www.googletagmanager.com/gtag/js?id=${this.measurementId}`;
     script.async = true;
     document.head.appendChild(script);
-
-    // Initialize dataLayer
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    function gtag(...args: any[]) {
-      (window as any).dataLayer.push(args);
-    }
-    (window as any).gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', this.measurementId, {
-      send_page_view: false // We'll handle page views manually
-    });
 
     this.initialized = true;
   }
