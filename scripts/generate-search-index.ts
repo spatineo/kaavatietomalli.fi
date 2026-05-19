@@ -34,28 +34,35 @@ async function generateSearchIndex() {
   const pagesDir = path.join(CONTENT_DIR, 'pages');
   const authorsDir = path.join(CONTENT_DIR, 'authors');
 
-  // Helper to process directory
-  const processDir = async (dir: string, type: string) => {
+  // Helper to process directory recursively
+  const processDir = async (dir: string, type: string, baseDir: string = dir) => {
     if (!fs.existsSync(dir)) return;
-    const files = fs.readdirSync(dir).filter(f => f.endsWith('.md'));
-    for (const file of files) {
-      const slug = file.replace('.md', '');
-      const fullPath = path.join(dir, file);
-      const fileContent = fs.readFileSync(fullPath, 'utf-8');
-      const { data, content } = matter(fileContent);
+    const items = fs.readdirSync(dir);
+    for (const item of items) {
+      const fullPath = path.join(dir, item);
+      const stat = fs.statSync(fullPath);
+      
+      if (stat && stat.isDirectory()) {
+        await processDir(fullPath, type, baseDir);
+      } else if (item.endsWith('.md')) {
+        const relativePath = path.relative(baseDir, fullPath);
+        const slug = relativePath.replace(/[\\/]/g, '-').replace('.md', '');
+        const fileContent = fs.readFileSync(fullPath, 'utf-8');
+        const { data, content } = matter(fileContent);
 
-      await insert(db, {
-        title: data.title || '',
-        name: data.name || '',
-        company: data.company || '',
-        content: content,
-        type: type,
-        slug: slug,
-        excerpt: data.excerpt || data.shortBio || '',
-        author: data.author || '',
-        tags: data.tags || [],
-        publishDate: data.publishDate || '',
-      });
+        await insert(db, {
+          title: data.title || '',
+          name: data.name || '',
+          company: data.company || '',
+          content: content,
+          type: type,
+          slug: slug,
+          excerpt: data.excerpt || data.shortBio || '',
+          author: data.author || '',
+          tags: data.tags || [],
+          publishDate: data.publishDate || '',
+        });
+      }
     }
   };
 

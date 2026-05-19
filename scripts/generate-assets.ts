@@ -18,8 +18,19 @@ if (!fs.existsSync(PUBLIC_DIR)) {
   fs.mkdirSync(PUBLIC_DIR, { recursive: true });
 }
 
-function getFiles(dir: string) {
-  return fs.readdirSync(dir).filter(file => file.endsWith('.md'));
+function getFilesRecursive(dir: string, baseDir: string = dir): string[] {
+  let results: string[] = [];
+  const list = fs.readdirSync(dir);
+  list.forEach(file => {
+    const fullPath = path.join(dir, file);
+    const stat = fs.statSync(fullPath);
+    if (stat && stat.isDirectory()) {
+      results = results.concat(getFilesRecursive(fullPath, baseDir));
+    } else if (file.endsWith('.md')) {
+      results.push(path.relative(baseDir, fullPath));
+    }
+  });
+  return results;
 }
 
 function generateAssets() {
@@ -28,12 +39,12 @@ function generateAssets() {
   const pagesDir = path.join(CONTENT_DIR, 'pages');
   const authorsDir = path.join(CONTENT_DIR, 'authors');
 
-  const postFiles = getFiles(postsDir);
-  const pageFiles = getFiles(pagesDir);
-  const authorFiles = getFiles(authorsDir);
+  const postFiles = getFilesRecursive(postsDir);
+  const pageFiles = getFilesRecursive(pagesDir);
+  const authorFiles = getFilesRecursive(authorsDir);
 
   const posts = postFiles.map(file => {
-    const slug = file.replace('.md', '');
+    const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(postsDir, file), 'utf-8');
     const { data, content: textContent } = matter(content);
     return {
@@ -55,7 +66,7 @@ function generateAssets() {
   });
 
   const pages = pageFiles.map(file => {
-    const slug = file.replace('.md', '');
+    const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(pagesDir, file), 'utf-8');
     const { data, content: textContent } = matter(content);
     return {
@@ -69,7 +80,7 @@ function generateAssets() {
   });
 
   const authors = authorFiles.map(file => {
-    const slug = file.replace('.md', '');
+    const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(authorsDir, file), 'utf-8');
     const { data, content: textContent } = matter(content);
     return {
@@ -150,22 +161,28 @@ function generateAssets() {
   });
 
   posts.forEach(post => {
+    const outPath = path.join(POSTS_OUT_DIR, `${post.metadata.slug}.js`);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
-      path.join(POSTS_OUT_DIR, `${post.metadata.slug}.js`),
+      outPath,
       `globalThis.CONTENT_POST_${post.metadata.slug.replace(/[^a-zA-Z0-9]/g, '_')} = ${JSON.stringify({ ...post.metadata, content: post.content }, null, 2)};`
     );
   });
 
   pages.forEach(page => {
+    const outPath = path.join(PAGES_OUT_DIR, `${page.metadata.slug}.js`);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
-      path.join(PAGES_OUT_DIR, `${page.metadata.slug}.js`),
+      outPath,
       `globalThis.CONTENT_PAGE_${page.metadata.slug.replace(/[^a-zA-Z0-9]/g, '_')} = ${JSON.stringify({ ...page.metadata, content: page.content }, null, 2)};`
     );
   });
 
   authors.forEach(author => {
+    const outPath = path.join(AUTHORS_OUT_DIR, `${author.metadata.slug}.js`);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
-      path.join(AUTHORS_OUT_DIR, `${author.metadata.slug}.js`),
+      outPath,
       `globalThis.CONTENT_AUTHOR_${author.metadata.slug.replace(/[^a-zA-Z0-9]/g, '_')} = ${JSON.stringify({ ...author.metadata, content: author.content }, null, 2)};`
     );
   });
