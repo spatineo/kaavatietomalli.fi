@@ -99,7 +99,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           </span>
           <div className="h-[1px] w-12 bg-white/10" />
           <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-            {post.slug.toUpperCase()}.MD
+            {post.slug.toUpperCase()}
           </span>
         </div>
 
