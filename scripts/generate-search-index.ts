@@ -21,6 +21,7 @@ async function generateSearchIndex() {
       excerpt: 'string',
       author: 'string',
       tags: 'string[]',
+      publishDate: 'string',
     },
     components: {
       tokenizer: {
@@ -53,6 +54,7 @@ async function generateSearchIndex() {
         excerpt: data.excerpt || data.shortBio || '',
         author: data.author || '',
         tags: data.tags || [],
+        publishDate: data.publishDate || '',
       });
     }
   };

@@ -3,6 +3,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import dotenv from 'dotenv';
 import { PROJECT_CONFIG } from '../project.config.js';
+import { getTranslations } from '../src/i18n/index.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ function getFiles(dir: string) {
 }
 
 function generateAssets() {
+  const t = getTranslations('fi');
   const postsDir = path.join(CONTENT_DIR, 'posts');
   const pagesDir = path.join(CONTENT_DIR, 'pages');
   const authorsDir = path.join(CONTENT_DIR, 'authors');
@@ -46,6 +48,7 @@ function generateAssets() {
         authorSlug: data.authorSlug || '',
         tags: data.tags || [],
         coverImage: data.coverImage || '',
+        publishDate: data.publishDate || null,
       },
       content: textContent
     };
@@ -140,6 +143,12 @@ function generateAssets() {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   });
 
+  const now = new Date();
+  const publishedPosts = posts.filter(post => {
+    if (!post.metadata.publishDate) return true;
+    return now >= new Date(post.metadata.publishDate);
+  });
+
   posts.forEach(post => {
     fs.writeFileSync(
       path.join(POSTS_OUT_DIR, `${post.metadata.slug}.js`),
@@ -174,7 +183,7 @@ ${pages.map(page => `  <url>
     <loc>${BASE_URL}/?page=${page.metadata.slug}</loc>
     <priority>0.8</priority>
   </url>`).join('\n')}
-${posts.map(post => `  <url>
+${publishedPosts.map(post => `  <url>
     <loc>${BASE_URL}/?post=${post.metadata.slug}</loc>
     <lastmod>${post.metadata.date ? new Date(post.metadata.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
     <priority>0.6</priority>
@@ -185,45 +194,45 @@ ${posts.map(post => `  <url>
   console.log('Generated sitemap.xml');
 
   // Generate llms.txt
-  let llmsTxt = `# Kaavatietomalli.fi\n\n`;
-  llmsTxt += `Note: The content of this website is primarily written in Finnish.\n\n`;
-  llmsTxt += `Suomen maankäytön suunnittelun digitalisaation tarina: lainsäädännön merkkipaalut, tekniset innovaatiot ja asiantuntijanäkemykset.\n\n`;
-
-  llmsTxt += `## Links\n`;
-  llmsTxt += `- [GitHub repository](https://github.com/spatineo/kaavatietomalli.fi)\n`;
+  let llmsTxt = `# ${t.common.footerTitle}\n\n`;
+  llmsTxt += `${t.llms.note}\n\n`;
+  llmsTxt += `${t.hero.description}.\n\n`;
+  
+  llmsTxt += `## ${t.llms.links}\n`;
+  llmsTxt += `- [${t.navigation.githubRepo}](https://github.com/${REPO_OWNER}/${REPO_NAME})\n`;
   llmsTxt += `- [Sitemap](${BASE_URL}/sitemap.xml)\n\n`;
-
-  llmsTxt += `## Articles (Featured)\n`;
-  const featuredPosts = posts.slice(0, 5);
+  
+  llmsTxt += `## ${t.llms.articlesFeatured}\n`;
+  const featuredPosts = publishedPosts.slice(0, 5);
   featuredPosts.forEach(post => {
     llmsTxt += `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
   });
   llmsTxt += `\n`;
-
-  llmsTxt += `## Pages\n`;
+  
+  llmsTxt += `## ${t.llms.pages}\n`;
   pages.forEach(page => {
     llmsTxt += `- [${page.metadata.title}](${BASE_URL}/?page=${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.slug}.md)\n`;
   });
   llmsTxt += `\n`;
-
-  llmsTxt += `## Optional\n`;
-  llmsTxt += `Full index of all articles and pages is available at [llms-full.txt](${BASE_URL}/llms-full.txt).\n`;
-
+  
+  llmsTxt += `## ${t.llms.optional}\n`;
+  llmsTxt += `${t.llms.fullIndexNote.replace('${baseUrl}', BASE_URL)}\n`;
+  
   fs.writeFileSync(path.join(PUBLIC_DIR, 'llms.txt'), llmsTxt);
   console.log('Generated llms.txt');
-
+  
   // Generate llms-full.txt
-  let llmsFullTxt = `# Kaavatietomalli.fi - Full Content Index\n\n`;
-  llmsFullTxt += `Note: The content of this website is primarily written in Finnish.\n\n`;
-  llmsFullTxt += `Comprehensive index of all articles and pages for LLMs.\n\n`;
-
-  llmsFullTxt += `## Articles\n`;
-  posts.forEach(post => {
+  let llmsFullTxt = `# ${t.common.footerTitle} - ${t.llms.fullIndexTitle}\n\n`;
+  llmsFullTxt += `${t.llms.note}\n\n`;
+  llmsFullTxt += `${t.llms.fullIndexDescription}\n\n`;
+  
+  llmsFullTxt += `## ${t.llms.articles}\n`;
+  publishedPosts.forEach(post => {
     llmsFullTxt += `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
   });
   llmsFullTxt += `\n`;
-
-  llmsFullTxt += `## Pages\n`;
+  
+  llmsFullTxt += `## ${t.llms.pages}\n`;
   pages.forEach(page => {
     llmsFullTxt += `- [${page.metadata.title}](${BASE_URL}/?page=${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.slug}.md)\n`;
   });

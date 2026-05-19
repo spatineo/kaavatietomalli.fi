@@ -112,4 +112,15 @@ export interface Translations {
       description: string;
     };
   };
+  llms: {
+    note: string;
+    links: string;
+    articlesFeatured: string;
+    articles: string;
+    pages: string;
+    optional: string;
+    fullIndexTitle: string;
+    fullIndexDescription: string;
+    fullIndexNote: string;
+  };
 }

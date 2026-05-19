@@ -75,7 +75,14 @@ export function useOramaSearch(indexPath: string = 'search-index.json') {
         tolerance: 1,
       });
 
-      return results.hits as SearchResult[];
+      const hits = results.hits as SearchResult[];
+      const now = new Date();
+
+      return hits.filter(hit => {
+        if (hit.document.type !== 'post' || !hit.document.publishDate) return true;
+        const pubDate = new Date(hit.document.publishDate);
+        return now >= pubDate;
+      });
     } catch (err) {
       console.error('Search failed:', err);
       return [];

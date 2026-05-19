@@ -10,6 +10,7 @@ export interface PostMetadata {
   tags: string[];
   coverImage?: string;
   category?: string;
+  publishDate?: string;
 }
 
 export interface PostData extends PostMetadata {
@@ -102,9 +103,18 @@ async function loadJSONP(url: string, globalVarName: string): Promise<any> {
   return promise;
 }
 
+export function isPublished(post: PostMetadata): boolean {
+  if (!post.publishDate) return true;
+  const now = new Date();
+  const pubDate = new Date(post.publishDate);
+  return now >= pubDate;
+}
+
 export async function getAllPostMetadata(): Promise<PostMetadata[]> {
   const posts = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts.js`, 'CONTENT_POSTS_INDEX') as PostMetadata[] || [];
-  return [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  return [...posts]
+    .filter(isPublished)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export async function getPostBySlug(slug: string): Promise<PostData | null> {
@@ -113,6 +123,9 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
   
   try {
     const data = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts/${slug}.js`, globalVarName);
+    if (data && !isPublished(data)) {
+      return null;
+    }
     return data || null;
   } catch (error) {
     console.error(`Error loading post ${slug}:`, error);

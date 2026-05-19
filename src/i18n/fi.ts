@@ -114,4 +114,15 @@ export const fi: Translations = {
       description: 'Näiden evästeiden avulla seuraamme sivuston kävijämääriä ja käyttöä parantaaksemme palvelua.',
     },
   },
+  llms: {
+    note: 'Note: The content of this website is primarily written in Finnish.',
+    links: 'Links',
+    articlesFeatured: 'Articles (Featured)',
+    articles: 'Articles',
+    pages: 'Pages',
+    optional: 'Optional',
+    fullIndexTitle: 'Full Content Index',
+    fullIndexDescription: 'Comprehensive index of all articles and pages for LLMs.',
+    fullIndexNote: 'Full index of all articles and pages is available at [llms-full.txt](${baseUrl}/llms-full.txt).',
+  },
 };
