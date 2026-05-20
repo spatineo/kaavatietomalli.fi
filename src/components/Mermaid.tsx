@@ -68,6 +68,8 @@ export function Mermaid({ chart }: MermaidProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
+  const [initialPinchZoom, setInitialPinchZoom] = useState<number | null>(null);
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -237,6 +239,47 @@ export function Mermaid({ chart }: MermaidProps) {
     setIsDragging(false);
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    if (e.touches.length === 1) {
+      // Single touch for panning
+      const touch = e.touches[0];
+      setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
+      setIsDragging(true);
+    } else if (e.touches.length === 2) {
+      // Two touches for pinching
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+      setInitialPinchDistance(dist);
+      setInitialPinchZoom(zoom);
+      setIsDragging(false); // Stop panning when starting to pinch
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    if (e.touches.length === 1 && isDragging) {
+      const touch = e.touches[0];
+      setPosition({
+        x: touch.clientX - dragStart.x,
+        y: touch.clientY - dragStart.y
+      });
+    } else if (e.touches.length === 2 && initialPinchDistance !== null && initialPinchZoom !== null) {
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+      const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
+      const factor = dist / initialPinchDistance;
+      setZoom(Math.min(Math.max(initialPinchZoom * factor, 0.05), 10));
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+    setInitialPinchDistance(null);
+    setInitialPinchZoom(null);
+  };
+
   return (
     <>
       <div 
@@ -314,12 +357,15 @@ export function Mermaid({ chart }: MermaidProps) {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full h-full overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing"
+              className="w-full h-full overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
               onClick={e => e.stopPropagation()}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
             <div 
                 ref={containerRef}
