@@ -43,16 +43,6 @@ export interface AuthorData {
 
 import { CONFIG } from '../config';
 
-// Global declaration for JSONP content
-declare global {
-  interface Window {
-    CONTENT_POSTS_INDEX: PostMetadata[];
-    CONTENT_PAGES_INDEX: PageData[];
-    CONTENT_AUTHORS_INDEX: AuthorData[];
-    CONTENT_TAGS_INDEX: TagIndex;
-  }
-}
-
 export interface TagIndex {
   [tag: string]: {
     posts: string[];
@@ -60,44 +50,26 @@ export interface TagIndex {
   };
 }
 
-// Keep track of pending loads to avoid duplicate script tags for simultaneous requests
+// Keep track of pending loads to avoid duplicate requests for simultaneous needs
 const pendingLoads = new Map<string, Promise<any>>();
 
-async function loadJSONP(url: string, globalVarName: string): Promise<any> {
-  const globalVar = (globalThis as any)[globalVarName];
-  if (globalVar) {
-    return globalVar;
-  }
-
+async function fetchJSON(url: string): Promise<any> {
   if (pendingLoads.has(url)) {
     return pendingLoads.get(url);
   }
 
-  const promise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = url;
-    script.async = true;
-
-    const cleanup = () => {
-      pendingLoads.delete(url);
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
+  const promise = (async () => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-    };
-
-    script.onload = () => {
-      const data = (globalThis as any)[globalVarName];
-      cleanup();
-      resolve(data);
-    };
-
-    script.onerror = () => {
-      cleanup();
-      reject(new Error(`Failed to load JSONP from ${url}`));
-    };
-
-    document.body.appendChild(script);
-  });
+      const data = await response.json();
+      return data;
+    } finally {
+      pendingLoads.delete(url);
+    }
+  })();
 
   pendingLoads.set(url, promise);
   return promise;
@@ -111,18 +83,15 @@ export function isPublished(post: PostMetadata): boolean {
 }
 
 export async function getAllPostMetadata(): Promise<PostMetadata[]> {
-  const posts = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts.js`, 'CONTENT_POSTS_INDEX') as PostMetadata[] || [];
+  const posts = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts.json`) as PostMetadata[] || [];
   return [...posts]
     .filter(isPublished)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export async function getPostBySlug(slug: string): Promise<PostData | null> {
-  const sanitizedSlug = slug.replace(/[^a-zA-Z0-9]/g, '_');
-  const globalVarName = `CONTENT_POST_${sanitizedSlug}`;
-  
   try {
-    const data = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts/${slug}.js`, globalVarName);
+    const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts/${slug}.json`);
     if (data && !isPublished(data)) {
       return null;
     }
@@ -134,11 +103,8 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
 }
 
 export async function getPageBySlug(slug: string): Promise<PageData | null> {
-  const sanitizedSlug = slug.replace(/[^a-zA-Z0-9]/g, '_');
-  const globalVarName = `CONTENT_PAGE_${sanitizedSlug}`;
-  
   try {
-    const data = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/pages/${slug}.js`, globalVarName);
+    const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/pages/${slug}.json`);
     return data || null;
   } catch (error) {
     console.error(`Error loading page ${slug}:`, error);
@@ -147,15 +113,12 @@ export async function getPageBySlug(slug: string): Promise<PageData | null> {
 }
 
 export async function getAllAuthors(): Promise<AuthorData[]> {
-  return await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/authors.js`, 'CONTENT_AUTHORS_INDEX') as AuthorData[] || [];
+  return await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/authors.json`) as AuthorData[] || [];
 }
 
 export async function getAuthorBySlug(slug: string): Promise<AuthorData | null> {
-  const sanitizedSlug = slug.replace(/[^a-zA-Z0-9]/g, '_');
-  const globalVarName = `CONTENT_AUTHOR_${sanitizedSlug}`;
-  
   try {
-    const data = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/authors/${slug}.js`, globalVarName);
+    const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/authors/${slug}.json`);
     return data || null;
   } catch (error) {
     console.error(`Error loading author ${slug}:`, error);
@@ -165,7 +128,7 @@ export async function getAuthorBySlug(slug: string): Promise<AuthorData | null> 
 
 export async function getTagIndex(): Promise<TagIndex> {
   try {
-    const index = await loadJSONP(`${CONFIG.basePath.replace(/\/$/, '')}/content/tags.js`, 'CONTENT_TAGS_INDEX');
+    const index = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/tags.json`);
     return index || {};
   } catch (error) {
     console.error('Error loading tag index:', error);

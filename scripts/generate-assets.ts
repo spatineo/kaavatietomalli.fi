@@ -128,21 +128,21 @@ function generateAssets() {
   });
 
   fs.writeFileSync(
-    path.join(CONTENT_OUT_DIR, 'tags.js'),
-    `globalThis.CONTENT_TAGS_INDEX = ${JSON.stringify(tagIndex, null, 2)};`
+    path.join(CONTENT_OUT_DIR, 'tags.json'),
+    JSON.stringify(tagIndex, null, 2)
   );
 
   fs.writeFileSync(
-    path.join(CONTENT_OUT_DIR, 'posts.js'), 
-    `globalThis.CONTENT_POSTS_INDEX = ${JSON.stringify(posts.map(p => p.metadata), null, 2)};`
+    path.join(CONTENT_OUT_DIR, 'posts.json'), 
+    JSON.stringify(posts.map(p => p.metadata), null, 2)
   );
   fs.writeFileSync(
-    path.join(CONTENT_OUT_DIR, 'pages.js'), 
-    `globalThis.CONTENT_PAGES_INDEX = ${JSON.stringify(pages.map(p => p.metadata), null, 2)};`
+    path.join(CONTENT_OUT_DIR, 'pages.json'), 
+    JSON.stringify(pages.map(p => p.metadata), null, 2)
   );
   fs.writeFileSync(
-    path.join(CONTENT_OUT_DIR, 'authors.js'), 
-    `globalThis.CONTENT_AUTHORS_INDEX = ${JSON.stringify(authors.map(a => a.metadata), null, 2)};`
+    path.join(CONTENT_OUT_DIR, 'authors.json'), 
+    JSON.stringify(authors.map(a => a.metadata), null, 2)
   );
 
   // Generate individual content files
@@ -161,33 +161,33 @@ function generateAssets() {
   });
 
   posts.forEach(post => {
-    const outPath = path.join(POSTS_OUT_DIR, `${post.metadata.slug}.js`);
+    const outPath = path.join(POSTS_OUT_DIR, `${post.metadata.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      `globalThis.CONTENT_POST_${post.metadata.slug.replace(/[^a-zA-Z0-9]/g, '_')} = ${JSON.stringify({ ...post.metadata, content: post.content }, null, 2)};`
+      JSON.stringify({ ...post.metadata, content: post.content }, null, 2)
     );
   });
 
   pages.forEach(page => {
-    const outPath = path.join(PAGES_OUT_DIR, `${page.metadata.slug}.js`);
+    const outPath = path.join(PAGES_OUT_DIR, `${page.metadata.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      `globalThis.CONTENT_PAGE_${page.metadata.slug.replace(/[^a-zA-Z0-9]/g, '_')} = ${JSON.stringify({ ...page.metadata, content: page.content }, null, 2)};`
+      JSON.stringify({ ...page.metadata, content: page.content }, null, 2)
     );
   });
 
   authors.forEach(author => {
-    const outPath = path.join(AUTHORS_OUT_DIR, `${author.metadata.slug}.js`);
+    const outPath = path.join(AUTHORS_OUT_DIR, `${author.metadata.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      `globalThis.CONTENT_AUTHOR_${author.metadata.slug.replace(/[^a-zA-Z0-9]/g, '_')} = ${JSON.stringify({ ...author.metadata, content: author.content }, null, 2)};`
+      JSON.stringify({ ...author.metadata, content: author.content }, null, 2)
     );
   });
 
-  console.log('Generated JSONP content index and individual files');
+  console.log('Generated JSON content index and individual files');
 
   // Generate sitemap.xml
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
