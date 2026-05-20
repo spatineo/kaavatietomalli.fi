@@ -43,7 +43,9 @@ function generateAssets() {
   const pageFiles = getFilesRecursive(pagesDir);
   const authorFiles = getFilesRecursive(authorsDir);
 
-  const posts = postFiles.map(file => {
+  const now = new Date();
+
+  const allPosts = postFiles.map(file => {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(postsDir, file), 'utf-8');
     const { data, content: textContent } = matter(content);
@@ -63,6 +65,11 @@ function generateAssets() {
       },
       content: textContent
     };
+  });
+
+  const posts = allPosts.filter(post => {
+    if (!post.metadata.publishDate) return true;
+    return now >= new Date(post.metadata.publishDate);
   });
 
   const pages = pageFiles.map(file => {
@@ -154,12 +161,6 @@ function generateAssets() {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   });
 
-  const now = new Date();
-  const publishedPosts = posts.filter(post => {
-    if (!post.metadata.publishDate) return true;
-    return now >= new Date(post.metadata.publishDate);
-  });
-
   posts.forEach(post => {
     const outPath = path.join(POSTS_OUT_DIR, `${post.metadata.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
@@ -200,7 +201,7 @@ ${pages.map(page => `  <url>
     <loc>${BASE_URL}/?page=${page.metadata.slug}</loc>
     <priority>0.8</priority>
   </url>`).join('\n')}
-${publishedPosts.map(post => `  <url>
+${posts.map(post => `  <url>
     <loc>${BASE_URL}/?post=${post.metadata.slug}</loc>
     <lastmod>${post.metadata.date ? new Date(post.metadata.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
     <priority>0.6</priority>
@@ -220,7 +221,7 @@ ${publishedPosts.map(post => `  <url>
   llmsTxt += `- [Sitemap](${BASE_URL}/sitemap.xml)\n\n`;
   
   llmsTxt += `## ${t.llms.articlesFeatured}\n`;
-  const featuredPosts = publishedPosts.slice(0, 5);
+  const featuredPosts = posts.slice(0, 5);
   featuredPosts.forEach(post => {
     llmsTxt += `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
   });
@@ -244,7 +245,7 @@ ${publishedPosts.map(post => `  <url>
   llmsFullTxt += `${t.llms.fullIndexDescription}\n\n`;
   
   llmsFullTxt += `## ${t.llms.articles}\n`;
-  publishedPosts.forEach(post => {
+  posts.forEach(post => {
     llmsFullTxt += `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.slug}.md)\n`;
   });
   llmsFullTxt += `\n`;

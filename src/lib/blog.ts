@@ -54,47 +54,39 @@ export interface TagIndex {
 const pendingLoads = new Map<string, Promise<any>>();
 
 async function fetchJSON(url: string): Promise<any> {
-  if (pendingLoads.has(url)) {
-    return pendingLoads.get(url);
+  const dateStr = new Date().toISOString().split('T')[0];
+  const cacheBustUrl = `${url}?t=${dateStr}`;
+
+  if (pendingLoads.has(cacheBustUrl)) {
+    return pendingLoads.get(cacheBustUrl);
   }
 
   const promise = (async () => {
     try {
-      const response = await fetch(url);
+      const response = await fetch(cacheBustUrl);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
       return data;
     } finally {
-      pendingLoads.delete(url);
+      pendingLoads.delete(cacheBustUrl);
     }
   })();
 
-  pendingLoads.set(url, promise);
+  pendingLoads.set(cacheBustUrl, promise);
   return promise;
-}
-
-export function isPublished(post: PostMetadata): boolean {
-  if (!post.publishDate) return true;
-  const now = new Date();
-  const pubDate = new Date(post.publishDate);
-  return now >= pubDate;
 }
 
 export async function getAllPostMetadata(): Promise<PostMetadata[]> {
   const posts = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts.json`) as PostMetadata[] || [];
   return [...posts]
-    .filter(isPublished)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export async function getPostBySlug(slug: string): Promise<PostData | null> {
   try {
     const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/posts/${slug}.json`);
-    if (data && !isPublished(data)) {
-      return null;
-    }
     return data || null;
   } catch (error) {
     console.error(`Error loading post ${slug}:`, error);

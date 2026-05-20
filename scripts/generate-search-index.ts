@@ -33,6 +33,7 @@ async function generateSearchIndex() {
   const postsDir = path.join(CONTENT_DIR, 'posts');
   const pagesDir = path.join(CONTENT_DIR, 'pages');
   const authorsDir = path.join(CONTENT_DIR, 'authors');
+  const now = new Date();
 
   // Helper to process directory recursively
   const processDir = async (dir: string, type: string, baseDir: string = dir) => {
@@ -49,6 +50,13 @@ async function generateSearchIndex() {
         const slug = relativePath.replace(/[\\/]/g, '-').replace('.md', '');
         const fileContent = fs.readFileSync(fullPath, 'utf-8');
         const { data, content } = matter(fileContent);
+
+        // Filter by publishDate for posts
+        if (type === 'post' && data.publishDate) {
+          if (now < new Date(data.publishDate)) {
+            continue;
+          }
+        }
 
         await insert(db, {
           title: data.title || '',
