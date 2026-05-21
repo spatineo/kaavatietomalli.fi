@@ -240,44 +240,72 @@ export function Mermaid({ chart }: MermaidProps) {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // We don't preventDefault here to allow clicks to possibly go through if needed, 
+    // but we stop propagation to keep the modal from closing.
     e.stopPropagation();
-    if (e.touches.length === 1) {
-      // Single touch for panning
+    
+    const count = e.touches.length;
+    if (count === 1) {
+      // Enable panning
       const touch = e.touches[0];
       setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
       setIsDragging(true);
-    } else if (e.touches.length === 2) {
-      // Two touches for pinching
+      setInitialPinchDistance(null);
+    } else if (count === 2) {
+      // Enable pinching, disable panning
+      setIsDragging(false);
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       setInitialPinchDistance(dist);
       setInitialPinchZoom(zoom);
-      setIsDragging(false); // Stop panning when starting to pinch
     }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
+    // Essential for iPad to prevent system-level gestures like page scroll/zoom
+    if (e.cancelable) e.preventDefault();
     e.stopPropagation();
-    if (e.touches.length === 1 && isDragging) {
+
+    const count = e.touches.length;
+    
+    if (count === 1 && isDragging) {
       const touch = e.touches[0];
       setPosition({
         x: touch.clientX - dragStart.x,
         y: touch.clientY - dragStart.y
       });
-    } else if (e.touches.length === 2 && initialPinchDistance !== null && initialPinchZoom !== null) {
+    } else if (count === 2 && initialPinchDistance !== null && initialPinchZoom !== null) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       const factor = dist / initialPinchDistance;
-      setZoom(Math.min(Math.max(initialPinchZoom * factor, 0.05), 10));
+      const nextZoom = Math.min(Math.max(initialPinchZoom * factor, 0.05), 10);
+      setZoom(nextZoom);
     }
   };
 
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-    setInitialPinchDistance(null);
-    setInitialPinchZoom(null);
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const count = e.touches.length;
+    
+    if (count === 0) {
+      // All fingers lifted
+      setIsDragging(false);
+      setInitialPinchDistance(null);
+      setInitialPinchZoom(null);
+    } else if (count === 1) {
+      // One finger remains, transition back to panning mode
+      const touch = e.touches[0];
+      // Reset drag start relative to current position to avoid jumps
+      setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
+      setIsDragging(true);
+      setInitialPinchDistance(null);
+      setInitialPinchZoom(null);
+    } else {
+      // More than 1 finger remains but wasn't handled, reset pinch
+      setInitialPinchDistance(null);
+      setInitialPinchZoom(null);
+    }
   };
 
   return (
