@@ -397,7 +397,7 @@ export function Mermaid({ chart }: MermaidProps) {
             >
             <div 
                 ref={containerRef}
-                className="mermaid select-none flex items-center justify-center"
+                className="mermaid select-none flex items-center justify-center pointer-events-none"
                 style={{ 
                   width: naturalSize.width ? `${naturalSize.width}px` : '100%',
                   height: naturalSize.height ? `${naturalSize.height}px` : '100%',
