@@ -3,12 +3,13 @@ import ReactMarkdown from 'react-markdown';
 import { format, parseISO } from 'date-fns';
 import { Calendar, User, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
 import { motion } from 'motion/react';
-import { PostData, PostMetadata } from '../lib/blog';
+import { PostData, PostMetadata, getRelatedPostSlugs, getAllPostMetadata } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense } from 'react';
 import { getTracker } from '../services/analytics';
+import { RelatedPosts } from './RelatedPosts';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
@@ -26,10 +27,28 @@ interface PostViewProps {
 
 export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavigateAuthor, onSelectTag }: PostViewProps) {
   const t = getTranslations(CONFIG.language as Language);
+  const [relatedPosts, setRelatedPosts] = useState<PostMetadata[]>([]);
 
   useEffect(() => {
     getTracker().trackPostView(post.slug, post.title, post.tags);
     getTracker().trackPageView(`${CONFIG.basePath}?post=${post.slug}`, post.title, post.tags);
+    
+    // Fetch related posts
+    const loadRelated = async () => {
+      const relatedSlugs = await getRelatedPostSlugs(post.slug, 3);
+      if (relatedSlugs.length > 0) {
+        const allMetadata = await getAllPostMetadata();
+        const relatedMetadata = allMetadata.filter(m => relatedSlugs.includes(m.slug));
+        // Sort by the order of slugs returned (which is already sorted by relevance)
+        const sortedRelated = relatedSlugs
+          .map(slug => relatedMetadata.find(m => m.slug === slug))
+          .filter((m): m is PostMetadata => !!m);
+        setRelatedPosts(sortedRelated);
+      } else {
+        setRelatedPosts([]);
+      }
+    };
+    loadRelated();
   }, [post.slug, post.title, post.tags]);
 
   return (
@@ -227,6 +246,21 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           />
         </Suspense>
       </div>
+
+      {relatedPosts.length > 0 && (
+        <div className="mt-40 pt-20 border-t border-white/5 max-w-4xl mx-auto">
+          <div className="flex items-center gap-6 mb-12">
+            <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
+              {t.post.relatedPostsSection}
+            </span>
+            <div className="h-[1px] flex-grow bg-white/10" />
+          </div>
+          <RelatedPosts 
+            posts={relatedPosts} 
+            onSelectPost={onNavigate}
+          />
+        </div>
+      )}
 
       <footer className="mt-40 pt-20 border-t border-white/10">
         <div className="grid md:grid-cols-2 gap-20">

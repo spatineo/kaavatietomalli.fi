@@ -149,3 +149,25 @@ export async function getTagPageSlugs(tag: string): Promise<string[]> {
   const entry = index[normalizedTag];
   return entry?.pages || [];
 }
+
+export async function getRelatedPostSlugs(currentSlug: string, count: number = 3): Promise<string[]> {
+  const allPosts = await getAllPostMetadata();
+  const currentPost = allPosts.find(p => p.slug === currentSlug);
+  
+  if (!currentPost || !currentPost.tags || currentPost.tags.length === 0) return [];
+  
+  const currentTags = new Set(currentPost.tags.map(t => t.toLowerCase().trim()));
+  
+  const related = allPosts
+    .filter(p => p.slug !== currentSlug)
+    .map(p => {
+      const commonTags = p.tags.filter(t => currentTags.has(t.toLowerCase().trim())).length;
+      return { slug: p.slug, commonTags, date: new Date(p.date).getTime() };
+    })
+    .filter(item => item.commonTags > 0)
+    .sort((a, b) => b.commonTags - a.commonTags || b.date - a.date)
+    .slice(0, count)
+    .map(item => item.slug);
+    
+  return related;
+}

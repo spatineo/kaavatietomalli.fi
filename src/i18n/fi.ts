@@ -81,6 +81,7 @@ export const fi: Translations = {
     readMore: 'Lue lisää',
     illustrationAlt: 'Kuvituskuva',
     comments: 'Keskustelu',
+    relatedPostsSection: 'Lisää samoista aiheista',
   },
   page: {
   },
