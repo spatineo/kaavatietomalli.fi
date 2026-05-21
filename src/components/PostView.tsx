@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { format, parseISO } from 'date-fns';
-import { Calendar, User, ArrowLeft, ArrowRight, Tag } from 'lucide-react';
-import { motion } from 'motion/react';
+import { format, parseISO, formatDistanceToNow } from 'date-fns';
+import { fi as fiLocale } from 'date-fns/locale';
+import { Calendar, User, ArrowLeft, ArrowRight, Tag, MessageSquare, ChevronDown, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { PostData, PostMetadata, getRelatedPostSlugs, getAllPostMetadata } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { resolveImageUrl } from '../lib/utils';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useRef } from 'react';
 import { getTracker } from '../services/analytics';
 import { RelatedPosts } from './RelatedPosts';
 
@@ -28,6 +29,9 @@ interface PostViewProps {
 export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavigateAuthor, onSelectTag }: PostViewProps) {
   const t = getTranslations(CONFIG.language as Language);
   const [relatedPosts, setRelatedPosts] = useState<PostMetadata[]>([]);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [commentStats, setCommentStats] = useState<{ count: number, lastDate: string | null } | null>(null);
+  const commentsSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getTracker().trackPostView(post.slug, post.title, post.tags);
@@ -49,7 +53,40 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       }
     };
     loadRelated();
+
+    // Reset comments state when post changes
+    setIsCommentsOpen(false);
+    setCommentStats(null);
+
+    // Attempt to fetch Giscus stats
+    const fetchGiscusStats = async () => {
+      try {
+        const url = `https://giscus.app/api/discussions?repo=${CONFIG.giscus.repo}&term=${post.slug}&mapping=specific&category=${CONFIG.giscus.category}&strict=1`;
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.discussion) {
+            setCommentStats({
+              count: data.discussion.totalCommentCount,
+              lastDate: data.discussion.lastCommentAt
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch giscus stats - this is expected if the discussion hasn't been created yet or due to CORS.", e);
+      }
+    }
+    fetchGiscusStats();
   }, [post.slug, post.title, post.tags]);
+
+  const handleToggleComments = () => {
+    setIsCommentsOpen(!isCommentsOpen);
+    if (!isCommentsOpen && commentsSectionRef.current) {
+      setTimeout(() => {
+        commentsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  };
 
   return (
     <motion.article
@@ -220,31 +257,93 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         </ReactMarkdown>
       </div>
 
-      <div className="mt-32 pt-20 border-t border-white/5">
-        <div className="flex items-center gap-6 mb-12">
-          <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
-            {t.post.comments}
-          </span>
-          <div className="h-[1px] flex-grow bg-white/10" />
-        </div>
-        <Suspense fallback={<div className="h-32 animate-pulse bg-white/5 rounded-2xl" />}>
-          <Giscus 
-            key={post.slug}
-            repo={CONFIG.giscus.repo as any}
-            repoId={CONFIG.giscus.repoId}
-            category={CONFIG.giscus.category}
-            categoryId={CONFIG.giscus.categoryId}
-            mapping={CONFIG.giscus.mapping as any}
-            term={post.slug}
-            strict={CONFIG.giscus.strict as any}
-            reactionsEnabled={CONFIG.giscus.reactionsEnabled as any}
-            emitMetadata={CONFIG.giscus.emitMetadata as any}
-            inputPosition={CONFIG.giscus.inputPosition as any}
-            theme={CONFIG.giscus.theme as any}
-            lang={CONFIG.giscus.lang as any}
-            loading={CONFIG.giscus.loading as any}
-          />
-        </Suspense>
+      <div className="mt-32 pt-20 border-t border-white/5" ref={commentsSectionRef}>
+        <button 
+          onClick={handleToggleComments}
+          className="w-full text-left group"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6 flex-grow">
+              <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
+                {t.post.comments}
+              </span>
+              <div className="h-[1px] w-12 bg-white/10" />
+              
+              <div className="hidden sm:flex items-center gap-6">
+                {commentStats ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <MessageSquare size={12} className="text-slate-500" />
+                      <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                        {t.post.commentCount.replace('{{count}}', commentStats.count.toString())}
+                      </span>
+                    </div>
+                    {commentStats.lastDate && (
+                      <div className="flex items-center gap-2">
+                        <Clock size={12} className="text-slate-500" />
+                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                          {t.post.latestComment.replace('{{date}}', formatDistanceToNow(parseISO(commentStats.lastDate), { addSuffix: true, locale: fiLocale }))}
+                        </span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest opacity-40">
+                    Giscus Discussions
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 pl-4 border-l border-white/5">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-brand-accent transition-colors">
+                {isCommentsOpen ? t.post.hideComments : t.post.showComments}
+              </span>
+              <ChevronDown 
+                size={16} 
+                className={`text-slate-500 transition-transform duration-500 group-hover:text-brand-accent ${isCommentsOpen ? 'rotate-180' : ''}`} 
+              />
+            </div>
+          </div>
+        </button>
+
+        <AnimatePresence>
+          {isCommentsOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="overflow-hidden"
+            >
+              <div className="mt-20">
+                <Suspense fallback={
+                  <div className="h-64 flex flex-col items-center justify-center gap-4 bg-white/[0.02] rounded-2xl border border-white/5 animate-pulse">
+                    <div className="w-10 h-10 rounded-full border-2 border-brand-accent/20 border-t-brand-accent animate-spin" />
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t.common.loading}</span>
+                  </div>
+                }>
+                  <Giscus 
+                    key={post.slug}
+                    repo={CONFIG.giscus.repo as any}
+                    repoId={CONFIG.giscus.repoId}
+                    category={CONFIG.giscus.category}
+                    categoryId={CONFIG.giscus.categoryId}
+                    mapping={CONFIG.giscus.mapping as any}
+                    term={post.slug}
+                    strict={CONFIG.giscus.strict as any}
+                    reactionsEnabled={CONFIG.giscus.reactionsEnabled as any}
+                    emitMetadata={CONFIG.giscus.emitMetadata as any}
+                    inputPosition={CONFIG.giscus.inputPosition as any}
+                    theme={CONFIG.giscus.theme as any}
+                    lang={CONFIG.giscus.lang as any}
+                    loading={CONFIG.giscus.loading as any}
+                  />
+                </Suspense>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {relatedPosts.length > 0 && (

@@ -79,6 +79,10 @@ export interface Translations {
     readMore: string;
     illustrationAlt: string;
     comments: string;
+    showComments: string;
+    hideComments: string;
+    commentCount: string;
+    latestComment: string;
     relatedPostsSection: string;
   };
   page: {

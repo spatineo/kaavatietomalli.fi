@@ -81,6 +81,10 @@ export const fi: Translations = {
     readMore: 'Lue lisää',
     illustrationAlt: 'Kuvituskuva',
     comments: 'Keskustelu',
+    showComments: 'Näytä keskustelu',
+    hideComments: 'Piilota keskustelu',
+    commentCount: '{{count}} kommenttia',
+    latestComment: 'Viimeisin: {{date}}',
     relatedPostsSection: 'Lisää samoista aiheista',
   },
   page: {
