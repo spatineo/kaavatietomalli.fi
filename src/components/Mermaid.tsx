@@ -31,22 +31,219 @@ async function getMermaid() {
         useMaxWidth: false,
         padding: 20
       },
+      gantt: {
+        htmllabels: true,
+        titlePadding: 15,
+        barHeight: 30, // Generous bar height to prevent text height-spill
+        barGap: 8, // Spacing between bars to avoid overlap
+        topPadding: 50,
+        sidePadding: 130, // Keeps section labels on the left from overlapping bars/dates
+        gridLineStartPadding: 35,
+        fontSize: 10, // Explicit small font size for Gantt text
+        sectionFontSize: 11, // Section header font size
+        numberSectionHeaderYOffset: 12,
+        useWidth: 1200, // Renders Gantt across wider baseline to avoid squeezing text
+        useMaxWidth: false
+      },
+      themeCSS: `
+        /* Gantt chart label adjustments */
+        .taskText {
+          font-size: 11px !important;
+          fill: #111827 !important; /* High contrast dark text on yellow/orange Gantt bars */
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-weight: 600 !important;
+        }
+        .gantt .taskTextOutside {
+          font-size: 11px !important;
+          fill: #A0AEC0 !important;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-weight: 500;
+        }
+        .gantt .sectionText {
+          font-size: 11px !important;
+          fill: #FFAF00 !important;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-weight: 600;
+        }
+        .gantt .tick text {
+          font-size: 10px !important;
+          fill: #A0AEC0 !important;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        }
+        .gantt .grid .tick text {
+          font-size: 10px !important;
+          fill: #A0AEC0 !important;
+        }
+        .gantt .titleText {
+          font-size: 16px !important;
+          fill: #FFFFFF !important;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-weight: bold;
+        }
+
+        /* Prevent black and very dark fills in all diagrams */
+        .node rect, .node circle, .node polygon, .node path, .node ellipse {
+          fill: #2C303B !important;
+          fill-opacity: 1 !important;
+          stroke: #FFAF00 !important;
+          stroke-width: 1.5px !important;
+        }
+        
+        /* Flowchart cluster / group container styling */
+        .cluster rect {
+          fill: #1A1C23 !important;
+          fill-opacity: 1 !important;
+          stroke: #4B5563 !important;
+          stroke-width: 1.5px !important;
+        }
+
+        /* Sequence diagram participants and notes */
+        g.actor rect {
+          fill: #2C303B !important;
+          fill-opacity: 1 !important;
+          stroke: #FFAF00 !important;
+        }
+        g.note rect {
+          fill: #363A45 !important;
+          fill-opacity: 1 !important;
+          stroke: #FFAF00 !important;
+        }
+
+        /* Class diagram styling */
+        g.classGroup rect {
+          fill: #2C303B !important;
+          fill-opacity: 1 !important;
+          stroke: #FFAF00 !important;
+        }
+        g.classGroup line {
+          stroke: #FFAF00 !important;
+        }
+
+        /* State diagram styling and text visibility */
+        g.stateGroup rect {
+          fill: #2C303B !important;
+          fill-opacity: 1 !important;
+          stroke: #FFAF00 !important;
+          stroke-width: 1.5px !important;
+        }
+        g.stateGroup text, g.stateGroup span, g.stateGroup div, .stateText, .stateText text, .state-title, .state-head, .stateText span {
+          fill: #FFFFFF !important;
+          color: #601a1a !important;
+        }
+        .transition-text, .transition-text text, .transition-text span {
+          fill: #FFFFFF !important;
+          color: #FFFFFF !important;
+        }
+        .statediagram-state .nodeLabel {
+          color: #FFFFFF !important;
+        }
+        
+        /* Entity Relationship diagram styling */
+        rect.entityBox {
+          fill: #2C303B !important;
+          fill-opacity: 1 !important;
+          stroke: #FFAF00 !important;
+        }
+        rect.attributeBox {
+          fill: #363A45 !important;
+          fill-opacity: 1 !important;
+          stroke: #4B5563 !important;
+        }
+
+        /* Mindmap and other shapes default fallback fills */
+        .mindmap-node rect, .mindmap-node circle {
+          fill: #2C303B !important;
+          stroke: #FFAF00 !important;
+        }
+
+        /* High-contrast colors for mindmap branches to prevent invisible dark lines */
+        path.mindmap-edge-0, .mindmap-edge-0 { stroke: #FFAF00 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-1, .mindmap-edge-1 { stroke: #3B82F6 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-2, .mindmap-edge-2 { stroke: #10B981 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-3, .mindmap-edge-3 { stroke: #EC4899 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-4, .mindmap-edge-4 { stroke: #8B5CF6 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-5, .mindmap-edge-5 { stroke: #F59E0B !important; stroke-width: 3px !important; }
+        
+        /* Fallback for general mindmap edge/curves */
+        .mindmap-edge {
+          stroke: #FFAF00 !important;
+          stroke-width: 3px !important;
+        }
+
+        /* Ensure flowchart / state / class diagram connector lines are clearly visible on dark background */
+        .edgePath .path, .edgePaths .path, g.edgePath path, path.transition, .relation, line.relation, .transition-line {
+          stroke: #FFAF00 !important;
+          stroke-width: 1.5px !important;
+        }
+        .edgePath .arrowheadPath, g.edgePath marker path {
+          fill: #FFAF00 !important;
+          stroke: #FFAF00 !important;
+        }
+
+        /* Flowchart edge label background fallback */
+        .edgeLabel rect {
+          fill: #20242E !important;
+          fill-opacity: 1 !important;
+        }
+      `,
       themeVariables: {
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
         fontSize: '16px',
-        primaryColor: '#1A1A1C',
+        ganttFontSize: '11px',
+        sectionFontSize: '11px',
+        primaryColor: '#2C303B',
         primaryTextColor: '#FFFFFF',
         primaryBorderColor: '#FFAF00',
         lineColor: '#FFAF00',
-        secondaryColor: '#2563EB',
-        tertiaryColor: '#121214',
-        mainBkg: '#1A1A1C',
+        secondaryColor: '#FFAF00',
+        tertiaryColor: '#363A45',
+        mainBkg: '#2C303B',
         nodeBorder: '#FFAF00',
-        clusterBkg: '#000000',
-        clusterBorder: '#888888',
+        clusterBkg: '#1A1C23',
+        clusterBorder: '#4B5563',
         titleColor: '#FFFFFF',
-        edgeLabelBackground: '#121214',
+        edgeLabelBackground: '#20242E',
         nodeTextColor: '#FFFFFF',
+
+        // Sequence Diagram variables
+        actorBkg: '#2C303B',
+        actorBorder: '#FFAF00',
+        actorTextColor: '#FFFFFF',
+        actorLineColor: '#FFAF00',
+        signalColor: '#FFAF00',
+        signalTextColor: '#FFFFFF',
+        labelBoxBkgColor: '#2C303B',
+        labelBoxBorderColor: '#FFAF00',
+        noteBkgColor: '#363A45',
+        noteBorderColor: '#FFAF00',
+        noteTextColor: '#FFFFFF',
+
+        // Class & ER diagram variables
+        classBkg: '#2C303B',
+        classBorder: '#FFAF00',
+        classText: '#FFFFFF',
+        relationColor: '#FFAF00',
+        relationLabelBkgColor: '#20242E',
+        attributeBkgColor: '#2C303B',
+        attributeBkgColorAlt: '#363A45',
+
+        // State diagram variables
+        stateBkg: '#2C303B',
+        stateBorder: '#FFAF00',
+        stateText: '#FFFFFF',
+        transitionColor: '#FFAF00',
+        transitionLabelBoxBkgColor: '#20242E',
+
+        // Gantt diagram variables (ensuring light/distinguishable color fills)
+        activeTaskBkgColor: '#3B82F6',
+        activeTaskBorderColor: '#60A5FA',
+        doneTaskBkgColor: '#10B981',
+        doneTaskBorderColor: '#34D399',
+        taskBkgColor: '#FFAF00',
+        taskBorderColor: '#FFC340',
+        critBkgColor: '#EF4444',
+        critBorderColor: '#F87171',
+        todayLineColor: '#FFAF00',
       }
     });
     isInitialized = true;
@@ -62,6 +259,7 @@ export function Mermaid({ chart }: MermaidProps) {
   const t = getTranslations(CONFIG.language as Language);
   const ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const [svgContent, setSvgContent] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -70,6 +268,8 @@ export function Mermaid({ chart }: MermaidProps) {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
   const [initialPinchZoom, setInitialPinchZoom] = useState<number | null>(null);
+  const [initialPinchPosition, setInitialPinchPosition] = useState<{ x: number; y: number } | null>(null);
+  const [initialPinchMidpoint, setInitialPinchMidpoint] = useState<{ x: number; y: number } | null>(null);
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -184,39 +384,156 @@ export function Mermaid({ chart }: MermaidProps) {
     if (newState && svgContent) {
       const size = getNaturalSize(svgContent);
       setNaturalSize(size);
-      setZoom(calculateFitZoom(size));
+      const fitZoom = calculateFitZoom(size);
+      setZoom(fitZoom);
       setPosition({ x: 0, y: 0 });
+      zoomRef.current = fitZoom;
+      positionRef.current = { x: 0, y: 0 };
     }
   };
 
+  const zoomRef = useRef(zoom);
+  const positionRef = useRef(position);
+  const gestureStartZoomRef = useRef<number | null>(null);
+
+  const pendingUpdateRef = useRef<{ zoom: number; position: { x: number; y: number } } | null>(null);
+  const rafIdRef = useRef<number | null>(null);
+
+  const updateTransform = (nextZoom: number, nextPos: { x: number; y: number }) => {
+    zoomRef.current = nextZoom;
+    positionRef.current = nextPos;
+    
+    pendingUpdateRef.current = { zoom: nextZoom, position: nextPos };
+    if (rafIdRef.current === null) {
+      rafIdRef.current = requestAnimationFrame(() => {
+        if (pendingUpdateRef.current) {
+          setZoom(pendingUpdateRef.current.zoom);
+          setPosition(pendingUpdateRef.current.position);
+          pendingUpdateRef.current = null;
+        }
+        rafIdRef.current = null;
+      });
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
+
   const handleZoomIn = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setZoom(prev => Math.min(prev * 1.2, 10)); // Progressive zoom, up to 1000%
+    const nextZoom = Math.min(zoomRef.current * 1.2, 10);
+    updateTransform(nextZoom, positionRef.current);
   };
 
   const handleZoomOut = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    setZoom(prev => Math.max(prev * 0.8, 0.05)); // Progressive zoom, down to 5%
+    const nextZoom = Math.max(zoomRef.current * 0.8, 0.05);
+    updateTransform(nextZoom, positionRef.current);
   };
 
   const handleResetZoom = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setZoom(calculateFitZoom(naturalSize));
-    setPosition({ x: 0, y: 0 });
+    const fitZoom = calculateFitZoom(naturalSize);
+    updateTransform(fitZoom, { x: 0, y: 0 });
   };
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.stopPropagation();
-    
-    // Sensitivity factor for wheel/trackpad
-    // Mice typically have deltaY around 100 per notch, trackpads around 1-10
-    const factor = Math.pow(1.001, -e.deltaY);
-    
-    setZoom(prev => {
-      const nextZoom = prev * factor;
-      return Math.min(Math.max(nextZoom, 0.05), 10);
-    });
-  };
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
+
+  useEffect(() => {
+    const el = modalRef.current;
+    if (!el || !isModalOpen) return;
+
+    const onWheelEvent = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // On trackpads, pinches send wheel events with e.ctrlKey === true.
+      // We use a higher scale base for pinch-to-zoom than standard scrolling to make it snappier.
+      const isPinch = e.ctrlKey;
+      const base = isPinch ? 1.008 : 1.003;
+      const factor = Math.pow(base, -e.deltaY);
+      
+      const currentZoom = zoomRef.current;
+      const currentPos = positionRef.current;
+      
+      const nextZoom = Math.min(Math.max(currentZoom * factor, 0.05), 10);
+      const scaleChange = nextZoom / currentZoom;
+      
+      const rect = el.getBoundingClientRect();
+      const C_orig_x = rect.left + rect.width / 2;
+      const C_orig_y = rect.top + rect.height / 2;
+      
+      const mouseX = e.clientX;
+      const mouseY = e.clientY;
+      
+      const nextX = (mouseX - C_orig_x) * (1 - scaleChange) + currentPos.x * scaleChange;
+      const nextY = (mouseY - C_orig_y) * (1 - scaleChange) + currentPos.y * scaleChange;
+      
+      updateTransform(nextZoom, { x: nextX, y: nextY });
+    };
+
+    // Handle Safari high-precision native trackpad gestures
+    const onGestureStart = (e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+      gestureStartZoomRef.current = zoomRef.current;
+    };
+
+    const onGestureChange = (e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (gestureStartZoomRef.current !== null) {
+        // Boost pinch speed by a factor of 1.5 to make it feel more responsive
+        const adjustedScale = 1 + (e.scale - 1) * 1.5;
+        const nextZoom = Math.min(Math.max(gestureStartZoomRef.current * adjustedScale, 0.05), 10);
+        
+        const currentZoom = zoomRef.current;
+        const currentPos = positionRef.current;
+        const scaleChange = nextZoom / currentZoom;
+        
+        const rect = el.getBoundingClientRect();
+        const C_orig_x = rect.left + rect.width / 2;
+        const C_orig_y = rect.top + rect.height / 2;
+        
+        const mouseX = e.clientX !== undefined ? e.clientX : C_orig_x;
+        const mouseY = e.clientY !== undefined ? e.clientY : C_orig_y;
+        
+        const nextX = (mouseX - C_orig_x) * (1 - scaleChange) + currentPos.x * scaleChange;
+        const nextY = (mouseY - C_orig_y) * (1 - scaleChange) + currentPos.y * scaleChange;
+        
+        updateTransform(nextZoom, { x: nextX, y: nextY });
+      }
+    };
+
+    const onGestureEnd = (e: any) => {
+      e.preventDefault();
+      e.stopPropagation();
+      gestureStartZoomRef.current = null;
+    };
+
+    el.addEventListener('wheel', onWheelEvent, { passive: false });
+    el.addEventListener('gesturestart', onGestureStart, { passive: false });
+    el.addEventListener('gesturechange', onGestureChange, { passive: false });
+    el.addEventListener('gestureend', onGestureEnd, { passive: false });
+
+    return () => {
+      el.removeEventListener('wheel', onWheelEvent);
+      el.removeEventListener('gesturestart', onGestureStart);
+      el.removeEventListener('gesturechange', onGestureChange);
+      el.removeEventListener('gestureend', onGestureEnd);
+    };
+  }, [isModalOpen]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -225,19 +542,32 @@ export function Mermaid({ chart }: MermaidProps) {
     setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  useEffect(() => {
     if (!isDragging) return;
-    e.preventDefault();
-    e.stopPropagation();
-    setPosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y
-    });
-  };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      // e.buttons !== 1 check ensures dragging ends if user releases the mouse button outside the window
+      if (e.buttons !== 1) {
+        setIsDragging(false);
+        return;
+      }
+      const nextX = e.clientX - dragStart.x;
+      const nextY = e.clientY - dragStart.y;
+      updateTransform(zoomRef.current, { x: nextX, y: nextY });
+    };
+
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDragging, dragStart]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     // We don't preventDefault here to allow clicks to possibly go through if needed, 
@@ -251,6 +581,9 @@ export function Mermaid({ chart }: MermaidProps) {
       setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
       setIsDragging(true);
       setInitialPinchDistance(null);
+      setInitialPinchZoom(null);
+      setInitialPinchPosition(null);
+      setInitialPinchMidpoint(null);
     } else if (count === 2) {
       // Enable pinching, disable panning
       setIsDragging(false);
@@ -259,6 +592,10 @@ export function Mermaid({ chart }: MermaidProps) {
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       setInitialPinchDistance(dist);
       setInitialPinchZoom(zoom);
+      setInitialPinchPosition(position);
+      const midX = (touch1.clientX + touch2.clientX) / 2;
+      const midY = (touch1.clientY + touch2.clientY) / 2;
+      setInitialPinchMidpoint({ x: midX, y: midY });
     }
   };
 
@@ -271,17 +608,34 @@ export function Mermaid({ chart }: MermaidProps) {
     
     if (count === 1 && isDragging) {
       const touch = e.touches[0];
-      setPosition({
-        x: touch.clientX - dragStart.x,
-        y: touch.clientY - dragStart.y
-      });
-    } else if (count === 2 && initialPinchDistance !== null && initialPinchZoom !== null) {
+      const nextX = touch.clientX - dragStart.x;
+      const nextY = touch.clientY - dragStart.y;
+      updateTransform(zoomRef.current, { x: nextX, y: nextY });
+    } else if (count === 2 && initialPinchDistance !== null && initialPinchZoom !== null && initialPinchPosition && initialPinchMidpoint) {
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       const factor = dist / initialPinchDistance;
       const nextZoom = Math.min(Math.max(initialPinchZoom * factor, 0.05), 10);
-      setZoom(nextZoom);
+      
+      const currentMidX = (touch1.clientX + touch2.clientX) / 2;
+      const currentMidY = (touch1.clientY + touch2.clientY) / 2;
+      
+      const el = modalRef.current;
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        const C_orig_x = rect.left + rect.width / 2;
+        const C_orig_y = rect.top + rect.height / 2;
+        
+        const relativeScale = nextZoom / initialPinchZoom;
+        const dx = initialPinchMidpoint.x - C_orig_x;
+        const dy = initialPinchMidpoint.y - C_orig_y;
+        
+        const nextX = (currentMidX - C_orig_x) - relativeScale * (dx - initialPinchPosition.x);
+        const nextY = (currentMidY - C_orig_y) - relativeScale * (dy - initialPinchPosition.y);
+        
+        updateTransform(nextZoom, { x: nextX, y: nextY });
+      }
     }
   };
 
@@ -293,6 +647,8 @@ export function Mermaid({ chart }: MermaidProps) {
       setIsDragging(false);
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
+      setInitialPinchPosition(null);
+      setInitialPinchMidpoint(null);
     } else if (count === 1) {
       // One finger remains, transition back to panning mode
       const touch = e.touches[0];
@@ -301,10 +657,14 @@ export function Mermaid({ chart }: MermaidProps) {
       setIsDragging(true);
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
+      setInitialPinchPosition(null);
+      setInitialPinchMidpoint(null);
     } else {
       // More than 1 finger remains but wasn't handled, reset pinch
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
+      setInitialPinchPosition(null);
+      setInitialPinchMidpoint(null);
     }
   };
 
@@ -340,12 +700,12 @@ export function Mermaid({ chart }: MermaidProps) {
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
+            ref={modalRef}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-xl"
             onClick={toggleModal}
-            onWheel={handleWheel}
           >
             <div className="absolute top-6 right-6 flex items-center gap-4 z-[110]">
               <div className="flex bg-white/10 backdrop-blur-md border border-white/10 rounded-full p-1 shadow-2xl">
@@ -388,9 +748,6 @@ export function Mermaid({ chart }: MermaidProps) {
               className="w-full h-full overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
               onClick={e => e.stopPropagation()}
               onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
