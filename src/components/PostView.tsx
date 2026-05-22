@@ -82,6 +82,17 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
   }, [post.slug, post.title, post.tags]);
 
   useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('giscus')) {
+      const scrollTimeout = setTimeout(() => {
+        commentsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }, 750); // Allow motion transition to height: 'auto' to complete
+      return () => clearTimeout(scrollTimeout);
+    }
+  }, [post.slug]);
+
+  useEffect(() => {
+    let scrolledOnMessage = false;
     const handleGiscusMessage = (event: MessageEvent) => {
       if (event.origin !== 'https://giscus.app') return;
       
@@ -91,6 +102,13 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         // Now delete the "giscus" query parameter from the browser address bar and history
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('giscus')) {
+          if (!scrolledOnMessage) {
+            scrolledOnMessage = true;
+            setTimeout(() => {
+              commentsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 400); // Allow iframe content to settle
+          }
+
           urlParams.delete('giscus');
           const newSearch = urlParams.toString();
           const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}${window.location.hash}`;
@@ -103,7 +121,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
     return () => {
       window.removeEventListener('message', handleGiscusMessage);
     };
-  }, []);
+  }, [post.slug]);
 
   const handleToggleComments = () => {
     setIsCommentsOpen(!isCommentsOpen);
