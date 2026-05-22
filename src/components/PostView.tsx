@@ -58,22 +58,22 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
     setIsCommentsOpen(false);
     setCommentStats(null);
 
-    // Attempt to fetch Giscus stats
+    // Fetch Giscus stats from prebuilt giscus-stats.json to avoid CORS issues
     const fetchGiscusStats = async () => {
       try {
-        const url = `https://giscus.app/api/discussions?repo=${CONFIG.giscus.repo}&term=${post.slug}&mapping=specific&category=${CONFIG.giscus.category}&strict=1`;
-        const response = await fetch(url);
+        const response = await fetch(`${CONFIG.basePath}content/giscus-stats.json`);
         if (response.ok) {
-          const data = await response.json();
-          if (data.discussion) {
+          const stats = await response.json();
+          const postStats = stats[post.slug];
+          if (postStats) {
             setCommentStats({
-              count: data.discussion.totalCommentCount,
-              lastDate: data.discussion.lastCommentAt
+              count: postStats.count,
+              lastDate: postStats.lastDate
             });
           }
         }
       } catch (e) {
-        console.warn("Failed to fetch giscus stats - this is expected if the discussion hasn't been created yet or due to CORS.", e);
+        console.warn("Failed to fetch prebuilt Giscus stats.", e);
       }
     }
     fetchGiscusStats();
@@ -347,7 +347,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       </div>
 
       {relatedPosts.length > 0 && (
-        <div className="mt-40 pt-20 border-t border-white/5 max-w-4xl mx-auto">
+        <div className={`pt-20 border-t border-white/5 max-w-4xl mx-auto transition-all duration-500 ${isCommentsOpen ? 'mt-40' : 'mt-12'}`}>
           <div className="flex items-center gap-6 mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
               {t.post.relatedPostsSection}
@@ -361,7 +361,11 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         </div>
       )}
 
-      <footer className="mt-40 pt-20 border-t border-white/10">
+      <footer className={`pt-20 border-t border-white/10 transition-all duration-500 ${
+        relatedPosts.length > 0
+          ? 'mt-40'
+          : (isCommentsOpen ? 'mt-40' : 'mt-12')
+      }`}>
         <div className="grid md:grid-cols-2 gap-20">
           <div>
             <h3 className="text-3xl font-extrabold mb-6 tracking-tighter text-white">{t.common.footerTitle}</h3>

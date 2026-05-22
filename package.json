@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "prebuild": "tsx scripts/generate-assets.ts && tsx scripts/generate-search-index.ts",
+    "prebuild": "tsx scripts/generate-assets.ts && tsx scripts/generate-search-index.ts && tsx scripts/fetch-giscus-stats.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
