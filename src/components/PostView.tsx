@@ -54,8 +54,10 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
     };
     loadRelated();
 
-    // Reset comments state when post changes
-    setIsCommentsOpen(false);
+    // Reset comments state when post changes, but keep open if giscus redirect param is in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasGiscusParam = urlParams.has('giscus');
+    setIsCommentsOpen(hasGiscusParam);
     setCommentStats(null);
 
     // Fetch Giscus stats from prebuilt giscus-stats.json to avoid CORS issues
@@ -78,6 +80,30 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
     }
     fetchGiscusStats();
   }, [post.slug, post.title, post.tags]);
+
+  useEffect(() => {
+    const handleGiscusMessage = (event: MessageEvent) => {
+      if (event.origin !== 'https://giscus.app') return;
+      
+      const { data } = event;
+      if (data && typeof data === 'object' && 'giscus' in data) {
+        // Giscus has sent a message, meaning it has loaded and registered the token!
+        // Now delete the "giscus" query parameter from the browser address bar and history
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('giscus')) {
+          urlParams.delete('giscus');
+          const newSearch = urlParams.toString();
+          const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}${window.location.hash}`;
+          window.history.replaceState(null, '', newUrl);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleGiscusMessage);
+    return () => {
+      window.removeEventListener('message', handleGiscusMessage);
+    };
+  }, []);
 
   const handleToggleComments = () => {
     setIsCommentsOpen(!isCommentsOpen);
