@@ -13,7 +13,7 @@ export const fi: Translations = {
     contact: 'Yhteys',
     skipToContent: 'Hyppää sisältöön',
     footerTitle: 'Kaavatietomalli.fi',
-    footerText: 'Tietomallimuotoisen alueidenkäytön suunnittelun one-stop-shop.',
+    footerText: 'Tietomallimuotoisen alueidenkäytön suunnittelun one-stop shop.',
   },
   navigation: {
     blog: 'Blogi',

@@ -39,7 +39,7 @@ export const CONFIG = {
         label: 'Ratkaisut',
         type: 'menu',
         subitems: [
-            { label: 'Ohjelmistoratkaisut', type: 'tag', slug: 'ohjelmistot'},
+            { label: 'Ohjelmistot', type: 'tag', slug: 'ohjelmistot'},
             { label: 'Tietomallisparraukset ja koulutukset', type: 'tag', slug: 'sparraus'},
             { label: 'Markkinaselvitykset', type: 'tag', slug: 'markkinaselvitys'}
         ]
@@ -56,10 +56,10 @@ export const CONFIG = {
   themes: [
     { id: 'lainsaadanto', label: 'Lainsäädäntö', tag: 'lainsäädäntö' },
     { id: 'tietomallit', label: 'Tietomallit', tag: 'tietomallit' },
-    { id: 'kehitysidea', label: 'Kehitysideat', tag: 'kehitysidea' },
-    { id: 'osallistuminen', label: 'Osallistuminen ja vuorovaikutus', tag: 'osallistuminen' },
+    { id: 'kehitysideat', label: 'Kehitysideat', tag: 'kehitysideat' },
+    { id: 'yhteiskehittaminen', label: 'Yhteiskehittäminen', tag: 'yhteiskehittaminen' },
     { id: 'uusi-ajattelu', label: 'Uusi ajattelutapa', tag: 'uusi-ajattelu' },
-    { id: 'kokemukset', label: 'Käytännön kokemukset', tag: 'kokemukset' }
+    { id: 'kokemukset', label: 'Kokemukset', tag: 'kokemukset' }
   ] as ThemeItem[],
   analytics: {
     gaTrackingId: import.meta.env.VITE_GA_TRACKING_ID || 'G-E9YTLR7C10'
