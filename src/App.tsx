@@ -10,6 +10,7 @@ import { PostView } from './components/PostView';
 import { PageView } from './components/PageView';
 import { Header, Footer } from './components/Navigation';
 import { HistoryHero } from './components/HistoryHero';
+import { ContentFooter } from './components/ContentFooter';
 import { AuthorView } from './components/AuthorView';
 import { NotFoundView } from './components/NotFoundView';
 import { CookieConsent } from './components/CookieConsent';
@@ -643,6 +644,9 @@ export default function App() {
                       </button>
                     </div>
                   )}
+                  <div className="max-w-4xl mx-auto px-6 md:px-10 mt-40">
+                    <ContentFooter onBack={onHome} />
+                  </div>
                 </motion.div>
               )
             ) : (
@@ -811,6 +815,9 @@ export default function App() {
                       </button>
                     </div>
                   )}
+                  <div className="max-w-4xl mx-auto px-6 md:px-10 mt-40">
+                    <ContentFooter />
+                  </div>
                 </div>
               </motion.div>
             )}

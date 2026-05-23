@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
+import { ContentFooter } from './ContentFooter';
 import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
@@ -161,20 +162,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
         </ReactMarkdown>
       </div>
 
-      <footer className="mt-40 pt-20 border-t border-white/10">
-        <div className="flex flex-col items-center text-center">
-          <h3 className="text-3xl font-extrabold mb-4 text-white">{t.common.footerTitle}</h3>
-          <p className="text-slate-400 font-medium max-w-lg mb-8">
-            {t.common.footerText}
-          </p>
-          <button
-            onClick={onBack}
-            className="bg-black text-white border border-white/10 px-10 py-4 rounded-xl transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20 uppercase font-bold tracking-widest text-[10px]"
-          >
-            {t.common.backToHome}
-          </button>
-        </div>
-      </footer>
+      <ContentFooter onBack={onBack} className="mt-40" />
     </motion.article>
   );
 }

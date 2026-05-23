@@ -11,6 +11,7 @@ import { resolveImageUrl } from '../lib/utils';
 import { lazy, Suspense, useRef } from 'react';
 import { getTracker } from '../services/analytics';
 import { RelatedPosts } from './RelatedPosts';
+import { ContentFooter } from './ContentFooter';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
@@ -405,29 +406,10 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         </div>
       )}
 
-      <footer className={`pt-20 border-t border-white/10 transition-all duration-500 ${
-        relatedPosts.length > 0
-          ? 'mt-40'
-          : (isCommentsOpen ? 'mt-40' : 'mt-12')
-      }`}>
-        <div className="grid md:grid-cols-2 gap-20">
-          <div>
-            <h3 className="text-3xl font-extrabold mb-6 tracking-tighter text-white">{t.common.footerTitle}</h3>
-            <p className="text-slate-400 font-medium text-lg leading-relaxed">
-              {t.common.footerText}
-            </p>
-          </div>
-          <div className="flex flex-col justify-end items-start md:items-end">
-            <button
-              onClick={onBack}
-              className="group flex items-center gap-6 bg-black text-white border border-white/10 px-10 py-5 rounded-xl transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20"
-            >
-              <span className="uppercase font-bold tracking-widest text-xs">{t.common.backToHome}</span>
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-            </button>
-          </div>
-        </div>
-      </footer>
+      <ContentFooter
+        onBack={onBack}
+        className={relatedPosts.length > 0 ? 'mt-40' : (isCommentsOpen ? 'mt-40' : 'mt-12')}
+      />
     </motion.article>
   );
 }
