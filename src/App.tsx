@@ -59,9 +59,23 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<PageData | null>(null);
   const [currentAuthor, setCurrentAuthor] = useState<AuthorData | null>(null);
   const [editor, setEditor] = useState<AuthorData | null>(null);
-  const [adjacentPosts, setAdjacentPosts] = useState<{ next: PostMetadata | null; prev: PostMetadata | null }>({ next: null, prev: null });
   const [pendingScroll, setPendingScroll] = useState(false);
   const [contentNotFound, setContentNotFound] = useState(false);
+
+  // Compute adjacent posts dynamically to avoid race conditions when deep linking to a post
+  const adjacentPosts = useMemo(() => {
+    if (activeView.type !== 'post' || !activeView.slug || posts.length === 0) {
+      return { next: null, prev: null };
+    }
+    const idx = posts.findIndex(p => p.slug === activeView.slug);
+    if (idx === -1) {
+      return { next: null, prev: null };
+    }
+    return {
+      prev: idx > 0 ? posts[idx - 1] : null,
+      next: idx < posts.length - 1 ? posts[idx + 1] : null
+    };
+  }, [activeView.type, activeView.slug, posts]);
 
   // URL Reconciliation helper
   const navigate = (view: { type: string; slug: string | null }) => {
@@ -142,15 +156,6 @@ export default function App() {
             if (!ignore) {
               if (post) {
                 setCurrentPost(post);
-                if (posts.length > 0) {
-                  const idx = posts.findIndex(p => p.slug === activeView.slug);
-                  if (idx !== -1) {
-                    setAdjacentPosts({
-                      prev: idx > 0 ? posts[idx - 1] : null,
-                      next: idx < posts.length - 1 ? posts[idx + 1] : null
-                    });
-                  }
-                }
                 window.scrollTo(0, 0);
               } else {
                 setContentNotFound(true);
