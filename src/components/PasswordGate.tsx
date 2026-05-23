@@ -27,7 +27,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
     return <>{children}</>;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (input === password) {
       sessionStorage.setItem('prelaunch_authenticated', 'true');
@@ -67,7 +67,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Salasana"
-                className={`w-full bg-white/5 border ${error ? 'border-red-500/50' : 'border-white/10'} rounded-2xl px-6 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-accent/50 transition-all text-center tracking-widest`}
+                className={`w-full bg-white/5 border ${error ? 'border-red-500/50' : 'border-white/10'} rounded-2xl px-6 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-accent/50 transition-all text-left tracking-widest`}
                 autoFocus
               />
               {error && (
