@@ -26,7 +26,15 @@ export function CookieConsent() {
       }, 50);
     };
 
+    const handleConsentUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && typeof customEvent.detail.analytics === 'boolean') {
+        setAnalyticsEnabled(customEvent.detail.analytics);
+      }
+    };
+
     window.addEventListener('open_cookie_consent', handleOpenConsent);
+    window.addEventListener('cookie_consent_updated', handleConsentUpdate);
     // Add global fallback
     (window as any).openCookieSettings = handleOpenConsent;
 
@@ -39,14 +47,25 @@ export function CookieConsent() {
       return () => {
         clearTimeout(timer);
         window.removeEventListener('open_cookie_consent', handleOpenConsent);
+        window.removeEventListener('cookie_consent_updated', handleConsentUpdate);
       };
     }
 
     return () => {
       window.removeEventListener('open_cookie_consent', handleOpenConsent);
+      window.removeEventListener('cookie_consent_updated', handleConsentUpdate);
       delete (window as any).openCookieSettings;
     };
   }, []);
+
+  useEffect(() => {
+    if (isVisible) {
+      const consent = getConsent();
+      if (consent) {
+        setAnalyticsEnabled(consent.analytics);
+      }
+    }
+  }, [isVisible]);
 
   const handleAcceptAll = () => {
     setConsent(true);

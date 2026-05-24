@@ -1,5 +1,8 @@
-import { useState } from 'react';
-import { Play, EyeOff } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Play, EyeOff, ShieldAlert } from 'lucide-react';
+import { getConsent, setConsent } from '../services/consent';
+import { getTranslations, Language } from '../i18n';
+import { CONFIG } from '../config';
 
 interface VideoEmbedProps {
   platform: 'youtube' | 'vimeo';
@@ -8,6 +11,26 @@ interface VideoEmbedProps {
 
 export function VideoEmbed({ platform, config }: VideoEmbedProps) {
   const [isLoading, setIsLoading] = useState(true);
+  const [hasConsent, setHasConsent] = useState(() => {
+    const consent = getConsent();
+    return consent ? consent.analytics : false;
+  });
+
+  const t = getTranslations(CONFIG.language as Language);
+
+  useEffect(() => {
+    const handleConsentUpdate = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail && typeof customEvent.detail.analytics === 'boolean') {
+        setHasConsent(customEvent.detail.analytics);
+      }
+    };
+
+    window.addEventListener('cookie_consent_updated', handleConsentUpdate);
+    return () => {
+      window.removeEventListener('cookie_consent_updated', handleConsentUpdate);
+    };
+  }, []);
 
   // Extract common/player configuration options
   const id = String(config.id || '').trim();
@@ -273,25 +296,54 @@ export function VideoEmbed({ platform, config }: VideoEmbedProps) {
         )}
       </div>
 
-      <div className={`relative w-full ${aspectClass} overflow-hidden`}>
-        {/* Skeleton/Loading State */}
-        {isLoading && (
-          <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-slate-950/90 text-slate-500 text-xs font-mono animate-pulse">
-            <div className="w-8 h-8 rounded-full border border-white/10 border-t-brand-accent animate-spin" />
-            <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-slate-400">Loading {platform} component...</span>
+      <div className={`relative w-full ${aspectClass} overflow-hidden bg-slate-950 flex flex-col items-center justify-center`}>
+        {!hasConsent ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-slate-950/95 z-10">
+            <div className="p-3.5 rounded-full bg-amber-500/10 text-amber-400 mb-4 border border-amber-500/20 shadow-inner">
+              <ShieldAlert size={28} className="animate-pulse text-brand-accent" />
+            </div>
+            <p className="max-w-md text-sm text-slate-300 mb-6 font-medium leading-relaxed">
+              {t.video.consentRequired}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 items-center">
+              <button
+                type="button"
+                onClick={() => setConsent(true)}
+                className="px-5 py-2.5 rounded-lg bg-brand-accent text-slate-950 hover:bg-opacity-90 font-semibold text-xs tracking-wider uppercase transition-all duration-200 shadow-md cursor-pointer"
+              >
+                {t.video.enableAnalytics}
+              </button>
+              <button
+                type="button"
+                onClick={() => (window as any).openCookieSettings?.()}
+                className="px-4 py-2.5 rounded-lg bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 text-xs font-semibold tracking-wider uppercase transition-all duration-200 cursor-pointer border border-white/5"
+              >
+                {t.consent.customize}
+              </button>
+            </div>
           </div>
-        )}
+        ) : (
+          <>
+            {/* Skeleton/Loading State */}
+            {isLoading && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-slate-950/90 text-slate-500 text-xs font-mono animate-pulse">
+                <div className="w-8 h-8 rounded-full border border-white/10 border-t-brand-accent animate-spin" />
+                <span className="text-[8px] uppercase tracking-[0.3em] font-bold text-slate-400">Loading {platform} component...</span>
+              </div>
+            )}
 
-        <iframe
-          src={embedUrl}
-          title={iframeTitle}
-          onLoad={() => setIsLoading(false)}
-          className="absolute inset-0 w-full h-full border-0"
-          allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
-          allowFullScreen
-          referrerPolicy="strict-origin-when-cross-origin"
-          loading="lazy"
-        />
+            <iframe
+              src={embedUrl}
+              title={iframeTitle}
+              onLoad={() => setIsLoading(false)}
+              className="absolute inset-0 w-full h-full border-0"
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+              loading="lazy"
+            />
+          </>
+        )}
       </div>
     </div>
   );

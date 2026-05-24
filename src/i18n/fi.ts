@@ -142,7 +142,7 @@ export const fi: Translations = {
     darkThemeTooltip: 'Tumma karttatyyli',
     lightThemeTooltip: 'Vaalea karttatyyli',
     mapTab: 'Kartta',
-    codeTab: 'Koodi',
+    codeTab: 'JSON',
     exitFullscreen: 'Lopeta kokoruutu',
     enterFullscreen: 'Kokoruutu',
     jsonParseError: 'Virheellinen JSON-rakenne',
@@ -150,9 +150,13 @@ export const fi: Translations = {
     fullscreenStatus: 'KOKORUUTU',
     dynamicStatus: 'UPOTETTU',
     propertiesTitle: 'Kohteen tiedot',
-    reprojectedSuffix: 'Muunnettu',
+    reprojectedSuffix: 'Reprojisoitu',
     ogcStandardLabel: 'OGC-standardi',
     formatLabel: 'Formaatti',
     crsLabel: 'Koordinaatisto',
+  },
+  video: {
+    consentRequired: 'Videon toistaminen edellyttää seurantaevästeiden hyväksymistä, koska ulkopuoliset palvelut (YouTube ja Vimeo) saattavat asettaa evästeitä tai muulla tavoin seurata käyttöä.',
+    enableAnalytics: 'Hyväksy seuranta ja näytä video',
   },
 };

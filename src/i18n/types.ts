@@ -153,4 +153,8 @@ export interface Translations {
     formatLabel: string;
     crsLabel: string;
   };
+  video: {
+    consentRequired: string;
+    enableAnalytics: string;
+  };
 }
