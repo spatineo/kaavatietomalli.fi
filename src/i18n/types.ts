@@ -133,4 +133,24 @@ export interface Translations {
     description: string;
     button: string;
   };
+  geojson: {
+    interactiveMapBlock: string;
+    darkTheme: string;
+    lightTheme: string;
+    darkThemeTooltip: string;
+    lightThemeTooltip: string;
+    mapTab: string;
+    codeTab: string;
+    exitFullscreen: string;
+    enterFullscreen: string;
+    jsonParseError: string;
+    clickShapesForPopups: string;
+    fullscreenStatus: string;
+    dynamicStatus: string;
+    propertiesTitle: string;
+    reprojectedSuffix: string;
+    ogcStandardLabel: string;
+    formatLabel: string;
+    crsLabel: string;
+  };
 }

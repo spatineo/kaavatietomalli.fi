@@ -169,6 +169,16 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         <ReactMarkdown
           urlTransform={(url) => resolveImageUrl(url)}
           components={{
+            pre({ node, children, ...props }: any) {
+              const codeEl = children && (children as any).props;
+              const className = codeEl?.className || '';
+              const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
+              
+              if (isInteractive) {
+                return <>{children}</>;
+              }
+              return <pre {...props}>{children}</pre>;
+            },
             code({ node, className, children, ref, ...props }: any) {
               return (
                 <CodeBlock

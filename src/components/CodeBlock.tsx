@@ -5,6 +5,7 @@ import { CONFIG } from '../config';
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
 const VideoEmbed = lazy(() => import('./VideoEmbed').then(module => ({ default: module.VideoEmbed })));
+const GeoJsonMapViewer = lazy(() => import('./GeoJSONMapViewer').then(module => ({ default: module.GeoJsonMapViewer })));
 
 interface CodeBlockProps {
   className?: string;
@@ -68,6 +69,21 @@ export function CodeBlock({
   const match = /language-(\w+)/.exec(className || '');
   const language = match ? match[1] : '';
   const codeContent = String(children || '').replace(/\n$/, '');
+
+  if (language === 'geojson' || language === 'jsonfg') {
+    const fallbackHeightClass = placeholderHeight === 'h-48' ? 'h-48' : placeholderHeight === 'h-56' ? 'h-56' : 'h-64';
+    return (
+      <Suspense
+        fallback={
+          <div className={`${fallbackHeightClass} flex flex-col items-center justify-center gap-4 bg-slate-950/90 rounded-2xl border border-white/5 animate-pulse`}>
+            <div className="w-8 h-8 rounded-full border border-white/10 border-t-[#FFAF00] animate-spin" />
+          </div>
+        }
+      >
+        <GeoJsonMapViewer code={codeContent} language={language} />
+      </Suspense>
+    );
+  }
 
   if (language === 'youtube' || language === 'vimeo') {
     const config = parseVideoProperties(codeContent);
