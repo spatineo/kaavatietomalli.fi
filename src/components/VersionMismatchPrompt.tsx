@@ -4,35 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { BUILD_VERSION } from '../version';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
-
-export async function fetchServerVersion(): Promise<string | null> {
-  if (import.meta.env.DEV) {
-    return null;
-  }
-  try {
-    const res = await fetch(`${CONFIG.basePath.replace(/\/$/, '')}/version.json?cb=${Date.now()}`);
-    if (!res.ok) {
-      return null;
-    }
-    const data = await res.json();
-    return data?.version || null;
-  } catch (error) {
-    console.error('Failed to verify backend version:', error);
-  }
-  return null;
-}
-
-export async function checkBackendVersion(): Promise<boolean> {
-  if (import.meta.env.DEV) {
-    return true;
-  }
-  const sVer = await fetchServerVersion();
-  if (sVer && sVer !== BUILD_VERSION) {
-    console.warn(`Version mismatch detected! Client: ${BUILD_VERSION}, Server: ${sVer}`);
-    return false;
-  }
-  return true;
-}
+import { fetchServerVersion } from '../lib/utils';
 
 export function VersionMismatchPrompt() {
   const [hasMismatch, setHasMismatch] = useState(false);

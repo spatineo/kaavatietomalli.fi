@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { motion } from 'motion/react';
-import { checkBackendVersion } from './VersionMismatchPrompt';
+import { checkBackendVersion } from '../lib/utils';
 
 interface PasswordGateProps {
   children: React.ReactNode;

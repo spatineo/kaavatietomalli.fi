@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { CONFIG } from '../config';
+import { BUILD_VERSION } from '../version';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -25,4 +26,33 @@ export function resolveImageUrl(url: string | undefined): string {
   // Ensure basePath ends with / and cleanUrl DOES NOT start with /
   const base = CONFIG.basePath.endsWith('/') ? CONFIG.basePath : `${CONFIG.basePath}/`;
   return `${base}${cleanUrl}`;
+}
+
+export async function fetchServerVersion(): Promise<string | null> {
+  if (import.meta.env.DEV) {
+    return null;
+  }
+  try {
+    const res = await fetch(`${CONFIG.basePath.replace(/\/$/, '')}/version.json?cb=${Date.now()}`);
+    if (!res.ok) {
+      return null;
+    }
+    const data = await res.json();
+    return data?.version || null;
+  } catch (error) {
+    console.error('Failed to verify backend version:', error);
+  }
+  return null;
+}
+
+export async function checkBackendVersion(): Promise<boolean> {
+  if (import.meta.env.DEV) {
+    return true;
+  }
+  const sVer = await fetchServerVersion();
+  if (sVer && sVer !== BUILD_VERSION) {
+    console.warn(`Version mismatch detected! Client: ${BUILD_VERSION}, Server: ${sVer}`);
+    return false;
+  }
+  return true;
 }
