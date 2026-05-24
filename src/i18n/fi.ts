@@ -142,7 +142,7 @@ export const fi: Translations = {
     darkThemeTooltip: 'Tumma karttatyyli',
     lightThemeTooltip: 'Vaalea karttatyyli',
     mapTab: 'Kartta',
-    codeTab: 'JSON',
+    codeTab: 'Koodi',
     exitFullscreen: 'Lopeta kokoruutu',
     enterFullscreen: 'Kokoruutu',
     jsonParseError: 'Virheellinen JSON-rakenne',
