@@ -7,11 +7,8 @@ import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { resolveImageUrl } from '../lib/utils';
-import { lazy, Suspense } from 'react';
 import { getTracker } from '../services/analytics';
-
-const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
-const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
+import { CodeBlock } from './CodeBlock';
 
 interface PageViewProps {
   page: PageData;
@@ -35,47 +32,14 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
           urlTransform={(url) => resolveImageUrl(url)}
           components={{
             code({ node, className, children, ref, ...props }: any) {
-              const match = /language-(\w+)/.exec(className || '');
-              const language = match ? match[1] : '';
-
-              if (language === 'mermaid') {
-                return (
-                  <Suspense fallback={<div className="h-48 flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse">{t.common.loadingChart}</div>}>
-                    <Mermaid chart={String(children).replace(/\n$/, '')} />
-                  </Suspense>
-                );
-              }
-
-              return match ? (
-                <div className="my-10 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-                  <div className="bg-black text-[10px] uppercase font-bold tracking-[0.2em] px-4 py-3 border-b border-white/5 text-white/40 flex justify-between items-center">
-                    <span>{language}</span>
-                  </div>
-                  <Suspense fallback={
-                    <div className="bg-black p-8 font-mono text-[14px] text-white/40">
-                      {String(children).replace(/\n$/, '')}
-                    </div>
-                  }>
-                    <LazySyntaxHighlighter
-                      language={language}
-                      PreTag="div"
-                      customStyle={{
-                        margin: 0,
-                        padding: '2rem',
-                        fontSize: '14px',
-                        fontFamily: '"JetBrains Mono", monospace',
-                        background: '#000000',
-                      }}
-                      {...props}
-                    >
-                      {String(children).replace(/\n$/, '')}
-                    </LazySyntaxHighlighter>
-                  </Suspense>
-                </div>
-              ) : (
-                <code className={className} {...props}>
+              return (
+                <CodeBlock
+                  className={className}
+                  placeholderHeight="h-48"
+                  {...props}
+                >
                   {children}
-                </code>
+                </CodeBlock>
               );
             }
           }}
@@ -113,47 +77,14 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
           urlTransform={(url) => resolveImageUrl(url)}
           components={{
             code({ node, className, children, ref, ...props }: any) {
-              const match = /language-(\w+)/.exec(className || '');
-              const language = match ? match[1] : '';
-
-              if (language === 'mermaid') {
-                return (
-                  <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse">{t.common.loadingChart}</div>}>
-                    <Mermaid chart={String(children).replace(/\n$/, '')} />
-                  </Suspense>
-                );
-              }
-
-              return match ? (
-                <div className="my-10 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-                  <div className="bg-black text-[10px] uppercase font-bold tracking-[0.2em] px-4 py-3 border-b border-white/5 text-white/40 flex justify-between items-center">
-                    <span>{language}</span>
-                  </div>
-                  <Suspense fallback={
-                    <div className="bg-black p-8 font-mono text-[14px] text-white/40">
-                      {String(children).replace(/\n$/, '')}
-                    </div>
-                  }>
-                    <LazySyntaxHighlighter
-                      language={language}
-                      PreTag="div"
-                      customStyle={{
-                        margin: 0,
-                        padding: '2rem',
-                        fontSize: '14px',
-                        fontFamily: '"JetBrains Mono", monospace',
-                        background: '#000000',
-                      }}
-                      {...props}
-                    >
-                      {String(children).replace(/\n$/, '')}
-                    </LazySyntaxHighlighter>
-                  </Suspense>
-                </div>
-              ) : (
-                <code className={className} {...props}>
+              return (
+                <CodeBlock
+                  className={className}
+                  placeholderHeight="h-64"
+                  {...props}
+                >
                   {children}
-                </code>
+                </CodeBlock>
               );
             }
           }}

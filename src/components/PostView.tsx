@@ -1,21 +1,18 @@
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { format, parseISO, formatDistanceToNow } from 'date-fns';
-import { fi as fiLocale } from 'date-fns/locale';
-import { Calendar, User, ArrowLeft, ArrowRight, Tag, MessageSquare, ChevronDown, Clock } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { format, parseISO } from 'date-fns';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { motion } from 'motion/react';
 import { PostData, PostMetadata, getRelatedPostSlugs, getAllPostMetadata } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { resolveImageUrl } from '../lib/utils';
-import { lazy, Suspense, useRef } from 'react';
 import { getTracker } from '../services/analytics';
 import { RelatedPosts } from './RelatedPosts';
 import { ContentFooter } from './ContentFooter';
 
-const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
-const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
-const Giscus = lazy(() => import('@giscus/react'));
+import { CodeBlock } from './CodeBlock';
+import { PostComments } from './PostComments';
 
 interface PostViewProps {
   post: PostData;
@@ -31,8 +28,6 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
   const t = getTranslations(CONFIG.language as Language);
   const [relatedPosts, setRelatedPosts] = useState<PostMetadata[]>([]);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
-  const [commentStats, setCommentStats] = useState<{ count: number, lastDate: string | null } | null>(null);
-  const commentsSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     getTracker().trackPostView(post.slug, post.title, post.tags);
@@ -54,84 +49,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       }
     };
     loadRelated();
-
-    // Reset comments state when post changes, but keep open if giscus redirect param is in URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasGiscusParam = urlParams.has('giscus');
-    setIsCommentsOpen(hasGiscusParam);
-    setCommentStats(null);
-
-    // Fetch Giscus stats from prebuilt giscus-stats.json to avoid CORS issues
-    const fetchGiscusStats = async () => {
-      try {
-        const response = await fetch(`${CONFIG.basePath}content/giscus-stats.json`);
-        if (response.ok) {
-          const stats = await response.json();
-          const postStats = stats[post.slug];
-          if (postStats) {
-            setCommentStats({
-              count: postStats.count,
-              lastDate: postStats.lastDate
-            });
-          }
-        }
-      } catch (e) {
-        console.warn("Failed to fetch prebuilt Giscus stats.", e);
-      }
-    }
-    fetchGiscusStats();
   }, [post.slug, post.title, post.tags]);
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('giscus')) {
-      const scrollTimeout = setTimeout(() => {
-        commentsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }, 750); // Allow motion transition to height: 'auto' to complete
-      return () => clearTimeout(scrollTimeout);
-    }
-  }, [post.slug]);
-
-  useEffect(() => {
-    let scrolledOnMessage = false;
-    const handleGiscusMessage = (event: MessageEvent) => {
-      if (event.origin !== 'https://giscus.app') return;
-      
-      const { data } = event;
-      if (data && typeof data === 'object' && 'giscus' in data) {
-        // Giscus has sent a message, meaning it has loaded and registered the token!
-        // Now delete the "giscus" query parameter from the browser address bar and history
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('giscus')) {
-          if (!scrolledOnMessage) {
-            scrolledOnMessage = true;
-            setTimeout(() => {
-              commentsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }, 400); // Allow iframe content to settle
-          }
-
-          urlParams.delete('giscus');
-          const newSearch = urlParams.toString();
-          const newUrl = `${window.location.pathname}${newSearch ? '?' + newSearch : ''}${window.location.hash}`;
-          window.history.replaceState(null, '', newUrl);
-        }
-      }
-    };
-
-    window.addEventListener('message', handleGiscusMessage);
-    return () => {
-      window.removeEventListener('message', handleGiscusMessage);
-    };
-  }, [post.slug]);
-
-  const handleToggleComments = () => {
-    setIsCommentsOpen(!isCommentsOpen);
-    if (!isCommentsOpen && commentsSectionRef.current) {
-      setTimeout(() => {
-        commentsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
-  };
 
   return (
     <motion.article
@@ -252,48 +170,15 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           urlTransform={(url) => resolveImageUrl(url)}
           components={{
             code({ node, className, children, ref, ...props }: any) {
-              const match = /language-(\w+)/.exec(className || '');
-              const language = match ? match[1] : '';
-
-              if (language === 'mermaid') {
-                return (
-                  <Suspense fallback={<div className="h-64 flex items-center justify-center text-slate-500 font-mono text-xs animate-pulse">{t.common.loadingChart}</div>}>
-                    <Mermaid chart={String(children).replace(/\n$/, '')} />
-                  </Suspense>
-                );
-              }
-
-              return match ? (
-                <div className="my-10 rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
-                  <div className="bg-black text-[10px] uppercase font-bold tracking-[0.2em] px-4 py-3 border-b border-white/5 text-white/40 flex justify-between items-center">
-                    <span>{language}</span>
-                    <span className="text-[8px] opacity-50">src/{post.slug}.md</span>
-                  </div>
-                  <Suspense fallback={
-                    <div className="bg-black p-8 font-mono text-[14px] text-white/40">
-                      {String(children).replace(/\n$/, '')}
-                    </div>
-                  }>
-                    <LazySyntaxHighlighter
-                      language={language}
-                      PreTag="div"
-                      customStyle={{
-                        margin: 0,
-                        padding: '2rem',
-                        fontSize: '14px',
-                        fontFamily: '"JetBrains Mono", monospace',
-                        background: '#000000',
-                      }}
-                      {...props}
-                    >
-                      {String(children).replace(/\n$/, '')}
-                    </LazySyntaxHighlighter>
-                  </Suspense>
-                </div>
-              ) : (
-                <code className={className} {...props}>
+              return (
+                <CodeBlock
+                  className={className}
+                  filePath={`src/${post.slug}.md`}
+                  placeholderHeight="h-64"
+                  {...props}
+                >
                   {children}
-                </code>
+                </CodeBlock>
               );
             },
           }}
@@ -302,94 +187,10 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         </ReactMarkdown>
       </div>
 
-      <div className="mt-32 pt-20 border-t border-white/5" ref={commentsSectionRef}>
-        <button 
-          onClick={handleToggleComments}
-          className="w-full text-left group"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6 flex-grow">
-              <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
-                {t.post.comments}
-              </span>
-              <div className="h-[1px] w-12 bg-white/10" />
-              
-              <div className="hidden sm:flex items-center gap-6">
-                {commentStats ? (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <MessageSquare size={12} className="text-slate-500" />
-                      <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-                        {t.post.commentCount.replace('{{count}}', commentStats.count.toString())}
-                      </span>
-                    </div>
-                    {commentStats.lastDate && (
-                      <div className="flex items-center gap-2">
-                        <Clock size={12} className="text-slate-500" />
-                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-                          {t.post.latestComment.replace('{{date}}', formatDistanceToNow(parseISO(commentStats.lastDate), { addSuffix: true, locale: fiLocale }))}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest opacity-40">
-                    Giscus Discussions
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 pl-4 border-l border-white/5">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 group-hover:text-brand-accent transition-colors">
-                {isCommentsOpen ? t.post.hideComments : t.post.showComments}
-              </span>
-              <ChevronDown 
-                size={16} 
-                className={`text-slate-500 transition-transform duration-500 group-hover:text-brand-accent ${isCommentsOpen ? 'rotate-180' : ''}`} 
-              />
-            </div>
-          </div>
-        </button>
-
-        <AnimatePresence>
-          {isCommentsOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden"
-            >
-              <div className="mt-20">
-                <Suspense fallback={
-                  <div className="h-64 flex flex-col items-center justify-center gap-4 bg-white/[0.02] rounded-2xl border border-white/5 animate-pulse">
-                    <div className="w-10 h-10 rounded-full border-2 border-brand-accent/20 border-t-brand-accent animate-spin" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{t.common.loading}</span>
-                  </div>
-                }>
-                  <Giscus 
-                    key={post.slug}
-                    repo={CONFIG.giscus.repo as any}
-                    repoId={CONFIG.giscus.repoId}
-                    category={CONFIG.giscus.category}
-                    categoryId={CONFIG.giscus.categoryId}
-                    mapping={CONFIG.giscus.mapping as any}
-                    term={post.slug}
-                    strict={CONFIG.giscus.strict as any}
-                    reactionsEnabled={CONFIG.giscus.reactionsEnabled as any}
-                    emitMetadata={CONFIG.giscus.emitMetadata as any}
-                    inputPosition={CONFIG.giscus.inputPosition as any}
-                    theme={CONFIG.giscus.theme as any}
-                    lang={CONFIG.giscus.lang as any}
-                    loading={CONFIG.giscus.loading as any}
-                  />
-                </Suspense>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <PostComments
+        postSlug={post.slug}
+        onToggleOpen={setIsCommentsOpen}
+      />
 
       {relatedPosts.length > 0 && (
         <div className={`pt-20 border-t border-white/5 max-w-4xl mx-auto transition-all duration-500 ${isCommentsOpen ? 'mt-40' : 'mt-12'}`}>
