@@ -128,4 +128,9 @@ export interface Translations {
     fullIndexDescription: string;
     fullIndexNote: string;
   };
+  versionMismatch: {
+    title: string;
+    description: string;
+    button: string;
+  };
 }

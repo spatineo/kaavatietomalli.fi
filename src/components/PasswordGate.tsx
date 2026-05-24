@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { motion } from 'motion/react';
+import { checkBackendVersion } from './VersionMismatchPrompt';
 
 interface PasswordGateProps {
   children: React.ReactNode;
@@ -27,9 +28,14 @@ export function PasswordGate({ children }: PasswordGateProps) {
     return <>{children}</>;
   }
 
-  const handleSubmit = (e: React.SyntheticEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent) => {
     e.preventDefault();
     if (input === password) {
+      const compatible = await checkBackendVersion();
+      if (!compatible) {
+        // Version mismatch detected. Global prompt will catch this and show.
+        return;
+      }
       sessionStorage.setItem('prelaunch_authenticated', 'true');
       setIsAuthenticated(true);
       setError(false);

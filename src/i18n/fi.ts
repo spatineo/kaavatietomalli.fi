@@ -13,7 +13,7 @@ export const fi: Translations = {
     contact: 'Yhteys',
     skipToContent: 'Hyppää sisältöön',
     footerTitle: 'Kaavatietomalli.fi',
-    footerText: 'Tietomallimuotoisen alueidenkäytön suunnittelun one-stop shop.',
+    footerText: 'Tietomallimuotoisen alueidenkäytön suunnittelun one-stop-shop.',
   },
   navigation: {
     blog: 'Blogi',
@@ -129,5 +129,10 @@ export const fi: Translations = {
     fullIndexTitle: 'Full Content Index',
     fullIndexDescription: 'Comprehensive index of all articles and pages for LLMs.',
     fullIndexNote: 'Full index of all articles and pages is available at [llms-full.txt](${baseUrl}/llms-full.txt).',
+  },
+  versionMismatch: {
+    title: 'Päivitys saatavilla',
+    description: 'Sivustosta on julkaistu uusi versio. Päivitä sivu varmistaaksesi ominaisuuksien ja tietomallien yhteensopivuuden sekä toiminnan palaessasi aiemmasta istunnostasi.',
+    button: 'Lataa sivusto uudelleen',
   },
 };

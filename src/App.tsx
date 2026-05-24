@@ -20,6 +20,7 @@ import { resolveImageUrl } from './lib/utils';
 import { getTranslations, Language } from './i18n';
 import { getTracker } from './services/analytics';
 import { PasswordGate } from './components/PasswordGate';
+import { VersionMismatchPrompt } from './components/VersionMismatchPrompt';
 
 export default function App() {
   const t = getTranslations(CONFIG.language as Language);
@@ -428,8 +429,9 @@ export default function App() {
   }, [activeView, currentPost, currentPage, currentAuthor, isDataReady, contentNotFound, t]);
 
   return (
-    <PasswordGate>
-      <div className="min-h-screen flex flex-col bg-brand-bg text-slate-300">
+    <>
+      <PasswordGate>
+        <div className="min-h-screen flex flex-col bg-brand-bg text-slate-300">
         <a href="#main-content" className="skip-to-content">
           {t.common.skipToContent}
         </a>
@@ -828,5 +830,7 @@ export default function App() {
         <CookieConsent />
       </div>
     </PasswordGate>
+    <VersionMismatchPrompt />
+    </>
   );
 }
