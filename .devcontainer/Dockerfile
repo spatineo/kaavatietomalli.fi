@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/devcontainers/javascript-node:22-bookworm
+FROM mcr.microsoft.com/devcontainers/javascript-node:24-bookworm
 
 # 1. Install pipx system-wide
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
