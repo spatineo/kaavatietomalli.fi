@@ -4,7 +4,7 @@ import matter from 'gray-matter';
 import { create, insert, save } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
 
-const CONTENT_DIR = path.join(process.cwd(), 'src', 'content');
+const CONTENT_DIR = path.join(process.cwd(), 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
 async function generateSearchIndex() {

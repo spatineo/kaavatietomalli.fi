@@ -45,7 +45,8 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
     link.rel = 'alternate';
     link.type = 'text/markdown';
     link.title = 'Raw Markdown';
-    link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/authors/${author.slug}.md`;
+    const authorFile = author.file || `${author.slug}.md`;
+    link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/content/authors/${authorFile}`;
     document.head.appendChild(link);
 
     return () => {

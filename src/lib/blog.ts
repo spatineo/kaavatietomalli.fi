@@ -11,6 +11,7 @@ export interface PostMetadata {
   coverImage?: string;
   category?: string;
   publishDate?: string;
+  file?: string;
 }
 
 export interface PostData extends PostMetadata {
@@ -21,6 +22,7 @@ export interface PageData {
   slug: string;
   title: string;
   content: string;
+  file?: string;
 }
 
 export interface AuthorData {
@@ -39,6 +41,7 @@ export interface AuthorData {
     email?: string;
   };
   skills?: string[];
+  file?: string;
 }
 
 import { CONFIG } from '../config';

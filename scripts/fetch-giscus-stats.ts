@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { PROJECT_CONFIG } from '../project.config.js';
 
-const CONTENT_DIR = path.join(process.cwd(), 'src', 'content');
+const CONTENT_DIR = path.join(process.cwd(), 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 const OUT_DIR = path.join(PUBLIC_DIR, 'content');
 

@@ -13,7 +13,7 @@ export const fi: Translations = {
     contact: 'Yhteys',
     skipToContent: 'Hyppää sisältöön',
     footerTitle: 'Kaavatietomalli.fi',
-    footerText: 'Tietomallimuotoisen alueidenkäytön suunnittelun one-stop-shop.',
+    footerText: 'Tietomallimuotoisen alueidenkäytön suunnittelun one-stop shop.',
   },
   navigation: {
     blog: 'Blogi',
@@ -22,7 +22,7 @@ export const fi: Translations = {
     closeMenu: 'Sulje valikko',
     openMenu: 'Avaa valikko',
     mainNav: 'Päänavigaatio',
-    githubRepo: 'GitHub-arkisto',
+    githubRepo: 'GitHub-repositorio',
   },
   hero: {
     subtitle: 'Tietomallimuotoinen kaavoitus meillä ja muualla',
@@ -48,7 +48,7 @@ export const fi: Translations = {
     titleAccent: 'ollaan',
     titleOlta: 'oltu?',
     description: 'Poimintoja tietomallimuotoisen kaavoituksen kehittämisen elinkaarelta.',
-    exploreData: 'Tutki tietoa',
+    exploreData: 'Tutustu',
   },
   search: {
     title: 'Haku',
@@ -58,7 +58,7 @@ export const fi: Translations = {
     types: {
       post: 'Artikkeli',
       page: 'Sivu',
-      author: 'Henkilö',
+      author: 'Kirjoittaja',
     },
   },
   mermaid: {
@@ -67,7 +67,7 @@ export const fi: Translations = {
     zoomOut: 'Loitonna',
     reset: 'Palauta',
     close: 'Sulje',
-    viewInfo: 'näkymä • Vedä ja rullaa tutkiaksesi',
+    viewInfo: 'Liikuta ja zoomaa tutkiaksesi kaaviota',
     renderError: 'Mermaid-kaavion piirto epäonnistui',
   },
   post: {
@@ -85,7 +85,7 @@ export const fi: Translations = {
     hideComments: 'Piilota keskustelu',
     commentCount: '{{count}} kommenttia',
     latestComment: 'Viimeisin: {{date}}',
-    relatedPostsSection: 'Lisää samoista aiheista',
+    relatedPostsSection: 'Lisää aihepiiristä',
   },
   page: {
   },
@@ -132,11 +132,11 @@ export const fi: Translations = {
   },
   versionMismatch: {
     title: 'Päivitys saatavilla',
-    description: 'Sivustosta on julkaistu uusi versio. Päivitä sivu varmistaaksesi ominaisuuksien ja tietomallien yhteensopivuuden sekä toiminnan palaessasi aiemmasta istunnostasi.',
+    description: 'Sivustoa on muokattu tai sinne on julkaistu uutta sisältöä.',
     button: 'Lataa sivusto uudelleen',
   },
   geojson: {
-    interactiveMapBlock: 'Interaktiivinen kartta',
+    interactiveMapBlock: 'Karttanäkymä',
     darkTheme: 'Tumma',
     lightTheme: 'Vaalea',
     darkThemeTooltip: 'Tumma karttatyyli',

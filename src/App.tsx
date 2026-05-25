@@ -417,7 +417,14 @@ export default function App() {
         }
         
         const folder = type === 'post' ? 'posts' : 'pages';
-        dcLink.setAttribute('href', `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/src/content/${folder}/${slug}.md`);
+        let resolvedFile = `${slug}.md`;
+        if (type === 'post' && currentPost && currentPost.slug === slug && currentPost.file) {
+            resolvedFile = currentPost.file;
+        } else if (type === 'page' && currentPage && currentPage.slug === slug && currentPage.file) {
+            resolvedFile = currentPage.file;
+        }
+        
+        dcLink.setAttribute('href', `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/content/${folder}/${resolvedFile}`);
     };
 
     if (activeView.type === 'post' || activeView.type === 'page') {

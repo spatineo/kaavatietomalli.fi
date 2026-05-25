@@ -1,13 +1,7 @@
 node_modules/
 build/
 dist/
-public/content
-public/sitemap.xml
-public/llms.txt
-public/llms-full.txt
-public/search-index.json
-public/robots.txt
-public/version.json
+public/
 src/version.ts
 coverage/
 .DS_Store
