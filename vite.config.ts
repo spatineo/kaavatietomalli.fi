@@ -25,14 +25,6 @@ export default defineConfig(({mode}) => {
         output: {
           manualChunks(id) {
             if (id.includes('node_modules')) {
-              /*
-              if (id.includes('mermaid')) {
-                return 'vendor-mermaid';
-              }*/
-             /*
-              if (id.includes('react-syntax-highlighter')) {
-                return 'vendor-syntax-highlighter';
-              }*/
               if (id.includes('prismjs')) {
                 return 'vendor-syntax-prism';
               }
