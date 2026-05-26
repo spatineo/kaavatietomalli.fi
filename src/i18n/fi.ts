@@ -134,6 +134,7 @@ export const fi: Translations = {
     title: 'Päivitys saatavilla',
     description: 'Sivustoa on muokattu tai sinne on julkaistu uutta sisältöä.',
     button: 'Lataa sivusto uudelleen',
+    buttonLater: 'Päivitä myöhemmin',
   },
   geojson: {
     interactiveMapBlock: 'Karttanäkymä',

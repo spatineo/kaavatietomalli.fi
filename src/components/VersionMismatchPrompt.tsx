@@ -8,6 +8,7 @@ import { fetchServerVersion } from '../lib/utils';
 
 export function VersionMismatchPrompt() {
   const [hasMismatch, setHasMismatch] = useState(false);
+  const [isPostponed, setIsPostponed] = useState(false);
   const [detectedVersion, setDetectedVersion] = useState<string | null>(null);
   const t = getTranslations(CONFIG.language as Language);
 
@@ -27,6 +28,21 @@ export function VersionMismatchPrompt() {
       window.history.replaceState({}, '', url.toString());
     }
   }, []);
+
+  // Reset postponed status on any URL/search change (switching articles/pages)
+  useEffect(() => {
+    setIsPostponed(false);
+  }, [window.location.search]);
+
+  // Automatically reset postponed status after 5 minutes to remind the user later
+  useEffect(() => {
+    if (isPostponed) {
+      const timer = setTimeout(() => {
+        setIsPostponed(false);
+      }, 5 * 60 * 1000); // 5 minutes
+      return () => clearTimeout(timer);
+    }
+  }, [isPostponed]);
 
   useEffect(() => {
     let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -121,7 +137,7 @@ export function VersionMismatchPrompt() {
 
   return (
     <AnimatePresence>
-      {hasMismatch && (
+      {hasMismatch && !isPostponed && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -152,10 +168,17 @@ export function VersionMismatchPrompt() {
 
               <button
                 onClick={handleReload}
-                className="w-full flex items-center justify-center gap-3 bg-brand-accent text-brand-bg font-black uppercase tracking-widest py-4 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-brand-accent/20 cursor-pointer"
+                className="w-full flex items-center justify-center gap-3 bg-brand-accent text-brand-bg font-black uppercase tracking-widest py-4 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-brand-accent/20 cursor-pointer text-base"
               >
                 <RefreshCw className="w-5 h-5 animate-spin" style={{ animationDuration: '3s' }} />
                 <span>{t.versionMismatch.button}</span>
+              </button>
+
+              <button
+                onClick={() => setIsPostponed(true)}
+                className="w-full mt-4 flex items-center justify-center gap-2 text-slate-400 hover:text-white font-bold uppercase tracking-wider py-2 transition-colors cursor-pointer text-xs"
+              >
+                {t.versionMismatch.buttonLater}
               </button>
             </div>
           </motion.div>

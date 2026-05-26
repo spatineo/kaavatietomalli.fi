@@ -132,6 +132,7 @@ export interface Translations {
     title: string;
     description: string;
     button: string;
+    buttonLater: string;
   };
   geojson: {
     interactiveMapBlock: string;
