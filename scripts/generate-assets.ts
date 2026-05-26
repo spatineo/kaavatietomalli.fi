@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import dotenv from 'dotenv';
+import { execSync } from 'child_process';
 import { PROJECT_CONFIG } from '../project.config.js';
 import { getTranslations } from '../src/i18n/index.js';
 
@@ -16,6 +17,64 @@ const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
 if (!fs.existsSync(PUBLIC_DIR)) {
   fs.mkdirSync(PUBLIC_DIR, { recursive: true });
+}
+
+interface GitCommitInfo {
+  hash: string;
+  date: string;
+  message: string;
+}
+
+function getGitHistoryOfContent(): Record<string, GitCommitInfo[]> {
+  const historyMap: Record<string, GitCommitInfo[]> = {};
+  try {
+    const output = execSync('git log --name-status --pretty=format:"COMMIT:%H|%aI|%s" -- "content"', {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    });
+    const lines = output.split('\n');
+    let currentCommit: GitCommitInfo | null = null;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      if (trimmed.startsWith('COMMIT:')) {
+        const parts = trimmed.substring(7).split('|');
+        const hash = parts[0] || '';
+        const date = parts[1] || '';
+        const message = parts.slice(2).join('|') || '';
+        currentCommit = { hash, date, message };
+      } else if (currentCommit) {
+        // Line e.g. "M\tcontent/posts/..."
+        const parts = trimmed.split(/\s+/);
+        if (parts.length >= 2) {
+          const status = parts[0];
+          const filePath = parts[1].replace(/\\/g, '/');
+          if (!historyMap[filePath]) {
+            historyMap[filePath] = [];
+          }
+          historyMap[filePath].push(currentCommit);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Could not read git history via CLI:', err);
+  }
+  return historyMap;
+}
+
+function escapeXml(unsafe: string): string {
+  return unsafe.replace(/[<>&'"]/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
 }
 
 function getFilesRecursive(dir: string, baseDir: string = dir): string[] {
@@ -35,6 +94,7 @@ function getFilesRecursive(dir: string, baseDir: string = dir): string[] {
 
 function generateAssets() {
   const t = getTranslations('fi');
+  const historyMap = getGitHistoryOfContent();
   const postsDir = path.join(CONTENT_DIR, 'posts');
   const pagesDir = path.join(CONTENT_DIR, 'pages');
   const authorsDir = path.join(CONTENT_DIR, 'authors');
@@ -264,6 +324,96 @@ ${posts.map(post => `  <url>
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'llms-full.txt'), llmsFullTxt);
   console.log('Generated llms-full.txt');
+
+  // Generate RSS 2.0 Feed for the 50 latest created or updated journal (blog) posts.
+  const journalPostsOnly = posts.filter(post => post.metadata.category === 'journal');
+
+  const postsWithGitDates = journalPostsOnly.map(post => {
+    const filePath = `content/posts/${post.file}`;
+    const fileCommits = historyMap[filePath] || [];
+
+    let createdDate = post.metadata.date || post.metadata.publishDate || '';
+    let updatedDate = post.metadata.date || post.metadata.publishDate || '';
+    let lastCommitMessage = '';
+    let lastCommitHash = '';
+
+    if (fileCommits.length > 0) {
+      updatedDate = fileCommits[0].date;
+      createdDate = fileCommits[fileCommits.length - 1].date;
+      lastCommitMessage = fileCommits[0].message;
+      lastCommitHash = fileCommits[0].hash;
+    }
+
+    if (!createdDate) {
+      createdDate = new Date().toISOString();
+    }
+    if (!updatedDate) {
+      updatedDate = createdDate;
+    }
+
+    return {
+      post,
+      createdDate,
+      updatedDate,
+      lastCommitMessage,
+      lastCommitHash
+    };
+  });
+
+  // Sort by updatedDate descending (newest activity first)
+  postsWithGitDates.sort((a, b) => new Date(b.updatedDate).getTime() - new Date(a.updatedDate).getTime());
+
+  // Take top 50
+  const latestPostsForFeed = postsWithGitDates.slice(0, 50);
+
+  const channelUrl = BASE_URL;
+  const feedUrl = `${BASE_URL}/feed.xml`;
+
+  let rssItemsXml = '';
+  latestPostsForFeed.forEach(({ post, createdDate, updatedDate, lastCommitMessage, lastCommitHash }) => {
+    const postUrl = `${BASE_URL}/?post=${post.metadata.slug}`;
+    const pubDateRfc822 = new Date(updatedDate).toUTCString();
+
+    const title = escapeXml(post.metadata.title);
+    const excerpt = escapeXml(post.metadata.excerpt || '');
+
+    const descriptionText = excerpt;
+
+    const guid = postUrl;
+
+    const categoriesXml = (post.metadata.tags || [])
+      .map((tag: string) => `      <category>${escapeXml(tag)}</category>`)
+      .join('\n');
+
+    const authorXml = post.metadata.author
+      ? `      <dc:creator>${escapeXml(post.metadata.author)}</dc:creator>`
+      : `      <dc:creator>Spatineo Oy</dc:creator>`;
+
+    rssItemsXml += `    <item>
+      <title>${title}</title>
+      <link>${postUrl}</link>
+      <guid isPermaLink="true">${guid}</guid>
+      <pubDate>${pubDateRfc822}</pubDate>
+      <description>${descriptionText}</description>
+${authorXml}
+${categoriesXml ? categoriesXml + '\n' : ''}    </item>\n`;
+  });
+
+  const currentRssTime = new Date().toUTCString();
+  const rssXml = `<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>${escapeXml(t.common.footerTitle)}</title>
+    <link>${channelUrl}</link>
+    <description>${escapeXml(t.hero.description)}</description>
+    <language>fi</language>
+    <lastBuildDate>${currentRssTime}</lastBuildDate>
+    <atom:link href="${feedUrl}" rel="self" type="application/rss+xml" />
+${rssItemsXml}  </channel>
+</rss>`;
+
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'feed.xml'), rssXml);
+  console.log('Generated feed.xml (RSS 2.0)');
 
   // Copy content/images folder to public/images
   const srcImagesDir = path.join(CONTENT_DIR, 'images');
