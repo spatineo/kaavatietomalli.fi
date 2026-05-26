@@ -6,6 +6,7 @@ import { SearchWidget } from './SearchWidget';
 import { CONFIG, NavItem } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { getTracker } from '../services/analytics';
+import { BUILD_VERSION } from '../version';
 
 interface HeaderProps {
   onNavigatePage: (slug: string | null) => void;
@@ -294,21 +295,38 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
 
 export function Footer() {
   const t = getTranslations(CONFIG.language as Language);
+
+  const buildYear = (() => {
+    try {
+      const versionNum = Number(BUILD_VERSION);
+      if (versionNum && versionNum > 0) {
+        const year = new Date(versionNum).getFullYear();
+        if (!isNaN(year) && year > 1970) return year.toString();
+      }
+    } catch (e) {}
+    return new Date().getFullYear().toString();
+  })();
+
   return (
     <footer className="py-12 border-t border-white/5 bg-black/40">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="flex flex-col md:flex-row items-center gap-8">
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.rights}</span>
-            <span className="text-sm font-semibold text-slate-200">&copy; Spatineo Oy ja kirjoittajat</span>
+      <div className="max-w-7xl mx-auto px-6 flex flex-col gap-8">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-4">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.rights}</span>
+              <span className="text-sm font-semibold text-slate-200">&copy; {buildYear} Spatineo Oy ja kirjoittajat</span>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.contact}</span>
+              <span className="text-sm font-semibold text-slate-200">kaavatietomalli@spatineo.com</span>
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.contact}</span>
-            <span className="text-sm font-semibold text-slate-200">kaavatietomalli@spatineo.com</span>
+          <div className="text-left md:text-left">
+            <SpatineoLogo width={250} height={70} className="header-logo" />
           </div>
         </div>
-        <div className="text-left md:text-left">
-          <SpatineoLogo width={250} height={70} className="header-logo" />
+        <div className="border-t border-white/5 pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-600 font-mono">
+          <span>Versio: {BUILD_VERSION}</span>
         </div>
       </div>
     </footer>
