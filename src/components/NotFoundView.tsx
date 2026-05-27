@@ -18,10 +18,6 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
   // Format initial search query from missingSlug
   const initialQuery = missingSlug ? missingSlug.replace(/[-_]/g, ' ') : '';
 
-  useEffect(() => {
-    getTracker().trackPageView(`${CONFIG.basePath}404`, `404: Not Found`);
-  }, []);
-
   const handleNavigate = (type: 'post' | 'page' | 'author', slug: string) => {
     getTracker().trackCTA('404 Search Result Click', `${type}:${slug}`, '404_page');
     onNavigate(type, slug);

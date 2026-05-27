@@ -7,7 +7,6 @@ import { PostData, PostMetadata, getRelatedPostSlugs, getAllPostMetadata } from 
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { resolveImageUrl } from '../lib/utils';
-import { getTracker } from '../services/analytics';
 import { RelatedPosts } from './RelatedPosts';
 import { ContentFooter } from './ContentFooter';
 
@@ -30,9 +29,6 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
 
   useEffect(() => {
-    getTracker().trackPostView(post.slug, post.title, post.tags);
-    getTracker().trackPageView(`${CONFIG.basePath}?post=${post.slug}`, post.title, post.tags);
-    
     // Fetch related posts
     const loadRelated = async () => {
       const relatedSlugs = await getRelatedPostSlugs(post.slug, 3);
@@ -49,7 +45,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       }
     };
     loadRelated();
-  }, [post.slug, post.title, post.tags]);
+  }, [post.slug]);
 
   return (
     <motion.article

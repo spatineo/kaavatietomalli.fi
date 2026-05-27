@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -7,7 +6,6 @@ import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { resolveImageUrl } from '../lib/utils';
-import { getTracker } from '../services/analytics';
 import { CodeBlock } from './CodeBlock';
 
 interface PageViewProps {
@@ -18,12 +16,6 @@ interface PageViewProps {
 
 export function PageView({ page, onBack, inline = false }: PageViewProps) {
   const t = getTranslations(CONFIG.language as Language);
-
-  useEffect(() => {
-    if (!inline) {
-      getTracker().trackPageView(`${CONFIG.basePath}?page=${page.slug}`, page.title);
-    }
-  }, [page.slug, page.title, inline]);
 
   if (inline) {
     return (

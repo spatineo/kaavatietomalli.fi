@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Timeline } from './components/Timeline';
 import { PostView } from './components/PostView';
@@ -51,6 +51,7 @@ export default function App() {
   const [currentAuthor, setCurrentAuthor] = useState<AuthorData | null>(null);
   const [editor, setEditor] = useState<AuthorData | null>(null);
   const [contentNotFound, setContentNotFound] = useState(false);
+  const lastTrackedRef = useRef<string | null>(null);
 
   // Compute adjacent posts dynamically to avoid race conditions when deep linking to a post
   const adjacentPosts = useMemo(() => {
@@ -300,10 +301,24 @@ export default function App() {
 
     document.title = title;
 
-    if (activeView.type === 'home') {
-      getTracker().trackPageView(CONFIG.basePath, `Home | Kaavatietomalli.fi`);
-    } else if (activeView.type === 'tag' && activeView.slug) {
-      getTracker().trackPageView(`${CONFIG.basePath}?tag=${activeView.slug}`, `#${activeView.slug} | Kaavatietomalli.fi`, [activeView.slug]);
+    const currentKey = `${activeView.type}:${activeView.slug || ''}:${contentNotFound}:${currentPost?.slug || ''}:${currentPage?.slug || ''}:${currentAuthor?.slug || ''}`;
+    if (currentKey !== lastTrackedRef.current) {
+      lastTrackedRef.current = currentKey;
+      if (activeView.type === 'home') {
+        getTracker().trackPageView(CONFIG.basePath, `Home | Kaavatietomalli.fi`);
+      } else if (contentNotFound) {
+        getTracker().trackPageView(`${CONFIG.basePath}404`, `404: Not Found`);
+      } else if (activeView.type === 'tag' && activeView.slug) {
+        getTracker().trackPageView(`${CONFIG.basePath}?tag=${activeView.slug}`, `#${activeView.slug} | Kaavatietomalli.fi`, [activeView.slug]);
+      } else if (activeView.type === 'post' && currentPost) {
+        getTracker().trackPostView(currentPost.slug, currentPost.title, currentPost.tags);
+        getTracker().trackPageView(`${CONFIG.basePath}?post=${currentPost.slug}`, currentPost.title, currentPost.tags);
+      } else if (activeView.type === 'page' && currentPage) {
+        getTracker().trackPageView(`${CONFIG.basePath}?page=${currentPage.slug}`, currentPage.title);
+      } else if (activeView.type === 'author' && currentAuthor) {
+        getTracker().trackAuthorView(currentAuthor.slug, currentAuthor.name);
+        getTracker().trackPageView(`${CONFIG.basePath}?author=${currentAuthor.slug}`, currentAuthor.name);
+      }
     }
 
     const updateMeta = (selector: string, content: string) => {

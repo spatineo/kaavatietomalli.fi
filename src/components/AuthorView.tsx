@@ -37,9 +37,6 @@ function ObfuscatedEmailIcon({ email }: { email: string }) {
 export function AuthorView({ author, onBack }: AuthorViewProps) {
   const t = getTranslations(CONFIG.language as Language);
   useEffect(() => {
-    getTracker().trackAuthorView(author.slug, author.name);
-    getTracker().trackPageView(`${CONFIG.basePath}?author=${author.slug}`, author.name);
-
     // Add discovery link for LLMs
     const link = document.createElement('link');
     link.rel = 'alternate';
