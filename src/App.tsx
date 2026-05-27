@@ -21,6 +21,7 @@ import { getTranslations, Language } from './i18n';
 import { getTracker } from './services/analytics';
 import { PasswordGate } from './components/PasswordGate';
 import { VersionMismatchPrompt } from './components/VersionMismatchPrompt';
+import { useRouter } from './hooks/useRouter';
 
 export default function App() {
   const t = getTranslations(CONFIG.language as Language);
@@ -29,26 +30,14 @@ export default function App() {
     document.documentElement.lang = CONFIG.language;
   }, []);
 
-  const [searchString, setSearchString] = useState(() => 
-    typeof window !== 'undefined' ? window.location.search : ''
-  );
-
-  const activeView = useMemo(() => {
-    const params = new URLSearchParams(searchString);
-    const post = params.get('post');
-    const page = params.get('page');
-    const author = params.get('author');
-    const tag = params.get('tag');
-
-    let result: { type: 'home' | 'post' | 'page' | 'author' | 'tag'; slug: string | null };
-    if (post) result = { type: 'post', slug: post };
-    else if (page) result = { type: 'page', slug: page };
-    else if (author) result = { type: 'author', slug: author };
-    else if (tag) result = { type: 'tag', slug: tag };
-    else result = { type: 'home', slug: null };
-
-    return result;
-  }, [searchString]);
+  const {
+    activeView,
+    navigate,
+    pendingScroll,
+    setPendingScroll,
+    onHome,
+    scrollToBlog,
+  } = useRouter();
 
   const [selectedThemeTag, setSelectedThemeTag] = useState<string | null>(null);
   const [visibleJournalCount, setVisibleJournalCount] = useState(10);
@@ -61,7 +50,6 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<PageData | null>(null);
   const [currentAuthor, setCurrentAuthor] = useState<AuthorData | null>(null);
   const [editor, setEditor] = useState<AuthorData | null>(null);
-  const [pendingScroll, setPendingScroll] = useState(false);
   const [contentNotFound, setContentNotFound] = useState(false);
 
   // Compute adjacent posts dynamically to avoid race conditions when deep linking to a post
@@ -78,33 +66,6 @@ export default function App() {
       next: idx < posts.length - 1 ? posts[idx + 1] : null
     };
   }, [activeView.type, activeView.slug, posts]);
-
-  // URL Reconciliation helper
-  const navigate = (view: { type: string; slug: string | null }) => {
-    const params = new URLSearchParams();
-    if (view.type !== 'home' && view.slug) {
-      params.set(view.type, view.slug);
-    }
-    
-    const searchPart = params.toString() ? `?${params.toString()}` : '';
-    const finalPath = CONFIG.basePath + searchPart;
-
-    const currentUrl = window.location.pathname + window.location.search;
-    if (currentUrl !== finalPath) {
-      window.history.pushState(null, '', finalPath);
-    }
-    setSearchString(searchPart);
-  };
-
-  // Listen for popstate changes
-  useEffect(() => {
-    const handlePopState = () => {
-      setSearchString(window.location.search);
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
 
   useEffect(() => {
     // Load all post metadata on mount
@@ -312,24 +273,6 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [activeView, pendingScroll]);
-
-  const onHome = () => {
-    window.scrollTo(0, 0);
-    navigate({ type: 'home', slug: null });
-    setPendingScroll(false);
-  };
-
-  const scrollToBlog = () => {
-    if (activeView.type !== 'home') {
-      setPendingScroll(true);
-      navigate({ type: 'home', slug: null });
-    } else {
-      const element = document.getElementById('journal-section');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
 
   // Sync page metadata
   useEffect(() => {
