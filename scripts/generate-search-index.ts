@@ -3,6 +3,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import { create, insert, save } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
+import { getFilesRecursive } from './content-utils.js';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
@@ -35,42 +36,35 @@ async function generateSearchIndex() {
   const authorsDir = path.join(CONTENT_DIR, 'authors');
   const now = new Date();
 
-  // Helper to process directory recursively
-  const processDir = async (dir: string, type: string, baseDir: string = dir) => {
+  // Helper to process directory using shared getFilesRecursive
+  const processDir = async (dir: string, type: string) => {
     if (!fs.existsSync(dir)) return;
-    const items = fs.readdirSync(dir);
-    for (const item of items) {
-      const fullPath = path.join(dir, item);
-      const stat = fs.statSync(fullPath);
-      
-      if (stat && stat.isDirectory()) {
-        await processDir(fullPath, type, baseDir);
-      } else if (item.endsWith('.md')) {
-        const relativePath = path.relative(baseDir, fullPath);
-        const slug = relativePath.replace(/[\\/]/g, '-').replace('.md', '');
-        const fileContent = fs.readFileSync(fullPath, 'utf-8');
-        const { data, content } = matter(fileContent);
+    const files = getFilesRecursive(dir);
+    for (const file of files) {
+      const fullPath = path.join(dir, file);
+      const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
+      const fileContent = fs.readFileSync(fullPath, 'utf-8');
+      const { data, content } = matter(fileContent);
 
-        // Filter by publishDate for posts
-        if (type === 'post' && data.publishDate) {
-          if (now < new Date(data.publishDate)) {
-            continue;
-          }
+      // Filter by publishDate for posts
+      if (type === 'post' && data.publishDate) {
+        if (now < new Date(data.publishDate)) {
+          continue;
         }
-
-        await insert(db, {
-          title: data.title || '',
-          name: data.name || '',
-          company: data.company || '',
-          content: content,
-          type: type,
-          slug: slug,
-          excerpt: data.excerpt || data.shortBio || '',
-          author: data.author || '',
-          tags: data.tags || [],
-          publishDate: data.publishDate || '',
-        });
       }
+
+      await insert(db, {
+        title: data.title || '',
+        name: data.name || '',
+        company: data.company || '',
+        content: content,
+        type: type,
+        slug: slug,
+        excerpt: data.excerpt || data.shortBio || '',
+        author: data.author || '',
+        tags: data.tags || [],
+        publishDate: data.publishDate || '',
+      });
     }
   };
 

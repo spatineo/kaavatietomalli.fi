@@ -1,26 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { PROJECT_CONFIG } from '../project.config.js';
+import { getFilesRecursive } from './content-utils.js';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 const OUT_DIR = path.join(PUBLIC_DIR, 'content');
-
-function getFilesRecursive(dir: string, baseDir: string = dir): string[] {
-  let results: string[] = [];
-  if (!fs.existsSync(dir)) return [];
-  const list = fs.readdirSync(dir);
-  list.forEach(file => {
-    const fullPath = path.join(dir, file);
-    const stat = fs.statSync(fullPath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(getFilesRecursive(fullPath, baseDir));
-    } else if (file.endsWith('.md')) {
-      results.push(path.relative(baseDir, fullPath));
-    }
-  });
-  return results;
-}
 
 function findLatestCommentDate(discussion: any): string | null {
   let latestDate: string | null = null;
