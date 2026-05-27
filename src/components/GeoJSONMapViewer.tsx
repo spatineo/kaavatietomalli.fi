@@ -1,24 +1,47 @@
-import { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Map, Code, Maximize2, Minimize2, Info, Layers, AlertCircle } from 'lucide-react';
 import { LazySyntaxHighlighter } from './LazySyntaxHighlighter';
-import proj4 from 'proj4';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 
-// Register core projections in Proj4
-proj4.defs('EPSG:3067', '+proj=utm +zone=35 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
-proj4.defs('EPSG:3857', '+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs');
-proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs');
+// Lazy load Leaflet and Proj4 libraries
+let LeafletInstance: any = null;
+let Proj4Instance: any = null;
+let mapLibsReady = false;
 
-// Register Finnish Gauss-Kruger coordinate systems GK19 to GK31 (EPSG:3873 to EPSG:3885)
-for (let i = 19; i <= 31; i++) {
-  const epsgCode = `EPSG:${3854 + i}`;
-  const centralMeridian = i;
-  const falseEasting = i * 1000000 + 500000;
-  proj4.defs(epsgCode, `+proj=tmerc +lat_0=0 +lon_0=${centralMeridian} +k=1 +x_0=${falseEasting} +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`);
+async function getMapLibraries() {
+  if (mapLibsReady) return { L: LeafletInstance, proj4: Proj4Instance };
+
+  const [leafletModule, proj4Module] = await Promise.all([
+    import('leaflet'),
+    import('proj4')
+  ]);
+
+  try {
+    await import('leaflet/dist/leaflet.css');
+  } catch (e) {
+    console.warn('Leaflet CSS failed to load dynamically', e);
+  }
+
+  LeafletInstance = leafletModule.default || leafletModule;
+  Proj4Instance = proj4Module.default || proj4Module;
+
+  const p4 = Proj4Instance;
+  p4.defs('EPSG:3067', '+proj=utm +zone=35 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
+  p4.defs('EPSG:3857', '+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs');
+  p4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs');
+
+  // Register Finnish Gauss-Kruger coordinate systems GK19 to GK31 (EPSG:3873 to EPSG:3885)
+  for (let i = 19; i <= 31; i++) {
+    const epsgCode = `EPSG:${3854 + i}`;
+    const centralMeridian = i;
+    const falseEasting = i * 1000000 + 500000;
+    p4.defs(epsgCode, `+proj=tmerc +lat_0=0 +lon_0=${centralMeridian} +k=1 +x_0=${falseEasting} +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs`);
+  }
+
+  mapLibsReady = true;
+  return { L: LeafletInstance, proj4: Proj4Instance };
 }
 
 function detectCrs(rawCrs: any): string | null {
@@ -55,14 +78,15 @@ function detectCrs(rawCrs: any): string | null {
   return null;
 }
 
-function transformCoordinates(coords: any, sourceCrs: string): any {
+function transformCoordinates(coords: any, sourceCrs: string, proj4Instance: any): any {
   if (!Array.isArray(coords)) return coords;
 
   // Check if it's a coordinate pair [X, Y] or [X, Y, Z]
   if (typeof coords[0] === 'number' && typeof coords[1] === 'number') {
     try {
+      if (!proj4Instance) return coords;
       // transform from sourceCrs to EPSG:4326 (WGS84)
-      const transformed = proj4(sourceCrs, 'EPSG:4326', [coords[0], coords[1]]);
+      const transformed = proj4Instance(sourceCrs, 'EPSG:4326', [coords[0], coords[1]]);
       if (coords.length > 2) {
         return [transformed[0], transformed[1], coords[2]]; // Keep altitude/Z if present
       }
@@ -74,12 +98,12 @@ function transformCoordinates(coords: any, sourceCrs: string): any {
   }
 
   // Otherwise recurse down for arrays of coordinates (Polygons, MultiPolygons, LineStrings, etc.)
-  return coords.map((c: any) => transformCoordinates(c, sourceCrs));
+  return coords.map((c: any) => transformCoordinates(c, sourceCrs, proj4Instance));
 }
 
 // For JSON-FG (JSON Features for Geometry) support
 // Validates, parses coordRefSys, and transforms JSON-FG/GeoJSON non-WGS84 coordinate systems to EPSG:4326
-function normalizeGeoJSON(inputStr: string): { data: any; error: string | null; crs: string | null } {
+function normalizeGeoJSON(inputStr: string, proj4Instance: any): { data: any; error: string | null; crs: string | null } {
   try {
     const parsed = JSON.parse(inputStr);
     if (!parsed || typeof parsed !== 'object') {
@@ -108,16 +132,16 @@ function normalizeGeoJSON(inputStr: string): { data: any; error: string | null; 
       // If we have a non-WGS84 CRS, reproject the geometry to base EPSG:4326 (WGS84) in-memory
       if (featureCrs && featureCrs !== 'EPSG:4326' && feature.geometry) {
         try {
-          if (proj4.defs(featureCrs)) {
+          if (proj4Instance && proj4Instance.defs(featureCrs)) {
             const reprojectedGeom = JSON.parse(JSON.stringify(feature.geometry));
-            reprojectedGeom.coordinates = transformCoordinates(reprojectedGeom.coordinates, featureCrs);
+            reprojectedGeom.coordinates = transformCoordinates(reprojectedGeom.coordinates, featureCrs, proj4Instance);
             feature.geometry = reprojectedGeom;
             
             // Store original CRS in properties for UI display in popups
             feature.properties = feature.properties || {};
             feature.properties['_ALKUPERÄINEN_CRS'] = featureCrs;
           } else {
-            console.warn(`Definition for CRS ${featureCrs} is not registered in Proj4. Skipping reprojection.`);
+            console.warn(`Definition for CRS ${featureCrs} is not registered in Proj4 or library not loaded yet.`);
           }
         } catch (e) {
           console.error(`Error transforming feature geometry with CRS ${featureCrs}:`, e);
@@ -143,9 +167,9 @@ function normalizeGeoJSON(inputStr: string): { data: any; error: string | null; 
       let finalGeometry = clone;
       if (activeCrs && activeCrs !== 'EPSG:4326') {
         try {
-          if (proj4.defs(activeCrs)) {
+          if (proj4Instance && proj4Instance.defs(activeCrs)) {
             finalGeometry = JSON.parse(JSON.stringify(clone));
-            finalGeometry.coordinates = transformCoordinates(finalGeometry.coordinates, activeCrs);
+            finalGeometry.coordinates = transformCoordinates(finalGeometry.coordinates, activeCrs, proj4Instance);
           }
         } catch (e) {
           console.error(`Error transforming geometry coordinates:`, e);
@@ -192,11 +216,29 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
   const [tileStyle, setTileStyle] = useState<'dark' | 'light'>('dark');
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const geojsonLayerRef = useRef<L.GeoJSON | null>(null);
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const mapRef = useRef<any | null>(null);
+  const geojsonLayerRef = useRef<any | null>(null);
+  const tileLayerRef = useRef<any | null>(null);
 
-  const { data: geojsondata, error: parseError, crs: detectedCrs } = normalizeGeoJSON(code);
+  const [libs, setLibs] = useState<{ L: any; proj4: any } | null>(() => {
+    if (mapLibsReady) return { L: LeafletInstance, proj4: Proj4Instance };
+    return null;
+  });
+
+  useEffect(() => {
+    if (libs) return;
+    let ignore = false;
+    getMapLibraries().then(loadedLibs => {
+      if (!ignore) {
+        setLibs(loadedLibs);
+      }
+    });
+    return () => { ignore = true; };
+  }, [libs]);
+
+  const { data: geojsondata, error: parseError, crs: detectedCrs } = useMemo(() => {
+    return normalizeGeoJSON(code, libs?.proj4);
+  }, [code, libs?.proj4]);
 
   // Prevent body scrolling when the map viewer is inside Fullscreen mode
   useEffect(() => {
@@ -219,7 +261,7 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
 
   // Handle map initialization and cleanup
   useEffect(() => {
-    if (activeTab !== 'map' || parseError || !mapContainerRef.current) {
+    if (activeTab !== 'map' || parseError || !mapContainerRef.current || !libs) {
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -228,6 +270,8 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
       }
       return;
     }
+
+    const { L } = libs;
 
     // Initialize map if it doesn't exist
     if (!mapRef.current) {
@@ -238,7 +282,7 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
       }).setView([62.0, 26.0], 5);
 
       // Disable scroll and click event propagation on popup container elements to avoid background scroll leakage
-      map.on('popupopen', (e) => {
+      map.on('popupopen', (e: any) => {
         const container = e.popup.getElement();
         if (container) {
           L.DomEvent.disableScrollPropagation(container);
@@ -379,7 +423,7 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
 
             // Hover effects
             layer.on({
-              mouseover: (e) => {
+              mouseover: (e: any) => {
                 const l = e.target;
                 if (typeof l.setStyle === 'function') {
                   l.setStyle({
@@ -389,7 +433,7 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
                   });
                 }
               },
-              mouseout: (e) => {
+              mouseout: (e: any) => {
                 const l = e.target;
                 if (typeof l.setStyle === 'function') {
                   const baseAccent = tileStyle === 'dark' ? '#FFAF00' : '#E08A00';
@@ -435,7 +479,7 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
         tileLayerRef.current = null;
       }
     };
-  }, [activeTab, tileStyle, geojsondata, parseError, isFullscreen]);
+  }, [activeTab, tileStyle, geojsondata, parseError, isFullscreen, libs]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
