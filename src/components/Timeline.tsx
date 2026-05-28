@@ -1,6 +1,6 @@
 import { format, parseISO } from 'date-fns';
 import { motion } from 'motion/react';
-import { Calendar, User, ArrowRight, Tag } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { PostMetadata } from '../lib/blog';
 import { resolveImageUrl } from '../lib/utils';
 import { getTranslations, Language } from '../i18n';

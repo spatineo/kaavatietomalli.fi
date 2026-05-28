@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Map, Code, Maximize2, Minimize2, Info, Layers, AlertCircle } from 'lucide-react';
+import { Map, Code, Maximize2, Minimize2, Info, AlertCircle } from 'lucide-react';
 import { LazySyntaxHighlighter } from './LazySyntaxHighlighter';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';

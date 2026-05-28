@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PostView } from './components/PostView';
 import { PageView } from './components/PageView';
@@ -13,15 +13,14 @@ import { NotFoundView } from './components/NotFoundView';
 import { HomeView } from './components/HomeView';
 import { TagView } from './components/TagView';
 import { CookieConsent } from './components/CookieConsent';
-import { getAllPostMetadata, getPostBySlug, getPageBySlug, getAuthorBySlug, getPostsByTag, getTagPageSlugs, PostMetadata, PostData, PageData, AuthorData } from './lib/blog';
+import { getAllPostMetadata, getAuthorBySlug, PostMetadata, AuthorData } from './lib/blog';
 import { CONFIG } from './config';
-import { resolveImageUrl } from './lib/utils';
 import { getTranslations, Language } from './i18n';
-import { getTracker } from './services/analytics';
 import { PasswordGate } from './components/PasswordGate';
 import { VersionMismatchPrompt } from './components/VersionMismatchPrompt';
 import { useRouter } from './hooks/useRouter';
 import { useMetadataSync } from './hooks/useMetadataSync';
+import { useContentLoader } from './hooks/useContentLoader';
 
 export default function App() {
   const t = getTranslations(CONFIG.language as Language);
@@ -41,16 +40,8 @@ export default function App() {
 
   const [selectedThemeTag, setSelectedThemeTag] = useState<string | null>(null);
   const [visibleJournalCount, setVisibleJournalCount] = useState(10);
-  const [visibleTagCount, setVisibleTagCount] = useState(10);
   const [posts, setPosts] = useState<PostMetadata[]>([]);
-  const [tagPosts, setTagPosts] = useState<PostMetadata[]>([]);
-  const [tagPage, setTagPage] = useState<PageData | null>(null);
-  const [activeTagSlug, setActiveTagSlug] = useState<string | null>(null);
-  const [currentPost, setCurrentPost] = useState<PostData | null>(null);
-  const [currentPage, setCurrentPage] = useState<PageData | null>(null);
-  const [currentAuthor, setCurrentAuthor] = useState<AuthorData | null>(null);
   const [editor, setEditor] = useState<AuthorData | null>(null);
-  const [contentNotFound, setContentNotFound] = useState(false);
 
   // Compute adjacent posts dynamically to avoid race conditions when deep linking to a post
   const adjacentPosts = useMemo(() => {
@@ -74,146 +65,18 @@ export default function App() {
     getAuthorBySlug('ilkka-rinne').then(setEditor);
   }, []);
 
-  // 1. Unified content loading effect
-  useEffect(() => {
-    let ignore = false;
-    setContentNotFound(false);
- 
-    // Immediate cleanup of "other" detail states to avoid stale renders during transitions
-    if (activeView.type !== 'post') {
-      setCurrentPost(null);
-    }
-    if (activeView.type !== 'page') {
-      setCurrentPage(null);
-    }
-    if (activeView.type !== 'author') {
-      setCurrentAuthor(null);
-    }
-    if (activeView.type !== 'tag') {
-      setTagPosts([]);
-      setTagPage(null);
-      setActiveTagSlug(null);
-    }
- 
-    // Also clear the current view's state if the slug changed, to ensure isDataReady becomes false immediately
-    if (activeView.type === 'post' && currentPost?.slug !== activeView.slug) {
-        setCurrentPost(null);
-    }
-    if (activeView.type === 'page' && currentPage?.slug !== activeView.slug) {
-        setCurrentPage(null);
-    }
-    if (activeView.type === 'author' && currentAuthor?.slug !== activeView.slug) {
-        setCurrentAuthor(null);
-    }
-    if (activeView.type === 'tag' && activeTagSlug !== activeView.slug) {
-      setTagPosts([]);
-      setTagPage(null);
-      setActiveTagSlug(null);
-    }
- 
-    const loadData = async () => {
-      if (activeView.type === 'post' && activeView.slug) {
-        if (currentPost?.slug !== activeView.slug) {
-          try {
-            const post = await getPostBySlug(activeView.slug);
-            if (!ignore) {
-              if (post) {
-                setCurrentPost(post);
-                window.scrollTo(0, 0);
-              } else {
-                setContentNotFound(true);
-              }
-            }
-          } catch (err) {
-            console.error('[App] post load failed:', err);
-            if (!ignore) setContentNotFound(true);
-          }
-        }
-      } else if (activeView.type === 'page' && activeView.slug) {
-        if (currentPage?.slug !== activeView.slug) {
-          try {
-            const page = await getPageBySlug(activeView.slug);
-            if (!ignore) {
-              if (page) {
-                setCurrentPage(page);
-                window.scrollTo(0, 0);
-              } else {
-                setContentNotFound(true);
-              }
-            }
-          } catch (err) {
-            console.error('[App] page load failed:', err);
-            if (!ignore) setContentNotFound(true);
-          }
-        }
-      } else if (activeView.type === 'author' && activeView.slug) {
-        if (currentAuthor?.slug !== activeView.slug) {
-          try {
-            const author = await getAuthorBySlug(activeView.slug);
-            if (!ignore) {
-              if (author) {
-                setCurrentAuthor(author);
-                window.scrollTo(0, 0);
-              } else {
-                setContentNotFound(true);
-              }
-            }
-          } catch (err) {
-            console.error('[App] author load failed:', err);
-            if (!ignore) setContentNotFound(true);
-          }
-        }
-      } else if (activeView.type === 'tag' && activeView.slug) {
-        if (activeTagSlug !== activeView.slug) {
-          try {
-            setVisibleTagCount(10);
-            const [taggedPosts, pageSlugs] = await Promise.all([
-              getPostsByTag(activeView.slug, 0, 100),
-              getTagPageSlugs(activeView.slug)
-            ]);
-            
-            if (!ignore) {
-              if (taggedPosts.length > 0 || pageSlugs.length > 0) {
-                setTagPosts(taggedPosts);
-                setActiveTagSlug(activeView.slug);
-                if (pageSlugs.length > 0) {
-                  const firstPage = await getPageBySlug(pageSlugs[0]);
-                  if (!ignore) {
-                    setTagPage(firstPage);
-                  }
-                }
-                window.scrollTo(0, 0);
-              } else {
-                setContentNotFound(true);
-              }
-            }
-          } catch (err) {
-            console.error('[App] tag items load failed:', err);
-            if (!ignore) setContentNotFound(true);
-          }
-        }
-      }
-    };
- 
-    loadData();
-    return () => { 
-        ignore = true; 
-    };
-  }, [activeView.type, activeView.slug, posts.length]);
-
-  // Determine if the current data matches the requested view
-  const isDataReady = useMemo(() => {
-    let ready = false;
-    if (activeView.type === 'home') ready = true;
-    else if (activeView.type === 'post') ready = currentPost?.slug === activeView.slug;
-    else if (activeView.type === 'page') ready = currentPage?.slug === activeView.slug;
-    else if (activeView.type === 'author') ready = currentAuthor?.slug === activeView.slug;
-    else if (activeView.type === 'tag') {
-        ready = activeTagSlug === activeView.slug && (tagPosts.length > 0 || !!tagPage);
-    }
-    
-    return ready;
-  }, [activeView, currentPost, currentPage, currentAuthor, tagPosts, tagPage, activeTagSlug]);
+  // Content Loader state machine hook
+  const {
+    currentPost,
+    currentPage,
+    currentAuthor,
+    tagPosts,
+    tagPage,
+    isDataReady,
+    contentNotFound,
+    visibleTagCount,
+    loadMoreTags,
+  } = useContentLoader({ activeView, posts });
 
   // Sync page metadata and analytics
   useMetadataSync({
@@ -386,7 +249,7 @@ export default function App() {
                 tagPage={tagPage}
                 tagPosts={tagPosts}
                 visibleTagCount={visibleTagCount}
-                onLoadMore={() => setVisibleTagCount((prev) => prev + 10)}
+                onLoadMore={loadMoreTags}
                 navigate={navigate}
                 onHome={onHome}
               />

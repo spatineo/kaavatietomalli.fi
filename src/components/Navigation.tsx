@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { History, Github, Twitter, Mail, Menu, X, ChevronDown } from 'lucide-react';
+import { Github, Twitter, Menu, X, ChevronDown } from 'lucide-react';
 import SpatineoLogo from './SpatineoLogo';
 import { SearchWidget } from './SearchWidget';
 import { CONFIG, NavItem } from '../config';

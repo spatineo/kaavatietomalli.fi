@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cookie, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Cookie, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { getConsent, setConsent } from '../services/consent';

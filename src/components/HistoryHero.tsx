@@ -1,8 +1,8 @@
 import { format, parseISO } from 'date-fns';
 import { fi } from 'date-fns/locale';
 import { motion } from 'motion/react';
-import { ArrowRight, History as HistoryIcon, Award } from 'lucide-react';
-import { PostMetadata, AuthorData } from '../lib/blog';
+import { ArrowRight, History as HistoryIcon } from 'lucide-react';
+import { PostMetadata } from '../lib/blog';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 

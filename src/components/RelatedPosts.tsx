@@ -1,4 +1,3 @@
-import React from 'react';
 import { format, parseISO } from 'date-fns';
 import { motion } from 'motion/react';
 import { PostMetadata } from '../lib/blog';

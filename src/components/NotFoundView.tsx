@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { CONFIG } from '../config';
