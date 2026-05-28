@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Home } from 'lucide-react';
 import { motion } from 'motion/react';
 import { CONFIG } from '../config';
@@ -47,8 +48,8 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
           {t.notFound.message}
         </p>
 
-        <div className="relative mb-[450px] group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent/20 to-brand-accent/5 rounded-full blur opacity-25 group-focus-within:opacity-100 transition duration-1000 group-focus-within:duration-200" />
+        <div className="relative mb-[450px] group/search">
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent/20 to-brand-accent/5 rounded-full blur opacity-25 group-focus-within/search:opacity-100 transition duration-1000 group-focus-within/search:duration-200" />
           <SearchBox 
             size="lg"
             onNavigate={handleNavigate}
@@ -73,4 +74,3 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
     </div>
   );
 }
-
