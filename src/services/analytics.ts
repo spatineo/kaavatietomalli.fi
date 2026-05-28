@@ -18,15 +18,37 @@ export interface AnalyticsTracker {
 let lastTrackedPageView: { path: string; title?: string; tags?: string[] } | null = null;
 let lastTrackedPostView: { slug: string; title: string; tags?: string[] } | null = null;
 
+// Test Spy helper to easily assert analytics submissions in Vitest & E2E tests
+export function trackEventSpy(event: string, data: any) {
+  if (typeof window !== 'undefined') {
+    const win = window as any;
+    win._trackedEvents = win._trackedEvents || [];
+    win._trackedEvents.push({ event, data, timestamp: Date.now() });
+  }
+}
+
+// Expose reset helper globally for tests
+if (typeof window !== 'undefined') {
+  (window as any)._resetTrackedEvents = () => {
+    (window as any)._trackedEvents = [];
+  };
+}
+
 class NullTracker implements AnalyticsTracker {
   trackPageView(path: string, title?: string, tags?: string[]) {
     lastTrackedPageView = { path, title, tags };
+    trackEventSpy('page_view', { path, title, tags });
   }
   trackPostView(slug: string, title: string, tags?: string[]) {
     lastTrackedPostView = { slug, title, tags };
+    trackEventSpy('post_view', { slug, title, tags });
   }
-  trackAuthorView() {}
-  trackCTA() {}
+  trackAuthorView(slug: string, name: string) {
+    trackEventSpy('author_view', { slug, name });
+  }
+  trackCTA(label: string, url?: string, context?: string) {
+    trackEventSpy('cta_click', { label, url, context });
+  }
 }
 
 class GoogleAnalyticsTracker implements AnalyticsTracker {
@@ -73,6 +95,7 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
   }
 
   trackPageView(path: string, title?: string, tags?: string[]) {
+    trackEventSpy('page_view', { path, title, tags });
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'page_view', {
         page_path: path,
@@ -84,6 +107,7 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
   }
 
   trackPostView(slug: string, title: string, tags?: string[]) {
+    trackEventSpy('post_view', { slug, title, tags });
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'post_view', {
         post_slug: slug,
@@ -95,6 +119,7 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
   }
 
   trackAuthorView(slug: string, name: string) {
+    trackEventSpy('author_view', { slug, name });
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'author_view', {
         author_slug: slug,
@@ -105,6 +130,7 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
   }
 
   trackCTA(label: string, url?: string, context?: string) {
+    trackEventSpy('cta_click', { label, url, context });
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'cta_click', {
         cta_label: label,

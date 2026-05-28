@@ -49,6 +49,8 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
 
   return (
     <motion.article
+      data-testid="post-view"
+      data-test-slug={post.slug}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}

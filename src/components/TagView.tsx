@@ -77,6 +77,8 @@ export function TagView({
   return (
     <motion.div
       key={`tag-${tagSlug}`}
+      data-testid="tag-view"
+      data-test-slug={tagSlug}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}

@@ -73,6 +73,7 @@ export function HomeView({
   return (
     <motion.div
       key="home-view"
+      data-testid="home-view"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

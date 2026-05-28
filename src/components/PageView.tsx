@@ -54,6 +54,8 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
 
   return (
     <motion.article
+      data-testid="page-view"
+      data-test-slug={page.slug}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}

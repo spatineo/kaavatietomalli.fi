@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PostView } from './components/PostView';
 import { PageView } from './components/PageView';
@@ -13,9 +13,11 @@ import { NotFoundView } from './components/NotFoundView';
 import { HomeView } from './components/HomeView';
 import { TagView } from './components/TagView';
 import { CookieConsent } from './components/CookieConsent';
-import { getAllPostMetadata, getAuthorBySlug, PostMetadata, AuthorData } from './lib/blog';
+import { getAllPostMetadata, getPostBySlug, getPageBySlug, getAuthorBySlug, getPostsByTag, getTagPageSlugs, PostMetadata, PostData, PageData, AuthorData } from './lib/blog';
 import { CONFIG } from './config';
+import { resolveImageUrl } from './lib/utils';
 import { getTranslations, Language } from './i18n';
+import { getTracker } from './services/analytics';
 import { PasswordGate } from './components/PasswordGate';
 import { VersionMismatchPrompt } from './components/VersionMismatchPrompt';
 import { useRouter } from './hooks/useRouter';
@@ -121,7 +123,13 @@ export default function App() {
   return (
     <>
       <PasswordGate>
-        <div className="min-h-screen flex flex-col bg-brand-bg text-slate-300">
+        <div 
+          className="min-h-screen flex flex-col bg-brand-bg text-slate-300"
+          data-testid="app-layout"
+          data-view-type={activeView.type}
+          data-view-slug={activeView.slug || ""}
+          data-is-ready={isDataReady}
+        >
         <a href="#main-content" className="skip-to-content">
           {t.common.skipToContent}
         </a>

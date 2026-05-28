@@ -57,6 +57,8 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
 
   return (
     <motion.article
+      data-testid="author-view"
+      data-test-slug={author.slug}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}

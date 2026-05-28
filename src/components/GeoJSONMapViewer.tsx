@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
-import { Map, Code, Maximize2, Minimize2, Info, AlertCircle } from 'lucide-react';
+import { Map, Code, Maximize2, Minimize2, Info, Layers, AlertCircle } from 'lucide-react';
 import { LazySyntaxHighlighter } from './LazySyntaxHighlighter';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
@@ -224,15 +224,23 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
     if (mapLibsReady) return { L: LeafletInstance, proj4: Proj4Instance };
     return null;
   });
+  const [libsError, setLibsError] = useState<string | null>(null);
 
   useEffect(() => {
     if (libs) return;
     let ignore = false;
-    getMapLibraries().then(loadedLibs => {
-      if (!ignore) {
-        setLibs(loadedLibs);
-      }
-    });
+    getMapLibraries()
+      .then(loadedLibs => {
+        if (!ignore) {
+          setLibs(loadedLibs);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load map libraries:', err);
+        if (!ignore) {
+          setLibsError(err.message || String(err));
+        }
+      });
     return () => { ignore = true; };
   }, [libs]);
 
@@ -273,8 +281,9 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
 
     const { L } = libs;
 
-    // Initialize map if it doesn't exist
-    if (!mapRef.current) {
+    try {
+      // Initialize map if it doesn't exist
+      if (!mapRef.current) {
       // Default to center of Finland
       const map = L.map(mapContainerRef.current, {
         zoomControl: false, // Custom placed zoom controls for clean UI
@@ -465,10 +474,16 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
       }
     }
 
-    // Refresh size representation on build
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 150);
+      // Refresh size representation on build
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 150);
+    } catch (err: any) {
+      console.error('Failed to initialize map fully:', err);
+      setLibsError(err.message || String(err));
+    }
 
     return () => {
       // Cleanup leaflet mapping hook cleanly
@@ -615,13 +630,27 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
       {/* Body panels */}
       <div className="relative flex-1 min-h-0 bg-black flex flex-col">
         {activeTab === 'map' && !parseError ? (
-          <div className="relative w-full h-full flex-1 flex flex-col min-h-[360px]">
-            {/* The absolute container Leaflet bind-draws into */}
-            <div
-              ref={mapContainerRef}
-              className="absolute inset-0 w-full h-full z-0 bg-slate-950 focus:outline-none"
-            />
-          </div>
+          libsError ? (
+            <div 
+              data-testid="geojson-map-viewer-fallback"
+              className="flex-1 flex flex-col items-center justify-center bg-slate-950 p-8 text-center min-h-[360px]"
+            >
+              <AlertCircle className="w-8 h-8 text-amber-500 mb-3 animate-pulse" />
+              <h5 className="text-sm font-bold text-slate-300">{t.geojson.interactiveMapBlock || 'Map Rendering Fallback'}</h5>
+              <p className="text-xs text-slate-400 max-w-sm mt-1 mx-auto leading-relaxed">
+                The map visualization is unavailable in this workspace or test environment. You can read and inspect the full raw data coordinates at any time via the Code tab above.
+              </p>
+              <span className="text-[10px] text-slate-600 font-mono mt-3 break-all block max-w-md mx-auto">Error: {libsError}</span>
+            </div>
+          ) : (
+            <div className="relative w-full h-full flex-1 flex flex-col min-h-[360px]">
+              {/* The absolute container Leaflet bind-draws into */}
+              <div
+                ref={mapContainerRef}
+                className="absolute inset-0 w-full h-full z-0 bg-slate-950 focus:outline-none"
+              />
+            </div>
+          )
         ) : (
           <div className="flex-1 overflow-auto bg-black flex flex-col min-h-[360px] custom-scrollbar">
             {parseError && (

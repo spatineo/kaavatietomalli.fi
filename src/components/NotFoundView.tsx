@@ -24,7 +24,10 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-6 pt-32 pb-40 bg-brand-bg relative overflow-hidden">
+    <div 
+      data-testid="not-found-view"
+      className="min-h-screen flex flex-col items-center justify-start px-6 pt-32 pb-40 bg-brand-bg relative overflow-hidden"
+    >
       {/* Decorative background elements */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-accent/5 rounded-full blur-[120px] pointer-events-none" />
       
@@ -74,3 +77,4 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
     </div>
   );
 }
+

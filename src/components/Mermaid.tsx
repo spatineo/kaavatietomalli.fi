@@ -333,7 +333,7 @@ export function Mermaid({ chart }: MermaidProps) {
           console.error('Mermaid error:', error);
           setIsLoading(false);
           if (ref.current) {
-            ref.current.innerHTML = `<div class="text-red-500 text-xs font-mono p-4 border border-red-500/20 rounded bg-red-500/5">${t.mermaid.renderError}</div>`;
+            ref.current.innerHTML = `<div data-testid="mermaid-fallback" class="text-red-500 text-xs font-mono p-4 border border-red-500/20 rounded bg-red-500/5">${t.mermaid.renderError}</div>`;
           }
         }
       };
@@ -671,6 +671,7 @@ export function Mermaid({ chart }: MermaidProps) {
   return (
     <>
       <div 
+        data-testid="mermaid-container"
         className="flex justify-center my-12 bg-black/40 backdrop-blur-sm p-10 rounded-3xl border border-white/10 overflow-hidden shadow-2xl group cursor-pointer relative min-h-[200px]"
         role="button"
         aria-label={t.mermaid.expand}
@@ -701,6 +702,7 @@ export function Mermaid({ chart }: MermaidProps) {
         {isModalOpen && (
           <motion.div
             ref={modalRef}
+            data-testid="mermaid-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

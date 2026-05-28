@@ -75,6 +75,7 @@ export function SearchBox({
         <Search size={isLarge ? 24 : 18} className="text-slate-400 shrink-0" />
         <input
           ref={inputRef}
+          data-testid="search-input"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -103,6 +104,7 @@ export function SearchBox({
         {query.length >= 2 && (
           <motion.div
             ref={resultsRef}
+            data-testid="search-results-container"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}

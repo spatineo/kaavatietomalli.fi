@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Github, Twitter, Menu, X, ChevronDown } from 'lucide-react';
+import { History, Github, Twitter, Mail, Menu, X, ChevronDown } from 'lucide-react';
 import SpatineoLogo from './SpatineoLogo';
 import { SearchWidget } from './SearchWidget';
 import { CONFIG, NavItem } from '../config';
@@ -194,6 +194,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
   return (
     <header 
       ref={headerRef}
+      data-testid="header"
       className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5"
     >
       <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -308,7 +309,7 @@ export function Footer() {
   })();
 
   return (
-    <footer className="py-12 border-t border-white/5 bg-black/40">
+    <footer data-testid="footer" className="py-12 border-t border-white/5 bg-black/40">
       <div className="max-w-7xl mx-auto px-6 flex flex-col gap-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-4">
           <div className="flex flex-col md:flex-row items-center gap-8">
