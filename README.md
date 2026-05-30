@@ -11,7 +11,8 @@ A highly polished, serverless headless CMS website built with React, Vite, and T
    - [Architectural Patterns & Component Isolation](#1-architectural-patterns--component-isolation)
    - [Unit & Integration Testing (Vitest + RTL)](#2-unit--integration-testing-vitest--rtl)
    - [End-to-End Testing (Playwright)](#3-end-to-end-testing-playwright)
-4. [Development & Build Commands](#-development--build-commands)
+4. [Contribution Guidelines](#-contribution-guidelines)
+5. [Development & Build Commands](#-development--build-commands)
 
 ---
 
@@ -239,7 +240,7 @@ You can easily assert that view loads track page views, CTA selections, or autho
 ### 4. Continuous Integration (GitHub Actions)
 
 The test suite is fully wired into our software development lifecycle:
-- All unit, integration, and hook tests are run automatically with `npm run test:run` on push event commits on the `main` branch, as well as on any incoming pull request targeting the `main` branch.
+- All unit, integration, and hook tests are run automatically with `npm run test:run` on pull requests targeting the `main` branch, ensuring all checks pass before integration (direct pushing to `main` is strictly forbidden by branch protection rules).
 - End-to-End browser tests are executed in actual headless profiles with `npm run test:e2e`. Playwright browsers are dynamically installed during the CI flow with `npx playwright install --with-deps`, and testing reports are uploaded as GitHub build artifacts under `playwright-report` with a 30-day retention window.
 - Standard continuous deployments (to GitHub Pages / Cloud Run) are guarded by and fail-fast if any unit tests, integration tests, or build procedures identify failing conditions.
 
@@ -318,6 +319,20 @@ When writing, executing, and updating E2E tests, mind the following behaviors cr
      // ✅ Bypasses auto-scroll behaviors in E2E assertions
      await menuButton.dispatchEvent('click');
      ```
+
+---
+
+## 🤝 Contribution Guidelines
+
+To maintain code quality, ensure site stability, and verify all automated checks pass, **direct pushing to the `main` branch is strictly forbidden by branch protection rules**. All contributions must follow our collaborative pull-request workflow:
+
+1. **Create a Topic Branch**: Create a dedicated feature or bugfix branch from `main` (for example, `feature/your-feature-name` or `fix/issue-id`).
+2. **Commit with Quality Checks**: Verify your changes compile cleanly with `npm run lint` and all unit, integration, and end-to-end tests pass locally via `npm run test:run` and `npm run test:e2e` respectively.
+3. **Open a Pull Request**: Submit an elegant, structured Pull Request targeting the `main` branch.
+4. **Mandatory Review & Checks**:
+   - Every Pull Request triggers the automated test suites via GitHub Actions.
+   - At least one code review and approval from a team member is required before merging.
+   - Merge operations are gated and can only be performed after all GitHub Actions tests, linters, and checks pass successfully with standard green status.
 
 ---
 
