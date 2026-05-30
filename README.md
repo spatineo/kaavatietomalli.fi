@@ -259,6 +259,43 @@ To ensure selectors remain durable when CSS layouts change, use the pre-built de
 
 ---
 
+### 6. TODO: Prioritized Test Coverage Improvements
+
+Considering this platform is structured as a **git-backed serverless headless CMS** focused on spatial data schemas and technical document indexing, the following prioritizations outline our strategic test coverage goals:
+
+#### 📋 Priority 1: Core Content Ingestion & Build-Time Pipelines (`scripts/`)
+* **Rationale**: The entire application's data layer runs serverless, fueled purely by prebuilt JSON assets. If the build-time ingestion fails or parses files incorrectly, the runtime application will be rendered completely blank or show broken contents.
+* **Todo list**:
+  - [x] Write Vitest unit tests for `scripts/generate-assets.ts` to assert that complex frontmatter fields (e.g. tags, dates) serialize to exact schema standards.
+  - [x] Test the pipeline’s behavior under missing resource folders or empty Markdown nodes to ensure it displays meaningful build-phase logs rather than silently swallowing errors.
+  - [x] Assert scheduling validation rules (preventing publication of future-dated posts unless explicit flags are detected).
+
+#### 📋 Priority 2: In-Memory Search Engine & Hook Optimization (`useOramaSearch`)
+* **Rationale**: Fast, client-side exploration is the core mechanism of spatial model documentation. We must protect against search regression.
+* **Todo list**:
+  - [ ] Expand `src/hooks/useOramaSearch.test.tsx` to simulate partial fuzzy matching, empty strings, and special characters common in Finnish/Swedish names (e.g., *Spatineo*, *Kaavatietomalli*).
+  - [ ] Ensure that component state transitions do not cause search query debounce leaks or redundant index reconstructions.
+
+#### 📋 Priority 3: Consent Preservation & Analytics Integrity (`src/services/`)
+* **Rationale**: Privacy and accurate, cookie-compliant user-activity insight are key organizational requirements.
+* **Todo list**:
+  - [ ] Verify that `consent.ts` safely synchronizes user preferences to `localStorage` across mock session loads.
+  - [ ] Create mock tracking integration assertions in `analytics.ts` to guarantee that analytics events are completely blocked when a user rejects cookie consent.
+
+#### 📋 Priority 4: Dynamic UI Renderers & Safe Fallbacks (`GeoJSONMapViewer`, `Mermaid`)
+* **Rationale**: Leaflet maps and Mermaid visual tools are prone to crashing DOM-like environments due to heavy graphical rendering requirements.
+* **Todo list**:
+  - [ ] Implement robust RTL fallback test cases asserting that `data-testid="geojson-map-viewer-fallback"` displays readable text and download links if the container throws exceptions or Leaflet is blocked.
+  - [ ] Confirm layout resilience under invalid mock GeoJSON formats.
+
+#### 📋 Priority 5: Advanced Browser Interaction Scenarios (E2E Playwright)
+* **Rationale**: End-to-end integration flows ensure the app works in real multi-device scenarios.
+* **Todo list**:
+  - [ ] Automate playwright browser tests for accepting/declining the cookie consent banner, verifying the immediate showing/hiding of consent popups.
+  - [ ] Verify mobile navigation drawers, confirming that small viewport sizes toggle menu anchors without breaking browser scroll state.
+
+---
+
 ## 🛠️ Development & Build Commands
 
 Ensure standard tools are set up before running builds:

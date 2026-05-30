@@ -26,8 +26,12 @@ interface GitCommitInfo {
   message: string;
 }
 
-function getGitHistoryOfContent(): Record<string, GitCommitInfo[]> {
+export function getGitHistoryOfContent(): Record<string, GitCommitInfo[]> {
   const historyMap: Record<string, GitCommitInfo[]> = {};
+  if (!fs.existsSync(path.join(process.cwd(), '.git'))) {
+    console.log('Skipping git history: No .git directory found.');
+    return historyMap;
+  }
   try {
     const output = execSync('git log --name-status --pretty=format:"COMMIT:%H|%aI|%s" -- "content"', {
       encoding: 'utf-8',
@@ -60,19 +64,29 @@ function getGitHistoryOfContent(): Record<string, GitCommitInfo[]> {
       }
     }
   } catch (err) {
-    console.warn('Could not read git history via CLI:', err);
+    console.log('Skipping git history: Unable to run git log.');
   }
   return historyMap;
 }
 
 // Removed duplicate escapeXml and getFilesRecursive; now loaded from content-utils.js
 
-function generateAssets() {
+export function generateAssets() {
   const t = getTranslations('fi');
   const historyMap = getGitHistoryOfContent();
   const postsDir = path.join(CONTENT_DIR, 'posts');
   const pagesDir = path.join(CONTENT_DIR, 'pages');
   const authorsDir = path.join(CONTENT_DIR, 'authors');
+
+  if (!fs.existsSync(postsDir)) {
+    console.warn(`Warning: Posts directory does not exist at ${postsDir}`);
+  }
+  if (!fs.existsSync(pagesDir)) {
+    console.warn(`Warning: Pages directory does not exist at ${pagesDir}`);
+  }
+  if (!fs.existsSync(authorsDir)) {
+    console.warn(`Warning: Authors directory does not exist at ${authorsDir}`);
+  }
 
   const postFiles = getFilesRecursive(postsDir);
   const pageFiles = getFilesRecursive(pagesDir);
@@ -85,6 +99,9 @@ function generateAssets() {
     const content = fs.readFileSync(path.join(postsDir, file), 'utf-8');
     validateMarkdownVideoBlocks(path.join(postsDir, file), content);
     const { data, content: textContent } = matter(content);
+    if (!data.title) {
+      console.warn(`Warning: Post in "${file}" has missing or empty "title" metadata.`);
+    }
     return {
       metadata: {
         slug,
@@ -115,6 +132,9 @@ function generateAssets() {
     const content = fs.readFileSync(path.join(pagesDir, file), 'utf-8');
     validateMarkdownVideoBlocks(path.join(pagesDir, file), content);
     const { data, content: textContent } = matter(content);
+    if (!data.title) {
+      console.warn(`Warning: Page in "${file}" has missing or empty "title" metadata.`);
+    }
     return {
       metadata: {
         slug,
@@ -424,4 +444,6 @@ function copyFolderRecursiveSync(source: string, target: string) {
 
 // Video validations are now delegated to content-utils.js
 
-generateAssets();
+if (process.env.NODE_ENV !== 'test') {
+  generateAssets();
+}
