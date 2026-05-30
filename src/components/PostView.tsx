@@ -60,6 +60,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         <div className="flex">
           <button
             onClick={onBack}
+            data-testid="back-to-home-btn"
             className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
             aria-label={t.post.returnToList}
           >

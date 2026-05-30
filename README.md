@@ -201,7 +201,8 @@ You can easily assert that view loads track page views, CTA selections, or autho
 
 The test suite is fully wired into our software development lifecycle:
 - All unit, integration, and hook tests are run automatically with `npm run test:run` on push event commits on the `main` branch, as well as on any incoming pull request targeting the `main` branch.
-- Standard continuous deployments (to GitHub Pages / Cloud Run) are guarded by and fail-fast if any unit tests or build procedures identify failing conditions.
+- End-to-End browser tests are executed in actual headless profiles with `npm run test:e2e`. Playwright browsers are dynamically installed during the CI flow with `npx playwright install --with-deps`, and testing reports are uploaded as GitHub build artifacts under `playwright-report` with a 30-day retention window.
+- Standard continuous deployments (to GitHub Pages / Cloud Run) are guarded by and fail-fast if any unit tests, integration tests, or build procedures identify failing conditions.
 
 ---
 
@@ -209,7 +210,26 @@ The test suite is fully wired into our software development lifecycle:
 
 Playwright tests run in actual Chromium/WebKit environments to assert layout correctness, responsive adaptations, and raw routing triggers.
 
-#### A. Target Selectors for E2E Tests
+#### A. Running E2E Tests & DevContainer Environment Setup
+- **Local Execution**: To execute the E2E tests, ensure your local development server is running in another shell (`npm run dev`), then execute the command:
+  ```bash
+  npm run test:e2e
+  ```
+- **DevContainer / Docker Environment Troubleshooting**:
+  If running the tests inside your VS Code DevContainer or a Docker-based virtual terminal and encountering missing browser modules or missing dynamic library binaries (e.g. `chrome-linux/headless_shell` or `libnspr4`), run the following sequences:
+  ```bash
+  # Step 1: Install Chrome/Webkit system dependencies
+  sudo npx playwright install-deps
+  
+  # Step 2: Install browser binaries
+  npx playwright install
+  
+  # Step 3: Run the end-to-end tests
+  npm run test:e2e
+  ```
+  Our DevContainer's configuration is fully optimized to automate this sequence during its container spin-up process.
+
+#### B. Target Selectors for E2E Tests
 To ensure selectors remain durable when CSS layouts change, use the pre-built declarative test hooks:
 - `data-testid="app-layout"`: Track layout lifecycle states.
   - Features dynamic properties that can be verified immediately:
