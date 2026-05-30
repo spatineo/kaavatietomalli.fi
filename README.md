@@ -279,8 +279,8 @@ Considering this platform is structured as a **git-backed serverless headless CM
 #### 📋 Priority 3: Consent Preservation & Analytics Integrity (`src/services/`)
 * **Rationale**: Privacy and accurate, cookie-compliant user-activity insight are key organizational requirements.
 * **Todo list**:
-  - [ ] Verify that `consent.ts` safely synchronizes user preferences to `localStorage` across mock session loads.
-  - [ ] Create mock tracking integration assertions in `analytics.ts` to guarantee that analytics events are completely blocked when a user rejects cookie consent.
+  - [x] Verify that `consent.ts` safely synchronizes user preferences to `localStorage` across mock session loads.
+  - [x] Create mock tracking integration assertions in `analytics.ts` to guarantee that analytics events are completely blocked when a user rejects cookie consent.
 
 #### 📋 Priority 4: Dynamic UI Renderers & Safe Fallbacks (`GeoJSONMapViewer`, `Mermaid`)
 * **Rationale**: Leaflet maps and Mermaid visual tools are prone to crashing DOM-like environments due to heavy graphical rendering requirements.
