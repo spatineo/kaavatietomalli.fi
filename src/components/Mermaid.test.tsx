@@ -6,6 +6,9 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Mermaid } from './Mermaid';
+import { getTranslations } from '../i18n';
+
+const t = getTranslations();
 
 // Mock motion/react to prevent requestAnimationFrame/animation-loop test hangs
 vi.mock('motion/react', () => {
@@ -69,7 +72,7 @@ describe('Mermaid component', () => {
     });
 
     const fallback = screen.getByTestId('mermaid-fallback');
-    expect(fallback.textContent).toContain('Mermaid-kaavion piirto epäonnistui');
+    expect(fallback.textContent).toContain(t.mermaid.renderError);
   });
 
   it('opens full-screen modal on clicking container', async () => {

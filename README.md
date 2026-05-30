@@ -135,6 +135,45 @@ afterEach(() => {
 });
 ```
 
+#### F. Multi-lingual & Localization-Invariant Testing (Anti-Fragile Keys)
+Avoid hardcoding Finnish or English texts (e.g., `screen.getByText(/virhe/i)` or `.getByRole('button', { name: /Koodi/i })`) directly in UI test suites. Instead, import the dynamic localization helper `getTranslations()` (or the translation dictionary `fi` directly) in the test and match against dynamic values:
+```typescript
+import { getTranslations } from '../i18n';
+const t = getTranslations();
+
+it('uses translation keys for matching', () => {
+  render(<GeoJsonMapViewer code="invalid" />);
+  expect(screen.getByText(new RegExp(t.geojson.jsonParseError, 'i'))).toBeDefined();
+});
+```
+This guarantees that UI and custom rendering tests remain fully robust against future language translations, copy updates, or localization changes.
+
+#### G. Intercepting Head Script Appending for Dynamic Scripts (Analytics & GTM)
+When testing scripts that dynamically inject files (such as injecting Google Tag Manager or YouTube elements) into `document.head`, virtual light DOM environments like `happy-dom` will yell with `DOMException [NotSupportedError]: JavaScript file loading is disabled` causing test list clutter.
+To circumvent this, install global spies on `document.head.appendChild` and `document.head.querySelector` in your unit tests (like `consent-analytics.test.ts`) to intercept element injects and redirect matching calls into a lightweight mock array:
+```typescript
+const injectedScripts: HTMLScriptElement[] = [];
+vi.spyOn(document.head, 'appendChild').mockImplementation((node) => {
+  if (node instanceof HTMLScriptElement) {
+    injectedScripts.push(node);
+  }
+  return node;
+});
+```
+
+#### H. End-to-End Test Localization Resilience via i18n Dictionary Access
+Just like unit tests, Playwright end-to-end tests must avoid hardcoded string values for matching buttons, labels, and togglers (e.g. `locator('button:has-text("Lue lisää")')`). Import the underlying static translation directory (e.g., `import { fi } from '../src/i18n/fi'`) and utilize standard interpolation to look up matching indicators securely:
+```typescript
+import { fi } from '../src/i18n/fi';
+const t = fi;
+
+test('asserts button exist robustly', async ({ page }) => {
+  const readMoreBtn = page.locator(`button:has-text("${t.post.readMore}")`).first();
+  await expect(readMoreBtn).toBeVisible();
+});
+```
+This enables the E2E test scripts to survive sweeping copy alterations or site-wide tone-of-voice migrations without single-line logic refactoring.
+
 ---
 
 ### 3. Unit & Integration Testing (Vitest + RTL)
@@ -246,7 +285,7 @@ To ensure selectors remain durable when CSS layouts change, use the pre-built de
 - `data-testid="header"`, `data-testid="footer"`: Static navigation areas.
 - `data-testid="search-input"`, `data-testid="search-results-container"`: Search utility interfaces.
 
-#### B. Key Flow Assertions to Implement:
+#### C. Key Flow Assertions to Implement:
 1. **The Navigation Flow**:
    - Verify that clicking blog posts in the feed updates the browser link, sets `data-view-type="post"`, and focuses appropriate scroll areas.
 2. **Search Verification & Highlighting**:
@@ -256,6 +295,29 @@ To ensure selectors remain durable when CSS layouts change, use the pre-built de
    - Assert that hovering over an explicit search result correctly changes its individual style (highlighting only the current target element).
 3. **Language Switch Execution**:
    - Locate translation links, click languages, and assert that dynamic translation strings resolve correctly without breaking current path states.
+
+#### D. Critical E2E Test Resiliency & Pitfalls (Lessons Learned)
+When writing, executing, and updating E2E tests, mind the following behaviors critical to our site structure:
+
+1. **Avoid Overly Broad Text Selectors to Prevent Strict-Mode Violations**
+   - *The Problem*: Locators like `page.locator('button:has-text("Muokkaa asetuksia")')` can match multiple elements. For instance, the floating settings bar at the bottom and the customize action inside the opened Cookie Consent Banner both utilize this label. Standard Playwright `.click()` operations will trigger a "strict mode violation: locator resolved to 2 elements" error.
+   - *The Solution*: Scope the locator inside a parent component or use explicit unique identifiers:
+     ```typescript
+     // ✅ Always scope or target specifically:
+     const bannerBtn = page.locator('[data-testid="cookie-consent-banner"]').locator('button:has-text("Muokkaa asetuksia")');
+     ```
+
+2. **Prefer Custom `data-testid` Over Ambiguous Element Traversal**
+   - *The Problem*: Relying on relative position querying (like `div:has-text("Analytiikka-evästeet") >> button`) can incorrectly match unrelated higher-level navigation blocks (such as branding titles) if the translation keys are reuse-heavy.
+   - *The Solution*: Explicitly declare custom test selectors (such as `data-testid="analytics-consent-toggle"`) directly on target interactable nodes to maintain an decoupled, bulletproof test surface.
+
+3. **Handle Intercepting & Scroll State Preservation on Mobile Layouts**
+   - *The Problem*: Standard Playwright `.click()` triggers an automatic scroll-into-view behavior before executing the target action. In mobile viewport assertions (such as checking if the scroll position is maintained when opening the navigation drawer), standard click operations can inadvertently reset or scroll the container/body offset to `0`.
+   - *The Solution*: Utilize raw DOM dispatching `dispatchEvent('click')` to simulate viewport-independent user interactions without disrupting scroll position assertions:
+     ```typescript
+     // ✅ Bypasses auto-scroll behaviors in E2E assertions
+     await menuButton.dispatchEvent('click');
+     ```
 
 ---
 

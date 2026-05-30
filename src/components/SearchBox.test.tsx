@@ -3,12 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { SearchBox } from './SearchBox';
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, act } from "@testing-library/react";
+import { SearchBox } from "./SearchBox";
+import { getTranslations } from "../i18n";
+
+const t = getTranslations();
 
 // Mock motion/react to prevent requestAnimationFrame/animation-loop test hangs
-vi.mock('motion/react', () => {
+vi.mock("motion/react", () => {
   return {
     motion: {
       div: ({ children, ...props }: any) => {
@@ -25,7 +28,7 @@ vi.mock('motion/react', () => {
 const performSearchMock = vi.fn();
 let isInitializingMock = false;
 
-vi.mock('../hooks/useOramaSearch', () => ({
+vi.mock("../hooks/useOramaSearch", () => ({
   useOramaSearch: () => ({
     performSearch: performSearchMock,
     isInitializing: isInitializingMock,
@@ -33,7 +36,7 @@ vi.mock('../hooks/useOramaSearch', () => ({
   }),
 }));
 
-describe('SearchBox component', () => {
+describe("SearchBox component", () => {
   const onNavigateMock = vi.fn();
   const onCloseMock = vi.fn();
 
@@ -48,26 +51,26 @@ describe('SearchBox component', () => {
     vi.useRealTimers();
   });
 
-  it('renders input field with correct placeholder and autoFocus', () => {
+  it("renders input field with correct placeholder and autoFocus", () => {
     render(
-      <SearchBox 
-        onNavigate={onNavigateMock} 
+      <SearchBox
+        onNavigate={onNavigateMock}
         placeholder="Etsi jotain..."
         autoFocus={true}
-      />
+      />,
     );
 
-    const input = screen.getByTestId('search-input') as HTMLInputElement;
+    const input = screen.getByTestId("search-input") as HTMLInputElement;
     expect(input).toBeDefined();
-    expect(input.placeholder).toBe('Etsi jotain...');
+    expect(input.placeholder).toBe("Etsi jotain...");
     expect(document.activeElement).toBe(input);
   });
 
-  it('does not trigger search when query has fewer than 2 characters', () => {
+  it("does not trigger search when query has fewer than 2 characters", () => {
     render(<SearchBox onNavigate={onNavigateMock} />);
-    
-    const input = screen.getByTestId('search-input');
-    fireEvent.change(input, { target: { value: 'a' } });
+
+    const input = screen.getByTestId("search-input");
+    fireEvent.change(input, { target: { value: "a" } });
 
     // Fast-forward debounce timer (300ms)
     act(() => {
@@ -75,28 +78,28 @@ describe('SearchBox component', () => {
     });
 
     expect(performSearchMock).not.toHaveBeenCalled();
-    expect(screen.queryByTestId('search-results-container')).toBeNull();
+    expect(screen.queryByTestId("search-results-container")).toBeNull();
   });
 
-  it('triggers search after 300ms debounce when user types 2+ characters', async () => {
+  it("triggers search after 300ms debounce when user types 2+ characters", async () => {
     const mockHits = [
       {
-        id: '1',
+        id: "1",
         score: 1,
         document: {
-          type: 'post',
-          title: 'Kaavatietomalli opas',
-          slug: 'opas-slug',
-          excerpt: 'Tietoa kaavoituksesta',
+          type: "post",
+          title: "Kaavatietomalli opas",
+          slug: "opas-slug",
+          excerpt: "Tietoa kaavoituksesta",
         },
       },
     ];
     performSearchMock.mockResolvedValue(mockHits);
 
     render(<SearchBox onNavigate={onNavigateMock} />);
-    
-    const input = screen.getByTestId('search-input');
-    fireEvent.change(input, { target: { value: 'kaava' } });
+
+    const input = screen.getByTestId("search-input");
+    fireEvent.change(input, { target: { value: "kaava" } });
 
     // Before 300ms, search is not triggered
     act(() => {
@@ -109,84 +112,94 @@ describe('SearchBox component', () => {
       vi.advanceTimersByTime(150);
     });
 
-    expect(performSearchMock).toHaveBeenCalledWith('kaava');
+    expect(performSearchMock).toHaveBeenCalledWith("kaava");
 
     // Confirm that the results container and items appear
-    const container = screen.getByTestId('search-results-container');
+    const container = screen.getByTestId("search-results-container");
     expect(container).toBeDefined();
-    expect(screen.getByText('Kaavatietomalli opas')).toBeDefined();
-    expect(screen.getByText('Tietoa kaavoituksesta')).toBeDefined();
+    expect(screen.getByText("Kaavatietomalli opas")).toBeDefined();
+    expect(screen.getByText("Tietoa kaavoituksesta")).toBeDefined();
   });
 
   it('renders a "no results" state when no matches are found', async () => {
     performSearchMock.mockResolvedValue([]);
 
     render(<SearchBox onNavigate={onNavigateMock} />);
-    
-    const input = screen.getByTestId('search-input');
-    fireEvent.change(input, { target: { value: 'tyhjä' } });
+
+    const input = screen.getByTestId("search-input");
+    fireEvent.change(input, { target: { value: "tyhjä" } });
 
     await act(async () => {
       vi.advanceTimersByTime(350);
     });
 
-    expect(screen.getByTestId('search-results-container')).toBeDefined();
-    expect(screen.getByText(/Ei tuloksia haulle/i)).toBeDefined();
+    expect(screen.getByTestId("search-results-container")).toBeDefined();
+    expect(screen.getByText(new RegExp(t.search.noResults, "i"))).toBeDefined();
   });
 
-  it('triggers navigate callback and resets query when a result is clicked', async () => {
+  it("triggers navigate callback and resets query when a result is clicked", async () => {
     const mockHits = [
       {
-        id: 'author-1',
+        id: "author-1",
         score: 1,
         document: {
-          type: 'author',
-          name: 'Matti Meikäläinen',
-          slug: 'matti-meikalainen',
-          title: 'Asiantuntija',
-          company: 'Spatineo',
+          type: "author",
+          name: "Matti Meikäläinen",
+          slug: "matti-meikalainen",
+          title: "Asiantuntija",
+          company: "Spatineo",
         },
       },
     ];
     performSearchMock.mockResolvedValue(mockHits);
 
-    render(<SearchBox onNavigate={onNavigateMock} onClose={onCloseMock} showClose={true} />);
-    
-    const input = screen.getByTestId('search-input') as HTMLInputElement;
-    fireEvent.change(input, { target: { value: 'matti' } });
+    render(
+      <SearchBox
+        onNavigate={onNavigateMock}
+        onClose={onCloseMock}
+        showClose={true}
+      />,
+    );
+
+    const input = screen.getByTestId("search-input") as HTMLInputElement;
+    fireEvent.change(input, { target: { value: "matti" } });
 
     await act(async () => {
       vi.advanceTimersByTime(350);
     });
 
-    expect(screen.getByText('Matti Meikäläinen')).toBeDefined();
+    expect(screen.getByText("Matti Meikäläinen")).toBeDefined();
 
     // Click the result button
-    const resultButton = screen.getByRole('button', { name: /Matti Meikäläinen/i });
+    const resultButton = screen.getByRole("button", {
+      name: /Matti Meikäläinen/i,
+    });
     fireEvent.click(resultButton);
 
-    expect(onNavigateMock).toHaveBeenCalledWith('author', 'matti-meikalainen');
+    expect(onNavigateMock).toHaveBeenCalledWith("author", "matti-meikalainen");
     expect(onCloseMock).toHaveBeenCalled();
-    expect(input.value).toBe('');
+    expect(input.value).toBe("");
   });
 
-  it('triggers onClose when the close button is clicked and clears query', () => {
+  it("triggers onClose when the close button is clicked and clears query", () => {
     render(
-      <SearchBox 
-        onNavigate={onNavigateMock} 
+      <SearchBox
+        onNavigate={onNavigateMock}
         initialQuery="testi"
         showClose={true}
         onClose={onCloseMock}
-      />
+      />,
     );
 
-    const closeButton = screen.getByRole('button', { name: /sulje/i });
+    const closeButton = screen.getByRole("button", {
+      name: new RegExp(t.search.close, "i"),
+    });
     expect(closeButton).toBeDefined();
 
     fireEvent.click(closeButton);
 
     expect(onCloseMock).toHaveBeenCalled();
-    const input = screen.getByTestId('search-input') as HTMLInputElement;
-    expect(input.value).toBe('');
+    const input = screen.getByTestId("search-input") as HTMLInputElement;
+    expect(input.value).toBe("");
   });
 });
