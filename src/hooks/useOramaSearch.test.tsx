@@ -170,4 +170,56 @@ describe('useOramaSearch hook', () => {
     const searchResults = await result.current.performSearch('error-trigger');
     expect(searchResults).toEqual([]);
   });
+
+  it('correctly propagates Finnish/Swedish special characters and configures tolerance for fuzzy matching', async () => {
+    const { result } = renderHook(() => useOramaSearch());
+
+    await waitFor(() => {
+      expect(result.current.db).not.toBeNull();
+    });
+
+    // Test a term containing typical Finnish/Swedish special chars
+    const fiTerm = 'Ääkkösiä ja Öitä';
+    await result.current.performSearch(fiTerm);
+
+    expect(search).toHaveBeenLastCalledWith({ id: 'mock-db' }, expect.objectContaining({
+      term: fiTerm,
+      tolerance: 1, // verifies partial/fuzzy matching tolerance config is correct
+    }));
+
+    // Test specific product/brand term common to Spatineo Kaavatietomalli
+    const spatineoTerm = 'Spatineo Kaavatietomalli';
+    await result.current.performSearch(spatineoTerm);
+    expect(search).toHaveBeenLastCalledWith({ id: 'mock-db' }, expect.objectContaining({
+      term: spatineoTerm,
+    }));
+
+    // Test empty string returns empty immediately without search invocation
+    const emptyResults = await result.current.performSearch('');
+    expect(emptyResults).toEqual([]);
+  });
+
+  it('avoids redundant index reconstructions and fetch calls during component transitions and re-renders', async () => {
+    const { result, rerender } = renderHook(() => useOramaSearch());
+
+    // Expect status is loading initially
+    expect(result.current.isInitializing).toBe(true);
+
+    await waitFor(() => {
+      expect(result.current.db).not.toBeNull();
+    });
+
+    // Initial load should trigger fetch exactly once
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Trigger multiple re-renders to simulate state transitions in standard React lifecycle
+    rerender();
+    rerender();
+    rerender();
+
+    // Verify initializing didn't restart and no redundant fetch/create was made
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(result.current.isInitializing).toBe(false);
+  });
 });

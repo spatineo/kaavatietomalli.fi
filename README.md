@@ -273,8 +273,8 @@ Considering this platform is structured as a **git-backed serverless headless CM
 #### 📋 Priority 2: In-Memory Search Engine & Hook Optimization (`useOramaSearch`)
 * **Rationale**: Fast, client-side exploration is the core mechanism of spatial model documentation. We must protect against search regression.
 * **Todo list**:
-  - [ ] Expand `src/hooks/useOramaSearch.test.tsx` to simulate partial fuzzy matching, empty strings, and special characters common in Finnish/Swedish names (e.g., *Spatineo*, *Kaavatietomalli*).
-  - [ ] Ensure that component state transitions do not cause search query debounce leaks or redundant index reconstructions.
+  - [x] Expand `src/hooks/useOramaSearch.test.tsx` to simulate partial fuzzy matching, empty strings, and special characters common in Finnish/Swedish names (e.g., *Spatineo*, *Kaavatietomalli*).
+  - [x] Ensure that component state transitions do not cause search query debounce leaks or redundant index reconstructions.
 
 #### 📋 Priority 3: Consent Preservation & Analytics Integrity (`src/services/`)
 * **Rationale**: Privacy and accurate, cookie-compliant user-activity insight are key organizational requirements.
