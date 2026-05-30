@@ -135,6 +135,45 @@ afterEach(() => {
 });
 ```
 
+#### F. Multi-lingual & Localization-Invariant Testing (Anti-Fragile Keys)
+Avoid hardcoding Finnish or English texts (e.g., `screen.getByText(/virhe/i)` or `.getByRole('button', { name: /Koodi/i })`) directly in UI test suites. Instead, import the dynamic localization helper `getTranslations()` (or the translation dictionary `fi` directly) in the test and match against dynamic values:
+```typescript
+import { getTranslations } from '../i18n';
+const t = getTranslations();
+
+it('uses translation keys for matching', () => {
+  render(<GeoJsonMapViewer code="invalid" />);
+  expect(screen.getByText(new RegExp(t.geojson.jsonParseError, 'i'))).toBeDefined();
+});
+```
+This guarantees that UI and custom rendering tests remain fully robust against future language translations, copy updates, or localization changes.
+
+#### G. Intercepting Head Script Appending for Dynamic Scripts (Analytics & GTM)
+When testing scripts that dynamically inject files (such as injecting Google Tag Manager or YouTube elements) into `document.head`, virtual light DOM environments like `happy-dom` will yell with `DOMException [NotSupportedError]: JavaScript file loading is disabled` causing test list clutter.
+To circumvent this, install global spies on `document.head.appendChild` and `document.head.querySelector` in your unit tests (like `consent-analytics.test.ts`) to intercept element injects and redirect matching calls into a lightweight mock array:
+```typescript
+const injectedScripts: HTMLScriptElement[] = [];
+vi.spyOn(document.head, 'appendChild').mockImplementation((node) => {
+  if (node instanceof HTMLScriptElement) {
+    injectedScripts.push(node);
+  }
+  return node;
+});
+```
+
+#### H. End-to-End Test Localization Resilience via i18n Dictionary Access
+Just like unit tests, Playwright end-to-end tests must avoid hardcoded string values for matching buttons, labels, and togglers (e.g. `locator('button:has-text("Lue lisää")')`). Import the underlying static translation directory (e.g., `import { fi } from '../src/i18n/fi'`) and utilize standard interpolation to look up matching indicators securely:
+```typescript
+import { fi } from '../src/i18n/fi';
+const t = fi;
+
+test('asserts button exist robustly', async ({ page }) => {
+  const readMoreBtn = page.locator(`button:has-text("${t.post.readMore}")`).first();
+  await expect(readMoreBtn).toBeVisible();
+});
+```
+This enables the E2E test scripts to survive sweeping copy alterations or site-wide tone-of-voice migrations without single-line logic refactoring.
+
 ---
 
 ### 3. Unit & Integration Testing (Vitest + RTL)
@@ -246,7 +285,7 @@ To ensure selectors remain durable when CSS layouts change, use the pre-built de
 - `data-testid="header"`, `data-testid="footer"`: Static navigation areas.
 - `data-testid="search-input"`, `data-testid="search-results-container"`: Search utility interfaces.
 
-#### B. Key Flow Assertions to Implement:
+#### C. Key Flow Assertions to Implement:
 1. **The Navigation Flow**:
    - Verify that clicking blog posts in the feed updates the browser link, sets `data-view-type="post"`, and focuses appropriate scroll areas.
 2. **Search Verification & Highlighting**:
@@ -257,42 +296,28 @@ To ensure selectors remain durable when CSS layouts change, use the pre-built de
 3. **Language Switch Execution**:
    - Locate translation links, click languages, and assert that dynamic translation strings resolve correctly without breaking current path states.
 
----
+#### D. Critical E2E Test Resiliency & Pitfalls (Lessons Learned)
+When writing, executing, and updating E2E tests, mind the following behaviors critical to our site structure:
 
-### 6. TODO: Prioritized Test Coverage Improvements
+1. **Avoid Overly Broad Text Selectors to Prevent Strict-Mode Violations**
+   - *The Problem*: Locators like `page.locator('button:has-text("Muokkaa asetuksia")')` can match multiple elements. For instance, the floating settings bar at the bottom and the customize action inside the opened Cookie Consent Banner both utilize this label. Standard Playwright `.click()` operations will trigger a "strict mode violation: locator resolved to 2 elements" error.
+   - *The Solution*: Scope the locator inside a parent component or use explicit unique identifiers:
+     ```typescript
+     // ✅ Always scope or target specifically:
+     const bannerBtn = page.locator('[data-testid="cookie-consent-banner"]').locator('button:has-text("Muokkaa asetuksia")');
+     ```
 
-Considering this platform is structured as a **git-backed serverless headless CMS** focused on spatial data schemas and technical document indexing, the following prioritizations outline our strategic test coverage goals:
+2. **Prefer Custom `data-testid` Over Ambiguous Element Traversal**
+   - *The Problem*: Relying on relative position querying (like `div:has-text("Analytiikka-evästeet") >> button`) can incorrectly match unrelated higher-level navigation blocks (such as branding titles) if the translation keys are reuse-heavy.
+   - *The Solution*: Explicitly declare custom test selectors (such as `data-testid="analytics-consent-toggle"`) directly on target interactable nodes to maintain an decoupled, bulletproof test surface.
 
-#### 📋 Priority 1: Core Content Ingestion & Build-Time Pipelines (`scripts/`)
-* **Rationale**: The entire application's data layer runs serverless, fueled purely by prebuilt JSON assets. If the build-time ingestion fails or parses files incorrectly, the runtime application will be rendered completely blank or show broken contents.
-* **Todo list**:
-  - [x] Write Vitest unit tests for `scripts/generate-assets.ts` to assert that complex frontmatter fields (e.g. tags, dates) serialize to exact schema standards.
-  - [x] Test the pipeline’s behavior under missing resource folders or empty Markdown nodes to ensure it displays meaningful build-phase logs rather than silently swallowing errors.
-  - [x] Assert scheduling validation rules (preventing publication of future-dated posts unless explicit flags are detected).
-
-#### 📋 Priority 2: In-Memory Search Engine & Hook Optimization (`useOramaSearch`)
-* **Rationale**: Fast, client-side exploration is the core mechanism of spatial model documentation. We must protect against search regression.
-* **Todo list**:
-  - [x] Expand `src/hooks/useOramaSearch.test.tsx` to simulate partial fuzzy matching, empty strings, and special characters common in Finnish/Swedish names (e.g., *Spatineo*, *Kaavatietomalli*).
-  - [x] Ensure that component state transitions do not cause search query debounce leaks or redundant index reconstructions.
-
-#### 📋 Priority 3: Consent Preservation & Analytics Integrity (`src/services/`)
-* **Rationale**: Privacy and accurate, cookie-compliant user-activity insight are key organizational requirements.
-* **Todo list**:
-  - [x] Verify that `consent.ts` safely synchronizes user preferences to `localStorage` across mock session loads.
-  - [x] Create mock tracking integration assertions in `analytics.ts` to guarantee that analytics events are completely blocked when a user rejects cookie consent.
-
-#### 📋 Priority 4: Dynamic UI Renderers & Safe Fallbacks (`GeoJSONMapViewer`, `Mermaid`)
-* **Rationale**: Leaflet maps and Mermaid visual tools are prone to crashing DOM-like environments due to heavy graphical rendering requirements.
-* **Todo list**:
-  - [x] Implement robust RTL fallback test cases asserting that `data-testid="geojson-map-viewer-fallback"` displays readable text and download links if the container throws exceptions or Leaflet is blocked.
-  - [x] Confirm layout resilience under invalid mock GeoJSON formats.
-
-#### 📋 Priority 5: Advanced Browser Interaction Scenarios (E2E Playwright)
-* **Rationale**: End-to-end integration flows ensure the app works in real multi-device scenarios.
-* **Todo list**:
-  - [ ] Automate playwright browser tests for accepting/declining the cookie consent banner, verifying the immediate showing/hiding of consent popups.
-  - [ ] Verify mobile navigation drawers, confirming that small viewport sizes toggle menu anchors without breaking browser scroll state.
+3. **Handle Intercepting & Scroll State Preservation on Mobile Layouts**
+   - *The Problem*: Standard Playwright `.click()` triggers an automatic scroll-into-view behavior before executing the target action. In mobile viewport assertions (such as checking if the scroll position is maintained when opening the navigation drawer), standard click operations can inadvertently reset or scroll the container/body offset to `0`.
+   - *The Solution*: Utilize raw DOM dispatching `dispatchEvent('click')` to simulate viewport-independent user interactions without disrupting scroll position assertions:
+     ```typescript
+     // ✅ Bypasses auto-scroll behaviors in E2E assertions
+     await menuButton.dispatchEvent('click');
+     ```
 
 ---
 

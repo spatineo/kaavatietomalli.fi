@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Cookie, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Cookie, X, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { getConsent, setConsent } from '../services/consent';
@@ -127,7 +127,7 @@ export function CookieConsent() {
             exit={{ opacity: 0, y: 100 }}
             className="fixed bottom-0 left-0 right-0 z-[100] p-4 sm:p-6 pointer-events-none"
           >
-          <div className="max-w-4xl mx-auto bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl pointer-events-auto overflow-hidden">
+          <div data-testid="cookie-consent-banner" className="max-w-4xl mx-auto bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl pointer-events-auto overflow-hidden">
             <div className="p-6 sm:p-8">
               <div className="flex flex-col md:flex-row gap-6 items-start">
                 <div className="p-3 bg-brand-accent/10 rounded-2xl text-brand-accent shrink-0">
@@ -164,6 +164,7 @@ export function CookieConsent() {
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-bold text-white text-sm">{t.consent.analytics.title}</h4>
                             <button 
+                              data-testid="analytics-consent-toggle"
                               onClick={() => setAnalyticsEnabled(!analyticsEnabled)}
                               className={`w-10 h-5 rounded-full transition-colors relative ${analyticsEnabled ? 'bg-brand-accent' : 'bg-slate-700'}`}
                             >
@@ -201,10 +202,16 @@ export function CookieConsent() {
                     ) : (
                       <>
                         <button 
-                          onClick={handleSavePreferences}
-                          className="px-6 py-3 bg-brand-accent text-brand-primary rounded-xl font-bold text-sm hover:opacity-90 transition-opacity flex items-center gap-2"
+                          onClick={handleAcceptAll}
+                          className="px-6 py-3 bg-brand-accent text-brand-primary rounded-xl font-bold text-sm hover:opacity-90 transition-opacity"
                         >
-                          <Check size={18} /> {t.consent.save}
+                          {t.consent.acceptAll}
+                        </button>
+                        <button 
+                          onClick={handleSavePreferences}
+                          className="px-6 py-3 bg-white/5 text-white border border-white/10 rounded-xl font-bold text-sm hover:bg-white/10 transition-colors"
+                        >
+                          {t.consent.save}
                         </button>
                         <button 
                           onClick={() => setIsExpanded(false)}
