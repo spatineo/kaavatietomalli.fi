@@ -285,8 +285,8 @@ Considering this platform is structured as a **git-backed serverless headless CM
 #### 📋 Priority 4: Dynamic UI Renderers & Safe Fallbacks (`GeoJSONMapViewer`, `Mermaid`)
 * **Rationale**: Leaflet maps and Mermaid visual tools are prone to crashing DOM-like environments due to heavy graphical rendering requirements.
 * **Todo list**:
-  - [ ] Implement robust RTL fallback test cases asserting that `data-testid="geojson-map-viewer-fallback"` displays readable text and download links if the container throws exceptions or Leaflet is blocked.
-  - [ ] Confirm layout resilience under invalid mock GeoJSON formats.
+  - [x] Implement robust RTL fallback test cases asserting that `data-testid="geojson-map-viewer-fallback"` displays readable text and download links if the container throws exceptions or Leaflet is blocked.
+  - [x] Confirm layout resilience under invalid mock GeoJSON formats.
 
 #### 📋 Priority 5: Advanced Browser Interaction Scenarios (E2E Playwright)
 * **Rationale**: End-to-end integration flows ensure the app works in real multi-device scenarios.

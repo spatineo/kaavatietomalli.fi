@@ -640,6 +640,16 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
               <p className="text-xs text-slate-400 max-w-sm mt-1 mx-auto leading-relaxed">
                 The map visualization is unavailable in this workspace or test environment. You can read and inspect the full raw data coordinates at any time via the Code tab above.
               </p>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <a
+                  href={`data:application/json;charset=utf-8,${encodeURIComponent(code)}`}
+                  download="map-data.geojson"
+                  className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 transition-colors text-black font-semibold text-xs rounded-lg inline-flex items-center gap-1.5"
+                  data-testid="geojson-download-link"
+                >
+                  Download GeoJSON
+                </a>
+              </div>
               <span className="text-[10px] text-slate-600 font-mono mt-3 break-all block max-w-md mx-auto">Error: {libsError}</span>
             </div>
           ) : (

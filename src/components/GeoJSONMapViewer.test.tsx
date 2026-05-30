@@ -35,7 +35,7 @@ describe('GeoJsonMapViewer component', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('renders visual fallback with correct test id when dynamic library loading fails', async () => {
+  it('renders visual fallback with correct test id, readable text, and a functional download link when dynamic library loading fails', async () => {
     const validGeoJson = JSON.stringify({
       type: 'FeatureCollection',
       features: [
@@ -62,6 +62,14 @@ describe('GeoJsonMapViewer component', () => {
 
     const fallback = screen.getByTestId('geojson-map-viewer-fallback');
     expect(fallback.textContent).toContain('Error:');
+    expect(fallback.textContent).toContain('map visualization is unavailable');
+    expect(fallback.textContent).toContain('Karttanäkymä');
+
+    // Verify download link exists and is correctly configured
+    const downloadLink = screen.getByTestId('geojson-download-link');
+    expect(downloadLink).toBeDefined();
+    expect(downloadLink.getAttribute('download')).toBe('map-data.geojson');
+    expect(downloadLink.getAttribute('href')).toContain(encodeURIComponent(validGeoJson));
   });
 
   it('renders parsing error banner and forces code view when invalid GeoJSON is provided', async () => {
@@ -99,5 +107,39 @@ describe('GeoJsonMapViewer component', () => {
       expect(screen.getByTestId('mock-syntax-highlighter')).toBeDefined();
     });
     expect(screen.getByTestId('mock-syntax-highlighter').textContent).toBe(validGeoJson);
+  });
+
+  it('maintains layout resilience when non-object, empty, or malformed JSON formats are fed into the viewer', async () => {
+    // 1. Syntactically invalid JSON string -> produces a parsing error banner and forces code view
+    const { unmount: unmount1 } = render(<GeoJsonMapViewer code="invalid: json" />);
+    await waitFor(() => {
+      expect(screen.getByText(/virhe/i)).toBeDefined();
+    });
+    unmount1();
+
+    // 2. Empty Object -> compiles fine as JSON, stays on map tab showing map fallback, allows manual toggle to code tab
+    const { unmount: unmount2 } = render(<GeoJsonMapViewer code="{}" language="jsonfg" />);
+    await waitFor(() => {
+      expect(screen.getByTestId('geojson-map-viewer-fallback')).toBeDefined();
+    });
+    const codeTabButton2 = screen.getByRole('button', { name: /Koodi/i });
+    fireEvent.click(codeTabButton2);
+    await waitFor(() => {
+      expect(screen.getByTestId('mock-syntax-highlighter')).toBeDefined();
+    });
+    expect(screen.getByTestId('mock-syntax-highlighter').textContent).toBe('{}');
+    unmount2();
+
+    // 3. FeatureCollection with empty representation
+    const { unmount: unmount3 } = render(<GeoJsonMapViewer code='{"type": "FeatureCollection"}' />);
+    await waitFor(() => {
+      expect(screen.getByTestId('geojson-map-viewer-fallback')).toBeDefined();
+    });
+    const codeTabButton3 = screen.getByRole('button', { name: /Koodi/i });
+    fireEvent.click(codeTabButton3);
+    await waitFor(() => {
+      expect(screen.getByTestId('mock-syntax-highlighter')).toBeDefined();
+    });
+    unmount3();
   });
 });
