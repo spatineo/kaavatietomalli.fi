@@ -1,21 +1,27 @@
-name: Scheduled Nightly Rebuild & Deploy
+name: Build and deploy
 
 on:
-  schedule:
-    - cron: "0 0 * * *"
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: true
 
 jobs:
-  check-and-rebuild:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -30,54 +36,50 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
-
-      - name: Check for newly publishable scheduled posts
-        id: check
-        run: npx tsx scripts/check-scheduled-posts.ts
+        run: npm ci
 
       - name: Generate assets and search index
-        if: steps.check.outputs.should_rebuild == 'true'
         run: npm run prebuild
 
       - name: Run unit tests
-        if: steps.check.outputs.should_rebuild == 'true'
         run: npm run test:run
 
       - name: Install Playwright Browsers
-        if: steps.check.outputs.should_rebuild == 'true'
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        if: steps.check.outputs.should_rebuild == 'true'
         run: npm run test:e2e
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
-        if: steps.check.outputs.should_rebuild == 'true' && !cancelled()
+        if: ${{ !cancelled() }}
         with:
-          name: playwright-report-scheduled
+          name: playwright-report
           path: playwright-report/
           retention-days: 30
 
       - name: Build
-        if: steps.check.outputs.should_rebuild == 'true'
         run: npm run build
         env:
           VITE_BASE_PATH: /
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }}
       
       - name: Setup Pages
-        if: steps.check.outputs.should_rebuild == 'true'
         uses: actions/configure-pages@v6
 
       - name: Upload artifact
-        if: steps.check.outputs.should_rebuild == 'true'
         uses: actions/upload-pages-artifact@v5
         with:
           path: './dist'
 
+  deploy:
+    if: github.event_name != 'pull_request'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
       - name: Deploy to GitHub Pages
-        if: steps.check.outputs.should_rebuild == 'true'
         id: deployment
         uses: actions/deploy-pages@v5
