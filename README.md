@@ -239,10 +239,17 @@ You can easily assert that view loads track page views, CTA selections, or autho
 
 ### 4. Continuous Integration (GitHub Actions)
 
-The test suite is fully wired into our software development lifecycle:
-- All unit, integration, and hook tests are run automatically with `npm run test:run` on pull requests targeting the `main` branch, ensuring all checks pass before integration (direct pushing to `main` is strictly forbidden by branch protection rules).
-- End-to-End browser tests are executed in actual headless profiles with `npm run test:e2e`. Playwright browsers are dynamically installed during the CI flow with `npx playwright install --with-deps`, and testing reports are uploaded as GitHub build artifacts under `playwright-report` with a 30-day retention window.
-- Standard continuous deployments (to GitHub Pages / Cloud Run) are guarded by and fail-fast if any unit tests, integration tests, or build procedures identify failing conditions.
+The test suite and deployment pipelines are fully wired into our software development lifecycle via distinct workflows under `.github/workflows/`:
+
+- **Main CI/CD Pipeline (`deploy.yml`)**:
+  - Automatically runs unit, integration, and hook tests via `npm run test:run` on pull requests targeting the `main` branch, ensuring all checks pass before integration. Direct pushing to `main` is strictly forbidden by branch protection rules.
+  - Automatically builds and deploys to GitHub Pages on every pull request merged to `main`.
+  - End-to-End browser tests are executed in actual headless profiles with `npm run test:e2e`. Playwright browsers are dynamically installed during the CI flow with `npx playwright install --with-deps`, and testing reports are uploaded as GitHub build artifacts under `playwright-report` with a 30-day retention window.
+
+- **Scheduled Rebuild & Deploy (`scheduled-rebuild.yml`)**:
+  - Runs nightly via a schedule cron (`0 0 * * *`) and on-demand via `workflow_dispatch`.
+  - **Rebuild Decision Engine**: It invokes a specialized checker script (`scripts/check-scheduled-posts.ts`) that compares filesystem markdown metadata against the currently deployed `posts.json` from the live site.
+  - **Resilient Skip Logic**: A full build, test, and release run is triggered **only** when there are newly scheduled posts whose launch dates have passed but are not yet live on the production site. If no newly publishable scheduled posts exist, the workflow terminates early with a clean, successful skip, entirely avoiding redundant version tag increments and deployment churn.
 
 ---
 
