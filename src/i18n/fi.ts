@@ -86,6 +86,13 @@ export const fi: Translations = {
     commentCount: '{{count}} kommenttia',
     latestComment: 'Viimeisin: {{date}}',
     relatedPostsSection: 'Lisää aihepiiristä',
+    commercialCooperation: 'Kaupallinen yhteistyö',
+    commercialCooperationLabel: 'Kaupallinen yhteistyö {{partner}}',
+    commercialCooperationIntro: 'Tämä artikkeli on tuotettu yhteistyössä kumppanimme kanssa.',
+    aboutCommercialCooperation: 'Tietoa kaupallisesta yhteistyöstä',
+    aboutCommercialCooperationText: 'Tämä kirjoitus on osa kaupallista yhteistyötä Kaavatietomalli.fi-sivuston ja {{partner}} välillä. Kaikki yhteistyösisällöt valitaan huolella ja ne palvelevat lukijoitamme syventämällä ymmärrystä digitalisoituvasta maankäytön suunnittelusta. Haluatko yrityksesi asiantuntijuuden esille sivustollemme? Ota yhteyttä!',
+    readMoreCooperation: 'Lue lisää yhteistyöstä',
+    callToActionLabel: 'Tutustu tarkemmin',
   },
   page: {
   },

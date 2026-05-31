@@ -224,4 +224,66 @@ describe('Analytics Tracking Service and Blocking Integrity', () => {
       }
     ]);
   });
+
+  it('correctly forwards the partner metadata field when provided to track metrics', () => {
+    setConsent(true);
+    const tracker = getTracker();
+    expect(tracker).toBeDefined();
+
+    const gRecord: any[] = [];
+    (window as any).gtag = (...args: any[]) => {
+      gRecord.push(args);
+    };
+
+    tracker.trackPageView('/sponsored-services', 'Sponsored Services', ['spatial'], 'PartnerCompany');
+    expect(gRecord).toContainEqual([
+      'event',
+      'page_view',
+      {
+        page_path: '/sponsored-services',
+        page_title: 'Sponsored Services',
+        content_tags: 'spatial',
+        partner: 'PartnerCompany',
+        send_to: gaId,
+      }
+    ]);
+
+    tracker.trackPostView('sponsored-slug', 'Sponsored Post Title', ['promo'], 'PartnerCompany');
+    expect(gRecord).toContainEqual([
+      'event',
+      'post_view',
+      {
+        post_slug: 'sponsored-slug',
+        post_title: 'Sponsored Post Title',
+        content_tags: 'promo',
+        partner: 'PartnerCompany',
+        send_to: gaId,
+      }
+    ]);
+
+    tracker.trackAuthorView('partner-author', 'Partner Author', 'PartnerCompany');
+    expect(gRecord).toContainEqual([
+      'event',
+      'author_view',
+      {
+        author_slug: 'partner-author',
+        author_name: 'Partner Author',
+        partner: 'PartnerCompany',
+        send_to: gaId,
+      }
+    ]);
+
+    tracker.trackCTA('Visit Partner', 'https://partner.com', 'sponsored-cta', 'PartnerCompany');
+    expect(gRecord).toContainEqual([
+      'event',
+      'cta_click',
+      {
+        cta_label: 'Visit Partner',
+        cta_url: 'https://partner.com',
+        cta_context: 'sponsored-cta',
+        partner: 'PartnerCompany',
+        send_to: gaId,
+      }
+    ]);
+  });
 });
