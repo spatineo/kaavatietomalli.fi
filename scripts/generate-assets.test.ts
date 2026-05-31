@@ -216,6 +216,27 @@ company: "Spatineo"
 skills: ["GIS", "Kotlin", "Playwright"]
 ---
 Architect's bio.`,
+
+      // Post 4: Sponsored active post
+      'posts/sponsored-post.md': `---
+title: "Sponsored Post Title"
+category: "journal"
+date: "2026-05-18"
+tags: ["gis"]
+publishDate: "2026-05-18T00:00:00Z"
+promotional: true
+partner: "Spatineo"
+excerpt: "This is a great blog post about Kaavatietomalli."
+---
+This is a sponsored post.`,
+
+      // Page 3: Page with a partner
+      'pages/partner-page.md': `---
+title: "Partner Page Title"
+partner: "Spatineo"
+tags: ["partner-info"]
+---
+Partner description.`,
     };
 
     const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation((p: any) => {
@@ -232,10 +253,10 @@ Architect's bio.`,
     const readdirSpy = vi.spyOn(fs, 'readdirSync').mockImplementation((p: any) => {
       const pathStr = String(p).replace(/\\/g, '/');
       if (pathStr.endsWith('/posts')) {
-        return ['future-post.md', 'valid-active-post.md', 'missing-title-post.md'] as any;
+        return ['future-post.md', 'valid-active-post.md', 'missing-title-post.md', 'sponsored-post.md'] as any;
       }
       if (pathStr.endsWith('/pages')) {
-        return ['info-page.md', 'empty-title-page.md'] as any;
+        return ['info-page.md', 'empty-title-page.md', 'partner-page.md'] as any;
       }
       if (pathStr.endsWith('/authors')) {
         return ['ilkka-rinne.md'] as any;
@@ -309,6 +330,27 @@ Architect's bio.`,
       expect(writtenFiles['sitemap.xml']).toContain('?post=valid-active-post');
       expect(writtenFiles['sitemap.xml']).not.toContain('?post=future-post');
       expect(writtenFiles['sitemap.xml']).toContain('?page=info-page');
+
+      // Rule Check 6: Promotional and Partner Post details correctly parsed
+      const sponsoredPost = postsOutput.find((p: any) => p.slug === 'sponsored-post');
+      expect(sponsoredPost).toBeDefined();
+      expect(sponsoredPost.promotional).toBe(true);
+      expect(sponsoredPost.partner).toBe('Spatineo');
+
+      const partnerPage = pagesOutput.find((p: any) => p.slug === 'partner-page');
+      expect(partnerPage).toBeDefined();
+      expect(partnerPage.partner).toBe('Spatineo');
+
+      // Rule Check 7: Promotional warnings included in llms outputs
+      expect(writtenFiles['llms.txt']).toBeDefined();
+      expect(writtenFiles['llms.txt']).toContain('[PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: Spatineo]');
+      expect(writtenFiles['llms-full.txt']).toBeDefined();
+      expect(writtenFiles['llms-full.txt']).toContain('[PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: Spatineo]');
+
+      // Rule Check 8: Promotional info in RSS Feed XML
+      expect(writtenFiles['feed.xml']).toBeDefined();
+      expect(writtenFiles['feed.xml']).toContain('[Kaupallinen yhteistyö - Spatineo] Sponsored Post Title');
+      expect(writtenFiles['feed.xml']).toContain('Tämä kirjoitus on osa kaupallista yhteistyötä Kaavatietomalli.fi-sivuston ja Spatineo:n välillä.');
 
     } finally {
       existsSpy.mockRestore();

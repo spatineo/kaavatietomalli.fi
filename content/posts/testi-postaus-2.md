@@ -6,6 +6,9 @@ authorSlug: "ilkka-rinne"
 excerpt: "Tämä on automaattisesti generoitu testipostaus numero 2. Sen tarkoituksena on auttaa testaamaan infinite scroll -toiminnallisuutta."
 tags: ["testi","lataus","suorituskyky"]
 category: "journal"
+promotional: true 
+partner: "Spatineo Oy"
+callToAction: "https://www.spatineo.com"
 ---
 
 ## Testiotsikko 2

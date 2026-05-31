@@ -84,6 +84,13 @@ export interface Translations {
     commentCount: string;
     latestComment: string;
     relatedPostsSection: string;
+    commercialCooperation: string;
+    commercialCooperationLabel: string;
+    commercialCooperationIntro: string;
+    aboutCommercialCooperation: string;
+    aboutCommercialCooperationText: string;
+    readMoreCooperation: string;
+    callToActionLabel: string;
   };
   page: {
   };

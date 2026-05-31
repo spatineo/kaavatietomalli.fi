@@ -115,7 +115,10 @@ export function generateAssets() {
         tags: data.tags || [],
         coverImage: data.coverImage || '',
         publishDate: data.publishDate || null,
-        file: file.replace(/\\/g, '/')
+        file: file.replace(/\\/g, '/'),
+        promotional: typeof data.promotional === 'boolean' ? data.promotional : (data.promotional === 'true' ? true : (typeof data.promotional === 'string' && data.promotional.trim().length > 0 && data.promotional !== 'false')),
+        partner: data.partner || (typeof data.promotional === 'string' && data.promotional !== 'true' && data.promotional !== 'false' ? data.promotional : undefined),
+        callToAction: data.callToAction || undefined
       },
       content: textContent,
       file: file.replace(/\\/g, '/')
@@ -140,7 +143,8 @@ export function generateAssets() {
         slug,
         title: data.title || slug,
         tags: data.tags || [],
-        file: file.replace(/\\/g, '/')
+        file: file.replace(/\\/g, '/'),
+        partner: data.partner || undefined
       },
       content: textContent,
       file: file.replace(/\\/g, '/')
@@ -285,7 +289,11 @@ ${posts.map(post => `  <url>
   llmsTxt += `## ${t.llms.articlesFeatured}\n`;
   const featuredPosts = posts.slice(0, 5);
   featuredPosts.forEach(post => {
-    llmsTxt += `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.file})\n`;
+    let line = `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.file})`;
+    if (post.metadata.promotional) {
+      line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.metadata.partner || ''}]`;
+    }
+    llmsTxt += line + '\n';
   });
   llmsTxt += `\n`;
   
@@ -308,7 +316,11 @@ ${posts.map(post => `  <url>
   
   llmsFullTxt += `## ${t.llms.articles}\n`;
   posts.forEach(post => {
-    llmsFullTxt += `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.file})\n`;
+    let line = `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.file})`;
+    if (post.metadata.promotional) {
+      line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.metadata.partner || ''}]`;
+    }
+    llmsFullTxt += line + '\n';
   });
   llmsFullTxt += `\n`;
   
@@ -369,10 +381,18 @@ ${posts.map(post => `  <url>
     const postUrl = `${BASE_URL}/?post=${post.metadata.slug}`;
     const pubDateRfc822 = new Date(updatedDate).toUTCString();
 
-    const title = escapeXml(post.metadata.title);
-    const excerpt = escapeXml(post.metadata.excerpt || '');
+    let displayTitle = post.metadata.title;
+    let descriptionText = post.metadata.excerpt || '';
 
-    const descriptionText = excerpt;
+    if (post.metadata.promotional) {
+      const partnerName = post.metadata.partner || '';
+      displayTitle = `[Kaupallinen yhteistyö - ${partnerName}] ${displayTitle}`;
+      const promoNotice = `Tämä kirjoitus on osa kaupallista yhteistyötä Kaavatietomalli.fi-sivuston ja ${partnerName}:n välillä. / This is sponsored promotional content in co-operation with ${partnerName}.`;
+      descriptionText = `(${promoNotice}) ${descriptionText}`;
+    }
+
+    const title = escapeXml(displayTitle);
+    const excerpt = escapeXml(descriptionText);
 
     const guid = postUrl;
 
@@ -389,7 +409,7 @@ ${posts.map(post => `  <url>
       <link>${postUrl}</link>
       <guid isPermaLink="true">${guid}</guid>
       <pubDate>${pubDateRfc822}</pubDate>
-      <description>${descriptionText}</description>
+      <description>${excerpt}</description>
 ${authorXml}
 ${categoriesXml ? categoriesXml + '\n' : ''}    </item>\n`;
   });

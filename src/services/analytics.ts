@@ -9,14 +9,14 @@ export enum AnalyticsEvent {
 }
 
 export interface AnalyticsTracker {
-  trackPageView(path: string, title?: string, tags?: string[]): void;
-  trackPostView(slug: string, title: string, tags?: string[]): void;
-  trackAuthorView(slug: string, name: string): void;
-  trackCTA(label: string, url?: string, context?: string): void;
+  trackPageView(path: string, title?: string, tags?: string[], partner?: string): void;
+  trackPostView(slug: string, title: string, tags?: string[], partner?: string): void;
+  trackAuthorView(slug: string, name: string, partner?: string): void;
+  trackCTA(label: string, url?: string, context?: string, partner?: string): void;
 }
 
-let lastTrackedPageView: { path: string; title?: string; tags?: string[] } | null = null;
-let lastTrackedPostView: { slug: string; title: string; tags?: string[] } | null = null;
+let lastTrackedPageView: { path: string; title?: string; tags?: string[]; partner?: string } | null = null;
+let lastTrackedPostView: { slug: string; title: string; tags?: string[]; partner?: string } | null = null;
 
 // Test Spy helper to easily assert analytics submissions in Vitest & E2E tests
 export function trackEventSpy(event: string, data: any) {
@@ -35,19 +35,19 @@ if (typeof window !== 'undefined') {
 }
 
 class NullTracker implements AnalyticsTracker {
-  trackPageView(path: string, title?: string, tags?: string[]) {
-    lastTrackedPageView = { path, title, tags };
-    trackEventSpy('page_view', { path, title, tags });
+  trackPageView(path: string, title?: string, tags?: string[], partner?: string) {
+    lastTrackedPageView = { path, title, tags, partner };
+    trackEventSpy('page_view', { path, title, tags, partner });
   }
-  trackPostView(slug: string, title: string, tags?: string[]) {
-    lastTrackedPostView = { slug, title, tags };
-    trackEventSpy('post_view', { slug, title, tags });
+  trackPostView(slug: string, title: string, tags?: string[], partner?: string) {
+    lastTrackedPostView = { slug, title, tags, partner };
+    trackEventSpy('post_view', { slug, title, tags, partner });
   }
-  trackAuthorView(slug: string, name: string) {
-    trackEventSpy('author_view', { slug, name });
+  trackAuthorView(slug: string, name: string, partner?: string) {
+    trackEventSpy('author_view', { slug, name, partner });
   }
-  trackCTA(label: string, url?: string, context?: string) {
-    trackEventSpy('cta_click', { label, url, context });
+  trackCTA(label: string, url?: string, context?: string, partner?: string) {
+    trackEventSpy('cta_click', { label, url, context, partner });
   }
 }
 
@@ -61,11 +61,11 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
     
     // Replay last tracked view if it happened before consent was granted
     if (lastTrackedPostView) {
-      this.trackPostView(lastTrackedPostView.slug, lastTrackedPostView.title, lastTrackedPostView.tags);
+      this.trackPostView(lastTrackedPostView.slug, lastTrackedPostView.title, lastTrackedPostView.tags, lastTrackedPostView.partner);
       lastTrackedPostView = null;
     }
     if (lastTrackedPageView) {
-      this.trackPageView(lastTrackedPageView.path, lastTrackedPageView.title, lastTrackedPageView.tags);
+      this.trackPageView(lastTrackedPageView.path, lastTrackedPageView.title, lastTrackedPageView.tags, lastTrackedPageView.partner);
       lastTrackedPageView = null;
     }
   }
@@ -94,50 +94,66 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
     this.initialized = true;
   }
 
-  trackPageView(path: string, title?: string, tags?: string[]) {
-    trackEventSpy('page_view', { path, title, tags });
+  trackPageView(path: string, title?: string, tags?: string[], partner?: string) {
+    trackEventSpy('page_view', { path, title, tags, partner });
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'page_view', {
+      const data: any = {
         page_path: path,
         page_title: title,
         content_tags: tags?.join(', '),
         send_to: this.measurementId
-      });
+      };
+      if (partner !== undefined) {
+        data.partner = partner;
+      }
+      (window as any).gtag('event', 'page_view', data);
     }
   }
 
-  trackPostView(slug: string, title: string, tags?: string[]) {
-    trackEventSpy('post_view', { slug, title, tags });
+  trackPostView(slug: string, title: string, tags?: string[], partner?: string) {
+    trackEventSpy('post_view', { slug, title, tags, partner });
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'post_view', {
+      const data: any = {
         post_slug: slug,
         post_title: title,
         content_tags: tags?.join(', '),
         send_to: this.measurementId
-      });
+      };
+      if (partner !== undefined) {
+        data.partner = partner;
+      }
+      (window as any).gtag('event', 'post_view', data);
     }
   }
 
-  trackAuthorView(slug: string, name: string) {
-    trackEventSpy('author_view', { slug, name });
+  trackAuthorView(slug: string, name: string, partner?: string) {
+    trackEventSpy('author_view', { slug, name, partner });
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'author_view', {
+      const data: any = {
         author_slug: slug,
         author_name: name,
         send_to: this.measurementId
-      });
+      };
+      if (partner !== undefined) {
+        data.partner = partner;
+      }
+      (window as any).gtag('event', 'author_view', data);
     }
   }
 
-  trackCTA(label: string, url?: string, context?: string) {
-    trackEventSpy('cta_click', { label, url, context });
+  trackCTA(label: string, url?: string, context?: string, partner?: string) {
+    trackEventSpy('cta_click', { label, url, context, partner });
     if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'cta_click', {
+      const data: any = {
         cta_label: label,
         cta_url: url,
         cta_context: context,
         send_to: this.measurementId
-      });
+      };
+      if (partner !== undefined) {
+        data.partner = partner;
+      }
+      (window as any).gtag('event', 'cta_click', data);
     }
   }
 }

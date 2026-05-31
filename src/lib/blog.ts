@@ -12,6 +12,9 @@ export interface PostMetadata {
   category?: string;
   publishDate?: string;
   file?: string;
+  promotional?: boolean;
+  partner?: string;
+  callToAction?: string;
 }
 
 export interface PostData extends PostMetadata {
@@ -23,6 +26,7 @@ export interface PageData {
   title: string;
   content: string;
   file?: string;
+  partner?: string;
 }
 
 export interface AuthorData {
