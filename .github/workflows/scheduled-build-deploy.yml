@@ -41,7 +41,7 @@ jobs:
       - name: Get Playwright version
         id: playwright-version
         if: steps.check.outputs.should_rebuild == 'true'
-        run: echo "version=$(node -e "print(require('@playwright/test/package.json').version)")" >> $GITHUB_OUTPUT
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> $GITHUB_OUTPUT
 
       # 3. Cache Playwright browser binaries to make subsequent builds incredibly fast
       - name: Cache Playwright Browsers
