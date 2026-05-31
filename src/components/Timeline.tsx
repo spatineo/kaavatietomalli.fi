@@ -12,12 +12,6 @@ interface TimelineProps {
   onSelectTag: (tag: string) => void;
 }
 
-function formatPartnerName(tag: string | undefined): string {
-  if (!tag) return '';
-  if (tag.toLowerCase() === 'spatineo') return 'Spatineo';
-  return tag.charAt(0).toUpperCase() + tag.slice(1);
-}
-
 export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
   const t = getTranslations(CONFIG.language as Language);
   return (
@@ -28,7 +22,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
       <div className="space-y-16 md:space-y-32" role="list">
         {posts.map((post, index) => {
           const isSponsored = !!post.promotional;
-          const partnerName = post.partner ? formatPartnerName(post.partner) : '';
+          const partnerName = post.partner ? post.partner : '';
 
           return (
             <motion.div
