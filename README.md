@@ -241,7 +241,7 @@ You can easily assert that view loads track page views, CTA selections, or autho
 
 The test suite and deployment pipelines are fully wired into our software development lifecycle via distinct workflows under `.github/workflows/`:
 
-- **Main CI/CD Pipeline (`deploy.yml`)**:
+- **Main CI/CD Pipeline (`build-deploy.yml`)**:
   - Automatically runs unit, integration, and hook tests via `npm run test:run` on pull requests targeting the `main` branch, ensuring all checks pass before integration. Direct pushing to `main` is strictly forbidden by branch protection rules.
   - Automatically builds and deploys to GitHub Pages on every pull request merged to `main`.
   - End-to-End browser tests are executed in actual headless profiles with `npm run test:e2e`. Playwright browsers are dynamically installed during the CI flow with `npx playwright install --with-deps`, and testing reports are uploaded as GitHub build artifacts under `playwright-report` with a 30-day retention window.
