@@ -65,10 +65,10 @@ export function useMetadataSync({
       } else if (activeView.type === 'tag' && activeView.slug) {
         getTracker().trackPageView(`${CONFIG.basePath}?tag=${activeView.slug}`, `#${activeView.slug} | Kaavatietomalli.fi`, [activeView.slug]);
       } else if (activeView.type === 'post' && currentPost) {
-        getTracker().trackPostView(currentPost.slug, currentPost.title, currentPost.tags);
-        getTracker().trackPageView(`${CONFIG.basePath}?post=${currentPost.slug}`, currentPost.title, currentPost.tags);
+        getTracker().trackPostView(currentPost.slug, currentPost.title, currentPost.tags, currentPost.partner);
+        getTracker().trackPageView(`${CONFIG.basePath}?post=${currentPost.slug}`, currentPost.title, currentPost.tags, currentPost.partner);
       } else if (activeView.type === 'page' && currentPage) {
-        getTracker().trackPageView(`${CONFIG.basePath}?page=${currentPage.slug}`, currentPage.title);
+        getTracker().trackPageView(`${CONFIG.basePath}?page=${currentPage.slug}`, currentPage.title, undefined, currentPage.partner);
       } else if (activeView.type === 'author' && currentAuthor) {
         getTracker().trackAuthorView(currentAuthor.slug, currentAuthor.name);
         getTracker().trackPageView(`${CONFIG.basePath}?author=${currentAuthor.slug}`, currentAuthor.name);
