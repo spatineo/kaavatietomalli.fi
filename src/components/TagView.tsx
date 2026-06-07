@@ -99,7 +99,7 @@ export function TagView({
           <div className="h-[1px] w-12 bg-white/10" />
         </div>
         <header className="mb-20">
-          <h1 className="text-5xl md:text-8xl font-extrabold leading-[1.1] tracking-tighter mb-12 text-white">
+          <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tighter mb-12 text-white">
             {tagPage ? (
               tagPage.title
             ) : (

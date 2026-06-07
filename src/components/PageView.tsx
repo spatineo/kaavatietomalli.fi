@@ -70,7 +70,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
       </button>
 
       <header className="mb-20">
-        <h1 className="text-5xl md:text-8xl font-extrabold leading-[1.1] tracking-tighter mb-12 text-white">
+        <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tighter mb-12 text-white">
           {page.title}
         </h1>
         <div className="h-1.5 w-24 bg-brand-accent rounded-full" />
