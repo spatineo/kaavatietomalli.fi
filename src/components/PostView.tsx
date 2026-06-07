@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, ArrowRight, Award } from 'lucide-react';
 import { motion } from 'motion/react';
-import { PostData, PostMetadata, getRelatedPostSlugs, getAllPostMetadata } from '../lib/blog';
+import { PostData, PostMetadata, getRelatedPostSlugs, getAllPostMetadata, getAuthorBySlug } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { resolveImageUrl } from '../lib/utils';
@@ -28,6 +28,23 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
   const t = getTranslations(CONFIG.language as Language);
   const [relatedPosts, setRelatedPosts] = useState<PostMetadata[]>([]);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [authorImg, setAuthorImg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (post.authorSlug) {
+      getAuthorBySlug(post.authorSlug).then(authorData => {
+        if (authorData && authorData.image) {
+          setAuthorImg(authorData.image);
+        } else {
+          setAuthorImg(null);
+        }
+      }).catch(() => {
+        setAuthorImg(null);
+      });
+    } else {
+      setAuthorImg(null);
+    }
+  }, [post.authorSlug]);
 
   useEffect(() => {
     // Fetch related posts
@@ -58,13 +75,13 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-4xl mx-auto py-24 px-6 md:px-10 relative"
+      className="max-w-4xl mx-auto pt-12 pb-24 px-6 md:px-10 relative"
     >
       {isSponsored && (
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-b from-amber-500/5 via-amber-500/0 to-transparent blur-3xl pointer-events-none -z-10" />
       )}
 
-      <div className="flex flex-col gap-6 mb-20" role="navigation" aria-label={t.post.ariaLabel}>
+      <div className="flex flex-col gap-3 mb-10" role="navigation" aria-label={t.post.ariaLabel}>
         <div className="flex">
           <button
             onClick={onBack}
@@ -77,7 +94,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           </button>
         </div>
 
-        <div className="flex justify-between items-center w-full pt-4 border-t border-white/5">
+        <div className="flex justify-between items-center w-full pt-3 border-t border-white/5">
           <div className="flex-1 flex justify-start">
             {nextPost ? (
               <button
@@ -115,7 +132,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         </div>
       </div>
 
-      <header className="mb-20">
+      <header className="mb-12 border-b border-white/10 pb-6">
         {isSponsored && (
           <div className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-amber-400/5 border border-amber-400/10 backdrop-blur-md">
             <div className="flex items-center gap-3">
@@ -142,25 +159,12 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           </div>
         )}
 
-        <div className="flex items-center gap-4 mb-10">
-          <span className={isSponsored 
-            ? "text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400 bg-amber-400/10 px-2 py-1 rounded-md"
-            : "text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2 py-1 rounded-md"
-          }>
-            {!post.dateLabel ? (format(parseISO(post.date), 'd.M.yyyy')) : (post.dateLabel)}
-          </span>
-          <div className="h-[1px] w-12 bg-white/10" />
-          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
-            {post.slug.toUpperCase()}
-          </span>
-        </div>
-
-        <h1 className={`text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[0.01em] mb-12 ${isSponsored ? 'text-amber-50 font-serif font-bold' : 'text-white'}`}>
+        <h1 className={`text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[0.01em] mb-8 ${isSponsored ? 'text-amber-50 font-serif font-bold' : 'text-white'}`}>
           {post.title}
         </h1>
 
         {post.coverImage && (
-          <div className={`relative aspect-[21/9] overflow-hidden rounded-3xl mb-20 shadow-2xl ${isSponsored ? 'border border-amber-400/15' : ''}`}>
+          <div className={`relative aspect-[21/9] overflow-hidden rounded-3xl mb-8 shadow-2xl ${isSponsored ? 'border border-amber-400/15' : ''}`}>
             <img
               src={resolveImageUrl(post.coverImage)}
               alt={`${t.post.illustrationAlt}: ${post.title}`}
@@ -169,39 +173,78 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-8 pb-10 border-b border-white/10">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-6 mt-6 border-t border-white/5 text-[10px] uppercase font-bold text-slate-400">
           {!isSponsored && (
-            <button 
-              onClick={() => post.authorSlug && onNavigateAuthor(post.authorSlug)}
-              disabled={!post.authorSlug}
-              className={`flex items-center gap-3 text-left transition-all ${post.authorSlug ? 'hover:text-brand-accent group/author' : 'cursor-default'}`}
-            >
-              <div className={`w-12 h-12 rounded-full bg-black text-white flex items-center justify-center text-xs font-black shadow-lg border border-white/10 ${post.authorSlug ? 'group-hover/author:border-brand-accent group-hover/author:scale-110 transition-all' : ''}`}>
-                {post.author.charAt(0)}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-0.5">{t.post.author}</span>
-                <span className="text-base font-bold text-white transition-colors group-hover/author:text-brand-accent leading-none">{post.author}</span>
-              </div>
-            </button>
+            <>
+              <button
+                onClick={() => post.authorSlug && onNavigateAuthor(post.authorSlug)}
+                disabled={!post.authorSlug}
+                className={`lg:hidden font-black uppercase tracking-[0.2em] transition-colors leading-none ${post.authorSlug ? 'text-white hover:text-brand-accent' : 'text-slate-400 cursor-default'}`}
+              >
+                {post.author}
+              </button>
+              <div className="h-3 w-[1px] bg-white/10 lg:hidden" />
+            </>
           )}
 
-          <div className="flex flex-wrap gap-4">
-            {post.tags.map((tag) => (
-              <button
-                key={tag}
-                onClick={() => onSelectTag(tag)}
-                className="text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-white/5 border border-white/10 px-3 py-1 rounded-md hover:border-brand-accent hover:text-brand-accent transition-all"
-              >
-                #{tag}
-              </button>
-            ))}
-          </div>
+          <span className={isSponsored 
+            ? "text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md"
+            : "text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2.5 py-1 rounded-md"
+          }>
+            {!post.dateLabel ? (format(parseISO(post.date), 'd.M.yyyy')) : (post.dateLabel)}
+          </span>
+         
+
+          {post.tags.length > 0 && (
+            <>
+              <div className="h-3 w-[1px] bg-white/10" />
+              <div className="flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => onSelectTag(tag)}
+                    className="text-[9px] font-bold uppercase tracking-widest text-slate-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-md hover:border-brand-accent hover:text-brand-accent transition-all leading-none"
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </header>
 
-      <div className={`markdown-body prose prose-xl prose-stone ${isSponsored ? 'font-serif' : ''}`}>
-        <ReactMarkdown
+      <div className="relative">
+        {!isSponsored && authorImg && (
+          <div className="hidden lg:block absolute right-full mr-12 top-2 text-center w-28">
+            <button
+              onClick={() => post.authorSlug && onNavigateAuthor(post.authorSlug)}
+              disabled={!post.authorSlug}
+              className={`w-24 h-24 rounded-full overflow-hidden border-2 border-white/10 shadow-2xl flex items-center justify-center bg-black/40 mx-auto ${post.authorSlug ? 'hover:border-brand-accent hover:scale-105 transition-all' : 'cursor-default'}`}
+              title={post.author}
+            >
+              <img
+                src={resolveImageUrl(authorImg)}
+                alt={post.author}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover"
+              />
+            </button>
+            <div className="mt-3">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-1 block leading-none">{t.post.author}</span>
+              <button
+                onClick={() => post.authorSlug && onNavigateAuthor(post.authorSlug)}
+                disabled={!post.authorSlug}
+                className={`text-sm font-black uppercase tracking-wider transition-colors text-center w-full block ${post.authorSlug ? 'text-white hover:text-brand-accent' : 'text-slate-300 cursor-default'}`}
+              >
+                {post.author}
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className={`markdown-body prose prose-xl prose-stone ${isSponsored ? 'font-serif' : ''}`}>
+          <ReactMarkdown
           urlTransform={(url) => resolveImageUrl(url)}
           components={{
             pre({ node, children, ...props }: any) {
@@ -231,6 +274,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           {post.content}
         </ReactMarkdown>
       </div>
+    </div>
 
       {isSponsored && (
         <div className="mt-16 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-brand-muted to-[#17171a] border border-amber-400/10 flex flex-col sm:flex-row items-center gap-6 sm:justify-between text-left relative overflow-hidden">

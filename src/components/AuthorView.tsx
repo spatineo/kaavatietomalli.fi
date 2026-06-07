@@ -149,7 +149,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
 
         <section>
           <header className="mb-16">
-            <h1 className="text-6xl md:text-8xl font-black text-white leading-none tracking-tighter mb-6">
+            <h1 className="text-6xl md:text-7xl font-black text-white leading-none tracking-tighter mb-6">
               {author.name}
             </h1>
             <p className="text-2xl text-brand-accent font-bold leading-tight">
