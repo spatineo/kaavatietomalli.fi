@@ -75,7 +75,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-4xl mx-auto pt-12 pb-24 px-6 md:px-10 relative"
+      className="max-w-4xl mx-auto pt-4 pb-24 px-6 md:px-10 relative"
     >
       {isSponsored && (
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-b from-amber-500/5 via-amber-500/0 to-transparent blur-3xl pointer-events-none -z-10" />
@@ -92,6 +92,9 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
             <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             {t.common.backToHome}
           </button>
+          <div className="flex items-right text-slate-400 font-bold justify-end w-full py-2">
+            <span className="text-white">{t.blog.titleMain}</span><wbr /><span className="text-brand-accent">{t.blog.titleAccent}</span><wbr /><span className="text-white/30">{t.blog.titleBlogi}</span>
+          </div>
         </div>
 
         <div className="flex justify-between items-center w-full pt-3 border-t border-white/5">
@@ -131,90 +134,88 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           </div>
         </div>
       </div>
-
-      <header className="mb-12 border-b border-white/10 pb-6">
-        {isSponsored && (
-          <div className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-amber-400/5 border border-amber-400/10 backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-400/10 flex items-center justify-center text-amber-400 shrink-0">
-                <Award size={18} className="stroke-[2]" />
-              </div>
-              <div className="text-left">
-                <p className="text-[10px] uppercase font-extrabold tracking-[0.15em] text-amber-400 leading-none mb-1.5">
-                  {t.post.commercialCooperation}
-                </p>
-                <p className="text-sm text-slate-300 font-serif italic leading-normal">
-                  {t.post.commercialCooperationIntro}
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
-              {partnerName && (
-                <span className="text-[10px] font-black tracking-widest text-amber-400 uppercase px-3 py-1.5 rounded-md bg-amber-400/10 border border-amber-400/20">
-                  {partnerName}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
-
-        <h1 className={`text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[0.01em] mb-8 ${isSponsored ? 'text-amber-50 font-serif font-bold' : 'text-white'}`}>
-          {post.title}
-        </h1>
-
-        {post.coverImage && (
-          <div className={`relative aspect-[21/9] overflow-hidden rounded-3xl mb-8 shadow-2xl ${isSponsored ? 'border border-amber-400/15' : ''}`}>
-            <img
-              src={resolveImageUrl(post.coverImage)}
-              alt={`${t.post.illustrationAlt}: ${post.title}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-6 mt-6 border-t border-white/5 text-[10px] uppercase font-bold text-slate-400">
-          {!isSponsored && (
-            <>
-              <button
-                onClick={() => post.authorSlug && onNavigateAuthor(post.authorSlug)}
-                disabled={!post.authorSlug}
-                className={`lg:hidden font-black uppercase tracking-[0.2em] transition-colors leading-none ${post.authorSlug ? 'text-white hover:text-brand-accent' : 'text-slate-400 cursor-default'}`}
-              >
-                {post.author}
-              </button>
-              <div className="h-3 w-[1px] bg-white/10 lg:hidden" />
-            </>
-          )}
-
-          <span className={isSponsored 
-            ? "text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md"
-            : "text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2.5 py-1 rounded-md"
-          }>
-            {!post.dateLabel ? (format(parseISO(post.date), 'd.M.yyyy')) : (post.dateLabel)}
-          </span>
-         
-
-          {post.tags.length > 0 && (
-            <>
-              <div className="h-3 w-[1px] bg-white/10" />
-              <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
-                  <button
-                    key={tag}
-                    onClick={() => onSelectTag(tag)}
-                    className="text-[9px] font-bold uppercase tracking-widest text-slate-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-md hover:border-brand-accent hover:text-brand-accent transition-all leading-none"
-                  >
-                    #{tag}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      </header>
-
       <div className="relative">
+        <header className="mb-12 border-b border-white/10 pb-6">
+          {isSponsored && (
+            <div className="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl bg-amber-400/5 border border-amber-400/10 backdrop-blur-md">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-400/10 flex items-center justify-center text-amber-400 shrink-0">
+                  <Award size={18} className="stroke-[2]" />
+                </div>
+                <div className="text-left">
+                  <p className="text-[10px] uppercase font-extrabold tracking-[0.15em] text-amber-400 leading-none mb-1.5">
+                    {t.post.commercialCooperation}
+                  </p>
+                  <p className="text-sm text-slate-300 font-sans italic leading-normal">
+                    {t.post.commercialCooperationIntro}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap items-center gap-3 self-start sm:self-auto">
+                {partnerName && (
+                  <span className="text-[10px] font-black tracking-widest text-amber-400 uppercase px-3 py-1.5 rounded-md bg-amber-400/10 border border-amber-400/20">
+                    {partnerName}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          <h1 className={`text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[0.01em] mb-8 ${isSponsored ? 'text-amber-50 font-sans font-extrabold' : 'text-white font-serif font-medium'}`}>
+            {post.title}
+          </h1>
+
+          {post.coverImage && (
+            <div className={`relative aspect-[21/9] overflow-hidden rounded-3xl mb-8 shadow-2xl ${isSponsored ? 'border border-amber-400/15' : ''}`}>
+              <img
+                src={resolveImageUrl(post.coverImage)}
+                alt={`${t.post.illustrationAlt}: ${post.title}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-6 mt-6 border-t border-white/5 text-[10px] uppercase font-bold text-slate-400">
+            {!isSponsored && (
+              <>
+                <button
+                  onClick={() => post.authorSlug && onNavigateAuthor(post.authorSlug)}
+                  disabled={!post.authorSlug}
+                  className={`lg:hidden font-black uppercase tracking-[0.2em] transition-colors leading-none ${post.authorSlug ? 'text-white hover:text-brand-accent' : 'text-slate-400 cursor-default'}`}
+                >
+                  {post.author}
+                </button>
+                <div className="h-3 w-[1px] bg-white/10 lg:hidden" />
+              </>
+            )}
+
+            <span className={isSponsored 
+              ? "text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md"
+              : "text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2.5 py-1 rounded-md"
+            }>
+              {!post.dateLabel ? (format(parseISO(post.date), 'd.M.yyyy')) : (post.dateLabel)}
+            </span>
+          
+
+            {post.tags.length > 0 && (
+              <>
+                <div className="h-3 w-[1px] bg-white/10" />
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={() => onSelectTag(tag)}
+                      className="text-[9px] font-bold uppercase tracking-widest text-slate-400 bg-white/5 border border-white/10 px-2.5 py-1 rounded-md hover:border-brand-accent hover:text-brand-accent transition-all leading-none"
+                    >
+                      #{tag}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </header>
         {!isSponsored && authorImg && (
           <div className="hidden lg:block absolute right-full mr-12 top-2 text-center w-28">
             <button
@@ -242,49 +243,47 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
             </div>
           </div>
         )}
-
-        <div className={`markdown-body prose prose-xl prose-stone ${isSponsored ? 'font-serif' : ''}`}>
-          <ReactMarkdown
-          urlTransform={(url) => resolveImageUrl(url)}
-          components={{
-            pre({ node, children, ...props }: any) {
-              const codeEl = children && (children as any).props;
-              const className = codeEl?.className || '';
-              const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
-              
-              if (isInteractive) {
-                return <>{children}</>;
-              }
-              return <pre {...props}>{children}</pre>;
-            },
-            code({ node, className, children, ref, ...props }: any) {
-              return (
-                <CodeBlock
-                  className={className}
-                  filePath={`src/${post.slug}.md`}
-                  placeholderHeight="h-64"
-                  {...props}
-                >
-                  {children}
-                </CodeBlock>
-              );
-            },
-          }}
-        >
-          {post.content}
+      </div>
+      <div className={`markdown-body prose prose-xl prose-stone ${isSponsored ? 'journal-sponsored' : 'journal-normal'}`}>
+        <ReactMarkdown
+        urlTransform={(url) => resolveImageUrl(url)}
+        components={{
+          pre({ node, children, ...props }: any) {
+            const codeEl = children && (children as any).props;
+            const className = codeEl?.className || '';
+            const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
+            
+            if (isInteractive) {
+              return <>{children}</>;
+            }
+            return <pre {...props}>{children}</pre>;
+          },
+          code({ node, className, children, ref, ...props }: any) {
+            return (
+              <CodeBlock
+                className={className}
+                filePath={`src/${post.slug}.md`}
+                placeholderHeight="h-64"
+                {...props}
+              >
+                {children}
+              </CodeBlock>
+            );
+          },
+        }}
+      >
+        {post.content}
         </ReactMarkdown>
       </div>
-    </div>
-
       {isSponsored && (
         <div className="mt-16 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-brand-muted to-[#17171a] border border-amber-400/10 flex flex-col sm:flex-row items-center gap-6 sm:justify-between text-left relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/5 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none" />
           <div className="space-y-2">
-            <h4 className="text-lg font-bold text-amber-400 flex items-center gap-2 font-serif">
+            <h4 className="text-lg font-bold text-amber-400 flex items-center gap-2 font-sans">
               <Award size={18} className="stroke-[2.5]" />
               {t.post.aboutCommercialCooperation}
             </h4>
-            <p className="text-sm text-slate-300 max-w-xl leading-relaxed font-serif italic">
+            <p className="text-sm text-slate-300 max-w-xl leading-relaxed font-sans italic">
               {t.post.aboutCommercialCooperationText.replace('{{partner}}', partnerName ? `${partnerName}:n` : 'kumppanin')}
             </p>
           </div>

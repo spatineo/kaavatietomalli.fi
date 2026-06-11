@@ -501,7 +501,7 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
   };  const viewerTitle = language.toUpperCase() === 'JSONFG' ? 'JSON-FG (OGC Features & Geometries)' : 'GeoJSON Map';const viewerContent = (
     <div
       id={`viewer-${viewerTitle.toLowerCase().replace(/\s+/g, '-')}`}
-      className={`border border-white/10 overflow-hidden shadow-2xl bg-black flex flex-col transition-all duration-300 ${
+      className={`geojson-map-viewer border border-white/10 overflow-hidden shadow-2xl bg-black flex flex-col transition-all duration-300 ${
         isFullscreen
           ? 'fixed inset-0 z-[99999] bg-[#0A0A0C] border-none rounded-none w-screen h-screen m-0 p-0'
           : 'relative my-10 min-h-[480px] w-full rounded-2xl'
