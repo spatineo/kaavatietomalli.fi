@@ -38,7 +38,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
         {/* The Time Line */}
         <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/10 -translate-y-1/2 z-0" />
         
-        <div className="flex gap-8 px-6 pb-12 overflow-x-auto no-scrollbar scroll-smooth relative z-10" role="list">
+        <div className="flex gap-8 px-6 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10" role="list">
           {chronologicalPosts.map((post, idx) => (
             <motion.button
               key={post.slug}
@@ -64,7 +64,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
                 <div className="w-3 h-3 rounded-full bg-black border-4 border-brand-accent group-hover:scale-125 group-focus-visible:scale-125 transition-transform" />
               </div>
 
-              <div className="bg-white/5 p-8 border border-white/10 rounded-2xl group-hover:border-brand-accent/50 group-focus-visible:border-brand-accent transition-all backdrop-blur-sm shadow-2xl">
+              <div className="bg-white/5 p-8 border border-white/10 rounded-2xl group-hover:border-brand-accent/50 group-focus-visible:border-brand-accent transition-all backdrop-blur-sm shadow-2xl min-h-[16em]">
                 <h3 className="text-xl font-bold leading-tight mb-4 group-hover:text-brand-accent transition-colors">
                   {post.title}
                 </h3>

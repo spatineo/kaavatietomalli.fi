@@ -275,6 +275,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           {post.content}
         </ReactMarkdown>
       </div>
+    </div>
 
       {isSponsored && (
         <div className="mt-16 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-brand-muted to-[#17171a] border border-amber-400/10 flex flex-col sm:flex-row items-center gap-6 sm:justify-between text-left relative overflow-hidden">
