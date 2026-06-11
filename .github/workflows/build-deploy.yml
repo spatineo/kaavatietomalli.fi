@@ -62,6 +62,9 @@ jobs:
         if: steps.cache-playwright.outputs.cache-hit == 'true'
         run: npx playwright install-deps
 
+      - name: Download Giscus stats
+        run: npm run fetch-giscus-stats
+
       - name: Generate assets and search index
         run: npm run prebuild
 

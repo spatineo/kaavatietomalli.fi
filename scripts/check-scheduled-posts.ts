@@ -67,11 +67,69 @@ export async function checkScheduledPosts() {
   if (newlyPublishableCount > 0) {
     console.log(`Found ${newlyPublishableCount} scheduled post(s) ready to be published:`);
     newlyPublishableFiles.forEach(info => console.log(` - ${info}`));
-    setOutput(true);
   } else {
     console.log('No newly publishable scheduled posts found.');
-    setOutput(false);
   }
+
+  // Compare newly generated giscus-stats.json with deployed giscus-stats.json
+  let giscusStatsChanged = false;
+  const newGiscusStatsPath = path.join(process.cwd(), 'public', 'content', 'giscus-stats.json');
+  if (!process.env.VITEST && fs.existsSync(newGiscusStatsPath)) {
+    try {
+      const newStatsStr = fs.readFileSync(newGiscusStatsPath, 'utf-8');
+      const giscusStatsUrl = `${baseUrl}/content/giscus-stats.json`;
+      console.log(`Fetching deployed giscus stats from: ${giscusStatsUrl}`);
+      const res = await fetch(giscusStatsUrl);
+      if (res.ok) {
+        const deployedStats = await res.json() as any;
+        const newStats = JSON.parse(newStatsStr) as any;
+        
+        // Deep comparison of keys and values
+        const deployedKeys = Object.keys(deployedStats);
+        const newKeys = Object.keys(newStats);
+        
+        if (deployedKeys.length !== newKeys.length) {
+          giscusStatsChanged = true;
+          console.log(`Giscus stats changed: record count changed from ${deployedKeys.length} to ${newKeys.length}.`);
+        } else {
+          for (const key of newKeys) {
+            const deployedVal = deployedStats[key];
+            const newVal = newStats[key];
+            if (!deployedVal) {
+              giscusStatsChanged = true;
+              console.log(`Giscus stats changed: new key ${key} added.`);
+              break;
+            }
+            if (deployedVal.count !== newVal.count || deployedVal.lastDate !== newVal.lastDate) {
+              giscusStatsChanged = true;
+              console.log(`Giscus stats changed for key ${key}: count ${deployedVal.count} -> ${newVal.count}, lastDate ${deployedVal.lastDate} -> ${newVal.lastDate}.`);
+              break;
+            }
+          }
+        }
+      } else if (res.status === 404) {
+        console.warn(`Deployed giscus-stats.json not found (HTTP 404). Treating as changed (initial state).`);
+        giscusStatsChanged = true;
+      } else {
+        console.warn(`Failed to fetch deployed giscus-stats.json (HTTP ${res.status}). Defaulting stats to: changed.`);
+        giscusStatsChanged = true;
+      }
+    } catch (error: any) {
+      console.warn(`Error comparing giscus stats: ${error.message}. Defaulting stats to: changed.`);
+      giscusStatsChanged = true;
+    }
+  } else {
+    console.log('Local giscus-stats.json does not exist. Skipping stats comparison.');
+  }
+
+  if (giscusStatsChanged) {
+    console.log('Giscus stats have changed or could not be verified compared to deployed version.');
+  } else {
+    console.log('No Giscus stats changes detected.');
+  }
+
+  const shouldRebuild = (newlyPublishableCount > 0) || giscusStatsChanged;
+  setOutput(shouldRebuild);
 }
 
 function setOutput(shouldRebuild: boolean) {
