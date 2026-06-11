@@ -33,7 +33,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check for newly publishable scheduled posts
+      - name: Download Giscus stats
+        run: npm run fetch-giscus-stats
+
+      - name: Check for newly publishable scheduled posts and Giscus stats changes
         id: check
         run: npx tsx scripts/check-scheduled-posts.ts
 
