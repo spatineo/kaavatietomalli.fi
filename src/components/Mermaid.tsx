@@ -18,7 +18,7 @@ async function getMermaid() {
       startOnLoad: false,
       theme: 'base',
       securityLevel: 'loose',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
       fontSize: 16,
       flowchart: {
         htmlLabels: true,
@@ -50,25 +50,25 @@ async function getMermaid() {
         .taskText {
           font-size: 11px !important;
           fill: #111827 !important; /* High contrast dark text on yellow/orange Gantt bars */
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           font-weight: 600 !important;
         }
         .gantt .taskTextOutside {
           font-size: 11px !important;
           fill: #A0AEC0 !important;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           font-weight: 500;
         }
         .gantt .sectionText {
           font-size: 11px !important;
           fill: #FFAF00 !important;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           font-weight: 600;
         }
         .gantt .tick text {
           font-size: 10px !important;
           fill: #A0AEC0 !important;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
         .gantt .grid .tick text {
           font-size: 10px !important;
@@ -77,7 +77,7 @@ async function getMermaid() {
         .gantt .titleText {
           font-size: 16px !important;
           fill: #FFFFFF !important;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           font-weight: bold;
         }
 
@@ -187,7 +187,7 @@ async function getMermaid() {
         }
       `,
       themeVariables: {
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+        fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
         fontSize: '16px',
         ganttFontSize: '11px',
         sectionFontSize: '11px',

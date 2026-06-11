@@ -12,6 +12,12 @@ interface TimelineProps {
   onSelectTag: (tag: string) => void;
 }
 
+function formatPartnerName(tag: string | undefined): string {
+  if (!tag) return '';
+  if (tag.toLowerCase() === 'spatineo') return 'Spatineo';
+  return tag.charAt(0).toUpperCase() + tag.slice(1);
+}
+
 export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
   const t = getTranslations(CONFIG.language as Language);
   return (
@@ -22,7 +28,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
       <div className="space-y-16 md:space-y-32" role="list">
         {posts.map((post, index) => {
           const isSponsored = !!post.promotional;
-          const partnerName = post.partner ? post.partner : '';
+          const partnerName = post.partner ? formatPartnerName(post.partner) : '';
 
           return (
             <motion.div
@@ -80,11 +86,11 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                       )}
                     </div>
                     
-                    <h3 className={`text-3xl md:text-4xl font-extrabold group-hover:text-amber-400 transition-colors leading-[1.1] mb-5 ${isSponsored ? 'text-amber-50/95 font-serif font-bold tracking-normal' : 'text-white'}`}>
+                    <h3 className={`text-3xl md:text-4xl group-hover:text-amber-400 transition-colors leading-[1.1] mb-5 ${isSponsored ? 'text-amber-50/95 font-sans font-extrabold tracking-normal' : 'text-white font-serif font-medium'}`}>
                       {post.title}
                     </h3>
                     
-                    <p className={`text-slate-400 text-lg font-medium leading-relaxed mb-6 line-clamp-3 ${isSponsored ? 'font-serif text-slate-300/90' : ''}`}>
+                    <p className={`text-slate-400 text-lg font-medium leading-relaxed mb-6 line-clamp-3 ${isSponsored ? 'font-sans text-slate-300/90' : 'font-serif'}`}>
                       {post.excerpt}
                     </p>
                   </button>

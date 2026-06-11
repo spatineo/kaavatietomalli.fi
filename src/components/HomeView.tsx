@@ -80,15 +80,15 @@ export function HomeView({
       transition={{ duration: 0.5 }}
     >
       {/* Hero Section */}
-      <section className="bg-brand-bg pt-20 pb-20 md:pt-32 md:pb-32">
+      <section className="bg-brand-bg pt-8 pb-12 md:pt-32 md:pb-32">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col gap-12 md:gap-16">
+          <div className="flex flex-col gap-6 md:gap-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-4 mb-4 md:mb-8">
                 <div className="h-[1px] w-8 bg-brand-accent" />
                 <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
                   {t.hero.subtitle}
@@ -99,7 +99,7 @@ export function HomeView({
               </h1>
             </motion.div>
 
-            <div className="grid lg:grid-cols-[1fr_450px] gap-12 items-end">
+            <div className="grid lg:grid-cols-[1fr_450px] gap-6 lg:gap-12 items-end">
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -155,18 +155,18 @@ export function HomeView({
       <div id="journal-section" className="py-20 lg:py-40">
         <div className="max-w-5xl mx-auto px-10 mb-32">
           <div className="flex items-center gap-6 mb-12">
-            <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
+            <span className="font-serif text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
               {t.blog.sectionSubtitle}
             </span>
             <div className="h-[1px] flex-grow bg-white/10" />
             <span className="text-[10px] font-mono text-slate-500">{t.hero.editorChief}: Ilkka Rinne / Spatineo</span>
           </div>
 
-          <h2 className="text-6xl md:text-7xl font-black leading-[0.8] tracking-tighter mb-12 text-white">
+          <h2 className="font-serif text-6xl md:text-7xl font-black leading-[0.8] mb-12 text-white">
             {t.blog.titleMain}<wbr /><span className="text-brand-accent">{t.blog.titleAccent}</span><wbr /><span className="text-white/30">{t.blog.titleBlogi}</span>
           </h2>
 
-          <p className="text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
+          <p className="font-serif text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
             {t.blog.description}
           </p>
 

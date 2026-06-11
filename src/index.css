@@ -1,10 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;700;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Lora", Georgia, serif;
-  --font-outfit: "Outfit", sans-serif;
+  --font-serif: "Frank Ruhl Libre", serif;
   --font-mono: "JetBrains Mono", monospace;
 
   --color-brand-primary: #000000;
@@ -32,6 +31,10 @@
     word-wrap: break-word;
   }
 
+  h1.font-serif, h2.font-serif, h3.font-serif, h4.font-serif, h5.font-serif, h6.font-serif {
+    @apply tracking-normal;
+  }
+
   :focus-visible {
     @apply outline-none ring-2 ring-brand-accent ring-offset-2 ring-offset-brand-bg;
   }
@@ -46,15 +49,34 @@
   overflow-wrap: anywhere;
 }
 
-.markdown-body.font-serif,
-.markdown-body.font-serif h1,
-.markdown-body.font-serif h2,
-.markdown-body.font-serif h3,
-.markdown-body.font-serif h4,
-.markdown-body.font-serif p,
-.markdown-body.font-serif li,
-.markdown-body.font-serif blockquote {
+.markdown-body.journal-normal,
+.markdown-body.journal-normal p:not(.mermaid, .mermaid *),
+.markdown-body.journal-normal li:not(.mermaid, .mermaid *),
+.markdown-body.journal-normal blockquote:not(.mermaid, .mermaid *) {
   font-family: var(--font-serif) !important;
+}
+
+.markdown-body.journal-normal h1:not(.mermaid, .mermaid *),
+.markdown-body.journal-normal h2:not(.mermaid, .mermaid *),
+.markdown-body.journal-normal h3:not(.mermaid, .mermaid *),
+.markdown-body.journal-normal h4:not(.mermaid, .mermaid *),
+.markdown-body.journal-normal h5:not(.mermaid, .mermaid *),
+.markdown-body.journal-normal h6:not(.mermaid, .mermaid *) {
+  font-family: var(--font-serif) !important;
+  @apply tracking-normal;
+}
+
+.markdown-body.journal-sponsored,
+.markdown-body.journal-sponsored h1:not(.mermaid, .mermaid *),
+.markdown-body.journal-sponsored h2:not(.mermaid, .mermaid *),
+.markdown-body.journal-sponsored h3:not(.mermaid, .mermaid *),
+.markdown-body.journal-sponsored h4:not(.mermaid, .mermaid *),
+.markdown-body.journal-sponsored h5:not(.mermaid, .mermaid *),
+.markdown-body.journal-sponsored h6:not(.mermaid, .mermaid *),
+.markdown-body.journal-sponsored p:not(.mermaid, .mermaid *),
+.markdown-body.journal-sponsored li:not(.mermaid, .mermaid *),
+.markdown-body.journal-sponsored blockquote:not(.mermaid, .mermaid *) {
+  font-family: var(--font-sans) !important;
 }
 
 .markdown-body h1 { @apply text-5xl font-extrabold mb-8 mt-16 text-white; }
@@ -71,6 +93,21 @@
 .markdown-body img { @apply rounded-2xl shadow-2xl my-12 mx-auto block; }
 
 /* Mermaid styling fixes */
+.mermaid,
+.mermaid *,
+.mermaid text, 
+.mermaid tspan,
+.mermaid .title,
+.mermaid .label,
+.mermaid span,
+.mermaid div,
+.mermaid p,
+.mermaid a,
+.mermaid foreignObject,
+.mermaid foreignObject * {
+  font-family: var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji" !important;
+}
+
 .mermaid text, 
 .mermaid .title,
 .mermaid .label,
@@ -85,7 +122,6 @@
 .mermaid foreignObject span,
 .mermaid .nodeLabel,
 .mermaid .edgeLabel {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji" !important;
   font-size: 16px !important;
   line-height: normal !important;
   letter-spacing: normal !important;
@@ -224,6 +260,53 @@
 
 .leaflet-container {
   font-family: var(--font-sans) !important;
+}
+
+/* Ensure GeoJSON and JSON-FG Map Viewer elements, controls, and map popups always use clear sans-serif Inter font, overriding any parent serif content types */
+.markdown-body.journal-normal [id^="viewer-"],
+.markdown-body.journal-normal .geojson-map-viewer,
+.markdown-body.journal-normal .geojson-map-viewer *,
+.markdown-body.journal-sponsored [id^="viewer-"],
+.markdown-body.journal-sponsored .geojson-map-viewer,
+.markdown-body.journal-sponsored .geojson-map-viewer *,
+[id^="viewer-"],
+.geojson-map-viewer,
+.geojson-map-viewer *,
+.leaflet-container,
+.leaflet-container *,
+.leaflet-popup,
+.leaflet-popup *,
+.leaflet-control,
+.leaflet-control *,
+.leaflet-tooltip,
+.leaflet-tooltip * {
+  font-family: var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+/* Maintain clean monospace font for source code elements and viewers, overriding any other fonts */
+pre,
+code,
+.font-mono,
+.markdown-body pre,
+.markdown-body code,
+.markdown-body .font-mono,
+pre *,
+code *,
+.font-mono *,
+.markdown-body.journal-normal .font-mono,
+.markdown-body.journal-normal .font-mono *,
+.markdown-body.journal-normal pre,
+.markdown-body.journal-normal pre *,
+.markdown-body.journal-normal code,
+.markdown-body.journal-normal code *,
+.geojson-map-viewer pre,
+.geojson-map-viewer pre *,
+.geojson-map-viewer code,
+.geojson-map-viewer code *,
+.geojson-map-viewer .font-mono,
+.geojson-map-viewer .font-mono *,
+[class*="language-"] * {
+  font-family: var(--font-mono), "JetBrains Mono", monospace !important;
 }
 
 /* Prevent markdown image styles from leaking into Leaflet map tiles and markers */

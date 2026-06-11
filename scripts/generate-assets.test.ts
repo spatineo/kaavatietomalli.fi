@@ -226,9 +226,34 @@ tags: ["gis"]
 publishDate: "2026-05-18T00:00:00Z"
 promotional: true
 partner: "Spatineo"
+callToAction: "https://www.spatineo.com"
 excerpt: "This is a great blog post about Kaavatietomalli."
 ---
 This is a sponsored post.`,
+
+      // Post 5: Post with promotional as a string (partner name fallback)
+      'posts/promo-string-post.md': `---
+title: "Promo String Post"
+category: "journal"
+date: "2026-05-19"
+tags: ["gis"]
+publishDate: "2026-05-19T00:00:00Z"
+promotional: "Spatineo Oy"
+excerpt: "Another sponsored post."
+---
+Promo string post.`,
+
+      // Post 6: Post with promotional set to false
+      'posts/promo-false-post.md': `---
+title: "Promo False Post"
+category: "journal"
+date: "2026-05-20"
+tags: ["gis"]
+publishDate: "2026-05-20T00:00:00Z"
+promotional: false
+excerpt: "Not a promotional post."
+---
+Promo false post.`,
 
       // Page 3: Page with a partner
       'pages/partner-page.md': `---
@@ -253,7 +278,7 @@ Partner description.`,
     const readdirSpy = vi.spyOn(fs, 'readdirSync').mockImplementation((p: any) => {
       const pathStr = String(p).replace(/\\/g, '/');
       if (pathStr.endsWith('/posts')) {
-        return ['future-post.md', 'valid-active-post.md', 'missing-title-post.md', 'sponsored-post.md'] as any;
+        return ['future-post.md', 'valid-active-post.md', 'missing-title-post.md', 'sponsored-post.md', 'promo-string-post.md', 'promo-false-post.md'] as any;
       }
       if (pathStr.endsWith('/pages')) {
         return ['info-page.md', 'empty-title-page.md', 'partner-page.md'] as any;
@@ -336,10 +361,21 @@ Partner description.`,
       expect(sponsoredPost).toBeDefined();
       expect(sponsoredPost.promotional).toBe(true);
       expect(sponsoredPost.partner).toBe('Spatineo');
+      expect(sponsoredPost.callToAction).toBe('https://www.spatineo.com');
 
       const partnerPage = pagesOutput.find((p: any) => p.slug === 'partner-page');
       expect(partnerPage).toBeDefined();
       expect(partnerPage.partner).toBe('Spatineo');
+
+      const promoStringPost = postsOutput.find((p: any) => p.slug === 'promo-string-post');
+      expect(promoStringPost).toBeDefined();
+      expect(promoStringPost.promotional).toBe(true);
+      expect(promoStringPost.partner).toBe('Spatineo Oy');
+
+      const promoFalsePost = postsOutput.find((p: any) => p.slug === 'promo-false-post');
+      expect(promoFalsePost).toBeDefined();
+      expect(promoFalsePost.promotional).toBe(false);
+      expect(promoFalsePost.partner).toBeUndefined();
 
       // Rule Check 7: Promotional warnings included in llms outputs
       expect(writtenFiles['llms.txt']).toBeDefined();
