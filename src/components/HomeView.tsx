@@ -155,18 +155,18 @@ export function HomeView({
       <div id="journal-section" className="py-20 lg:py-40">
         <div className="max-w-5xl mx-auto px-10 mb-32">
           <div className="flex items-center gap-6 mb-12">
-            <span className="font-serif text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
+            <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
               {t.blog.sectionSubtitle}
             </span>
             <div className="h-[1px] flex-grow bg-white/10" />
             <span className="text-[10px] font-mono text-slate-500">{t.hero.editorChief}: Ilkka Rinne / Spatineo</span>
           </div>
 
-          <h2 className="font-serif text-6xl md:text-7xl font-black leading-[0.8] mb-12 text-white">
+          <h2 className="text-6xl md:text-7xl font-black leading-[0.8] tracking-tighter mb-12 text-white">
             {t.blog.titleMain}<wbr /><span className="text-brand-accent">{t.blog.titleAccent}</span><wbr /><span className="text-white/30">{t.blog.titleBlogi}</span>
           </h2>
 
-          <p className="font-serif text-2xl text-slate-400 max-w-xl font-medium leading-relaxed mb-12">
+          <p className="text-xl md:text-2xl text-slate-400 max-w-xl font-medium leading-[1.4] tracking-tight mb-12">
             {t.blog.description}
           </p>
 
