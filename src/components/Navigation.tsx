@@ -29,9 +29,11 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
   };
 
   const handleNavClick = (action: () => void) => {
-    action();
     setIsMenuOpen(false);
     setOpenSubmenuIndex(null);
+    setTimeout(() => {
+      action();
+    }, 50);
   };
 
   const onItemClick = (item: NavItem, index: number) => {

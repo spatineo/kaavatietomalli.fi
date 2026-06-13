@@ -73,10 +73,12 @@ export function useRouter() {
       navigate({ type: 'home', slug: null });
     } else {
       if (typeof window !== 'undefined') {
-        const element = document.getElementById('journal-section');
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
+        setTimeout(() => {
+          const element = document.getElementById('journal-section');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 150);
       }
     }
   }, [activeView.type, navigate]);
