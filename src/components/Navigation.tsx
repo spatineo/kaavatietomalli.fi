@@ -207,7 +207,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
             <div className="relative w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
               {/* Fallback CSS Logo - hidden if image is found or can be replaced by user */}
               <img 
-                src={`${CONFIG.basePath.replace(/\/$/, '')}/images/logo.svg`} 
+                src={`${CONFIG.basePath.replace(/\/$/, '')}/images/kaavatietomalli-logo.svg`} 
                 alt="" 
                 className="absolute inset-0 w-full h-full object-contain hidden"
                 onError={(e) => (e.currentTarget.style.display = 'none')}
