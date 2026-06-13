@@ -59,4 +59,46 @@ describe('useRouter hook', () => {
 
     expect(result.current.activeView).toEqual({ type: 'tag', slug: 'data-exchange' });
   });
+
+  it('sets pendingScroll to true and navigates to home when on non-home view', () => {
+    vi.stubGlobal('location', {
+      search: '?post=digital-twin-spec',
+      pathname: '/',
+    });
+    const { result } = renderHook(() => useRouter());
+
+    act(() => {
+      result.current.scrollToBlog();
+    });
+
+    expect(result.current.pendingScroll).toBe(true);
+    expect(window.history.pushState).toHaveBeenCalled();
+  });
+
+  it('scrolls smoothly to journal-section element after a timeout when already on home view', () => {
+    vi.useFakeTimers();
+    const scrollMock = vi.fn();
+    const mockElement = { scrollIntoView: scrollMock };
+    const getElementSpy = vi.spyOn(document, 'getElementById').mockReturnValue(mockElement as any);
+
+    const { result } = renderHook(() => useRouter());
+
+    act(() => {
+      result.current.scrollToBlog();
+    });
+
+    // Before advancing timers, it shouldn't have queried/called scrollIntoView yet
+    expect(getElementSpy).not.toHaveBeenCalled();
+
+    // Fast-forward fake timers past 150ms delay
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+
+    expect(getElementSpy).toHaveBeenCalledWith('journal-section');
+    expect(scrollMock).toHaveBeenCalledWith({ behavior: 'smooth' });
+
+    getElementSpy.mockRestore();
+    vi.useRealTimers();
+  });
 });
