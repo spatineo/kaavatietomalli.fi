@@ -5,9 +5,35 @@ const t = fi;
 
 test.describe('Kaavatietomalli E2E Critical User Flows', () => {
   test.beforeEach(async ({ page, context }) => {
+    // 0. Prevent any actual tracking/analytics network requests from reaching remote backend services, regardless of implementation
+    await page.route(
+      (url) => {
+        const urlStr = url.href;
+        // Do not block local codebase/dev-server or preview-server paths
+        if (urlStr.includes('/src/') || urlStr.includes('/assets/') || urlStr.includes('kaavatietomalli-logo')) {
+          return false;
+        }
+        // Only block if it's an external tracker/analytics/metrics or giscus service
+        const isTrackingKeyword = /(googletagmanager|google-analytics|analytics|telemetry|tracker|metrics|giscus)/i.test(urlStr);
+        if (isTrackingKeyword) {
+          // If it's a local typescript/javascript/svg file loaded from the dev server, let it pass
+          if (urlStr.includes('localhost:3000') && (urlStr.includes('.ts') || urlStr.includes('.tsx') || urlStr.includes('.js') || urlStr.includes('.svg'))) {
+            return false;
+          }
+          return true;
+        }
+        return false;
+      },
+      route => {
+        // Return a safe mocked status instead of hitting backend services or loading cross-origin scripts
+        route.abort();
+      }
+    );
+
     // 1. Bypass the PasswordGate if active by setting sessionStorage
     await context.addInitScript(() => {
       window.sessionStorage.setItem('prelaunch_authenticated', 'true');
+      (window as any).__E2E_TEST__ = true;
     });
 
     // 2. Navigate to root
