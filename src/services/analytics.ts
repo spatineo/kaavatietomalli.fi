@@ -86,6 +86,21 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
       send_page_view: false // Correctly handled manually later
     });
     
+    const isVitest = typeof window !== 'undefined' && ((window as any).__VITEST__ || (typeof process !== 'undefined' && process.env?.VITEST));
+    
+    const isE2E = 
+      typeof window !== 'undefined' && !isVitest && (
+        (window as any).__E2E_TEST__ || 
+        (window as any)._isE2E || 
+        (window as any)._isTest || 
+        navigator.webdriver
+      );
+
+    if (isE2E) {
+      this.initialized = true;
+      return;
+    }
+
     const script = document.createElement('script');
     script.src = `https://www.googletagmanager.com/gtag/js?id=${this.measurementId}`;
     script.async = true;
