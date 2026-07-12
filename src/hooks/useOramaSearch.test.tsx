@@ -7,6 +7,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useOramaSearch } from './useOramaSearch';
 import { create, load, search } from '@orama/orama';
+import { BUILD_VERSION } from '../version';
 
 // Configure self-contained mocks to prevent hoisting initialization issues
 vi.mock('@orama/orama', () => {
@@ -96,7 +97,7 @@ describe('useOramaSearch hook', () => {
 
     expect(result.current.db).toEqual({ id: 'mock-db' });
     expect(result.current.error).toBeNull();
-    expect(fetchMock).toHaveBeenCalledWith('/search-index.json');
+    expect(fetchMock).toHaveBeenCalledWith(`/search-index.json?v=${BUILD_VERSION}`);
     expect(create).toHaveBeenCalled();
     expect(load).toHaveBeenCalledWith({ id: 'mock-db' }, { dummyKey: 'dummyValue' });
   });
@@ -119,16 +120,12 @@ describe('useOramaSearch hook', () => {
     expect(result.current.error?.message).toContain('Failed to fetch search index');
   });
 
-  it('performs search and filters future posts correctly based on local system date', async () => {
+  it('performs search and returns all results without redundant post-processing or date-filtering', async () => {
     const { result } = renderHook(() => useOramaSearch());
 
     await waitFor(() => {
       expect(result.current.db).not.toBeNull();
     });
-
-    // Mock Date to a deterministic point in May 2026 using Vitest fake timers
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-29T12:00:00Z'));
 
     // Call search with term
     const searchResults = await result.current.performSearch('tietomalli');
@@ -137,13 +134,11 @@ describe('useOramaSearch hook', () => {
       term: 'tietomalli',
     }));
 
-    // Expecting:
-    // - hit1: post, published in past (2026-01-01) -> KEEP
-    // - hit2: post, published in future (2027-12-31) -> FILTER OUT
-    // - hit3: page, doesn't filter by publishDate -> KEEP
-    expect(searchResults).toHaveLength(2);
+    // Expecting all hits to be returned directly as pre-filtered at build-time
+    expect(searchResults).toHaveLength(3);
     expect(searchResults[0].id).toBe('hit1');
-    expect(searchResults[1].id).toBe('hit3');
+    expect(searchResults[1].id).toBe('hit2');
+    expect(searchResults[2].id).toBe('hit3');
   });
 
   it('returns an empty array immediately if the query term length is less than 2', async () => {

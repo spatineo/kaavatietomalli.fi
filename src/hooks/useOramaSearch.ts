@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { create, search, load, type AnyOrama } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
+import { BUILD_VERSION } from '../version';
 
 export interface SearchResult {
   id: string;
@@ -24,7 +25,7 @@ export function useOramaSearch(indexPath: string = 'search-index.json') {
         ? import.meta.env.BASE_URL 
         : `${import.meta.env.BASE_URL}/`;
       const fullPath = indexPath.startsWith('/') ? indexPath.slice(1) : indexPath;
-      const targetUrl = `${baseUrl}${fullPath}`;
+      const targetUrl = `${baseUrl}${fullPath}?v=${BUILD_VERSION}`;
 
       const response = await fetch(targetUrl);
       if (!response.ok) {
@@ -76,13 +77,7 @@ export function useOramaSearch(indexPath: string = 'search-index.json') {
       });
 
       const hits = results.hits as SearchResult[];
-      const now = new Date();
-
-      return hits.filter(hit => {
-        if (hit.document.type !== 'post' || !hit.document.publishDate) return true;
-        const pubDate = new Date(hit.document.publishDate);
-        return now >= pubDate;
-      });
+      return hits;
     } catch (err) {
       console.error('Search failed:', err);
       return [];
