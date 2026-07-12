@@ -49,6 +49,7 @@ export interface AuthorData {
 }
 
 import { CONFIG } from '../config';
+import { BUILD_VERSION } from '../version';
 
 export interface TagIndex {
   [tag: string]: {
@@ -61,8 +62,7 @@ export interface TagIndex {
 const pendingLoads = new Map<string, Promise<any>>();
 
 async function fetchJSON(url: string): Promise<any> {
-  const dateStr = new Date().toISOString().split('T')[0];
-  const cacheBustUrl = `${url}?t=${dateStr}`;
+  const cacheBustUrl = `${url}?v=${BUILD_VERSION}`;
 
   if (pendingLoads.has(cacheBustUrl)) {
     return pendingLoads.get(cacheBustUrl);
