@@ -107,6 +107,9 @@ export interface Translations {
     message: string;
     searchPrompt: string;
     backToHome: string;
+    redirecting: string;
+    redirectingDescription: string;
+    redirectingClickHere: string;
   };
   consent: {
     title: string;
