@@ -388,6 +388,12 @@ Partner description.`,
       expect(writtenFiles['feed.xml']).toContain('[Kaupallinen yhteistyö - Spatineo] Sponsored Post Title');
       expect(writtenFiles['feed.xml']).toContain('Tämä kirjoitus on osa kaupallista yhteistyötä Kaavatietomalli.fi-sivuston ja Spatineo:n välillä.');
 
+      // Rule Check 9: Localized 404.html redirection page generated
+      expect(writtenFiles['404.html']).toBeDefined();
+      expect(writtenFiles['404.html']).toContain('Ohjataan uudelleen...');
+      expect(writtenFiles['404.html']).toContain('Etsimääsi sivua ei löytynyt suoralla osoitteella.');
+      expect(writtenFiles['404.html']).toContain('kaavatietomalli.fi');
+
     } finally {
       existsSpy.mockRestore();
       readdirSpy.mockRestore();

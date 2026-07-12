@@ -109,6 +109,9 @@ export const fi: Translations = {
     message: 'Hae sivuston muusta sisällöstä',
     searchPrompt: 'Hae artikkeleita, sivuja...',
     backToHome: 'Palaa etusivulle',
+    redirecting: 'Ohjataan uudelleen...',
+    redirectingDescription: 'Etsimääsi sivua ei löytynyt suoralla osoitteella. Ohjaamme sinut sivuston hakuun ja sisällönluetteloon.',
+    redirectingClickHere: 'Jos ohjaus ei tapahdu automaattisesti, klikkaa tästä.',
   },
   consent: {
     title: 'Evästeasetukset',
