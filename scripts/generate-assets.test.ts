@@ -492,6 +492,11 @@ Partner description.`,
       expect(writtenFiles['llms-full.txt']).toBeDefined();
       expect(writtenFiles['llms-full.txt']).toContain('This is a PRE-LAUNCH DRAFT version of the site content. Not for public indexing.');
 
+      // 5. Verify feed.xml (RSS feed) is empty of items and has prelaunch comments
+      expect(writtenFiles['feed.xml']).toBeDefined();
+      expect(writtenFiles['feed.xml']).toContain('PRE-LAUNCH STATE: Search engines and AI crawlers are denied access');
+      expect(writtenFiles['feed.xml']).not.toContain('<item>');
+
     } finally {
       CONFIG.prelaunch = originalPrelaunch;
       existsSpy.mockRestore();
