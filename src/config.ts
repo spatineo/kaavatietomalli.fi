@@ -1,8 +1,11 @@
 import { PROJECT_CONFIG } from '../project.config';
 
-const env = (typeof import.meta !== 'undefined' && import.meta.env) || {} as Record<string, string | undefined>;
+const env = (typeof import.meta !== 'undefined' && import.meta.env)
+  || (typeof process !== 'undefined' ? process.env : {}) as Record<string, string | undefined>;
 
 export const CONFIG = {
+  // Prelaunch status (active if VITE_PRELAUNCH_PASSWORD is set and non-empty)
+  prelaunch: !!env.VITE_PRELAUNCH_PASSWORD,
   // Use VITE_BASE_URL if provided, else fall back to APP_URL or default
   baseUrl: (env.VITE_BASE_URL || env.APP_URL || PROJECT_CONFIG.defaultBaseUrl).replace(/\/$/, ''),
   // Ensure basePath starts and ends with / unless it's empty

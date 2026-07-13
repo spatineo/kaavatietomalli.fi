@@ -13,9 +13,7 @@
     "lint": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:e2e": "playwright test",
-    "toggle-prelaunch": "node scripts/toggle-launch.js prelaunch",
-    "toggle-public": "node scripts/toggle-launch.js public"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",
