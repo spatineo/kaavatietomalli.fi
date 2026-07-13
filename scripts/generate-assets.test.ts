@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { generateAssets, getGitHistoryOfContent } from './generate-assets';
 import { getFilesRecursive, escapeXml, parseVideoConfig, validateVideoBlock, validateMarkdownVideoBlocks } from './content-utils';
+import { CONFIG } from '../src/config';
 
 describe('Content Utilities', () => {
   describe('escapeXml', () => {
@@ -317,7 +318,9 @@ Partner description.`,
 
     const mkdirSpy = vi.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined);
 
+    const originalPrelaunch = CONFIG.prelaunch;
     try {
+      CONFIG.prelaunch = false;
       generateAssets();
 
       // Rule Validation Check 1: Empty Title Warnings
@@ -395,6 +398,102 @@ Partner description.`,
       expect(writtenFiles['404.html']).toContain('kaavatietomalli.fi');
 
     } finally {
+      CONFIG.prelaunch = originalPrelaunch;
+      existsSpy.mockRestore();
+      readdirSpy.mockRestore();
+      readSpy.mockRestore();
+      statSpy.mockRestore();
+      writeSpy.mockRestore();
+      mkdirSpy.mockRestore();
+    }
+  });
+
+  it('should deny search engine and AI crawler access in sitemap, robots, index.html, and llms files when prelaunch is active', () => {
+    // Setup file mocks similar to the main pipeline test
+    const mockFilesMap: Record<string, string[]> = {
+      'content/posts': ['valid-active-post.md'],
+      'content/pages': ['info-page.md'],
+      'content/authors': []
+    };
+
+    const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation((p: any) => {
+      const pathStr = String(p).replace(/\\/g, '/');
+      if (pathStr.includes('index.html')) return true;
+      return true;
+    });
+
+    const readdirSpy = vi.spyOn(fs, 'readdirSync').mockImplementation((p: any) => {
+      const pathStr = String(p).replace(/\\/g, '/');
+      const foundKey = Object.keys(mockFilesMap).find(key => pathStr.includes(key));
+      return (foundKey ? mockFilesMap[foundKey] : []) as any;
+    });
+
+    const mockContentMap: Record<string, string> = {
+      'valid-active-post.md': '---\ntitle: "Valid Active Post"\nslug: "valid-active-post"\ndate: "2023-01-01"\ncategory: "journal"\nauthor: "Ilkka"\n---\nSome post content',
+      'info-page.md': '---\ntitle: "Info Page"\nslug: "info-page"\ncategory: "pages"\n---\nSome page content',
+      'index.html': '<!doctype html><html><head><meta name="robots" content="index, follow" /></head><body><div id="root"></div></body></html>'
+    };
+
+    const readSpy = vi.spyOn(fs, 'readFileSync').mockImplementation((p: any) => {
+      const pathStr = String(p).replace(/\\/g, '/');
+      const filename = pathStr.split('/').pop() || '';
+      if (mockContentMap[filename]) {
+        return mockContentMap[filename];
+      }
+      if (pathStr.includes('index.html')) {
+        return mockContentMap['index.html'];
+      }
+      return '';
+    });
+
+    const mockStats: Record<string, any> = {
+      isDirectory: () => false,
+    };
+    const statSpy = vi.spyOn(fs, 'statSync').mockImplementation(() => mockStats as any);
+
+    const writtenFiles: Record<string, string> = {};
+    const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation((p: any, data: any) => {
+      const pathStr = String(p).replace(/\\/g, '/');
+      if (pathStr.includes('index.html')) {
+        writtenFiles['index.html'] = String(data);
+        return undefined;
+      }
+      const relativePart = pathStr.split('public/').pop();
+      if (relativePart) {
+        writtenFiles[relativePart] = typeof data === 'string' ? data : JSON.stringify(data);
+      }
+      return undefined;
+    });
+
+    const mkdirSpy = vi.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined);
+
+    const originalPrelaunch = CONFIG.prelaunch;
+    try {
+      CONFIG.prelaunch = true;
+      generateAssets();
+
+      // 1. Verify robots.txt denies everything
+      expect(writtenFiles['robots.txt']).toBeDefined();
+      expect(writtenFiles['robots.txt']).toBe('User-agent: *\nDisallow: /');
+
+      // 2. Verify sitemap.xml is empty of urls and has deny comments
+      expect(writtenFiles['sitemap.xml']).toBeDefined();
+      expect(writtenFiles['sitemap.xml']).toContain('PRE-LAUNCH STATE: Search engines and AI crawlers are denied access');
+      expect(writtenFiles['sitemap.xml']).not.toContain('?post=valid-active-post');
+
+      // 3. Verify index.html robots meta is updated to noindex, nofollow
+      expect(writtenFiles['index.html']).toBeDefined();
+      expect(writtenFiles['index.html']).toContain('<meta name="robots" content="noindex, nofollow" />');
+      expect(writtenFiles['index.html']).not.toContain('<meta name="robots" content="index, follow" />');
+
+      // 4. Verify llms.txt and llms-full.txt contain prelaunch warnings
+      expect(writtenFiles['llms.txt']).toBeDefined();
+      expect(writtenFiles['llms.txt']).toContain('This is a PRE-LAUNCH DRAFT version of the site content. Not for public indexing.');
+      expect(writtenFiles['llms-full.txt']).toBeDefined();
+      expect(writtenFiles['llms-full.txt']).toContain('This is a PRE-LAUNCH DRAFT version of the site content. Not for public indexing.');
+
+    } finally {
+      CONFIG.prelaunch = originalPrelaunch;
       existsSpy.mockRestore();
       readdirSpy.mockRestore();
       readSpy.mockRestore();

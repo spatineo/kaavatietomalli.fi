@@ -4,6 +4,7 @@ import matter from 'gray-matter';
 import dotenv from 'dotenv';
 import { execSync } from 'child_process';
 import { PROJECT_CONFIG } from '../project.config.js';
+import { CONFIG } from '../src/config.js';
 import { getTranslations } from '../src/i18n/index.js';
 import { getFilesRecursive, escapeXml, validateMarkdownVideoBlocks } from './content-utils.js';
 
@@ -202,20 +203,24 @@ export function generateAssets() {
 
   fs.writeFileSync(
     path.join(CONTENT_OUT_DIR, 'tags.json'),
-    JSON.stringify(tagIndex, null, 2)
+    JSON.stringify(tagIndex, null, 2),
+    'utf-8'
   );
 
   fs.writeFileSync(
     path.join(CONTENT_OUT_DIR, 'posts.json'), 
-    JSON.stringify(posts.map(p => p.metadata), null, 2)
+    JSON.stringify(posts.map(p => p.metadata), null, 2),
+    'utf-8'
   );
   fs.writeFileSync(
     path.join(CONTENT_OUT_DIR, 'pages.json'), 
-    JSON.stringify(pages.map(p => p.metadata), null, 2)
+    JSON.stringify(pages.map(p => p.metadata), null, 2),
+    'utf-8'
   );
   fs.writeFileSync(
     path.join(CONTENT_OUT_DIR, 'authors.json'), 
-    JSON.stringify(authors.map(a => a.metadata), null, 2)
+    JSON.stringify(authors.map(a => a.metadata), null, 2),
+    'utf-8'
   );
 
   // Generate individual content files
@@ -232,7 +237,8 @@ export function generateAssets() {
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      JSON.stringify({ ...post.metadata, content: post.content }, null, 2)
+      JSON.stringify({ ...post.metadata, content: post.content }, null, 2),
+      'utf-8'
     );
   });
 
@@ -241,7 +247,8 @@ export function generateAssets() {
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      JSON.stringify({ ...page.metadata, content: page.content }, null, 2)
+      JSON.stringify({ ...page.metadata, content: page.content }, null, 2),
+      'utf-8'
     );
   });
 
@@ -250,14 +257,22 @@ export function generateAssets() {
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      JSON.stringify({ ...author.metadata, content: author.content }, null, 2)
+      JSON.stringify({ ...author.metadata, content: author.content }, null, 2),
+      'utf-8'
     );
   });
 
   console.log('Generated JSON content index and individual files');
 
   // Generate sitemap.xml
-  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+  let sitemap = '';
+  if (CONFIG.prelaunch) {
+    sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<!-- PRE-LAUNCH STATE: Search engines and AI crawlers are denied access. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+</urlset>`;
+  } else {
+    sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>${BASE_URL}/</loc>
@@ -273,12 +288,51 @@ ${posts.map(post => `  <url>
     <priority>0.6</priority>
   </url>`).join('\n')}
 </urlset>`;
+  }
 
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemap);
-  console.log('Generated sitemap.xml');
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemap, 'utf-8');
+  console.log(`Generated sitemap.xml (${CONFIG.prelaunch ? 'prelaunch' : 'public'})`);
+
+  // Generate robots.txt denying search engine and AI crawler access if prelaunch is active
+  let robotsTxt = '';
+  if (CONFIG.prelaunch) {
+    robotsTxt = 'User-agent: *\nDisallow: /';
+  } else {
+    robotsTxt = `User-agent: *\nAllow: /\nSitemap: ${BASE_URL}/sitemap.xml`;
+  }
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'robots.txt'), robotsTxt, 'utf-8');
+  console.log(`Generated robots.txt (${CONFIG.prelaunch ? 'prelaunch' : 'public'})`);
+
+  // Update index.html robots meta tag in-place based on active prelaunch status
+  const indexPath = path.join(process.cwd(), 'index.html');
+  if (fs.existsSync(indexPath)) {
+    let indexHtml = fs.readFileSync(indexPath, 'utf-8');
+    const robotsPrelaunch = '<meta name="robots" content="noindex, nofollow" />';
+    const robotsPublic = '<meta name="robots" content="index, follow" />';
+    
+    if (CONFIG.prelaunch) {
+      if (indexHtml.includes(robotsPublic)) {
+        indexHtml = indexHtml.replace(robotsPublic, robotsPrelaunch);
+      } else if (!indexHtml.includes(robotsPrelaunch)) {
+        indexHtml = indexHtml.replace('<head>', `<head>\n    ${robotsPrelaunch}`);
+      }
+    } else {
+      if (indexHtml.includes(robotsPrelaunch)) {
+        indexHtml = indexHtml.replace(robotsPrelaunch, robotsPublic);
+      } else if (!indexHtml.includes(robotsPublic)) {
+        indexHtml = indexHtml.replace('<head>', `<head>\n    ${robotsPublic}`);
+      }
+    }
+    fs.writeFileSync(indexPath, indexHtml, 'utf-8');
+    console.log(`Updated index.html robots meta to: ${CONFIG.prelaunch ? 'noindex, nofollow' : 'index, follow'}`);
+  }
 
   // Generate llms.txt
-  let llmsTxt = `# ${t.common.footerTitle}\n\n`;
+  let llmsTxt = '';
+  if (CONFIG.prelaunch) {
+    llmsTxt += `> [!IMPORTANT]\n> This is a PRE-LAUNCH DRAFT version of the site content. Not for public indexing.\n\n`;
+  }
+  llmsTxt += `# ${t.common.footerTitle}\n\n`;
   llmsTxt += `${t.llms.note}\n\n`;
   llmsTxt += `${t.hero.description}.\n\n`;
   
@@ -306,11 +360,15 @@ ${posts.map(post => `  <url>
   llmsTxt += `## ${t.llms.optional}\n`;
   llmsTxt += `${t.llms.fullIndexNote.replace('${baseUrl}', BASE_URL)}\n`;
   
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'llms.txt'), llmsTxt);
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'llms.txt'), llmsTxt, 'utf-8');
   console.log('Generated llms.txt');
   
   // Generate llms-full.txt
-  let llmsFullTxt = `# ${t.common.footerTitle} - ${t.llms.fullIndexTitle}\n\n`;
+  let llmsFullTxt = '';
+  if (CONFIG.prelaunch) {
+    llmsFullTxt += `> [!IMPORTANT]\n> This is a PRE-LAUNCH DRAFT version of the site content. Not for public indexing.\n\n`;
+  }
+  llmsFullTxt += `# ${t.common.footerTitle} - ${t.llms.fullIndexTitle}\n\n`;
   llmsFullTxt += `${t.llms.note}\n\n`;
   llmsFullTxt += `${t.llms.fullIndexDescription}\n\n`;
   
@@ -329,7 +387,7 @@ ${posts.map(post => `  <url>
     llmsFullTxt += `- [${page.metadata.title}](${BASE_URL}/?page=${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.file})\n`;
   });
 
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'llms-full.txt'), llmsFullTxt);
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'llms-full.txt'), llmsFullTxt, 'utf-8');
   console.log('Generated llms-full.txt');
 
   // Generate RSS 2.0 Feed for the 50 latest created or updated journal (blog) posts.
@@ -427,7 +485,7 @@ ${categoriesXml ? categoriesXml + '\n' : ''}    </item>\n`;
 ${rssItemsXml}  </channel>
 </rss>`;
 
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'feed.xml'), rssXml);
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'feed.xml'), rssXml, 'utf-8');
   console.log('Generated feed.xml (RSS 2.0)');
 
   // Generate 404.html for SPA router fallback redirection using localized strings
@@ -537,7 +595,7 @@ ${rssItemsXml}  </channel>
 </body>
 </html>`;
 
-  fs.writeFileSync(path.join(PUBLIC_DIR, '404.html'), notFoundHtml);
+  fs.writeFileSync(path.join(PUBLIC_DIR, '404.html'), notFoundHtml, 'utf-8');
   console.log('Generated 404.html');
 
   // Copy content/images folder to public/images
@@ -551,8 +609,8 @@ ${rssItemsXml}  </channel>
 
   // Generate build version
   const buildVersion = Date.now().toString();
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'version.json'), JSON.stringify({ version: buildVersion }, null, 2));
-  fs.writeFileSync(path.join(process.cwd(), 'src', 'version.ts'), `// Generated by generate-assets.ts - do not modify\nexport const BUILD_VERSION = '${buildVersion}';\n`);
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'version.json'), JSON.stringify({ version: buildVersion }, null, 2), 'utf-8');
+  fs.writeFileSync(path.join(process.cwd(), 'src', 'version.ts'), `// Generated by generate-assets.ts - do not modify\nexport const BUILD_VERSION = '${buildVersion}';\n`, 'utf-8');
   console.log(`Generated build version: ${buildVersion}`);
 }
 
