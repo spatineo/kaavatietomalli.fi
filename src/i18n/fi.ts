@@ -170,4 +170,10 @@ export const fi: Translations = {
     consentRequired: 'Videon toistaminen edellyttää seurantaevästeiden hyväksymistä, koska ulkopuoliset palvelut (YouTube ja Vimeo) saattavat asettaa evästeitä tai muulla tavoin seurata käyttöä.',
     enableAnalytics: 'Hyväksy seuranta ja näytä video',
   },
+  errorBoundary: {
+    title: 'Pahoittelut, tapahtui virhe',
+    description: 'Sisällön esittämisessä tapahtui odottamaton virhe.',
+    button: 'Palaa turvallisesti etusivulle',
+    blockError: 'Virhe elementin esittämisessä',
+  },
 };

@@ -168,4 +168,10 @@ export interface Translations {
     consentRequired: string;
     enableAnalytics: string;
   };
+  errorBoundary: {
+    title: string;
+    description: string;
+    button: string;
+    blockError: string;
+  };
 }
