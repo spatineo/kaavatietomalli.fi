@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PostView } from './components/PostView';
 import { PageView } from './components/PageView';
@@ -13,16 +13,15 @@ import { NotFoundView } from './components/NotFoundView';
 import { HomeView } from './components/HomeView';
 import { TagView } from './components/TagView';
 import { CookieConsent } from './components/CookieConsent';
-import { getAllPostMetadata, getPostBySlug, getPageBySlug, getAuthorBySlug, getPostsByTag, getTagPageSlugs, PostMetadata, PostData, PageData, AuthorData } from './lib/blog';
+import { getAllPostMetadata, getAuthorBySlug, PostMetadata, AuthorData } from './lib/blog';
 import { CONFIG } from './config';
-import { resolveImageUrl } from './lib/utils';
 import { getTranslations, Language } from './i18n';
-import { getTracker } from './services/analytics';
 import { PasswordGate } from './components/PasswordGate';
 import { VersionMismatchPrompt } from './components/VersionMismatchPrompt';
 import { useRouter } from './hooks/useRouter';
 import { useMetadataSync } from './hooks/useMetadataSync';
 import { useContentLoader } from './hooks/useContentLoader';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
   const t = getTranslations(CONFIG.language as Language);
@@ -143,7 +142,8 @@ export default function App() {
         />
         
         <main id="main-content" className="flex-grow">
-          <AnimatePresence>
+          <ErrorBoundary onReset={onHome}>
+            <AnimatePresence>
             {contentNotFound ? (
               <motion.div
                 key="not-found"
@@ -273,7 +273,8 @@ export default function App() {
                 onBlog={scrollToBlog}
               />
             )}
-          </AnimatePresence>
+            </AnimatePresence>
+          </ErrorBoundary>
         </main>
   
         <Footer />

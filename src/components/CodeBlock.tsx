@@ -1,6 +1,8 @@
 import { lazy, Suspense } from 'react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
+import { ErrorBoundary } from './ErrorBoundary';
+import { AlertTriangle } from 'lucide-react';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
@@ -58,6 +60,29 @@ function parseVideoProperties(content: string): Record<string, any> {
   return config;
 }
 
+function BlockFallback({ language, code }: { language: string; code: string }) {
+  const t = getTranslations(CONFIG.language as Language);
+  return (
+    <div className="my-6 p-6 rounded-2xl border border-red-500/20 bg-red-950/10 text-left">
+      <div className="flex items-center gap-3 text-red-400 mb-3 font-semibold text-sm">
+        <AlertTriangle size={18} />
+        <span>{t.errorBoundary.blockError} ({language})</span>
+      </div>
+      <p className="text-xs text-slate-400 mb-4 leading-normal">
+        Rakennetiedon tai esityksen renderöinnissä tapahtui virhe.
+      </p>
+      <details className="text-xs">
+        <summary className="text-brand-accent/80 hover:text-brand-accent cursor-pointer select-none font-bold mb-2">
+          Näytä raakateksti / Show source
+        </summary>
+        <pre className="text-[11px] font-mono bg-black/50 text-slate-300 p-4 rounded-xl border border-white/5 overflow-x-auto max-h-48">
+          {code}
+        </pre>
+      </details>
+    </div>
+  );
+}
+
 export function CodeBlock({
   className,
   children,
@@ -73,15 +98,17 @@ export function CodeBlock({
   if (language === 'geojson' || language === 'jsonfg') {
     const fallbackHeightClass = placeholderHeight === 'h-48' ? 'h-48' : placeholderHeight === 'h-56' ? 'h-56' : 'h-64';
     return (
-      <Suspense
-        fallback={
-          <div className={`${fallbackHeightClass} flex flex-col items-center justify-center gap-4 bg-slate-950/90 rounded-2xl border border-white/5 animate-pulse`}>
-            <div className="w-8 h-8 rounded-full border border-white/10 border-t-[#FFAF00] animate-spin" />
-          </div>
-        }
-      >
-        <GeoJsonMapViewer code={codeContent} language={language} />
-      </Suspense>
+      <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
+        <Suspense
+          fallback={
+            <div className={`${fallbackHeightClass} flex flex-col items-center justify-center gap-4 bg-slate-950/90 rounded-2xl border border-white/5 animate-pulse`}>
+              <div className="w-8 h-8 rounded-full border border-white/10 border-t-[#FFAF00] animate-spin" />
+            </div>
+          }
+        >
+          <GeoJsonMapViewer code={codeContent} language={language} />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
@@ -89,30 +116,34 @@ export function CodeBlock({
     const config = parseVideoProperties(codeContent);
     const fallbackHeightClass = placeholderHeight === 'h-48' ? 'h-48' : placeholderHeight === 'h-56' ? 'h-56' : 'h-64';
     return (
-      <Suspense
-        fallback={
-          <div className={`${fallbackHeightClass} flex flex-col items-center justify-center gap-4 bg-slate-950/90 rounded-2xl border border-white/5 animate-pulse`}>
-            <div className="w-8 h-8 rounded-full border border-white/10 border-t-brand-accent animate-spin" />
-          </div>
-        }
-      >
-        <VideoEmbed platform={language as 'youtube' | 'vimeo'} config={config} />
-      </Suspense>
+      <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
+        <Suspense
+          fallback={
+            <div className={`${fallbackHeightClass} flex flex-col items-center justify-center gap-4 bg-slate-950/90 rounded-2xl border border-white/5 animate-pulse`}>
+              <div className="w-8 h-8 rounded-full border border-white/10 border-t-brand-accent animate-spin" />
+            </div>
+          }
+        >
+          <VideoEmbed platform={language as 'youtube' | 'vimeo'} config={config} />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
   if (language === 'mermaid') {
     const fallbackHeightClass = placeholderHeight === 'h-48' ? 'h-48' : placeholderHeight === 'h-56' ? 'h-56' : 'h-64';
     return (
-      <Suspense
-        fallback={
-          <div className={`${fallbackHeightClass} flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse`}>
-            {t.common.loadingChart}
-          </div>
-        }
-      >
-        <Mermaid chart={codeContent} />
-      </Suspense>
+      <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
+        <Suspense
+          fallback={
+            <div className={`${fallbackHeightClass} flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse`}>
+              {t.common.loadingChart}
+            </div>
+          }
+        >
+          <Mermaid chart={codeContent} />
+        </Suspense>
+      </ErrorBoundary>
     );
   }
 
@@ -123,28 +154,30 @@ export function CodeBlock({
           <span>{language}</span>
           {filePath && <span className="text-[8px] opacity-50">{filePath}</span>}
         </div>
-        <Suspense
-          fallback={
-            <div className="bg-black p-8 font-mono text-[14px] text-white/40">
-              {codeContent}
-            </div>
-          }
-        >
-          <LazySyntaxHighlighter
-            language={language}
-            PreTag="div"
-            customStyle={{
-              margin: 0,
-              padding: '2rem',
-              fontSize: '14px',
-              fontFamily: '"JetBrains Mono", monospace',
-              background: '#000000',
-            }}
-            {...props}
+        <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
+          <Suspense
+            fallback={
+              <div className="bg-black p-8 font-mono text-[14px] text-white/40">
+                {codeContent}
+              </div>
+            }
           >
-            {codeContent}
-          </LazySyntaxHighlighter>
-        </Suspense>
+            <LazySyntaxHighlighter
+              language={language}
+              PreTag="div"
+              customStyle={{
+                margin: 0,
+                padding: '2rem',
+                fontSize: '14px',
+                fontFamily: '"JetBrains Mono", monospace',
+                background: '#000000',
+              }}
+              {...props}
+            >
+              {codeContent}
+            </LazySyntaxHighlighter>
+          </Suspense>
+        </ErrorBoundary>
       </div>
     );
   }
