@@ -2,21 +2,19 @@
 title: "Tietomallimuotoista kaavatietoa koskevat lait ja asetukset"
 ---
 
-Tietomallimuotoisen kaavatiedon tuottamista  ja kokoamista Suomen kansalliseen Ryhti-tietovarantoon ohjataan seuraavien lakien ja asetusten avulla:
+Tietomallimuotoisen kaavatiedon tuottamista ja sen kokoamista kansalliseen alueidenkäytän tietovarantoon Ryhti-järjestelmässä ohjataan seuraavien lakien ja asetusten avulla:
 
 * [Alueidenkäyttölaki (132/1999)](https://www.finlex.fi/fi/lainsaadanto/1999/132) (entinen Maankäyttö- ja rakentamislaki, MRL)
 * [Laki rakennetun ympäristön tietojärjestelmästä (ns. RYTJ-laki, 431/2023)](https://www.finlex.fi/fi/lainsaadanto/2023/431)
 
-Sekä alueidenkäyttölaissa että Ryhti-laissa annetaan ympäristöministeriölle valtuutus antaa lain toteutusta tarkentavia asetuksia. Toistaiseksi ympäristösministeriö on antanut asetuksen ainoastaan koskien maakunta-, yleis- ja asemakaavojen kaavamääräysten ja kaavakohteiden esitystapaa (ns. Katja-asetus ja sen muutokset, ks. alla). Katja-asetuksen liitteissä 1-3 määrätään muutaman tärkeimmän kaavatietomallin koodiston koodeista ja liitteessä 4 kuvataan kansallisell tasolla harmonisoitujen kaavamääräysten graafinen esitystapa kaavakartalla, ihmisluettava otsikko ja koneluettavat sisältöelementit.
+Sekä alueidenkäyttölaissa että Ryhti-laissa annetaan ympäristöministeriölle valtuutus antaa lain toteutusta tarkentavia asetuksia. Toistaiseksi ympäristöministeriö on antanut asetuksen ainoastaan koskien maakunta-, yleis- ja asemakaavojen kaavamääräysten ja kaavakohteiden esitystapaa ja tietomallin keskeisimpiä koodistoja. Tämän ns. Katja-asetuksen liitteissä 1-3 määritellään koodistot [Kaavamääräyslaji](http://uri.suomi.fi/codelist/rytj/RY_Kaavamaarayslaji), [Kaavamääräyksen lisätiedon laji](http://uri.suomi.fi/codelist/rytj/RY_Kaavamaarayksen_Lisatiedonlaji) ja  [Yleiskaavan oikeusvaikutukset](http://uri.suomi.fi/codelist/rytj/oikeusvaik_YK). Pitkässä liitteessä 4 kuvataan kansallisella tasolla harmonisoitujen kaavamääräysten graafinen esitystapa kaavakartalla, ihmisluettava otsikko ja koneluettavat sisältöelementit.
 
 * Katja I -asetus (tullut voimaan 11.6.2024): [Ympäristöministeriön asetus maakunta-, yleis- ja asemakaavojen kaavamääräysten ja kaavakohteiden esitystavasta (311/2024)](https://www.finlex.fi/fi/lainsaadanto/saadoskokoelma/2024/311)
     * Liitteet [suomeksi](https://www.finlex.fi/api/media/statute/4430/media/8220.pdf?timestamp=2024-06-11T00%3A00%3A00.000Z "Liitteet 1-4: YMa maakunta-, yleis- ja asemakaavojen kaavamääräysten ja kaavakohteiden esitystavasta") ja [ruotsiksi](https://www.finlex.fi/api/media/statute/4423/media/8219.pdf?timestamp=2024-06-11T00%3A00%3A00.000Z "Bilagor 1-4: MMfom utformningen av planbestämmelser och planobjekt i landskaps-, general- och detaljplaner") 
 * Katja II -asetus (tullut voimaan 1.7.2025): [Ympäristöministeriön asetus maakunta-, yleis- ja asemakaavojen kaavamääräysten ja kaavakohteiden esitystavasta annetun ympäristöministeriön asetuksen muuttamisesta (393/2025)](https://www.finlex.fi/fi/lainsaadanto/saadoskokoelma/2025/393)
     * Liitteet [suomeksi](https://www.finlex.fi/api/media/statute/922606/media/8310.pdf?timestamp=2026-05-15T04%3A02%3A34.724Z "Liitteet 1-4: YMa maakunta-, yleis- ja asemakaavojen kaavamääräysten ja kaavakohteiden esitystavasta") ja [ruotsiksi](https://www.finlex.fi/api/media/statute/922608/media/8309.pdf?timestamp=2026-05-15T04%3A02%3A34.724Z "Bilagor 1-4: MMf om utformningen av planbestämmelser och planobjekt i landskaps-, general- och detaljplaner")
 
-## Kansallisesti yhteentoimivan kaavatiedon sisältö ja rakenne 
-
-Yllä mainituissa laeissa ja asetuksissa ei määrätä tietomallimuotoisen kaavatiedon tuottamisen tai sen tiedonsiirtomuotojen yksityiskohdista, eikä myöskään valtuuteta mitään tiettyä tahoa ylläpitämään, kehittämään tai julkaisemaan tuotomallimuotoisen kaavatiedon määrittelyjä tai standardeja.
+## Valtakunnallisesti yhteentoimiva kaavatieto
 
 [Alueidenkäyttölaissa (132/1999)](https://www.finlex.fi/fi/lainsaadanto/1999/132) kaavatiedon tuottamiseen käytettävistä tietomuodoista määrätään vain hyvin yleisluontoisesti:
 
@@ -57,14 +55,21 @@ Yllä mainituissa laeissa ja asetuksissa ei määrätä tietomallimuotoisen kaav
 >
 > Ympäristöministeriön asetuksella voidaan antaa tarkempia säännöksiä yhteentoimivasta tietomallimuodosta, kaavakohteiden ja -määräysten vakiomuotoisesta esitystavasta sekä 3 momentissa tarkoitetulla erillisellä päätöksellä muutettujen tietojen viemisestä kaavaan.
 
-Alueidenkäyttölaissa ei siis tarkemmmin kuvata minkälainen mainittu "valtakunnallisesti yhteentoimiva tietomallimuoto" on tai kuka sen kuvaamisesta, ylläpidosta ja julkaisemisesta vastaa. Ääneenmainitsematon tulkinta on, että tällä tietomallimuodolla tarkoitetaan Yhteentoimivuuslaustalla kuvattua [Kaavatietomallia](https://tietomallit.suomi.fi/model/rytj-kaava "https://iri.suomi.fi/model/rytj-kaava/") ja sen käyttämiä koodistoja, joita ylläpidetään ja julkaistaan ympäristöministeriön toimesta perustuen  [tiedonhallintalain (906/2019)](https://www.finlex.fi/fi/lainsaadanto/2019/906) 6 §:n tulkintaan ministeriöiden *yleisten linjausten* ylläpitovelvoitteesta:
+Alueidenkäyttölaissa ja Katja-asetuksessa ei määrätä tietomallimuotoisen kaavatiedon tuottamisen tai sen tiedonsiirtomuotojen yksityiskohdista. Alueidenkäyttölaissa käytetään termiä "valtakunnallisesti yhteentoimiva tietomallimuoto" kuvaamatta tarkemmmin minkälainen mainittu on ja viittaamatta mihinkään tietyyn tietomallimäärittelyyn. Tämä on epäilemättä tarkoituksellista, sillä teknisen tietomallin kuvaaminen lain tasolla olisi sen väistämättömien kehittämistarpeiden vuoksi turhan jäykkää. 
+
+Lain teksti jättää melko paljon tulkinnanvaraa sille, mikä tulevaisuudessa katsotaan valtakunnallisesti yhteentoimivaksi tietomallimuodoksi, ehkä enemmänkin kuin mikä on ollut lainsäätäjän tarkoitus. Käytännössä lain tulkinta on, että valtakunnallisesti yhteentoimivalla tietomallimuodolla tarkoitetaan Digi- ja väestöviraston [Yhteentoimivuusalustalla](https://dvv.fi/yhteentoimivuusalusta) kuvattua [Kaavatietomallia](https://tietomallit.suomi.fi/model/rytj-kaava "https://iri.suomi.fi/model/rytj-kaava/") ja sen käyttämiä koodistoja, joita ympäristöministeriö ylläpitää ja julkaisee. Tämä tietomalli kuvaa kuitenkin vain tiedon loogisen rakenteen, ei tietojärjestelmien teknisen yhteentoimivuuden kannalta tarpeellisia loogisen tason tietomallin toteutusta teknisinä rajanpintakuvauksina tai tiedonsiirtomuotoina ja -formaatteina.
+
+Ympäristöministeriön ylläpitämiä rakennetun ympäristön sanastoja, koodistoja ja tietomalleja hallintaan osana [rakennetun ympäristän yhteentoimivuustyötä](https://ym.fi/yhteentoimivuus/rakennettuymparisto) mukaillen [tietomallien hallintamallien](https://ym.fi/documents/1410903/39234050/Rakennetun+ymp%C3%A4rist%C3%B6n+sanastojen,+koodistojen+ja+tietomallien+hallintamallit.pdf/a9c019a6-8d8c-6b28-3a9b-9e0c8768e200?t=1687271643581) määrittelemiä hyväksyntä- ja muutosprosesseja. Varsinaisesti tietomallien ja koodistojen muutokset hyväksyy ympäristöministeriö, perustuen [tiedonhallintalain (906/2019)](https://www.finlex.fi/fi/lainsaadanto/2019/906) 6 §:n tulkintaan ministeriöiden *yleisten linjausten* ylläpitovelvoitteesta:
 
 > Kunkin ministeriön on omalla toimialallaan huolehdittava julkisen hallinnon tiedonhallintakartan sisällön ajantasaisuudesta sekä ylläpidettävä yleisiä linjauksia yhteisten tietovarantojen ja tietojärjestelmien yhteentoimivuuden edistämiseksi.
 
+Tiedonhallintalain velvoite voitaisiin toki toteuttaa muullakin tavalla kuin että ministeriö suoraan itse määrittelee ja hyväksyy kansallisen tason tietomallit. Tärkeintä tietohallintolain näkökulmasta lienee, että ministeriö edistää rakennetun ympäristön tiedon ja tietojärjestelmien semanttisen ja teknisen tason yhteentoimivuutta.
+
+Sanasto- ja käsitemallitason semanttinen yhteentoimivuustyö kuuluu melko luontavasti valtionhallinnon tehtäviin, koska linkitys lainsäädäntötekstiin on tärkeä ja ilmeinen. Varsinaiset loogisen ja fyysisen tason tekniset tietomallit sen sijaan ovat tietojärjestelmien välisen tiedonvaihdon sopimuksia, joiden tehokas toteuttamiskelpoisuus perustuu tietojärjestelmien ja niiden käyttäjien aktiiviseen osallistumiseen ja eri toimijoiden teknisten tarpeiden ja mahdollisuuksien välillä tehtäviin kompromisseihin. Kaikkien rakennetun ympäristön tiedon intressiryhmien movivaation kannalta olisi tärkeää, että osallistujilla on todellinen vaikutusmahdollisuus ja että päätökset yhteisistä tiedon määrittelyistä tehdään yhdessä.
 
 ## Ryhti-järjestelmä ja alueidenkäytön tietovaranto
 
-[Laissa rakennetun ympäristön tietojärjestelmästä (ns. RYTJ-laki, 431/2023)](https://www.finlex.fi/fi/lainsaadanto/2023/431) 2 § määritellään Rakennetun ympäristön tietojärjestelmän koostuvan kahdesta tietovarannosta:
+[Lain rakennetun ympäristön tietojärjestelmästä](https://www.finlex.fi/fi/lainsaadanto/2023/431) 2 pykälässä määritellään Rakennetun ympäristön tietojärjestelmän koostuvan kahdesta tietovarannosta:
 
 > Rakennetun ympäristön tietojärjestelmä koostuu alueidenkäytön tietovarannosta ja rakennustietovarannosta. Alueidenkäytön tietovaranto sisältää tämän lain 5 §:ssä säädetyt alueidenkäyttöä koskevat tiedot.
 
@@ -104,7 +109,9 @@ Kunnan ja maakunnan liiton on toimitettava viivytyksettä rakennetun ympäristö
 >
 >5 §:ää sovelletaan 1.1.2029 alkaen.
 
-## Tietomallimuotoisen kaavatiedon siirtoformaattia ei ole standardoitu
+## Ryhti-järjestelmän kaavatiedon vientiformaatti (ns. Ryhti-JSON)
 
-Tiedonsiirtotavoista ja -formaateista tietomallimuotoisen kaavatiedon siirtämiseksi eri tietojärjestelmien välillä lainsäädännössä ei määrätä mitään. Siirtomuodolle ei myöskään ole määritelty kansallista standardia. Ryhti-järjestelmän JSON-muotoinen kaavatiedon sisääntuontiformaatti on yleisesti käytössä tiedonsiirrossa myös kuntien ja maakuntien suunnitteluohjelmistojen ja kaavarekisterijärjestelmien välillä, vaikka sitä ei suoranaisesti siihen on tarkoitettu. Tämä JSON-tietomuoto on kuvattu taulukkomuodossa Syken Ryhti-sivuston [Kaavatiedon tietomääritykset -sivulla](https://ryhti.syke.fi/alueidenkaytto/tietomallimuotoinen-kaavoitus/kaavatietomallin-tietomaaritykset/) ja koneluettavasti OpenAPI-muodossa GitHub-repossa [sykefi/Ryhti-rajapintakuvaukset](https://github.com/sykefi/Ryhti-rajapintakuvaukset).
+Tiedonsiirtotavoista ja -formaateista tietomallimuotoisen kaavatiedon siirtämiseksi eri tietojärjestelmien välillä lainsäädännössä ei määrätä mitään. Siirtomuodolle ei myöskään ole määritelty kansallista standardia.
+
+Ryhti-järjestelmän JSON-muotoinen kaavatiedon sisääntuontiformaatti on yleisesti käytössä tiedonsiirrossa myös kuntien ja maakuntien suunnitteluohjelmistojen ja kaavarekisterijärjestelmien välillä, vaikka sitä ei suoranaisesti siihen on tarkoitettu: parempaakaan yhteistä formaattia ei ole toistaiseksi olemassa. Nämä JSON-tietorakenteen on kuvattu taulukkomuodossa Syken Ryhti-sivuston [Kaavatiedon tietomääritykset -sivulla](https://ryhti.syke.fi/alueidenkaytto/tietomallimuotoinen-kaavoitus/kaavatietomallin-tietomaaritykset/) ja koneluettavasti OpenAPI-muodossa GitHub-repossa [sykefi/Ryhti-rajapintakuvaukset](https://github.com/sykefi/Ryhti-rajapintakuvaukset).
 
