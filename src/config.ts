@@ -56,7 +56,16 @@ export const CONFIG = {
             { label: 'Spatineo Oy', type: 'page', slug: 'spatineo'}
         ]
     },
-    { label: 'Tietoa', type: 'page', slug: 'tietoa' }
+    { 
+      label: 'Meistä',
+      type: 'menu',
+      subitems: [
+        { label: 'Kaavatietomalli.fi', type: 'page', slug: 'tietoa'},
+        { label: 'Toimituskunta', type: 'page', slug: 'toimituskunta'},
+        { label: 'Palaute', type: 'page', slug: 'palaute'},
+        { label: 'Tietosuoja', type: 'page', slug: 'tietosuoja'}
+      ]
+    }
   ] as NavItem[],
   themes: [
     { id: 'lainsaadanto', label: 'Lainsäädäntö', tag: 'lainsäädäntö' },
