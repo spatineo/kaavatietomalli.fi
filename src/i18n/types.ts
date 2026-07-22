@@ -93,6 +93,9 @@ export interface Translations {
     callToActionLabel: string;
   };
   page: {
+    tableOfContents: string;
+    close: string;
+    linkToSection: string;
   };
   author: {
     contactInfo: string;
