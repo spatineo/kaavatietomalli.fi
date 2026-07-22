@@ -34,26 +34,36 @@ export const HeadingRegistryContext = createContext<{
 } | null>(null);
 
 export function HeadingRegistryProvider({ children, uniqueHeadings }: { children: React.ReactNode; uniqueHeadings: HeaderItem[] }) {
-  const indexRef = useRef(0);
+  const countsRef = useRef<Record<string, number>>({});
   
-  // Reset index on every render pass to keep sequence synchronized
-  indexRef.current = 0;
+  // Reset the counts on every render pass of this provider
+  countsRef.current = {};
   
   const registerHeading = (level: number, text: string): string => {
-    let foundIndex = -1;
-    for (let i = indexRef.current; i < uniqueHeadings.length; i++) {
-      if (uniqueHeadings[i].level === level) {
-        foundIndex = i;
-        break;
+    const textSlug = slugify(text);
+    const key = `${level}|${textSlug}`;
+    const currentCount = countsRef.current[key] || 0;
+    countsRef.current[key] = currentCount + 1;
+    
+    // Find the currentCount-th heading in uniqueHeadings that matches level and slugified text
+    let matchIndex = 0;
+    const matchedHeading = uniqueHeadings.find(h => {
+      if (h.level === level && slugify(h.text) === textSlug) {
+        if (matchIndex === currentCount) {
+          return true;
+        }
+        matchIndex++;
       }
+      return false;
+    });
+    
+    if (matchedHeading) {
+      return matchedHeading.id;
     }
     
-    if (foundIndex !== -1) {
-      indexRef.current = foundIndex + 1;
-      return uniqueHeadings[foundIndex].id;
-    }
-    
-    return slugify(text);
+    // Fallback if not found: generate a slug on the fly
+    const fallbackId = textSlug;
+    return currentCount > 0 ? `${fallbackId}-${currentCount}` : fallbackId;
   };
 
   return (
