@@ -95,6 +95,9 @@ export const fi: Translations = {
     callToActionLabel: 'Tutustu tarkemmin',
   },
   page: {
+    tableOfContents: 'Sisällysluettelo',
+    close: 'Sulje',
+    linkToSection: 'Linkki tähän osioon: {{text}}',
   },
   author: {
     contactInfo: 'Yhteystiedot',

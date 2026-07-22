@@ -1,6 +1,8 @@
 import React, { useMemo, createContext, useContext, useRef } from 'react';
 import { Link } from 'lucide-react';
 import { scrollToAnchor } from '../lib/utils';
+import { CONFIG } from '../config';
+import { getTranslations, Language } from '../i18n';
 
 interface HeadingProps {
   level: number;
@@ -74,6 +76,7 @@ export function HeadingRegistryProvider({ children, uniqueHeadings }: { children
 }
 
 export function MarkdownHeading({ level, children }: HeadingProps) {
+  const t = getTranslations(CONFIG.language as Language);
   const text = getTextContent(children);
   const registry = useContext(HeadingRegistryContext);
   
@@ -97,8 +100,8 @@ export function MarkdownHeading({ level, children }: HeadingProps) {
         href={`#${id}`}
         onClick={handleAnchorClick}
         className="absolute left-0 opacity-0 group-hover:opacity-100 transition-opacity pr-2 text-slate-500 hover:text-brand-accent flex items-center justify-center w-6 h-full cursor-pointer"
-        title={`Linkki tähän osioon: ${text}`}
-        aria-label={`Linkki tähän osioon: ${text}`}
+        title={t.page.linkToSection.replace('{{text}}', text)}
+        aria-label={t.page.linkToSection.replace('{{text}}', text)}
       >
         <Link size={16} />
       </a>
