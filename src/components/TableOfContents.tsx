@@ -3,12 +3,15 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X } from 'lucide-react';
 import { HeaderItem } from './MarkdownHeading';
 import { scrollToAnchor } from '../lib/utils';
+import { CONFIG } from '../config';
+import { getTranslations, Language } from '../i18n';
 
 interface TableOfContentsProps {
   headings: HeaderItem[];
 }
 
 export function TableOfContents({ headings }: TableOfContentsProps) {
+  const t = getTranslations(CONFIG.language as Language);
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +43,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
         <button
           onClick={() => setIsOpen(!isOpen)}
           aria-expanded={isOpen}
-          aria-label="Sisällysluettelo"
+          aria-label={t.page.tableOfContents}
           data-testid="toc-trigger"
           className="p-2.5 bg-brand-muted hover:bg-white/10 text-slate-400 hover:text-brand-accent rounded-xl border border-white/10 transition-all shadow-xl flex items-center justify-center focus-visible:ring-2 focus-visible:ring-brand-accent cursor-pointer"
         >
@@ -59,11 +62,11 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
               className="absolute left-0 mt-3 w-[720px] xl:w-[820px] max-w-[calc(100vw-8rem)] bg-black/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black z-40 max-h-[70vh] overflow-y-auto custom-scrollbar"
             >
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
-                <span className="text-xs font-black uppercase tracking-wider text-slate-400">Sisällysluettelo</span>
+                <span className="text-xs font-black uppercase tracking-wider text-slate-400">{t.page.tableOfContents}</span>
                 <button
                   onClick={() => setIsOpen(false)}
                   className="p-1 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
-                  aria-label="Sulje"
+                  aria-label={t.page.close}
                 >
                   <X size={16} />
                 </button>
