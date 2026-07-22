@@ -17,7 +17,7 @@
 
 @layer base {
   html, body {
-    @apply overflow-x-hidden w-full;
+    @apply overflow-x-clip w-full;
   }
 
   body {

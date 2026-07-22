@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, ArrowRight, Award } from 'lucide-react';
@@ -13,6 +13,8 @@ import { ContentFooter } from './ContentFooter';
 
 import { CodeBlock } from './CodeBlock';
 import { PostComments } from './PostComments';
+import { MarkdownHeading, useHeadings, slugify, getUniqueHeadings, HeadingRegistryProvider } from './MarkdownHeading';
+import { TableOfContents } from './TableOfContents';
 
 interface PostViewProps {
   post: PostData;
@@ -29,6 +31,39 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
   const [relatedPosts, setRelatedPosts] = useState<PostMetadata[]>([]);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [authorImg, setAuthorImg] = useState<string | null>(null);
+  const headings = useHeadings(post.content);
+  const combinedHeadings = useMemo(() => {
+    return getUniqueHeadings(post.title, headings);
+  }, [post.title, headings]);
+  const titleId = combinedHeadings[0].id;
+
+  // Scroll to hash on load or post content update
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash) {
+        const hash = decodeURIComponent(window.location.hash.substring(1));
+        if (hash) {
+          const element = document.getElementById(hash);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Initial check with tiny timeout to let markdown render
+    if (window.location.hash) {
+      const timer = setTimeout(handleHashChange, 350);
+      return () => {
+        window.removeEventListener('hashchange', handleHashChange);
+        clearTimeout(timer);
+      };
+    }
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [post.content]);
 
   useEffect(() => {
     if (post.authorSlug) {
@@ -77,9 +112,10 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       exit={{ opacity: 0, y: -20 }}
       className="max-w-4xl mx-auto pt-4 pb-24 px-6 md:px-10 relative"
     >
-      {isSponsored && (
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-b from-amber-500/5 via-amber-500/0 to-transparent blur-3xl pointer-events-none -z-10" />
-      )}
+      <HeadingRegistryProvider uniqueHeadings={combinedHeadings}>
+        {isSponsored && (
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-b from-amber-500/5 via-amber-500/0 to-transparent blur-3xl pointer-events-none -z-10" />
+        )}
 
       <div className="flex flex-col gap-3 mb-10" role="navigation" aria-label={t.post.ariaLabel}>
         <div className="flex">
@@ -162,7 +198,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
             </div>
           )}
 
-          <h1 className={`text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[0.01em] mb-8 ${isSponsored ? 'text-amber-50 font-sans font-extrabold' : 'text-white font-serif font-medium'}`}>
+          <h1 id={titleId} className={`text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-[0.01em] mb-8 scroll-mt-24 ${isSponsored ? 'text-amber-50 font-sans font-extrabold' : 'text-white font-serif font-medium'}`}>
             {post.title}
           </h1>
 
@@ -244,36 +280,48 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           </div>
         )}
       </div>
-      <div className={`markdown-body prose prose-xl prose-stone ${isSponsored ? 'journal-sponsored' : 'journal-normal'}`}>
-        <ReactMarkdown
-        urlTransform={(url) => resolveImageUrl(url)}
-        components={{
-          pre({ node, children, ...props }: any) {
-            const codeEl = children && (children as any).props;
-            const className = codeEl?.className || '';
-            const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
-            
-            if (isInteractive) {
-              return <>{children}</>;
-            }
-            return <pre {...props}>{children}</pre>;
-          },
-          code({ node, className, children, ref, ...props }: any) {
-            return (
-              <CodeBlock
-                className={className}
-                filePath={`src/${post.slug}.md`}
-                placeholderHeight="h-64"
-                {...props}
-              >
-                {children}
-              </CodeBlock>
-            );
-          },
-        }}
-      >
-        {post.content}
-        </ReactMarkdown>
+      <div className="relative">
+        {headings.length > 2 && (
+          <TableOfContents headings={combinedHeadings} />
+        )}
+
+        <div className={`markdown-body prose prose-xl prose-stone ${isSponsored ? 'journal-sponsored' : 'journal-normal'}`}>
+          <ReactMarkdown
+            urlTransform={(url) => resolveImageUrl(url)}
+            components={{
+              h1({ children }: any) { return <MarkdownHeading level={1}>{children}</MarkdownHeading>; },
+              h2({ children }: any) { return <MarkdownHeading level={2}>{children}</MarkdownHeading>; },
+              h3({ children }: any) { return <MarkdownHeading level={3}>{children}</MarkdownHeading>; },
+              h4({ children }: any) { return <MarkdownHeading level={4}>{children}</MarkdownHeading>; },
+              h5({ children }: any) { return <MarkdownHeading level={5}>{children}</MarkdownHeading>; },
+              h6({ children }: any) { return <MarkdownHeading level={6}>{children}</MarkdownHeading>; },
+              pre({ node, children, ...props }: any) {
+                const codeEl = children && (children as any).props;
+                const className = codeEl?.className || '';
+                const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
+                
+                if (isInteractive) {
+                  return <>{children}</>;
+                }
+                return <pre {...props}>{children}</pre>;
+              },
+              code({ node, className, children, ref, ...props }: any) {
+                return (
+                  <CodeBlock
+                    className={className}
+                    filePath={`src/${post.slug}.md`}
+                    placeholderHeight="h-64"
+                    {...props}
+                  >
+                    {children}
+                  </CodeBlock>
+                );
+              },
+            }}
+          >
+            {post.content}
+          </ReactMarkdown>
+        </div>
       </div>
       {isSponsored && (
         <div className="mt-16 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-brand-muted to-[#17171a] border border-amber-400/10 flex flex-col sm:flex-row items-center gap-6 sm:justify-between text-left relative overflow-hidden">
@@ -330,6 +378,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         onBack={onBack}
         className={relatedPosts.length > 0 ? 'mt-40' : (isCommentsOpen ? 'mt-40' : 'mt-12')}
       />
+      </HeadingRegistryProvider>
     </motion.article>
   );
 }

@@ -56,3 +56,17 @@ export async function checkBackendVersion(): Promise<boolean> {
   }
   return true;
 }
+
+/**
+ * Smoothly scrolls to an element by its ID and updates the URL hash
+ * without triggering the browser's default instant jump scroll.
+ */
+export function scrollToAnchor(id: string) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+    window.history.pushState(null, '', `#${id}`);
+    window.dispatchEvent(new Event('hashchange'));
+  }
+}
+
