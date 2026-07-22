@@ -10,11 +10,14 @@ import { getFilesRecursive, escapeXml, validateMarkdownVideoBlocks } from './con
 
 dotenv.config();
 
+const useTestContent = process.env.CONTENT_MODE === 'test' || process.env.CONTENT_MODE === 'dev/test' || process.env.CONTENT_MODE === 'dev';
 const BASE_URL = (process.env.VITE_BASE_URL || process.env.APP_URL || PROJECT_CONFIG.defaultBaseUrl).replace(/\/$/, '');
 const REPO_OWNER = PROJECT_CONFIG.repoOwner;
 const REPO_NAME = PROJECT_CONFIG.repoName;
-const RAW_GITHUB_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/refs/heads/main/content`;
-const CONTENT_DIR = path.join(process.cwd(), 'content');
+const RAW_GITHUB_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/refs/heads/main/${useTestContent ? 'test-content' : 'content'}`;
+const CONTENT_DIR = useTestContent
+  ? path.join(process.cwd(), 'test-content')
+  : path.join(process.cwd(), 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
 if (!fs.existsSync(PUBLIC_DIR)) {
@@ -34,7 +37,8 @@ export function getGitHistoryOfContent(): Record<string, GitCommitInfo[]> {
     return historyMap;
   }
   try {
-    const output = execSync('git log --name-status --pretty=format:"COMMIT:%H|%aI|%s" -- "content"', {
+    const dirToLog = process.env.CONTENT_MODE === 'test' || process.env.CONTENT_MODE === 'dev/test' || process.env.CONTENT_MODE === 'dev' ? 'test-content' : 'content';
+    const output = execSync(`git log --name-status --pretty=format:"COMMIT:%H|%aI|%s" -- "${dirToLog}"`, {
       encoding: 'utf-8',
       stdio: ['ignore', 'pipe', 'ignore']
     });
@@ -394,7 +398,7 @@ ${posts.map(post => `  <url>
   const journalPostsOnly = posts.filter(post => post.metadata.category === 'journal');
 
   const postsWithGitDates = journalPostsOnly.map(post => {
-    const filePath = `content/posts/${post.file}`;
+    const filePath = `${useTestContent ? 'test-content' : 'content'}/posts/${post.file}`;
     const fileCommits = historyMap[filePath] || [];
 
     let createdDate = post.metadata.date || post.metadata.publishDate || '';
