@@ -5,7 +5,10 @@ import { create, insert, save } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
 import { getFilesRecursive } from './content-utils.js';
 
-const CONTENT_DIR = path.join(process.cwd(), 'content');
+const useTestContent = process.env.CONTENT_MODE === 'test' || process.env.CONTENT_MODE === 'dev/test' || process.env.CONTENT_MODE === 'dev';
+const CONTENT_DIR = useTestContent
+  ? path.join(process.cwd(), 'test-content')
+  : path.join(process.cwd(), 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
 async function generateSearchIndex() {

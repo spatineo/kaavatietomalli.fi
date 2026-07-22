@@ -65,17 +65,23 @@ jobs:
         if: steps.check.outputs.should_rebuild == 'true' && steps.cache-playwright.outputs.cache-hit == 'true'
         run: npx playwright install-deps
       
-      - name: Generate assets and search index
+      - name: Generate assets and search index (test-content mode)
         if: steps.check.outputs.should_rebuild == 'true'
         run: npm run prebuild
+        env:
+          CONTENT_MODE: test
 
       - name: Run unit tests
         if: steps.check.outputs.should_rebuild == 'true'
         run: npm run test:run
+        env:
+          CONTENT_MODE: test
 
       - name: Run Playwright tests
         if: steps.check.outputs.should_rebuild == 'true'
         run: npm run test:e2e
+        env:
+          CONTENT_MODE: test
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1

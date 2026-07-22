@@ -3,6 +3,7 @@ build/
 dist/
 public/
 test-results/
+playwright-report/
 src/version.ts
 coverage/
 .DS_Store
