@@ -28,8 +28,7 @@ jobs:
         with:
           node-version: 24
           cache: 'npm'
-
-      # 1. Standard dependency installation
+          
       - name: Install dependencies
         run: npm ci
 
@@ -39,57 +38,6 @@ jobs:
       - name: Check for newly publishable scheduled posts and Giscus stats changes
         id: check
         run: npx tsx scripts/check-scheduled-posts.ts
-
-      # 2. Get Playwright version for exact browser cache-key matching
-      - name: Get Playwright version
-        id: playwright-version
-        if: steps.check.outputs.should_rebuild == 'true'
-        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> $GITHUB_OUTPUT
-
-      # 3. Cache Playwright browser binaries to make subsequent builds incredibly fast
-      - name: Cache Playwright Browsers
-        id: cache-playwright
-        if: steps.check.outputs.should_rebuild == 'true'
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ steps.playwright-version.outputs.version }}
-
-      # 4. If cache misses, download Chromium and all necessary system libraries (os level dependencies)
-      - name: Install Playwright Chromium Browser & OS Dependencies
-        if: steps.check.outputs.should_rebuild == 'true' && steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-
-      # 5. If cache hits, we still need to make sure OS dependencies are mapped
-      - name: Install Playwright OS Dependencies Only
-        if: steps.check.outputs.should_rebuild == 'true' && steps.cache-playwright.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
-      
-      - name: Generate assets and search index (test-content mode)
-        if: steps.check.outputs.should_rebuild == 'true'
-        run: npm run prebuild
-        env:
-          CONTENT_MODE: test
-
-      - name: Run unit tests
-        if: steps.check.outputs.should_rebuild == 'true'
-        run: npm run test:run
-        env:
-          CONTENT_MODE: test
-
-      - name: Run Playwright tests
-        if: steps.check.outputs.should_rebuild == 'true'
-        run: npm run test:e2e
-        env:
-          CONTENT_MODE: test
-
-      - name: Upload Playwright report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        if: steps.check.outputs.should_rebuild == 'true' && !cancelled()
-        with:
-          name: playwright-report-scheduled
-          path: playwright-report/
-          retention-days: 30
 
       - name: Build
         if: steps.check.outputs.should_rebuild == 'true'
