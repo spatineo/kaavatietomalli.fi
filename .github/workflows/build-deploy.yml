@@ -43,21 +43,14 @@ jobs:
           node-version: 24
           cache: 'npm'
 
-      # 1. Standard dependency installation
       - name: Install dependencies
         run: npm ci
-        
-      - name: Print detected build mode
-        if: steps.filter.outputs.code != 'true'
-        run: echo "No changes in code or configuration detected, skipping tests" 
 
-      # 2. Get Playwright version for exact browser cache-key matching
       - name: Get Playwright version
         id: playwright-version
         if: steps.filter.outputs.code == 'true'
         run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> $GITHUB_OUTPUT
 
-      # 3. Cache Playwright browser binaries to make subsequent builds incredibly fast
       - name: Cache Playwright Browsers
         id: cache-playwright
         if: steps.filter.outputs.code == 'true'
@@ -66,18 +59,13 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-browsers-${{ steps.playwright-version.outputs.version }}
 
-      # 4. If cache misses, download Chromium and all necessary system libraries (os level dependencies)
       - name: Install Playwright Chromium Browser & OS Dependencies
         if: steps.filter.outputs.code == 'true' && steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
 
-      # 5. If cache hits, we still need to make sure OS dependencies are mapped
       - name: Install Playwright OS Dependencies Only
         if: steps.filter.outputs.code == 'true' && steps.cache-playwright.outputs.cache-hit == 'true'
         run: npx playwright install-deps
-
-      - name: Download Giscus stats
-        run: npm run fetch-giscus-stats
 
       - name: Generate assets and search index (test-content mode)
         if: steps.filter.outputs.code == 'true'
@@ -106,6 +94,12 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 30
+
+      - name: Test Markdown content
+        run: npm run test:content
+
+      - name: Download Giscus stats
+        run: npm run fetch-giscus-stats
 
       - name: Build
         run: npm run build

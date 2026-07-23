@@ -14,6 +14,7 @@
     "test": "CONTENT_MODE=test vitest",
     "test:run": "CONTENT_MODE=test vitest run",
     "test:e2e": "CONTENT_MODE=test playwright test",
+    "test:content": "vitest run scripts/content.test.ts",
     "test-local": "CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild; exit $status)",
     "test-local:run": "CONTENT_MODE=test npm run prebuild && (npm run test:run; status=$?; npm run prebuild; exit $status)",
     "test-local:e2e": "CONTENT_MODE=test npm run prebuild && (npm run test:e2e; status=$?; npm run prebuild; exit $status)"
