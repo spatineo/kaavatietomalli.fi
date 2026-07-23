@@ -235,6 +235,15 @@ export function generateAssets() {
     'utf-8'
   );
 
+  const configPath = fs.existsSync(path.join(CONTENT_DIR, 'content-config.json'))
+    ? path.join(CONTENT_DIR, 'content-config.json')
+    : path.join(process.cwd(), 'content', 'content-config.json');
+
+  if (fs.existsSync(configPath)) {
+    const configData = fs.readFileSync(configPath, 'utf-8');
+    fs.writeFileSync(path.join(CONTENT_OUT_DIR, 'content-config.json'), configData, 'utf-8');
+  }
+
   // Generate individual content files
   const POSTS_OUT_DIR = path.join(CONTENT_OUT_DIR, 'posts');
   const PAGES_OUT_DIR = path.join(CONTENT_OUT_DIR, 'pages');

@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { History, Github, Twitter, Mail, Menu, X, ChevronDown } from 'lucide-react';
 import SpatineoLogo from './SpatineoLogo';
 import { SearchWidget } from './SearchWidget';
-import { CONFIG, NavItem } from '../config';
+import { CONFIG } from '../config';
+import { getContentConfig, ContentConfig, NavItem } from '../lib/blog';
 import { getTranslations, Language } from '../i18n';
 import { getTracker } from '../services/analytics';
 import { BUILD_VERSION } from '../version';
@@ -21,7 +22,18 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
   const t = getTranslations(CONFIG.language as Language);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number | null>(null);
+  const [contentConfig, setContentConfig] = useState<ContentConfig>({ nav: [], themes: [] });
   const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    getContentConfig().then(config => {
+      if (isMounted) {
+        setContentConfig(config);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -66,13 +78,13 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
     setIsMenuOpen(false);
   };
 
-  const processedNav: NavItem[] = CONFIG.nav.map(item => {
+  const processedNav: NavItem[] = (contentConfig.nav || []).map(item => {
     if (item.type === 'blog') {
       return {
         ...item,
         subitems: [
           { label: t.navigation.newest, type: 'blog' },
-          ...CONFIG.themes.map(theme => ({
+          ...(contentConfig.themes || []).map(theme => ({
             label: theme.label,
             type: 'tag' as const,
             slug: theme.tag

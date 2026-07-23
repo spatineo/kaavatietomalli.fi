@@ -27,69 +27,7 @@ export const CONFIG = {
     lang: 'en',
     loading: 'lazy'
   },
-  nav: [
-    { label: 'Blogi', type: 'blog' },
-    { 
-      label: 'Yhteentoimivuus', 
-      type: 'menu',
-      subitems: [
-        { label: 'Lait ja asetukset', type: 'page', slug: 'lainsaadanto'},
-        { label: 'Kaavatietomallin määrittely', type: 'page', slug: 'kaavatietomalli-yalusta'},
-        { label: 'Tietomallin soveltamisohjeet', type: 'page', slug: 'soveltamisohjeet'},
-        { label: 'Ryhti-järjestelmä', type: 'page', slug: 'ryhti-jarjestelma'},
-        { label: 'Kaavatieto kuntajärjestelmissä', type: 'page', slug: 'kuntajarjestelmat'},
-        { label: 'Kaavatiedon KV-standardit', type: 'page', slug: 'kv-standardit'}
-      ]
-    },
-    { 
-        label: 'Ratkaisut',
-        type: 'menu',
-        subitems: [
-            { label: 'Ohjelmistot', type: 'tag', slug: 'ohjelmistot'},
-            { label: 'Tietomallisparraukset ja koulutukset', type: 'tag', slug: 'sparraus'},
-            { label: 'Markkinaselvitykset', type: 'tag', slug: 'markkinaselvitys'}
-        ]
-    },
-    { 
-        label: 'Kumppanit',
-        type: 'menu',
-        subitems: [
-            { label: 'Spatineo Oy', type: 'page', slug: 'spatineo'}
-        ]
-    },
-    { 
-      label: 'Meistä',
-      type: 'menu',
-      subitems: [
-        { label: 'Kaavatietomalli.fi', type: 'page', slug: 'tietoa'},
-        { label: 'Toimituskunta', type: 'page', slug: 'toimituskunta'},
-        { label: 'Palaute', type: 'page', slug: 'palaute'},
-        { label: 'Tietosuoja', type: 'page', slug: 'tietosuoja'}
-      ]
-    }
-  ] as NavItem[],
-  themes: [
-    { id: 'lainsaadanto', label: 'Lainsäädäntö', tag: 'lainsäädäntö' },
-    { id: 'tietomallit', label: 'Tietomallit', tag: 'tietomallit' },
-    { id: 'kehitysideat', label: 'Kehitysideat', tag: 'kehitysideat' },
-    { id: 'yhteiskehittaminen', label: 'Yhteiskehittäminen', tag: 'yhteiskehittaminen' },
-    { id: 'uusi-ajattelu', label: 'Uusi ajattelutapa', tag: 'uusi-ajattelu' },
-    { id: 'kokemukset', label: 'Kokemukset', tag: 'kokemukset' }
-  ] as ThemeItem[],
   analytics: {
     gaTrackingId: env.VITE_GA_TRACKING_ID || 'G-E9YTLR7C10'
   }
 };
-
-export interface ThemeItem {
-  id: string;
-  label: string;
-  tag: string;
-}
-
-export interface NavItem {
-  label?: string;
-  type: 'page' | 'tag' | 'blog' | 'menu';
-  slug?: string;
-  subitems?: NavItem[];
-}
