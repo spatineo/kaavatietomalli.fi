@@ -4,19 +4,20 @@ A highly polished, serverless headless CMS website built with React, Vite, and T
 
 ---
 
-## 📖 Table of Contents
+## Table of Contents
 1. [Core CMS Operating Process](#-core-cms-operating-process)
 2. [Project & Code Architecture](#-project--code-architecture)
 3. [Testing Implementation & Developer Guidance](#-testing-implementation--developer-guidance)
    - [Architectural Patterns & Component Isolation](#1-architectural-patterns--component-isolation)
    - [Unit & Integration Testing (Vitest + RTL)](#2-unit--integration-testing-vitest--rtl)
    - [End-to-End Testing (Playwright)](#3-end-to-end-testing-playwright)
+   - [Test Content & Local-Test Variants](#6-test-content--local-test-variants)
 4. [Contribution Guidelines](#-contribution-guidelines)
 5. [Development & Build Commands](#-development--build-commands)
 
 ---
 
-## ⚙️ Core CMS Operating Process
+## Core CMS Operating Process
 
 The platform operates as a **git-backed serverless developer CMS**. It requires zero database instances or complex backend runtimes. Instead, it relies on static file generation and indexing during the build phase to yield ultra-fast loads, robust offline capabilities, and maximum security.
 
@@ -54,7 +55,7 @@ The platform operates as a **git-backed serverless developer CMS**. It requires 
 
 ---
 
-## 🏛️ Project & Code Architecture
+## Project & Code Architecture
 
 - **`src/hooks/useRouter.ts`**: Governs routing state, back-button history operations, and path resolution.
 - **`src/hooks/useContentLoader.ts`**: Represents the decoupled view-loading state machine. Ensures is-data-ready indicators match requested routes.
@@ -65,7 +66,7 @@ The platform operates as a **git-backed serverless developer CMS**. It requires 
 
 ---
 
-## 🧪 Testing Implementation & Developer Guidance
+## Testing Implementation & Developer Guidance
 
 This codebase is specifically engineered to support flawless, isolation-friendly testing via **Vitest + React Testing Library (RTL)** for localized hooks/views, and **Playwright** for deep automated integration flows.
 
@@ -329,7 +330,36 @@ When writing, executing, and updating E2E tests, mind the following behaviors cr
 
 ---
 
-## 🤝 Contribution Guidelines
+### 6. Test Content & Local-Test Variants
+
+To prevent test flakiness due to dynamic changes in the main CMS content (such as scheduled future posts, custom layout shifts, or draft changes), the testing harness relies on a secondary predictable sandboxed dataset and automated shell-trapping routines.
+
+#### A. The Test Content Directory
+The `/test-content/` directory mirrors the exact directory structure of the main `/content/` directory but is populated with static, stable mock pages, mock posts, and configurations.
+
+* **Triggering**: Setting the environment variable `CONTENT_MODE=test` forces the CMS ingestion engine (`scripts/generate-assets.ts`, `scripts/generate-search-index.ts`) to read, compile, and output static files from `/test-content/` instead of `/content/`.
+* **Testing Resilience**: All test suites (Vitest unit tests, route hook assertions, and Playwright E2E browser checks) run in this test-content sandboxed mode. This guarantees assertions match exactly against stable, well-defined metadata and static assets.
+
+#### B. Local-Test Script Variants
+When running tests locally, executing them in test-content mode manually requires copying/building assets and remembering to rebuild live content afterward. To automate this and ensure your local development container doesn't get left in a "test state," the project provides the following `local-test` shell wrappers:
+
+* `npm run test-local`: Runs Vitest in interactive watch mode against `test-content` assets.
+* `npm run test-local:run`: Runs a single-pass Vitest test suite against `test-content` assets.
+* `npm run test-local:e2e`: Runs Playwright E2E integration tests against `test-content` assets.
+
+##### The Subshell Status Trap Mechanism:
+These scripts execute a robust build-and-cleanup sequence:
+```bash
+CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild; exit $status)
+```
+1. **Prebuild Test Assets**: Compiles and registers index databases and post indexes strictly using files under `/test-content/`.
+2. **Execute Tests**: Runs the targeted test suites in a subshell, capturing the exit code (`status=$?`).
+3. **Rebuild Production Assets (Cleanup)**: Regardless of whether the tests succeed or fail, the script intercepts the subshell teardown and triggers a standard `npm run prebuild` (using the default `/content/` directory). This restores your local environment to the correct development preview state automatically.
+4. **Exit with Captured Status**: Gracefully propagates the test suite's original return code to guarantee correct integration checks and CI/CD alignment.
+
+---
+
+## Contribution Guidelines
 
 To maintain code quality, ensure site stability, and verify all automated checks pass, **direct pushing to the `main` branch is strictly forbidden by branch protection rules**. All contributions must follow our collaborative pull-request workflow:
 
@@ -343,7 +373,7 @@ To maintain code quality, ensure site stability, and verify all automated checks
 
 ---
 
-## 🛠️ Development & Build Commands
+## Development & Build Commands
 
 Ensure standard tools are set up before running builds:
 
@@ -362,4 +392,10 @@ npm run lint
 
 # Compile and package application fully for deployment
 npm run build
+
+# Run unit and integration tests locally against stable test-content assets with auto-cleanup
+npm run test-local:run
+
+# Run Playwright E2E integration tests locally against stable test-content assets with auto-cleanup
+npm run test-local:e2e
 ```
