@@ -32,6 +32,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Test Markdown content
+        run: npm run test:content
+
       - name: Download Giscus stats
         run: npm run fetch-giscus-stats
 
