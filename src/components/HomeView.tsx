@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { Timeline } from './Timeline';
 import { HistoryHero } from './HistoryHero';
 import { ContentFooter } from './ContentFooter';
-import { PostMetadata, AuthorData } from '../lib/blog';
-import { CONFIG, ThemeItem } from '../config';
+import { PostMetadata, AuthorData, getContentConfig, ThemeItem } from '../lib/blog';
+import { CONFIG } from '../config';
 import { resolveImageUrl } from '../lib/utils';
 import { getTranslations, Language } from '../i18n';
 
@@ -35,6 +35,17 @@ export function HomeView({
   onBlog
 }: HomeViewProps) {
   const t = getTranslations(CONFIG.language as Language);
+  const [themes, setThemes] = useState<ThemeItem[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    getContentConfig().then(config => {
+      if (isMounted) {
+        setThemes(config.themes || []);
+      }
+    });
+    return () => { isMounted = false; };
+  }, []);
 
   // Filter posts
   const historyPosts = useMemo(() => posts.filter(p => p.category === 'history'), [posts]);
@@ -170,7 +181,7 @@ export function HomeView({
             {t.blog.description}
           </p>
 
-          {CONFIG.themes && CONFIG.themes.length > 0 && (
+          {themes && themes.length > 0 && (
             <div className="flex flex-col gap-6">
               <h3 className="text-[10px] uppercase font-bold tracking-[0.2em] text-slate-500 ml-1">{t.common.themes}</h3>
               <div className="flex flex-wrap gap-3">
@@ -185,7 +196,7 @@ export function HomeView({
                 >
                   {t.common.all}
                 </button>
-                {CONFIG.themes.map((theme: ThemeItem) => (
+                {themes.map((theme: ThemeItem) => (
                   <button
                     key={theme.id}
                     onClick={() => {

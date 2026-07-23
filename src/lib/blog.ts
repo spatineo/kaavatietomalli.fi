@@ -51,8 +51,45 @@ export interface AuthorData {
   file?: string;
 }
 
+export interface ThemeItem {
+  id: string;
+  label: string;
+  tag: string;
+}
+
+export interface NavItem {
+  label?: string;
+  type: 'page' | 'tag' | 'blog' | 'menu';
+  slug?: string;
+  subitems?: NavItem[];
+}
+
 import { CONFIG } from '../config';
 import { BUILD_VERSION } from '../version';
+
+export interface ContentConfig {
+  nav: NavItem[];
+  themes: ThemeItem[];
+}
+
+let cachedContentConfig: ContentConfig | null = null;
+
+export async function getContentConfig(): Promise<ContentConfig> {
+  if (cachedContentConfig) {
+    return cachedContentConfig;
+  }
+  try {
+    const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/content-config.json`);
+    cachedContentConfig = {
+      nav: data?.nav || [],
+      themes: data?.themes || []
+    };
+    return cachedContentConfig;
+  } catch (error) {
+    console.error('Error loading content config:', error);
+    return { nav: [], themes: [] };
+  }
+}
 
 export interface TagIndex {
   [tag: string]: {
