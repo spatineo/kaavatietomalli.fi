@@ -34,10 +34,11 @@ export const CONFIG = {
       type: 'menu',
       subitems: [
         { label: 'Lait ja asetukset', type: 'page', slug: 'lainsaadanto'},
-        { label: 'Kansallinen kaavatietomalli', type: 'page', slug: 'kaavatietomalli-yalusta'},
-        { label: 'Soveltamisohjeet', type: 'page', slug: 'soveltamisohjeet'},
+        { label: 'Kaavatietomallin määrittely', type: 'page', slug: 'kaavatietomalli-yalusta'},
+        { label: 'Tietomallin soveltamisohjeet', type: 'page', slug: 'soveltamisohjeet'},
         { label: 'Ryhti-järjestelmä', type: 'page', slug: 'ryhti-jarjestelma'},
-        { label: 'Kaavatieto kuntajärjestelmissä', type: 'page', slug: 'kuntajarjestelmat'}
+        { label: 'Kaavatieto kuntajärjestelmissä', type: 'page', slug: 'kuntajarjestelmat'},
+        { label: 'Kaavatiedon KV-standardit', type: 'page', slug: 'kv-standardit'}
       ]
     },
     { 

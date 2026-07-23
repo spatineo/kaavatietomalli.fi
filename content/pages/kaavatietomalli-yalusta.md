@@ -1,6 +1,5 @@
 ---
-title: "Kansallinen kaavatietomalli"
+title: "Kaavatietomallin määrittely"
 ---
 
-# Kansallinen kaavatietomalli
 
