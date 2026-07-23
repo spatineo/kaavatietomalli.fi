@@ -120,6 +120,7 @@ export function generateAssets() {
         tags: data.tags || [],
         coverImage: data.coverImage || '',
         publishDate: data.publishDate || null,
+        draft: data.draft === true || data.draft === 'true',
         file: file.replace(/\\/g, '/'),
         promotional: typeof data.promotional === 'boolean' ? data.promotional : (data.promotional === 'true' ? true : (typeof data.promotional === 'string' && data.promotional.trim().length > 0 && data.promotional !== 'false')),
         partner: data.partner || (typeof data.promotional === 'string' && data.promotional !== 'true' && data.promotional !== 'false' ? data.promotional : undefined),
@@ -131,11 +132,12 @@ export function generateAssets() {
   });
 
   const posts = allPosts.filter(post => {
+    if (post.metadata.draft) return false;
     if (!post.metadata.publishDate) return true;
     return now >= new Date(post.metadata.publishDate);
   });
 
-  const pages = pageFiles.map(file => {
+  const allPages = pageFiles.map(file => {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(pagesDir, file), 'utf-8');
     validateMarkdownVideoBlocks(path.join(pagesDir, file), content);
@@ -148,6 +150,7 @@ export function generateAssets() {
         slug,
         title: data.title || slug,
         tags: data.tags || [],
+        draft: data.draft === true || data.draft === 'true',
         file: file.replace(/\\/g, '/'),
         partner: data.partner || undefined
       },
@@ -156,7 +159,9 @@ export function generateAssets() {
     };
   });
 
-  const authors = authorFiles.map(file => {
+  const pages = allPages.filter(page => !page.metadata.draft);
+
+  const allAuthors = authorFiles.map(file => {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(authorsDir, file), 'utf-8');
     const { data, content: textContent } = matter(content);
@@ -171,11 +176,14 @@ export function generateAssets() {
         social: data.social || {},
         skills: data.skills || [],
         file: file.replace(/\\/g, '/'),
-        ...data
+        ...data,
+        draft: data.draft === true || data.draft === 'true'
       },
       content: textContent
     };
   });
+
+  const authors = allAuthors.filter(author => !author.metadata.draft);
 
   // Generate JSONP index files (Metadata only)
   const CONTENT_OUT_DIR = path.join(PUBLIC_DIR, 'content');

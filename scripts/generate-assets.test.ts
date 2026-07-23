@@ -507,4 +507,154 @@ Partner description.`,
       mkdirSpy.mockRestore();
     }
   });
+
+  it('should exclude any posts, pages, and authors marked with draft=true', () => {
+    const mockedFiles: Record<string, string> = {
+      'posts/draft-post.md': `---
+title: "Draft Post Title"
+category: "journal"
+date: "2026-05-15"
+tags: ["gis"]
+publishDate: "2026-05-15T00:00:00Z"
+draft: true
+author: "Ilkka"
+---
+This is a draft post.`,
+
+      'posts/active-post.md': `---
+title: "Active Post Title"
+category: "journal"
+date: "2026-05-15"
+tags: ["gis"]
+publishDate: "2026-05-15T00:00:00Z"
+author: "Ilkka"
+---
+This is an active post.`,
+
+      'pages/draft-page.md': `---
+title: "Draft Page Title"
+tags: ["docs"]
+draft: true
+---
+This is a draft page.`,
+
+      'pages/active-page.md': `---
+title: "Active Page Title"
+tags: ["docs"]
+---
+This is an active page.`,
+
+      'authors/draft-author.md': `---
+name: "Draft Author"
+title: "Draft Specialist"
+draft: true
+---
+Draft author bio.`,
+
+      'authors/active-author.md': `---
+name: "Active Author"
+title: "Active Specialist"
+---
+Active author bio.`,
+    };
+
+    const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation((p: any) => {
+      const pathStr = String(p).replace(/\\/g, '/');
+      if (pathStr.includes('content/posts') || pathStr.includes('content/pages') || pathStr.includes('content/authors')) {
+        return true;
+      }
+      if (pathStr.includes('content/images')) {
+        return false;
+      }
+      return true;
+    });
+
+    const readdirSpy = vi.spyOn(fs, 'readdirSync').mockImplementation((p: any) => {
+      const pathStr = String(p).replace(/\\/g, '/');
+      if (pathStr.endsWith('/posts')) {
+        return ['draft-post.md', 'active-post.md'] as any;
+      }
+      if (pathStr.endsWith('/pages')) {
+        return ['draft-page.md', 'active-page.md'] as any;
+      }
+      if (pathStr.endsWith('/authors')) {
+        return ['draft-author.md', 'active-author.md'] as any;
+      }
+      return [] as any;
+    });
+
+    const readSpy = vi.spyOn(fs, 'readFileSync').mockImplementation((p: any, options?: any) => {
+      const pathStr = String(p).replace(/\\/g, '/');
+      for (const [mockedPath, content] of Object.entries(mockedFiles)) {
+        if (pathStr.endsWith(mockedPath)) {
+          return content;
+        }
+      }
+      return '';
+    });
+
+    const mockStats: Record<string, any> = {
+      isDirectory: () => false,
+    };
+    const statSpy = vi.spyOn(fs, 'statSync').mockImplementation(() => mockStats as any);
+
+    const writtenFiles: Record<string, string> = {};
+    const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation((p: any, data: any) => {
+      const pathStr = String(p).replace(/\\/g, '/');
+      const relativePart = pathStr.split('public/').pop();
+      if (relativePart) {
+        writtenFiles[relativePart] = typeof data === 'string' ? data : JSON.stringify(data);
+      }
+      return undefined;
+    });
+
+    const mkdirSpy = vi.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined);
+
+    const originalPrelaunch = CONFIG.prelaunch;
+    try {
+      CONFIG.prelaunch = false;
+      generateAssets();
+
+      expect(writtenFiles['content/posts.json']).toBeDefined();
+      expect(writtenFiles['content/pages.json']).toBeDefined();
+      expect(writtenFiles['content/authors.json']).toBeDefined();
+
+      const postsOutput = JSON.parse(writtenFiles['content/posts.json']);
+      const pagesOutput = JSON.parse(writtenFiles['content/pages.json']);
+      const authorsOutput = JSON.parse(writtenFiles['content/authors.json']);
+
+      expect(postsOutput.find((p: any) => p.slug === 'active-post')).toBeDefined();
+      expect(postsOutput.find((p: any) => p.slug === 'draft-post')).toBeUndefined();
+
+      expect(pagesOutput.find((p: any) => p.slug === 'active-page')).toBeDefined();
+      expect(pagesOutput.find((p: any) => p.slug === 'draft-page')).toBeUndefined();
+
+      expect(authorsOutput.find((a: any) => a.slug === 'active-author')).toBeDefined();
+      expect(authorsOutput.find((a: any) => a.slug === 'draft-author')).toBeUndefined();
+
+      const tagsOutput = JSON.parse(writtenFiles['content/tags.json']);
+      if (tagsOutput['gis']) {
+        expect(tagsOutput['gis'].posts).toContain('active-post');
+        expect(tagsOutput['gis'].posts).not.toContain('draft-post');
+      }
+      if (tagsOutput['docs']) {
+        expect(tagsOutput['docs'].pages).toContain('active-page');
+        expect(tagsOutput['docs'].pages).not.toContain('draft-page');
+      }
+
+      expect(writtenFiles['sitemap.xml']).toContain('?post=active-post');
+      expect(writtenFiles['sitemap.xml']).not.toContain('?post=draft-post');
+      expect(writtenFiles['sitemap.xml']).toContain('?page=active-page');
+      expect(writtenFiles['sitemap.xml']).not.toContain('?page=draft-page');
+
+    } finally {
+      CONFIG.prelaunch = originalPrelaunch;
+      existsSpy.mockRestore();
+      readdirSpy.mockRestore();
+      readSpy.mockRestore();
+      statSpy.mockRestore();
+      writeSpy.mockRestore();
+      mkdirSpy.mockRestore();
+    }
+  });
 });

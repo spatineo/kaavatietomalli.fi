@@ -11,6 +11,7 @@ export interface PostMetadata {
   coverImage?: string;
   category?: string;
   publishDate?: string;
+  draft?: boolean;
   file?: string;
   promotional?: boolean;
   partner?: string;
@@ -25,6 +26,7 @@ export interface PageData {
   slug: string;
   title: string;
   content: string;
+  draft?: boolean;
   file?: string;
   partner?: string;
 }
@@ -37,6 +39,7 @@ export interface AuthorData {
   image?: string;
   shortBio?: string;
   content: string;
+  draft?: boolean;
   social?: {
     linkedin?: string;
     twitter?: string;
