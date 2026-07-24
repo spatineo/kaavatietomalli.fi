@@ -212,7 +212,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
       data-testid="header"
       className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5"
     >
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <div className="max-w-7xl ml-5 mr-auto px-6 h-20 flex items-center justify-between">
         <div className="flex items-center gap-12">
           <button 
             onClick={onHome}
@@ -308,7 +308,7 @@ export function Footer() {
 
   return (
     <footer data-testid="footer" className="py-12 border-t border-white/5 bg-black/40">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col gap-8">
+      <div className="max-w-7xl ml-5 mr-auto px-6 flex flex-col gap-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-4">
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="flex flex-col gap-1">

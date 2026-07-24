@@ -110,17 +110,13 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-6xl mx-auto pt-4 pb-24 px-6 md:px-10 relative"
+      className="max-w-6xl lg:ml-40 xl:ml-50 ml-10 mr-auto pt-4 pb-24 px-6 relative"
     >
       <HeadingRegistryProvider uniqueHeadings={combinedHeadings}>
-        {isSponsored && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-b from-amber-500/5 via-amber-500/0 to-transparent blur-3xl pointer-events-none -z-10" />
-        )}
-
       <div className="flex flex-col gap-3 mb-10" role="navigation" aria-label={t.post.ariaLabel}>
         <div className="flex">
           <button
-            onClick={onBack}
+            onClick={onBack}  
             data-testid="back-to-home-btn"
             className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px]"
             aria-label={t.post.returnToList}

@@ -103,7 +103,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-6xl mx-auto py-24 px-6 md:px-10"
+      className="max-w-6xl lg:ml-40 ml-10 mr-auto py-24 px-6 md:px-10"
     >
       <HeadingRegistryProvider uniqueHeadings={combinedHeadings}>
         <button

@@ -68,7 +68,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
 
   return (
     <section className="bg-black text-white py-32 overflow-hidden border-b border-white/5">
-      <div className="max-w-7xl mx-auto px-6 mb-12">
+      <div className="max-w-7xl ml-5 lg:ml-20 mr-auto px-6 mb-12">
         <div className="flex flex-col">
           <div className="flex items-center gap-6 mb-8 uppercase">
             <HistoryIcon size={20} className="text-brand-accent" aria-hidden="true" />
@@ -87,16 +87,17 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       <div className="relative">
         <div 
           ref={scrollContainerRef}
-          className="flex gap-8 px-6 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10" 
+          className="flex gap-8 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10" 
           role="list"
         >
+        
           {/* The Time Line */}
           {chronologicalPosts.length > 1 && (
             <div 
-              className="absolute h-[2px] bg-white/20 top-[70px] z-0 pointer-events-none" 
+              className="absolute h-[2px] bg-white/35 top-[70px] z-0 pointer-events-none" 
               style={{
-                left: '184px',
-                width: `${(chronologicalPosts.length - 1) * 352}px`
+                left:0,
+                width: `${(chronologicalPosts.length - 1) * 450}px`
               }}
             />
           )}
@@ -108,7 +109,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1, duration: 0.6 }}
-              className="flex-shrink-0 w-80 group text-left outline-none cursor-pointer"
+              className="flex-shrink-0 w-80 group text-left mx-5 outline-none cursor-pointer"
               onClick={() => onSelectPost(post.slug)}
               role="listitem"
               aria-label={`${t.post.readMore}: ${post.title}`}
@@ -146,7 +147,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       </div>
 
       {/* Modern carousel control widget: progress line indicator & chevron buttons by proximity */}
-      <div className="max-w-7xl mx-auto px-6 mt-8 flex items-center justify-between gap-8">
+      <div className="max-w-7xl ml-5 lg:ml-20 mr-auto px-6 mt-8 flex items-center justify-between gap-8">
         {/* Progress Line */}
         <div className="flex-grow h-[2px] bg-white/10 rounded-full overflow-hidden">
           <div 
