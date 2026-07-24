@@ -21,11 +21,11 @@ function formatPartnerName(tag: string | undefined): string {
 export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
   const t = getTranslations(CONFIG.language as Language);
   return (
-    <section className="relative max-w-6xl mx-auto py-12 px-6" aria-label={t.blog.timelineAria}>
+    <section className="relative max-w-7xl mx-auto py-12 px-6" aria-label={t.blog.timelineAria}>
       {/* Vertical Line */}
       <div className="absolute left-10 md:left-1/2 top-0 bottom-0 w-[2px] bg-white/10 -translate-x-1/2" aria-hidden="true" />
 
-      <div className="space-y-16 md:space-y-32" role="list">
+      <div className="space-y-12 md:space-y-20" role="list">
         {posts.map((post, index) => {
           const isSponsored = !!post.promotional;
           const partnerName = post.partner ? formatPartnerName(post.partner) : '';
