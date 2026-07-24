@@ -157,12 +157,12 @@ async function getMermaid() {
         }
 
         /* High-contrast colors for mindmap branches to prevent invisible dark lines */
-        path.mindmap-edge-0, .mindmap-edge-0 { stroke: #FFAF00 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-1, .mindmap-edge-1 { stroke: #3B82F6 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-2, .mindmap-edge-2 { stroke: #10B981 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-3, .mindmap-edge-3 { stroke: #EC4899 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-4, .mindmap-edge-4 { stroke: #8B5CF6 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-5, .mindmap-edge-5 { stroke: #F59E0B !important; stroke-width: 3px !important; }
+        path.mindmap-edge-0, .mindmap-edge-0, path.section-edge-0, .section-edge-0 { stroke: #FFAF00 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-1, .mindmap-edge-1, path.section-edge-1, .section-edge-1 { stroke: #3B82F6 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-2, .mindmap-edge-2, path.section-edge-2, .section-edge-2 { stroke: #10B981 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-3, .mindmap-edge-3, path.section-edge-3, .section-edge-3 { stroke: #EC4899 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-4, .mindmap-edge-4, path.section-edge-4, .section-edge-4 { stroke: #8B5CF6 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-5, .mindmap-edge-5, path.section-edge-5, .section-edge-5 { stroke: #F59E0B !important; stroke-width: 3px !important; }
         
         /* Fallback for general mindmap edge/curves */
         .mindmap-edge {
@@ -196,8 +196,8 @@ async function getMermaid() {
         primaryBorderColor: '#FFAF00',
         lineColor: '#FFAF00',
         secondaryColor: '#FFAF00',
-        tertiaryColor: '#363A45',
-        mainBkg: '#2C303B',
+        tertiaryColor: '#30aeba',
+        mainBkg: '#2c3b38',
         nodeBorder: '#FFAF00',
         clusterBkg: '#1A1C23',
         clusterBorder: '#4B5563',
