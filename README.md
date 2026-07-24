@@ -6,14 +6,22 @@ A highly polished, serverless headless CMS website built with React, Vite, and T
 
 ## Table of Contents
 1. [Core CMS Operating Process](#-core-cms-operating-process)
-2. [Project & Code Architecture](#-project--code-architecture)
-3. [Testing Implementation & Developer Guidance](#-testing-implementation--developer-guidance)
+2. [Content Provider & Editorial Guide](#-content-provider--editorial-guide)
+   - [Structure of Content Directories](#1-structure-of-content-directories)
+   - [Drafts vs. Scheduled Blog Posts](#2-drafts-vs-scheduled-blog-posts)
+   - [Global Navigation & Theme Mapping](#3-global-navigation--theme-mapping)
+   - [Content Contribution Workflow](#4-content-contribution-workflow)
+   - [Advanced Rich Content Features](#5-advanced-rich-content-features)
+   - [Testing & Validating Your Content](#6-testing--validating-your-content)
+   - [Automated Nightly Publishing Pipeline](#7-automated-nightly-publishing-pipeline)
+3. [Project & Code Architecture](#-project--code-architecture)
+4. [Testing Implementation & Developer Guidance](#-testing-implementation--developer-guidance)
    - [Architectural Patterns & Component Isolation](#1-architectural-patterns--component-isolation)
    - [Unit & Integration Testing (Vitest + RTL)](#2-unit--integration-testing-vitest--rtl)
    - [End-to-End Testing (Playwright)](#3-end-to-end-testing-playwright)
    - [Test Content & Local-Test Variants](#6-test-content--local-test-variants)
-4. [Contribution Guidelines](#-contribution-guidelines)
-5. [Development & Build Commands](#-development--build-commands)
+5. [Contribution Guidelines](#-contribution-guidelines)
+6. [Development & Build Commands](#-development--build-commands)
 
 ---
 
@@ -55,14 +63,301 @@ The platform operates as a **git-backed serverless developer CMS**. It requires 
 
 ---
 
+## Content Provider & Editorial Guide
+
+This section is designed specifically for **Content Providers and Editors** who maintain the website's articles, pages, images, and navigation menus. You do not need deep software development skills to manage content, but a basic understanding of Markdown and Git/GitHub is assumed.
+
+### 1. Structure of Content Directories
+
+All website content is stored as flat files inside the `/content` directory in the repository:
+
+* **Blog Posts (`/content/posts/`)**:
+  - Individual articles written in Markdown (`.md`).
+  - Organized directly in the folder or inside year-based subdirectories (e.g., `/content/posts/blog/2026/my-post.md`).
+  - Each post must contain YAML frontmatter at the very top (fenced by `---` lines) to declare title, publication date, author slug, tags, and excerpt.
+* **Static Pages (`/content/pages/`)**:
+  - Main info pages of the website (e.g., laws & regulations, data models, about page).
+  - Also in Markdown (`.md`) format with required YAML frontmatter (e.g., `title`).
+* **Author Biographies (`/content/authors/`)**:
+  - Short biographies for the authors of blog posts.
+  - Linked to posts via the author's slug (the filename without `.md`, like `ilkka-rinne`).
+* **Images (`/content/images/`)**:
+  - Store post-specific illustrations, diagrams, SVGs, or custom graphics here. 
+  - Accessible on the front-end using standard markdown image paths or absolute paths.
+
+---
+
+### 2. Drafts vs. Scheduled Blog Posts
+
+To provide editorial flexibility, the platform offers built-in support for **Drafts** and **Scheduled Posts**:
+
+#### A. Draft Posts & Pages
+If you are working on a piece of content that is not ready for the public, add `draft: true` to the YAML frontmatter at the top of your Markdown file:
+```yaml
+---
+title: "My Work-in-Progress Article"
+date: "2026-07-24"
+author: "ilkka-rinne"
+excerpt: "A draft article under development."
+tags: ["tietomallit"]
+draft: true
+---
+```
+* **Behavior**: The build system completely filters out and ignores any files marked with `draft: true`. They will not be compiled, indexed in search, or deployed to production.
+
+#### B. Scheduled Posts
+You can write posts in advance and schedule them to be published automatically at a specific date and time by setting the `publishDate` metadata property:
+```yaml
+---
+title: "Announcing a Future Standard"
+date: "2026-08-01"
+author: "ilkka-rinne"
+excerpt: "This post will be automatically visible to readers on August 1st."
+tags: ["tietomallit"]
+publishDate: "2026-08-01T00:00:00Z"
+---
+```
+* **Behavior**:
+  - **In-dev previews / Builds**: If `publishDate` is set in the future relative to the client's current date, the article is hidden from search and listings on the live site.
+  - **Nightly publishing**: An automated workflow runs every night (see [Automated Nightly Publishing Pipeline](#7-automated-nightly-publishing-pipeline) below) to check if any scheduled post's `publishDate` has passed. When it does, the workflow automatically triggers a fresh deployment, making the post live on the site.
+
+---
+
+### 3. Global Navigation & Theme Mapping
+
+The file `/content/content-config.json` acts as the website's central editorial dashboard. It lets you manage:
+1. **The Navigation Menu (`nav`)**:
+   - Order, labels, and links of items appearing in the header navigation menu.
+   - Supports static pages, tag pages, external links, and dropdown submenus.
+2. **Themes & Tags (`themes`)**:
+   - Lists main tags (e.g. `lainsäädäntö`, `tietomallit`) and maps them to human-readable names and visual labels.
+
+To modify the navigation or add a submenu, simply edit `/content/content-config.json` directly. No developer code modifications are needed.
+
+---
+
+### 4. Content Contribution Workflow
+
+Content updates are managed via standard GitHub Issues and Pull Requests to maintain quality and prevent accidental typos or broken formatting from making it onto the live site:
+
+1. **Start with an Issue**:
+   - Open a GitHub Issue explaining what content is being added or updated (e.g. "Add blog post about July Ryhti updates").
+2. **Create your Working Branch**:
+   - Pull the latest changes from the master branch (`git checkout main` and `git pull`).
+   - Create a content-specific branch: `git checkout -b content/july-ryhti-updates`.
+3. **Draft your Content**:
+   - Create or edit your Markdown files, add images, and update configs as needed.
+4. **Locally Test your Content**:
+   - Run the local content validator command (see [Testing & Validating Your Content](#5-testing--validating-your-content)) to check for errors before pushing.
+5. **Push and Open a Pull Request (PR)**:
+   - Push your branch to GitHub: `git push origin content/july-ryhti-updates`.
+   - Open a Pull Request targeting the `main` branch. Link it to your original GitHub Issue.
+6. **Automated Review & Approval**:
+   - Continuous Integration (GitHub Actions) runs automated checks on your PR.
+   - Another team member reviews the content.
+   - Once approved and merged, the changes are automatically built and deployed to production.
+
+---
+
+### 5. Advanced Rich Content Features
+
+To make the documentation and blog posts highly engaging, the platform provides first-class support for interactive and rich content elements. You can embed videos, render process/structural diagrams, and insert fully interactive spatial planning maps directly using standard Markdown code blocks.
+
+#### A. Embedded Video Blocks (`youtube` & `vimeo`)
+If you need to embed videos, use the custom ````youtube```` or ````vimeo```` code blocks. Do not use standard HTML iframe codes; the CMS renders these blocks securely and adaptively:
+
+```markdown
+```youtube
+id: "dQw4w9WgXcQ"
+title: "My custom video title"
+aspectRatio: "16:9"
+```
+
+
+* **Supported properties**:
+  - `id` (Required): The YouTube or Vimeo video identifier (e.g., `dQw4w9WgXcQ`).
+  - `title` (Optional): Descriptive title for accessibility.
+  - `aspectRatio` (Optional): Aspect ratio string (e.g., `"16:9"` or `"4:3"`, defaults to `"16:9"`).
+
+---
+
+#### B. Mermaid Diagrams (`mermaid`)
+You can draft flowcharts, process models, sequence diagrams, and state machines in plain text. Any code block declared with ````mermaid```` is automatically rendered as an interactive vector SVG diagram:
+
+```markdown
+```mermaid
+graph TD
+    A[Kaavatietomalli Standardi] --> B(Kuntajärjestelmät)
+    A --> C(Ryhti-tietojärjestelmä)
+    B --> D{Yhteentoimiva?}
+    C --> D
+    D -- Kyllä --> E[Hyväksytty siirto]
+    D -- Ei --> F[Virhekorjaus]
+```
+
+
+* **Supported diagram types**:
+  - Flowcharts (`graph TD` or `graph LR`)
+  - Sequence Diagrams (`sequenceDiagram`)
+  - Class Diagrams (`classDiagram`)
+  - State Diagrams (`stateDiagram-v2`)
+  - Entity Relationship Diagrams (`erDiagram`)
+  - GANTT Diagrams (`gantt`)
+  - Pie Charts (`pie`)
+  - Mind maps (`mindmap`)
+
+* **Pro-tip**: Ensure text inside shapes is descriptive and concise.
+
+---
+
+#### C. Interactive Spatial Maps (`geojson` & `jsonfg`)
+Because spatial planning data (*kaavatietomalli*) is geographical, the website includes an interactive Leaflet map viewer. You can embed spatial geometries directly in your Markdown using either standard **GeoJSON** or **JSON-FG** (the modern OGC standard with improved Coordinate Reference System support):
+
+##### GeoJSON Example:
+```markdown
+```geojson
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "nimi": "Keskusta-alueen yleiskaava",
+        "tyyppi": "Yleiskaavamerkintä"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [24.991, 60.165],
+            [25.015, 60.165],
+            [25.015, 60.155],
+            [24.991, 60.155],
+            [24.991, 60.165]
+          ]
+        ]
+      }
+    }
+  ]
+}
+```
+
+##### JSON-FG (OGC Features and Geometries JSON) Example:
+```markdown
+```jsonfg
+{
+  "type": "FeatureCollection",
+  "conformsTo": [
+    "http://www.opengis.net/spec/json-fg-1/0.2/conf/core"
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "id": "asema-kaava-102",
+      "place": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [24.991, 60.165],
+            [25.015, 60.165],
+            [25.015, 60.155],
+            [24.991, 60.155],
+            [24.991, 60.165]
+          ]
+        ]
+      },
+      "properties": {
+        "nimi": "Asemakaava-alue",
+        "tila": "Hyväksytty"
+      }
+    }
+  ]
+}
+```
+
+* **Interactive Features on the Map**:
+  - **Click to Inspect**: Click on any map marker, line, or polygon to open an informative popup detailing all attributes defined in the geometry's `"properties"` object.
+  - **Expand to Fullscreen**: Toggle full-screen mode by clicking the expand button in the map header.
+  - **Basemap Toggle**: Toggle between light and dark basemaps to highlight contrasting visual features.
+
+---
+
+### 6. Testing & Validating Your Content
+
+To prevent common errors (such as missing required metadata fields or broken embedded video parameters) from breaking the website, you can run an automated validator locally:
+
+* **Run Content Validator**:
+  ```bash
+  npm run test:content
+  ```
+  This command parses all files in `/content` and asserts that:
+  - Every post has a valid title, date (or Date object), author slug, tags array, and non-empty excerpt.
+  - All embedded video blocks (YouTube/Vimeo) match strict syntactic formats.
+
+The content validation suite checks that the `id` is present, valid, and that all configuration parameters are correctly formed.
+
+---
+
+### 7. Automated Nightly Publishing Pipeline
+
+The website incorporates a fully automated **Nightly Scheduled Rebuild & Deploy** GitHub workflow (`scheduled-rebuild.yml`):
+
+* **When it runs**: Every night at midnight UTC (`0 0 * * *`) and on-demand via GitHub's manual launch interface.
+* **What it does**:
+  1. It fetches the currently live blog articles list (`posts.json`) from the deployed website.
+  2. It scans all Markdown files in the `/content/posts` folder in the repository.
+  3. It identifies if there are any scheduled posts whose `publishDate` is now in the past but are not yet live in the deployed list.
+  4. It fetches and compares comment activity statistics from external Giscus discussions to check if indicators/counters need updating.
+  5. **Smart Rebuild Logic**: If new scheduled posts are ready to be published, or if Giscus stats have updated, it automatically launches a build, runs all test suites, and deploys the new version of the site. If no publishable content changes are detected, it exits early to save build resources.
+
+---
+
 ## Project & Code Architecture
 
-- **`src/hooks/useRouter.ts`**: Governs routing state, back-button history operations, and path resolution.
-- **`src/hooks/useContentLoader.ts`**: Represents the decoupled view-loading state machine. Ensures is-data-ready indicators match requested routes.
-- **`src/services/analytics.ts`**: Unified proxy service supporting custom page views, post events, CTAs, with test-ready global collection arrays (`window._trackedEvents`).
-- **`src/components/SearchBox.tsx`**: Integrates an interactive search dialogue utilizing client-side Orama schemas.
-- **`src/components/GeoJSONMapViewer.tsx`**: Loads shape data structures, rendering fully customizable maps via Leflet and Proj4.
-- **`src/components/Mermaid.tsx`**: Direct markdown representation of structure maps and process diagrams.
+To ensure the codebase remains maintainable, modular, and easy to extend as the website evolves, it is organized into distinct directories with clear, decoupled responsibilities.
+
+### 1. Directory Structure & Responsibilities
+
+* **`src/components/`**: 
+  - Houses all UI components, views, layouts, and interactive visual blocks. 
+  - Sub-components are extracted into modular files to prevent monolithic code structures and stay within optimal compiler limits.
+* **`src/hooks/`**:
+  - Implements custom React hooks that isolate business logic, search engines, and lifecycle state management from visual layout components.
+* **`src/i18n/`**:
+  - Manages translation dictionaries (e.g., Finnish translation file `fi.ts`) and provides centralized localization helpers (`index.ts`). This isolates text assets to support painless language expansions and ensure localization-invariant unit/E2E testing.
+* **`src/lib/`**:
+  - Contains core utility libraries, markdown parsing drivers, sitemap and RSS structures, and the main data-fetching interface (`blog.ts`) that maps JSON assets onto strongly-typed TypeScript objects.
+* **`src/services/`**:
+  - Operates background workflows and third-party script management, including GDPR-compliant analytics tracking, Google Tag Manager initialization, and persistent client settings.
+* **`src/test/`**:
+  - Configures centralized testing infrastructure (e.g., `setup.ts` to manage Happy DOM environments, mock global objects like `IntersectionObserver`, and register Vitest matches).
+
+---
+
+### 2. Core Rendering Components
+
+While many secondary helper components exist in `/src/components/` to handle visual layouts (e.g., footer logos or table-of-contents elements), the core page routing and content-rendering lifecycle is driven by the following key components:
+
+* **`HomeView`**:
+  - Serves as the primary landing page of the application. It establishes the main hero section, renders the chief editor's profile badge (linking to their biography), provides theme tag category filters, and orchestrates the inclusion of chronological views by nesting `HistoryHero` and `Timeline`.
+* **`Navigation`**:
+  - Renders the global header, footer, and navigation layouts. It reads navigation elements dynamically from `/content/content-config.json` to assemble responsive menus, sub-navigation dropdowns, language selectors, and accessible mobile navigation drawers.
+* **`PostView`**:
+  - Orchestrates individual blog post or historical articles. It dynamically fetches the author's avatar to render a small details card linking to their full biography page. It parses Markdown content, provides a sticky Table of Contents, loads embedded custom blocks (videos, maps, diagrams), sets up Giscus comments, and renders promotional CTA panels with built-in conversion tracking.
+* **`PageView`**:
+  - Renders static informational content pages (e.g., legislation, data models, or standard specifications). It converts page Markdown into stylized typographic grids and supports embedded Table of Contents navigation.
+* **`AuthorView`**:
+  - Serves as the dedicated profile page for individual content contributors. It loads author-specific biographical Markdown, displays their professional contact coordinates (LinkedIn, Github, website, obfuscated email), highlights their list of specialties, and displays interactive custom Spatineo cooperation CTA sections.
+* **`TagView`**:
+  - Aggregate view that displays lists of posts categorized under a specific theme/tag. It translates the tag ID into its corresponding human-readable title via the central content config and renders matching posts in chronological order.
+* **`Timeline`**:
+  - Displays blog and news updates (posts in the `'journal'` category) in a beautiful, vertical, chronological feed. It features support for lazy-loaded infinite scroll pagination and dynamic tag filtering.
+* **`HistoryHero`**:
+  - A highly visual, horizontal scrolling interactive timeline showcasing chronological spatial planning standard milestones and historical landmarks (posts in the `'history'` category) with distinct visual nodes.
+* **`ErrorBoundary`**:
+  - A robust safety boundary wrapping core viewport grids to gracefully capture and handle runtime compilation or rendering errors (e.g., from faulty Markdown formatting), showing user-friendly recovery options rather than crashing the site.
+* **`SearchBox`**:
+  - The modal interface overlay for full-text search. It connects directly to the in-memory client-side Orama index to display immediate, keyboard-navigable suggestions and structured results.
 
 ---
 
@@ -249,8 +544,7 @@ The test suite and deployment pipelines are fully wired into our software develo
 
 - **Scheduled Rebuild & Deploy (`scheduled-rebuild.yml`)**:
   - Runs nightly via a schedule cron (`0 0 * * *`) and on-demand via `workflow_dispatch`.
-  - **Rebuild Decision Engine**: It invokes a specialized checker script (`scripts/check-scheduled-posts.ts`) that compares filesystem markdown metadata against the currently deployed `posts.json` from the live site.
-  - **Resilient Skip Logic**: A full build, test, and release run is triggered **only** when there are newly scheduled posts whose launch dates have passed but are not yet live on the production site. If no newly publishable scheduled posts exist, the workflow terminates early with a clean, successful skip, entirely avoiding redundant version tag increments and deployment churn.
+  - **Rebuild Decision Engine & Resilient Skip Logic**: Invokes a specialized checker script (`scripts/check-scheduled-posts.ts`) to decide if a redeployment is necessary. It compares local markdown dates against currently deployed assets, triggering a full rebuild and deploy only if a scheduled post's publish date has passed or Giscus statistics have updated. For a detailed user-facing overview of this mechanism, see the [Automated Nightly Publishing Pipeline](#7-automated-nightly-publishing-pipeline) section.
 
 ---
 
@@ -258,10 +552,12 @@ The test suite and deployment pipelines are fully wired into our software develo
 
 Playwright tests run in actual Chromium/WebKit environments to assert layout correctness, responsive adaptations, and raw routing triggers.
 
+**Note**: Due to relying on specific [test content](#test-content--local-test-variants), the normal `npm run test:e2e` run will fail unless preceeded by `npm run prebuild` with `CONTENT_MODE=test` enviroment variable set. For CI builds this is taken care of in the GitHub Actions workflow. For running the e2e tests locally, use `npm run test-local:e2e` instead.
+
 #### A. Running E2E Tests & DevContainer Environment Setup
 - **Local Execution**: To execute the E2E tests, ensure your local development server is running in another shell (`npm run dev`), then execute the command:
   ```bash
-  npm run test:e2e
+  npm run test-local:e2e
   ```
 - **DevContainer / Docker Environment Troubleshooting**:
   If running the tests inside your VS Code DevContainer or a Docker-based virtual terminal and encountering missing browser modules or missing dynamic library binaries (e.g. `chrome-linux/headless_shell` or `libnspr4`), run the following sequences:
@@ -273,7 +569,7 @@ Playwright tests run in actual Chromium/WebKit environments to assert layout cor
   npx playwright install
   
   # Step 3: Run the end-to-end tests
-  npm run test:e2e
+  npm run test-local:e2e
   ```
   Our DevContainer's configuration is fully optimized to automate this sequence during its container spin-up process.
 
@@ -364,7 +660,7 @@ CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild
 To maintain code quality, ensure site stability, and verify all automated checks pass, **direct pushing to the `main` branch is strictly forbidden by branch protection rules**. All contributions must follow our collaborative pull-request workflow:
 
 1. **Create a Topic Branch**: Create a dedicated feature or bugfix branch from `main` (for example, `feature/your-feature-name` or `fix/issue-id`).
-2. **Commit with Quality Checks**: Verify your changes compile cleanly with `npm run lint` and all unit, integration, and end-to-end tests pass locally via `npm run test:run` and `npm run test:e2e` respectively.
+2. **Commit with Quality Checks**: Verify your changes compile cleanly with `npm run lint` and all unit, integration, and end-to-end tests pass locally via `npm run test-local:run` and `npm run test-local:e2e` respectively.
 3. **Open a Pull Request**: Submit an elegant, structured Pull Request targeting the `main` branch.
 4. **Mandatory Review & Checks**:
    - Every Pull Request triggers the automated test suites via GitHub Actions.
