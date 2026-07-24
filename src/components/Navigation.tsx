@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { History, Github, Twitter, Mail, Menu, X, ChevronDown } from 'lucide-react';
 import SpatineoLogo from './SpatineoLogo';
+import KaavatietomalliLogo from './KaavatietomalliLogo';
 import { SearchWidget } from './SearchWidget';
 import { CONFIG } from '../config';
 import { getContentConfig, ContentConfig, NavItem } from '../lib/blog';
@@ -219,24 +220,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
             aria-label={`${t.navigation.home} - Kaavatietomalli.fi`}
           >
             <div className="relative w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
-              {/* Fallback CSS Logo - hidden if image is found or can be replaced by user */}
-              <img 
-                src={`${CONFIG.basePath.replace(/\/$/, '')}/images/kaavatietomalli-logo.svg`} 
-                alt="" 
-                className="absolute inset-0 w-full h-full object-contain hidden"
-                onError={(e) => (e.currentTarget.style.display = 'none')}
-                onLoad={(e) => {
-                  const parent = e.currentTarget.parentElement;
-                  if (parent) {
-                    const fallback = parent.querySelector('.fallback-logo');
-                    if (fallback) (fallback as HTMLElement).style.display = 'none';
-                    e.currentTarget.style.display = 'block';
-                  }
-                }}
-              />
-              <div className="fallback-logo w-6 h-6 md:w-8 md:h-8 rounded-lg bg-brand-accent flex items-center justify-center shadow-lg shadow-brand-accent/20" aria-hidden="true">
-                <div className="w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-brand-primary" />
-              </div>
+              <KaavatietomalliLogo className="w-full h-full" width="100%" height="100%" />
             </div>
             <span className="hidden sm:inline">Kaavatietomalli.fi</span>
             <span className="sm:hidden text-brand-accent">Kaavatietomalli.fi</span>
