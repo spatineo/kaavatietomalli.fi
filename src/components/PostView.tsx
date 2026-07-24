@@ -110,7 +110,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-4xl mx-auto pt-4 pb-24 px-6 md:px-10 relative"
+      className="max-w-6xl mx-auto pt-4 pb-24 px-6 md:px-10 relative"
     >
       <HeadingRegistryProvider uniqueHeadings={combinedHeadings}>
         {isSponsored && (

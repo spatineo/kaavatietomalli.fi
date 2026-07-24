@@ -164,7 +164,7 @@ export function HomeView({
       />
 
       <div id="journal-section" className="py-20 lg:py-40">
-        <div className="max-w-5xl mx-auto px-10 mb-32">
+        <div className="max-w-7xl mx-auto px-10 mb-32">
           <div className="flex items-center gap-6 mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
               {t.blog.sectionSubtitle}

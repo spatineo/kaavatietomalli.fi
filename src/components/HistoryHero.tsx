@@ -1,7 +1,8 @@
+import { useEffect, useRef, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { fi } from 'date-fns/locale';
 import { motion } from 'motion/react';
-import { ArrowRight, History as HistoryIcon } from 'lucide-react';
+import { ArrowRight, History as HistoryIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PostMetadata } from '../lib/blog';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
@@ -13,8 +14,57 @@ interface HistoryHeroProps {
 
 export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
   const t = getTranslations(CONFIG.language as Language);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
   // Sort by date ascending for the hero
   const chronologicalPosts = [...posts].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const checkScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      setCanScrollLeft(scrollLeft > 5);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+      
+      const maxScroll = scrollWidth - clientWidth;
+      if (maxScroll > 0) {
+        setScrollProgress((scrollLeft / maxScroll) * 100);
+      } else {
+        setScrollProgress(0);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      // Initial check
+      checkScroll();
+      
+      const observer = new ResizeObserver(checkScroll);
+      observer.observe(container);
+      
+      return () => {
+        container.removeEventListener('scroll', checkScroll);
+        observer.disconnect();
+      };
+    }
+  }, [posts]);
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollContainerRef.current) {
+      const container = scrollContainerRef.current;
+      const scrollAmount = container.clientWidth * 0.6; // Scroll roughly 60% of viewport width
+      container.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   return (
     <section className="bg-black text-white py-32 overflow-hidden border-b border-white/5">
@@ -35,10 +85,22 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       </div>
 
       <div className="relative">
-        {/* The Time Line */}
-        <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/10 -translate-y-1/2 z-0" />
-        
-        <div className="flex gap-8 px-6 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10" role="list">
+        <div 
+          ref={scrollContainerRef}
+          className="flex gap-8 px-6 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10" 
+          role="list"
+        >
+          {/* The Time Line */}
+          {chronologicalPosts.length > 1 && (
+            <div 
+              className="absolute h-[2px] bg-white/20 top-[70px] z-0 pointer-events-none" 
+              style={{
+                left: '184px',
+                width: `${(chronologicalPosts.length - 1) * 352}px`
+              }}
+            />
+          )}
+          
           {chronologicalPosts.map((post, idx) => (
             <motion.button
               key={post.slug}
@@ -80,6 +142,45 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
           
           {/* End cap padding */}
           <div className="w-20 flex-shrink-0" />
+        </div>
+      </div>
+
+      {/* Modern carousel control widget: progress line indicator & chevron buttons by proximity */}
+      <div className="max-w-7xl mx-auto px-6 mt-8 flex items-center justify-between gap-8">
+        {/* Progress Line */}
+        <div className="flex-grow h-[2px] bg-white/10 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-brand-accent transition-all duration-300 ease-out rounded-full"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
+
+        {/* Carousel Navigation Buttons */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button
+            onClick={() => handleScroll('left')}
+            disabled={!canScrollLeft}
+            className={`p-3 rounded-full border transition-all duration-300 ${
+              canScrollLeft 
+                ? 'border-white/20 text-white hover:bg-white/10 hover:border-brand-accent cursor-pointer' 
+                : 'border-white/5 text-white/20 cursor-not-allowed'
+            }`}
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button
+            onClick={() => handleScroll('right')}
+            disabled={!canScrollRight}
+            className={`p-3 rounded-full border transition-all duration-300 ${
+              canScrollRight 
+                ? 'border-white/20 text-white hover:bg-white/10 hover:border-brand-accent cursor-pointer' 
+                : 'border-white/5 text-white/20 cursor-not-allowed'
+            }`}
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={18} />
+          </button>
         </div>
       </div>
     </section>
