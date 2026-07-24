@@ -36,7 +36,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
     <div
       ref={containerRef}
       data-testid="toc-container"
-      className="hidden lg:block absolute lg:-left-16 xl:-left-20 top-0 bottom-0 select-none"
+      className="hidden lg:block absolute lg:-left-16 top-0 bottom-0 select-none"
     >
       <div className="sticky top-28 z-30">
         {/* Hamburger Trigger */}
