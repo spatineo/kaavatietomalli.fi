@@ -33,52 +33,60 @@ async function getMermaid() {
       },
       gantt: {
         htmllabels: true,
-        titlePadding: 15,
-        barHeight: 30, // Generous bar height to prevent text height-spill
-        barGap: 8, // Spacing between bars to avoid overlap
-        topPadding: 50,
-        sidePadding: 130, // Keeps section labels on the left from overlapping bars/dates
-        gridLineStartPadding: 35,
-        fontSize: 10, // Explicit small font size for Gantt text
-        sectionFontSize: 11, // Section header font size
+        titlePadding: 25,
+        barHeight: 30, // Generous bar height to prevent text height-spill and cramped layout
+        barGap: 12, // More vertical spacing between bars to avoid overlap
+        topPadding: 80, // Adds generous vertical padding on top of the bar section
+        leftPadding: 130, // Keeps section labels on the left from overlapping bars/dates
+        gridLineStartPadding: 20, // Adds padding on top of grid lines
+        fontSize: 13, // Explicit readable font size for Gantt text
+        sectionFontSize: 13, // Section header font size
         numberSectionHeaderYOffset: 12,
         useWidth: 1200, // Renders Gantt across wider baseline to avoid squeezing text
         useMaxWidth: false
       },
       themeCSS: `
+        /* Chart title font for pie and gantt diagrams */
+        .gantt .titleText, .titleText, .pieTitleText, text.titleText, .pie-title {
+          font-size: 20px !important;
+          fill: #FFFFFF !important;
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+          font-weight: bold !important;
+        }
+
         /* Gantt chart label adjustments */
-        .taskText {
-          font-size: 11px !important;
+        .taskText, .taskTextInside {
+          font-size: 13px !important;
           fill: #111827 !important; /* High contrast dark text on yellow/orange Gantt bars */
           font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           font-weight: 600 !important;
         }
-        .gantt .taskTextOutside {
-          font-size: 11px !important;
+        .gantt .taskTextOutside, .taskTextOutside {
+          font-size: 13px !important;
           fill: #A0AEC0 !important;
           font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-          font-weight: 500;
+          font-weight: 500 !important;
         }
-        .gantt .sectionText {
-          font-size: 11px !important;
+        .gantt .sectionText, .sectionText {
+          font-size: 13px !important;
           fill: #FFAF00 !important;
           font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-          font-weight: 600;
+          font-weight: 600 !important;
         }
-        .gantt .tick text {
-          font-size: 10px !important;
+        .gantt .tick text, .tick text {
+          font-size: 11px !important;
           fill: #A0AEC0 !important;
           font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
         }
-        .gantt .grid .tick text {
-          font-size: 10px !important;
+        .gantt .grid .tick text, .grid .tick text {
+          font-size: 11px !important;
           fill: #A0AEC0 !important;
         }
-        .gantt .titleText {
-          font-size: 16px !important;
-          fill: #FFFFFF !important;
-          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-          font-weight: bold;
+        
+        /* Add some vertical safety margins around the gantt container to ensure bottom padding */
+        svg.gantt, svg[id^="gantt"], svg:has(.taskText), svg:has(.sectionText) {
+          padding-top: 10px !important;
+          padding-bottom: 30px !important;
         }
 
         /* Prevent black and very dark fills in all diagrams */
@@ -157,12 +165,12 @@ async function getMermaid() {
         }
 
         /* High-contrast colors for mindmap branches to prevent invisible dark lines */
-        path.mindmap-edge-0, .mindmap-edge-0 { stroke: #FFAF00 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-1, .mindmap-edge-1 { stroke: #3B82F6 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-2, .mindmap-edge-2 { stroke: #10B981 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-3, .mindmap-edge-3 { stroke: #EC4899 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-4, .mindmap-edge-4 { stroke: #8B5CF6 !important; stroke-width: 3px !important; }
-        path.mindmap-edge-5, .mindmap-edge-5 { stroke: #F59E0B !important; stroke-width: 3px !important; }
+        path.mindmap-edge-0, .mindmap-edge-0, path.section-edge-0, .section-edge-0 { stroke: #FFAF00 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-1, .mindmap-edge-1, path.section-edge-1, .section-edge-1 { stroke: #3B82F6 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-2, .mindmap-edge-2, path.section-edge-2, .section-edge-2 { stroke: #10B981 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-3, .mindmap-edge-3, path.section-edge-3, .section-edge-3 { stroke: #EC4899 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-4, .mindmap-edge-4, path.section-edge-4, .section-edge-4 { stroke: #8B5CF6 !important; stroke-width: 3px !important; }
+        path.mindmap-edge-5, .mindmap-edge-5, path.section-edge-5, .section-edge-5 { stroke: #F59E0B !important; stroke-width: 3px !important; }
         
         /* Fallback for general mindmap edge/curves */
         .mindmap-edge {
@@ -189,14 +197,14 @@ async function getMermaid() {
       themeVariables: {
         fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
         fontSize: '16px',
-        ganttFontSize: '11px',
-        sectionFontSize: '11px',
+        ganttFontSize: '13px',
+        sectionFontSize: '13px',
         primaryColor: '#2C303B',
         primaryTextColor: '#FFFFFF',
         primaryBorderColor: '#FFAF00',
         lineColor: '#FFAF00',
         secondaryColor: '#FFAF00',
-        tertiaryColor: '#363A45',
+        tertiaryColor: '#27a6ba',
         mainBkg: '#2C303B',
         nodeBorder: '#FFAF00',
         clusterBkg: '#1A1C23',
