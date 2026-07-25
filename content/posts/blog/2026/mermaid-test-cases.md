@@ -130,3 +130,27 @@ classDiagram
     }
     KaavaObjekti <|-- Asemakaava
 ```
+
+## 9. Instanssikaavio
+
+Instanssikaavio on toteutettu muuntamalla koodi flowchart LR kaaviotyypin ymmärtämään muotoon ja hyödyntämällä sen kustomoitavaa HTML-sisältöä:
+
+```instance
+
+  instance alice : User {
+    id = 101
+    role = "ADMIN"
+  }
+
+  instance acc99 : Account {
+    balance = 5000.00
+    status = "ACTIVE"
+  }
+
+  instance ord1 : Order {
+    total = $149.99
+  }
+
+  alice <-> acc99 : owner | account
+  alice -> ord1 : places
+```

@@ -3,6 +3,7 @@ import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AlertTriangle } from 'lucide-react';
+import { transpileInstanceToMermaid } from '../lib/instance-diagram-transpiler';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
@@ -130,7 +131,9 @@ export function CodeBlock({
     );
   }
 
-  if (language === 'mermaid') {
+  if (language === 'mermaid' || language === 'instance' || language === 'mermaid-instance') {
+    const isCustomInstance = language === 'instance' || language === 'mermaid-instance';
+    const chartData = isCustomInstance ? transpileInstanceToMermaid(codeContent) : codeContent;
     const fallbackHeightClass = placeholderHeight === 'h-48' ? 'h-48' : placeholderHeight === 'h-56' ? 'h-56' : 'h-64';
     return (
       <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
@@ -141,7 +144,7 @@ export function CodeBlock({
             </div>
           }
         >
-          <Mermaid chart={codeContent} />
+          <Mermaid chart={chartData} />
         </Suspense>
       </ErrorBoundary>
     );
