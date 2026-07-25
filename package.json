@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",
+    "@mermaid-js/layout-elk": "^0.2.2",
     "@orama/orama": "^3.1.18",
     "@orama/stemmers": "^3.1.18",
     "@tailwindcss/vite": "^4.2.4",
