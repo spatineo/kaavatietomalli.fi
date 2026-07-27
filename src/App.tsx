@@ -142,6 +142,7 @@ export default function App() {
         />
         
         <main id="main-content" className="flex-grow">
+          <div className="mx-auto max-w-fit">
           <ErrorBoundary onReset={onHome}>
             <AnimatePresence>
             {contentNotFound ? (
@@ -275,6 +276,7 @@ export default function App() {
             )}
             </AnimatePresence>
           </ErrorBoundary>
+          </div>
         </main>
   
         <Footer />
