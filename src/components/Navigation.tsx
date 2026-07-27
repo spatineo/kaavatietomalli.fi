@@ -212,82 +212,84 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
       data-testid="header"
       className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5"
     >
-      <div className="max-w-7xl ml-5 mr-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-12">
-          <button 
-            onClick={onHome}
-            className="text-lg md:text-xl font-black tracking-tight text-white hover:text-brand-accent transition-colors flex items-center gap-3"
-            aria-label={`${t.navigation.home} - Kaavatietomalli.fi`}
-          >
-            <div className="relative w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
-              <KaavatietomalliLogo className="w-full h-full" width="100%" height="100%" />
-            </div>
-            <span className="hidden sm:inline">Kaavatietomalli.fi</span>
-            <span className="sm:hidden text-brand-accent">Kaavatietomalli.fi</span>
-          </button>
-          
-          <nav className="hidden md:flex gap-10 text-sm font-semibold text-slate-400" aria-label={t.navigation.mainNav}>
-            {renderNavItems()}
-          </nav>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="hidden sm:flex items-center gap-6">
-            <SearchWidget onNavigate={handleSearchNavigate} />
-            <div className="w-[1px] h-4 bg-white/10" />
-            <a 
-              href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-slate-400 hover:text-white transition-colors" 
-              aria-label={t.navigation.githubRepo}
-              onClick={() => getTracker().trackCTA('GitHub Repo', `https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`, 'header')}
+      <div className="mx-auto max-w-7xl">
+        <div className="max-w-7xl ml-5 mr-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-12">
+            <button 
+              onClick={onHome}
+              className="text-lg md:text-xl font-black tracking-tight text-white hover:text-brand-accent transition-colors flex items-center gap-3"
+              aria-label={`${t.navigation.home} - Kaavatietomalli.fi`}
             >
-              <Github size={20} strokeWidth={1.5} />
-            </a>
-          </div>
-          
-          {/* Mobile Menu Button */}
-          <button 
-            className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
-            onClick={toggleMenu}
-            aria-label={isMenuOpen ? t.navigation.closeMenu : t.navigation.openMenu}
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-white/5 bg-black/95 absolute w-full overflow-hidden"
-          >
-            <nav className="flex flex-col p-6 gap-6 text-lg font-bold text-slate-200">
-              <div className="pb-4 border-b border-white/5">
-                <SearchWidget onNavigate={handleSearchNavigate} isMobile />
+              <div className="relative w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
+                <KaavatietomalliLogo className="w-full h-full" width="100%" height="100%" />
               </div>
-              {renderNavItems(true)}
-              
-              <div className="flex gap-6 pt-6 border-t border-white/5 mt-2">
-                <a 
-                  href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium"
-                  onClick={() => getTracker().trackCTA('GitHub Repo', `https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`, 'mobile_nav')}
-                >
-                  <Github size={20} /> GitHub
-                </a>
-              </div>
+              <span className="hidden sm:inline">Kaavatietomalli.fi</span>
+              <span className="sm:hidden text-brand-accent">Kaavatietomalli.fi</span>
+            </button>
+            
+            <nav className="hidden md:flex gap-10 text-sm font-semibold text-slate-400" aria-label={t.navigation.mainNav}>
+              {renderNavItems()}
             </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <div className="hidden sm:flex items-center gap-6">
+              <SearchWidget onNavigate={handleSearchNavigate} />
+              <div className="w-[1px] h-4 bg-white/10" />
+              <a 
+                href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-slate-400 hover:text-white transition-colors" 
+                aria-label={t.navigation.githubRepo}
+                onClick={() => getTracker().trackCTA('GitHub Repo', `https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`, 'header')}
+              >
+                <Github size={20} strokeWidth={1.5} />
+              </a>
+            </div>
+            
+            {/* Mobile Menu Button */}
+            <button 
+              className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+              onClick={toggleMenu}
+              aria-label={isMenuOpen ? t.navigation.closeMenu : t.navigation.openMenu}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu Overlay */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-white/5 bg-black/95 absolute w-full overflow-hidden"
+            >
+              <nav className="flex flex-col p-6 gap-6 text-lg font-bold text-slate-200">
+                <div className="pb-4 border-b border-white/5">
+                  <SearchWidget onNavigate={handleSearchNavigate} isMobile />
+                </div>
+                {renderNavItems(true)}
+                
+                <div className="flex gap-6 pt-6 border-t border-white/5 mt-2">
+                  <a 
+                    href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium"
+                    onClick={() => getTracker().trackCTA('GitHub Repo', `https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`, 'mobile_nav')}
+                  >
+                    <Github size={20} /> GitHub
+                  </a>
+                </div>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </header>
   );
 }
@@ -308,24 +310,26 @@ export function Footer() {
 
   return (
     <footer data-testid="footer" className="py-12 border-t border-white/5 bg-black/40">
-      <div className="max-w-7xl ml-5 mr-auto px-6 flex flex-col gap-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-4">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.rights}</span>
-              <span className="text-sm font-semibold text-slate-200">&copy; {buildYear} Spatineo Oy ja kirjoittajat</span>
+      <div className="mx-auto max-w-7xl">
+        <div className="max-w-7xl ml-5 mr-auto px-6 flex flex-col gap-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-4">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.rights}</span>
+                <span className="text-sm font-semibold text-slate-200">&copy; {buildYear} Spatineo Oy ja kirjoittajat</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.contact}</span>
+                <span className="text-sm font-semibold text-slate-200">kaavatietomalli@spatineo.com</span>
+              </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.contact}</span>
-              <span className="text-sm font-semibold text-slate-200">kaavatietomalli@spatineo.com</span>
+            <div className="text-left md:text-left">
+              <SpatineoLogo width={250} height={70} className="header-logo" />
             </div>
           </div>
-          <div className="text-left md:text-left">
-            <SpatineoLogo width={250} height={70} className="header-logo" />
+          <div className="border-t border-white/5 pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-600 font-mono">
+            <span>Versio: {BUILD_VERSION}</span>
           </div>
-        </div>
-        <div className="border-t border-white/5 pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-600 font-mono">
-          <span>Versio: {BUILD_VERSION}</span>
         </div>
       </div>
     </footer>
