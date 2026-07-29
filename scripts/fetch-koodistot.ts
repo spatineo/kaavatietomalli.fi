@@ -20,6 +20,30 @@ export interface CodelistConfig {
   registries: RegistryItem[];
 }
 
+export interface CodelistIndexItem {
+  id: string | null;
+  uri: string;
+  names: Record<string, string>;
+  status: string | null;
+  lastModified: string | null;
+  registry: string;
+  path: string;
+}
+
+export function getLaterDate(statusModified?: string | null, modified?: string | null): string | null {
+  if (statusModified && modified) {
+    const timeStatus = new Date(statusModified).getTime();
+    const timeMod = new Date(modified).getTime();
+    if (!isNaN(timeStatus) && !isNaN(timeMod)) {
+      return timeStatus >= timeMod ? statusModified : modified;
+    }
+    if (!isNaN(timeStatus)) return statusModified;
+    if (!isNaN(timeMod)) return modified;
+    return statusModified >= modified ? statusModified : modified;
+  }
+  return statusModified || modified || null;
+}
+
 export function transformCodelistData(
   metaData: any,
   codesData: any,
@@ -30,6 +54,11 @@ export function transformCodelistData(
   if (metaData && metaData.prefLabel) {
     codelistLabels = metaData.prefLabel;
   }
+
+  const uriParts = uri ? uri.split('/') : [];
+  const registryCode = metaData?.codeRegistry?.codeValue || (uriParts.length >= 2 ? uriParts[uriParts.length - 2] : '');
+  const schemeCode = metaData?.codeValue || (uriParts.length >= 1 ? uriParts[uriParts.length - 1] : '');
+  const documentationUrl = `https://koodistot.suomi.fi/codescheme;registryCode=${registryCode};schemeCode=${schemeCode}`;
 
   const rawCodes = Array.isArray(codesData) ? codesData : (codesData?.results || []);
 
@@ -64,6 +93,7 @@ export function transformCodelistData(
     id: metaData?.id || null,
     uri: uri,
     vocabulary: uri,
+    documentationUrl,
     names: codelistLabels,
     definitions: metaData?.definition || {},
     descriptions: metaData?.description || {},
@@ -112,6 +142,7 @@ export async function fetchAndTransformKoodistot(
   let requestCount = 0;
   let totalProcessed = 0;
   let changedCount = 0;
+  const indexItems: CodelistIndexItem[] = [];
 
   for (const registry of config.registries || []) {
     if (!registry.name) continue;
@@ -156,6 +187,17 @@ export async function fetchAndTransformKoodistot(
 
         const outputFilename = `${codelist.name}.json`;
         const outputPath = path.join(registryDir, outputFilename);
+        const relativePath = `${registry.name}/${outputFilename}`;
+
+        indexItems.push({
+          id: transformed.id,
+          uri: transformed.uri,
+          names: transformed.names,
+          status: transformed.status,
+          lastModified: getLaterDate(transformed.statusModified, transformed.modified),
+          registry: registry.name,
+          path: relativePath
+        });
 
         let contentChanged = true;
         if (fs.existsSync(outputPath)) {
@@ -181,6 +223,26 @@ export async function fetchAndTransformKoodistot(
       }
     }
   }
+
+  const indexFilePath = path.join(resolvedOutputDir, 'index.json');
+  let indexChanged = true;
+  if (fs.existsSync(indexFilePath)) {
+    try {
+      const existingIndexContent = fs.readFileSync(indexFilePath, 'utf-8');
+      const existingIndexJson = JSON.parse(existingIndexContent);
+      indexChanged = !isContentEqual(existingIndexJson, indexItems);
+    } catch {
+      indexChanged = true;
+    }
+  }
+
+  if (indexChanged) {
+    console.log(`Saved koodistot index (CONTENT CHANGED) to ${indexFilePath}`);
+  } else {
+    console.log(`Saved koodistot index (content unchanged) to ${indexFilePath}`);
+  }
+
+  fs.writeFileSync(indexFilePath, JSON.stringify(indexItems, null, 2), 'utf-8');
 
   return { totalProcessed, changedCount };
 }
