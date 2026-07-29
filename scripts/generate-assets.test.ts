@@ -133,7 +133,7 @@ describe('Asset Generation Pipeline', () => {
     vi.restoreAllMocks();
   });
 
-  it('should print warnings when Markdown folders are missing', () => {
+  it('should print warnings when Markdown folders are missing', async () => {
     // Force existsSync to return false for content directories
     const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation((p: any) => {
       const pathStr = String(p);
@@ -164,7 +164,7 @@ describe('Asset Generation Pipeline', () => {
     }
   });
 
-  it('should warn when frontmatter title is missing, serialize complex schemas, and enforce scheduling rules', () => {
+  it('should warn when frontmatter title is missing, serialize complex schemas, and enforce scheduling rules', async () => {
     const mockedFiles: Record<string, string> = {
       // Post 1: Future published post (scheduling filter should discard this)
       'posts/future-post.md': `---
@@ -321,7 +321,7 @@ Partner description.`,
     const originalPrelaunch = CONFIG.prelaunch;
     try {
       CONFIG.prelaunch = false;
-      generateAssets();
+      await generateAssets();
 
       // Rule Validation Check 1: Empty Title Warnings
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Post in "missing-title-post.md" has missing or empty "title"'));
@@ -408,7 +408,7 @@ Partner description.`,
     }
   });
 
-  it('should deny search engine and AI crawler access in sitemap, robots, index.html, and llms files when prelaunch is active', () => {
+  it('should deny search engine and AI crawler access in sitemap, robots, index.html, and llms files when prelaunch is active', async () => {
     // Setup file mocks similar to the main pipeline test
     const mockFilesMap: Record<string, string[]> = {
       'content/posts': ['valid-active-post.md'],
@@ -470,7 +470,7 @@ Partner description.`,
     const originalPrelaunch = CONFIG.prelaunch;
     try {
       CONFIG.prelaunch = true;
-      generateAssets();
+      await generateAssets();
 
       // 1. Verify robots.txt denies everything
       expect(writtenFiles['robots.txt']).toBeDefined();
@@ -508,7 +508,7 @@ Partner description.`,
     }
   });
 
-  it('should exclude any posts, pages, and authors marked with draft=true', () => {
+  it('should exclude any posts, pages, and authors marked with draft=true', async () => {
     const mockedFiles: Record<string, string> = {
       'posts/draft-post.md': `---
 title: "Draft Post Title"
@@ -613,7 +613,7 @@ Active author bio.`,
     const originalPrelaunch = CONFIG.prelaunch;
     try {
       CONFIG.prelaunch = false;
-      generateAssets();
+      await generateAssets();
 
       expect(writtenFiles['content/posts.json']).toBeDefined();
       expect(writtenFiles['content/pages.json']).toBeDefined();

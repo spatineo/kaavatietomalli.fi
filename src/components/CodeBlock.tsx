@@ -1,9 +1,11 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AlertTriangle } from 'lucide-react';
 import { transpileInstanceToMermaid } from '../lib/instance-diagram-transpiler';
+import { transpileDataModelSnippetToMermaid } from '../lib/data-model-transpiler';
+import { FetchDataModelAccess } from '../lib/fetch-data-model-access';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
@@ -84,6 +86,39 @@ function BlockFallback({ language, code }: { language: string; code: string }) {
   );
 }
 
+function DataModelSnippetBlock({ code, placeholderHeight, language, fallbackText }: { code: string; placeholderHeight?: string; language: string; fallbackText: string }) {
+  const [chartData, setChartData] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const access = new FetchDataModelAccess();
+    transpileDataModelSnippetToMermaid(code, access)
+      .then(res => {
+        if (active) setChartData(res);
+      })
+      .catch(err => {
+        if (active) setError(err?.message || 'Diagram generation failed');
+      });
+    return () => { active = false; };
+  }, [code]);
+
+  if (error) {
+    return <BlockFallback language={language} code={code} />;
+  }
+
+  if (!chartData) {
+    const fallbackHeightClass = placeholderHeight === 'h-48' ? 'h-48' : placeholderHeight === 'h-56' ? 'h-56' : 'h-64';
+    return (
+      <div className={`${fallbackHeightClass} flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse`}>
+        {fallbackText}
+      </div>
+    );
+  }
+
+  return <Mermaid chart={chartData} />;
+}
+
 export function CodeBlock({
   className,
   children,
@@ -145,6 +180,22 @@ export function CodeBlock({
           }
         >
           <Mermaid chart={chartData} />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
+  if (language === 'data-model-snippet') {
+    return (
+      <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
+        <Suspense
+          fallback={
+            <div className={`${placeholderHeight} flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse`}>
+              {t.common.loadingChart}
+            </div>
+          }
+        >
+          <DataModelSnippetBlock code={codeContent} placeholderHeight={placeholderHeight} language={language} fallbackText={t.common.loadingChart} />
         </Suspense>
       </ErrorBoundary>
     );

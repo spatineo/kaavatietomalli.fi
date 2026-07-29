@@ -7,6 +7,8 @@ import { PROJECT_CONFIG } from '../project.config.js';
 import { CONFIG } from '../src/config.js';
 import { getTranslations } from '../src/i18n/index.js';
 import { getFilesRecursive, escapeXml, validateMarkdownVideoBlocks } from './content-utils.js';
+import { LocalFileDataModelAccess } from '../src/lib/local-data-model-access.js';
+import { transpileDataModelSnippetsInMarkdown } from '../src/lib/data-model-transpiler.js';
 
 dotenv.config();
 
@@ -76,7 +78,7 @@ export function getGitHistoryOfContent(): Record<string, GitCommitInfo[]> {
 
 // Removed duplicate escapeXml and getFilesRecursive; now loaded from content-utils.js
 
-export function generateAssets() {
+export async function generateAssets() {
   const t = getTranslations('fi');
   const historyMap = getGitHistoryOfContent();
   const postsDir = path.join(CONTENT_DIR, 'posts');
@@ -253,7 +255,12 @@ export function generateAssets() {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   });
 
-  posts.forEach(post => {
+  const dataAccess = new LocalFileDataModelAccess();
+
+  for (const post of posts) {
+    if (post.content && post.content.includes('```data-model-snippet')) {
+      post.content = await transpileDataModelSnippetsInMarkdown(post.content, dataAccess);
+    }
     const outPath = path.join(POSTS_OUT_DIR, `${post.metadata.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
@@ -261,9 +268,12 @@ export function generateAssets() {
       JSON.stringify({ ...post.metadata, content: post.content }, null, 2),
       'utf-8'
     );
-  });
+  }
 
-  pages.forEach(page => {
+  for (const page of pages) {
+    if (page.content && page.content.includes('```data-model-snippet')) {
+      page.content = await transpileDataModelSnippetsInMarkdown(page.content, dataAccess);
+    }
     const outPath = path.join(PAGES_OUT_DIR, `${page.metadata.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
@@ -271,7 +281,7 @@ export function generateAssets() {
       JSON.stringify({ ...page.metadata, content: page.content }, null, 2),
       'utf-8'
     );
-  });
+  }
 
   authors.forEach(author => {
     const outPath = path.join(AUTHORS_OUT_DIR, `${author.metadata.slug}.json`);
@@ -670,5 +680,8 @@ function copyFolderRecursiveSync(source: string, target: string) {
 // Video validations are now delegated to content-utils.js
 
 if (process.env.NODE_ENV !== 'test') {
-  generateAssets();
+  generateAssets().catch(err => {
+    console.error('Error generating assets:', err);
+    process.exit(1);
+  });
 }
