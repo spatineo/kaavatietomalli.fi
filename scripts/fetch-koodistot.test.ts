@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import {
   transformCodelistData,
+  getLaterDate,
   fetchAndTransformKoodistot
 } from './fetch-koodistot';
 
@@ -69,6 +70,22 @@ describe('fetch-koodistot script', () => {
 
       expect(result.codes[1].codeValue).toBe('02');
       expect(result.codes[1].description).toEqual({ fi: 'Lyhyt nimi 2' });
+    });
+  });
+
+  describe('getLaterDate', () => {
+    it('returns the later date when both statusModified and modified are provided', () => {
+      expect(getLaterDate('2026-01-01T00:00:00Z', '2026-01-05T00:00:00Z')).toBe('2026-01-05T00:00:00Z');
+      expect(getLaterDate('2026-01-10T00:00:00Z', '2026-01-05T00:00:00Z')).toBe('2026-01-10T00:00:00Z');
+    });
+
+    it('returns single available date when one is missing', () => {
+      expect(getLaterDate('2026-01-01T00:00:00Z', null)).toBe('2026-01-01T00:00:00Z');
+      expect(getLaterDate(null, '2026-01-02T00:00:00Z')).toBe('2026-01-02T00:00:00Z');
+    });
+
+    it('returns null if both dates are missing', () => {
+      expect(getLaterDate(null, null)).toBeNull();
     });
   });
 
@@ -166,6 +183,12 @@ describe('fetch-koodistot script', () => {
       expect(writeSpy).toHaveBeenCalledWith(
         path.join('/public/data/suomi.fi/koodistot', 'testreg', 'secondcode.json'),
         expect.stringContaining('Testikoodisto'),
+        'utf-8'
+      );
+
+      expect(writeSpy).toHaveBeenCalledWith(
+        path.join('/public/data/suomi.fi/koodistot', 'index.json'),
+        expect.stringContaining('"path": "testreg/testcode.json"'),
         'utf-8'
       );
 

@@ -14,6 +14,31 @@ export interface DataModelConfig {
   }>;
 }
 
+export interface TietomalliIndexItem {
+  id: string;
+  names: Record<string, string>;
+  version: string;
+  status: string;
+  lastModified: string;
+  path: string;
+}
+
+export function formatStatus(statusData: any): string {
+  if (!statusData) return 'Unknown Status';
+  const rawStatus = typeof statusData === 'string'
+    ? statusData
+    : (statusData['@id'] || (typeof statusData === 'object' ? String(statusData) : String(statusData)));
+
+  if (typeof rawStatus !== 'string') return 'Unknown Status';
+
+  const trimmed = rawStatus.replace(/\/+$/, '');
+  const lastSlash = trimmed.lastIndexOf('/');
+  if (lastSlash !== -1) {
+    return trimmed.substring(lastSlash + 1);
+  }
+  return trimmed;
+}
+
 export function getAllLabels(labelNode: any): Record<string, string> {
   const labels: Record<string, string> = {};
   if (!labelNode) return labels;
@@ -124,18 +149,24 @@ export function transformJsonLdToModel(
 
     const statusData = ontologyNode['suomi-meta:publicationStatus'];
     if (statusData) {
-      modelStatus = typeof statusData === 'string' ? statusData : statusData['@id'] || statusData;
+      modelStatus = formatStatus(statusData);
     }
   }
 
+  const rawModelUri = modelId;
+  const verWithV = modelVersion.startsWith('v') ? modelVersion : `v${modelVersion}`;
+  const uniqueId = `${rawModelUri}#${verWithV}`;
+
   const outputJson = {
     metadata: {
-      id: modelId,
+      id: uniqueId,
+      modelUri: rawModelUri,
       name: modelName,
       version: modelVersion,
       status: modelStatus,
       description: modelDescription,
       documentation: modelDocumentation,
+      documentationUrl: `https://tietomallit.suomi.fi/model/${requestedModel}?ver=${modelVersion}`,
       lastModified: modelModified,
       originSyncTime: fetchTimestamp
     },
@@ -288,6 +319,7 @@ export async function fetchAndTransformTietomallit(
   let requestCount = 0;
   let totalProcessed = 0;
   let changedCount = 0;
+  const indexItems: TietomalliIndexItem[] = [];
 
   for (const model of config.models) {
     for (const version of model.versions) {
@@ -313,6 +345,15 @@ export async function fetchAndTransformTietomallit(
         const outputFilename = `${model.name}-${version}.json`;
         const outputPath = path.join(resolvedOutputDir, outputFilename);
 
+        indexItems.push({
+          id: modelOutput.metadata.id,
+          names: modelOutput.metadata.name,
+          version: modelOutput.metadata.version,
+          status: modelOutput.metadata.status,
+          lastModified: modelOutput.metadata.lastModified,
+          path: outputFilename
+        });
+
         let contentChanged = true;
         if (fs.existsSync(outputPath)) {
           try {
@@ -337,6 +378,26 @@ export async function fetchAndTransformTietomallit(
       }
     }
   }
+
+  const indexFilePath = path.join(resolvedOutputDir, 'index.json');
+  let indexChanged = true;
+  if (fs.existsSync(indexFilePath)) {
+    try {
+      const existingIndexContent = fs.readFileSync(indexFilePath, 'utf-8');
+      const existingIndexJson = JSON.parse(existingIndexContent);
+      indexChanged = !isContentEqual(existingIndexJson, indexItems);
+    } catch {
+      indexChanged = true;
+    }
+  }
+
+  if (indexChanged) {
+    console.log(`Saved tietomallit index (CONTENT CHANGED) to ${indexFilePath}`);
+  } else {
+    console.log(`Saved tietomallit index (content unchanged) to ${indexFilePath}`);
+  }
+
+  fs.writeFileSync(indexFilePath, JSON.stringify(indexItems, null, 2), 'utf-8');
 
   return { totalProcessed, changedCount };
 }
