@@ -1,0 +1,98 @@
+{
+    "remote": {
+        "api": "https://koodistot.suomi.fi/codelist-api/api/v1/",
+        "name": "Yhteentoimivuusalusta, Koodistot-palvelu"
+    },
+    "registries": [
+        {
+            "name": "rytj",
+            "codelists": [
+                {
+                    "name": "RY_DigitaalinenAlkupera"
+                },
+                {
+                    "name": "RY_AsiakirjanLaji_YKAK"
+                },
+                {
+                    "name": "henkilotietosisalto"
+                },
+                {
+                    "name": "julkisuus"
+                },
+                {
+                    "name": "ryhtikielet"
+                },
+                {
+                    "name": "sailytysaika"
+                },
+                {
+                    "name": "sitovanTonttijaonAsiakirjanLaji"
+                },
+                {
+                    "name": "kaavaelinkaari"
+                },
+                {
+                    "name": "oikeusvaik_YK"
+                },
+                {
+                    "name": "RY_Kaavalaji"
+                },
+                {
+                    "name": "PaatoksenTekija"
+                },
+                {
+                    "name": "kaavpaatnimi"
+                },
+                {
+                    "name": "RY_MaanalaisuudenLaji"
+                },
+                {
+                    "name": "RY_Kaavamaarayksen_Lisatiedonlaji"
+                },
+                {
+                    "name": "RY_Kaavamaarayslaji"
+                },
+                {
+                    "name": "RY_Sanallisen_Kaavamaarayksen_Laji"
+                },
+                {
+                    "name": "kaavoitusteema"
+                },
+                {
+                    "name": "RY_KaavayksikonLaji"
+                },
+                {
+                    "name": "kaavakastap"
+                },
+                {
+                    "name": "RY_LahtotietoaineistonLaji"
+                },
+                {
+                    "name": "korkeuskoordinaattijarjestelma"
+                },
+                {
+                    "name": "RY_KaavanVuorovaikutustapahtumanLaji"
+                }
+            ]
+        },
+        {
+            "name": "jhs",
+            "codelists": [
+                {
+                    "name": "kunta_1_20230101"
+                },
+                {
+                    "name": "maakunta_1_20230101"
+                }
+            ]
+        },
+        {
+            "name": "rakrek",
+            "codelists": [
+                {
+                    "name": "ETRS89"
+                }
+            ]
+        }
+    ]
+}

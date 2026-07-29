@@ -1,0 +1,12 @@
+{
+    "remote": {
+        "api": "https://tietomallit.suomi.fi/api/getModelAsFile",
+        "name": "Yhteentoimivuusalusta, Tietomallit-palvelu"
+    },
+    "models": [
+        {
+            "name": "rytj-kaava",
+            "versions": [ "1.0.5", "1.0.4", "1.0.3", "1.0.2", "1.0.1"]
+        }
+    ]
+}
