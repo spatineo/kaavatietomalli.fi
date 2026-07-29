@@ -2,77 +2,146 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import {
-  transformCodelistData,
-  fetchAndTransformKoodistot
-} from './fetch-koodistot';
+  getAllLabels,
+  getClassTargetId,
+  transformJsonLdToModel,
+  fetchAndTransformTietomallit
+} from './fetch-tietomallit';
 
-describe('fetch-koodistot script', () => {
-  describe('transformCodelistData', () => {
-    it('transforms metaData and codesData into target JSON structure', () => {
-      const metaData = {
-        id: 'meta-uuid-1234',
-        prefLabel: { fi: 'Testi Koodisto', en: 'Test Codelist' },
-        definition: { fi: 'Määritelmä' },
-        description: { fi: 'Kuvaus' },
-        created: '2026-01-01T00:00:00Z',
-        modified: '2026-01-02T00:00:00Z',
-        statusModified: '2026-01-01T00:00:00Z',
-        status: 'VALID'
+describe('fetch-tietomallit script', () => {
+  describe('getClassTargetId', () => {
+    it('returns targetClass @id if present in array', () => {
+      const cls = {
+        '@id': 'http://example.org/ShapeA',
+        'sh:targetClass': [{ '@id': 'http://example.org/ClassA' }]
       };
+      expect(getClassTargetId(cls)).toBe('http://example.org/ClassA');
+    });
 
-      const codesData = {
-        results: [
+    it('returns targetClass @id if present as object', () => {
+      const cls = {
+        '@id': 'http://example.org/ShapeA',
+        'sh:targetClass': { '@id': 'http://example.org/ClassA' }
+      };
+      expect(getClassTargetId(cls)).toBe('http://example.org/ClassA');
+    });
+
+    it('returns fallback @id when sh:targetClass is missing', () => {
+      const cls = {
+        '@id': 'http://example.org/ShapeA'
+      };
+      expect(getClassTargetId(cls)).toBe('http://example.org/ShapeA');
+    });
+  });
+  describe('getAllLabels', () => {
+    it('returns empty object when input is falsy', () => {
+      expect(getAllLabels(null)).toEqual({});
+      expect(getAllLabels(undefined)).toEqual({});
+    });
+
+    it('extracts language labels from array', () => {
+      const input = [
+        { '@language': 'fi', '@value': 'Suomi' },
+        { '@language': 'en', '@value': 'English' }
+      ];
+      expect(getAllLabels(input)).toEqual({ fi: 'Suomi', en: 'English' });
+    });
+
+    it('extracts language label from single object', () => {
+      const input = { '@language': 'sv', '@value': 'Svenska' };
+      expect(getAllLabels(input)).toEqual({ sv: 'Svenska' });
+    });
+
+    it('handles string input', () => {
+      expect(getAllLabels('Direct Label')).toEqual({ unknown: 'Direct Label' });
+    });
+  });
+
+  describe('transformJsonLdToModel', () => {
+    it('transforms JSON-LD graph into target JSON structure', () => {
+      const jsonldContent = {
+        '@graph': [
           {
-            id: 'code-uuid-2',
-            uri: 'http://uri.suomi.fi/codelist/rytj/Test/code/02',
-            codeValue: '02',
-            prefLabel: { fi: 'Koodi 2' },
-            hierarchyLevel: 1,
-            status: 'VALID',
-            created: '2026-01-01T00:00:00Z',
-            modified: '2026-01-01T00:00:00Z',
-            statusModified: '2026-01-01T00:00:00Z',
-            shortName: 'Lyhyt nimi 2'
+            '@id': 'https://iri.suomi.fi/model/test-model/',
+            '@type': 'owl:Ontology',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Testimalli' }],
+            'owl:versionInfo': '1.0.0',
+            'dcterms:modified': '2026-01-01T00:00:00Z',
+            'suomi-meta:publicationStatus': 'VALID',
+            'rdfs:comment': [{ '@language': 'fi', '@value': 'Kuvaus' }],
+            'suomi-meta:documentation': [{ '@language': 'fi', '@value': 'Dokumentaatio' }]
           },
           {
-            id: 'code-uuid-1',
-            uri: 'http://uri.suomi.fi/codelist/rytj/Test/code/01',
-            codeValue: '01',
-            prefLabel: { fi: 'Koodi 1' },
-            hierarchyLevel: 1,
-            status: 'VALID',
-            created: '2026-01-01T00:00:00Z',
-            modified: '2026-01-01T00:00:00Z',
-            statusModified: '2026-01-01T00:00:00Z',
-            description: { fi: 'Kuvaus 1' }
+            '@id': 'https://iri.suomi.fi/model/test-model/ClassA',
+            '@type': 'sh:NodeShape',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Luokka A' }],
+            'sh:property': [
+              { '@id': 'https://iri.suomi.fi/model/test-model/attr1' },
+              { '@id': 'https://iri.suomi.fi/model/test-model/assoc1' }
+            ]
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/ClassB',
+            '@type': 'sh:NodeShape',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Luokka B' }],
+            'sh:targetClass': [{ '@id': 'https://iri.suomi.fi/model/test-model/TargetB' }]
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/attr1',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Attribuutti 1' }],
+            'sh:minCount': { '@value': 1 },
+            'sh:maxCount': { '@value': 1 },
+            'sh:datatype': 'http://www.w3.org/2001/XMLSchema#string',
+            'suomi-meta:codeList': [{ '@id': 'http://uri.suomi.fi/codelist/test' }]
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/assoc1',
+            '@type': 'owl:ObjectProperty',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Assosiaatio 1' }],
+            'sh:minCount': 0,
+            'sh:maxCount': '*',
+            'sh:class': { '@id': 'https://iri.suomi.fi/model/test-model/TargetB' }
           }
         ]
       };
 
-      const uri = 'http://uri.suomi.fi/codelist/rytj/Test';
-      const timestamp = '2026-07-28T12:00:00.000Z';
-      const result = transformCodelistData(metaData, codesData, uri, timestamp);
+      const result = transformJsonLdToModel(jsonldContent, 'test-model', '1.0.0', '2026-07-28T10:00:00.000Z');
 
-      expect(result.id).toBe('meta-uuid-1234');
-      expect(result.uri).toBe(uri);
-      expect(result.vocabulary).toBe(uri);
-      expect(result.names).toEqual({ fi: 'Testi Koodisto', en: 'Test Codelist' });
-      expect(result.definitions).toEqual({ fi: 'Määritelmä' });
-      expect(result.descriptions).toEqual({ fi: 'Kuvaus' });
-      expect(result.status).toBe('VALID');
-      expect(result.originSyncTime).toBe(timestamp);
+      expect(result.metadata.id).toBe('https://iri.suomi.fi/model/test-model/');
+      expect(result.metadata.name).toEqual({ fi: 'Testimalli' });
+      expect(result.metadata.version).toBe('1.0.0');
+      expect(result.metadata.status).toBe('VALID');
+      expect(result.metadata.lastModified).toBe('2026-01-01T00:00:00Z');
+      expect(result.metadata.originSyncTime).toBe('2026-07-28T10:00:00.000Z');
 
-      expect(result.codes.length).toBe(2);
-      // Verify codes sorted alphabetically by URI
-      expect(result.codes[0].codeValue).toBe('01');
-      expect(result.codes[0].description).toEqual({ fi: 'Kuvaus 1' });
+      expect(result.classes.length).toBe(2);
 
-      expect(result.codes[1].codeValue).toBe('02');
-      expect(result.codes[1].description).toEqual({ fi: 'Lyhyt nimi 2' });
+      const classA = result.classes.find((c: any) => c.id.endsWith('ClassA'));
+      expect(classA).toBeDefined();
+      expect(classA.uri).toBe('https://iri.suomi.fi/model/test-model/ClassA');
+      expect(classA.name).toEqual({ fi: 'Luokka A' });
+
+      expect(classA.attributes.length).toBe(1);
+      expect(classA.attributes[0].id).toBe('https://iri.suomi.fi/model/test-model/attr1');
+      expect(classA.attributes[0].cardinality).toBe('[1..1]');
+      expect(classA.attributes[0].type).toBe('string');
+
+      expect(classA.associations.length).toBe(1);
+      expect(classA.associations[0].id).toBe('https://iri.suomi.fi/model/test-model/assoc1');
+      expect(classA.associations[0].cardinality).toBe('[0..*]');
+      expect(classA.associations[0].targetClassId).toBe('https://iri.suomi.fi/model/test-model/TargetB');
+      expect(classA.associations[0].targetClassName).toEqual({ fi: 'Luokka B' });
+
+      const classB = result.classes.find((c: any) => c.id.endsWith('TargetB'));
+      expect(classB).toBeDefined();
+      expect(classB.id).toBe('https://iri.suomi.fi/model/test-model/TargetB');
+
+      expect(classA.codelists).toEqual(['http://uri.suomi.fi/codelist/test']);
+      expect(classA.codelistIds).toBeUndefined();
     });
   });
 
-  describe('fetchAndTransformKoodistot', () => {
+  describe('fetchAndTransformTietomallit', () => {
     let mockFetch: any;
 
     beforeEach(() => {
@@ -84,88 +153,46 @@ describe('fetch-koodistot script', () => {
       vi.restoreAllMocks();
     });
 
-    it('fetches and writes codelist JSON files according to index.json config', async () => {
+    it('fetches and writes JSON files according to index.json config', async () => {
       const mockConfig = {
         remote: {
-          api: 'https://test-api.suomi.fi/codelist-api/v1/',
-          name: 'Test Registry'
+          api: 'https://test-api.suomi.fi/getModel',
+          name: 'Test Platform'
         },
-        registries: [
+        models: [
           {
-            name: 'testreg',
-            codelists: [
-              {
-                name: 'testcode'
-              },
-              {
-                name: 'secondcode'
-              }
-            ]
+            name: 'mock-model',
+            versions: ['2.0.0']
           }
         ]
       };
 
-      const mockMetaData = {
-        id: 'meta-123',
-        prefLabel: { fi: 'Testikoodisto' },
-        allVersions: [
+      const mockJsonLd = {
+        '@graph': [
           {
-            id: 'v1-id',
-            codeValue: 'testcode_v1',
-            uri: 'http://uri.suomi.fi/codelist/testreg/testcode_v1'
+            '@id': 'https://iri.suomi.fi/model/mock-model/',
+            '@type': 'owl:Ontology',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Mock Malli' }]
           }
         ]
       };
-      const mockCodesData = [
-        {
-          id: 'code-1',
-          codeValue: 'C1',
-          uri: 'http://uri.suomi.fi/codelist/testreg/testcode/code/C1'
-        }
-      ];
 
       const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValue(true);
       const readSpy = vi.spyOn(fs, 'readFileSync').mockReturnValue(JSON.stringify(mockConfig));
       const mkdirSpy = vi.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined);
       const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => undefined);
 
-      // 1st pair of fetches (testcode)
-      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockMetaData });
-      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockCodesData });
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockJsonLd
+      });
 
-      // 2nd pair of fetches (secondcode)
-      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockMetaData });
-      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockCodesData });
+      await fetchAndTransformTietomallit('/data-index/suomi.fi/tietomallit/index.json', '/public/data/suomi.fi/tietomallit', 0);
 
-      await fetchAndTransformKoodistot('/data-index/suomi.fi/koodistot/index.json', '/public/data/suomi.fi/koodistot', 0);
-
-      expect(mockFetch).toHaveBeenNthCalledWith(
-        1,
-        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/'
-      );
-      expect(mockFetch).toHaveBeenNthCalledWith(
-        2,
-        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/codes/'
-      );
-
-      expect(mockFetch).toHaveBeenNthCalledWith(
-        3,
-        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/'
-      );
-      expect(mockFetch).toHaveBeenNthCalledWith(
-        4,
-        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/codes/'
-      );
-
+      expect(mockFetch).toHaveBeenCalledWith('https://test-api.suomi.fi/getModel?modelId=mock-model&fileType=JSON-LD&version=2.0.0');
       expect(writeSpy).toHaveBeenCalledWith(
-        path.join('/public/data/suomi.fi/koodistot', 'testreg', 'testcode.json'),
-        expect.stringContaining('Testikoodisto'),
-        'utf-8'
-      );
-
-      expect(writeSpy).toHaveBeenCalledWith(
-        path.join('/public/data/suomi.fi/koodistot', 'testreg', 'secondcode.json'),
-        expect.stringContaining('Testikoodisto'),
+        path.join('/public/data/suomi.fi/tietomallit', 'mock-model-2.0.0.json'),
+        expect.stringContaining('Mock Malli'),
         'utf-8'
       );
 

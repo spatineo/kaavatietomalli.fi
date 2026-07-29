@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { isContentEqual } from './content-utils';
 
 export interface CodelistItem {
@@ -185,5 +186,7 @@ export async function fetchAndTransformKoodistot(
 }
 
 if (process.env.NODE_ENV !== 'test') {
-  fetchAndTransformKoodistot();
+  if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+    fetchAndTransformKoodistot();
+  }
 }
