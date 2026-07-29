@@ -89,6 +89,7 @@ jobs:
           retention-days: 30
 
       - name: Test Markdown content
+        if: steps.filter.outputs.code != 'true'
         run: npm run test:content
 
       - name: Build
