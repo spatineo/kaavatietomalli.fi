@@ -268,6 +268,7 @@ export function Mermaid({ chart }: MermaidProps) {
   const ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const bindFunctionsRef = useRef<((el: Element) => void) | null>(null);
   const [svgContent, setSvgContent] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
@@ -325,6 +326,7 @@ export function Mermaid({ chart }: MermaidProps) {
             const { svg, bindFunctions } = await mermaid.render(id, chart, tempDiv);
             
             setSvgContent(svg);
+            bindFunctionsRef.current = bindFunctions || null;
             if (ref.current) {
               ref.current.innerHTML = svg;
               if (bindFunctions) {
@@ -543,7 +545,105 @@ export function Mermaid({ chart }: MermaidProps) {
     };
   }, [isModalOpen]);
 
+  const isClickableElement = (target: HTMLElement | null): boolean => {
+    let current = target;
+    while (current && current !== containerRef.current && current !== ref.current) {
+      if (
+        current.tagName.toLowerCase() === 'a' || 
+        current.classList.contains('clickable') ||
+        current.getAttribute('clickable') === 'true'
+      ) {
+        return true;
+      }
+      current = current.parentElement;
+    }
+    return false;
+  };
+
+  const handleMainContainerClick = (e: React.MouseEvent) => {
+    let current = e.target as HTMLElement | null;
+    while (current && current !== e.currentTarget) {
+      const tagName = current.tagName.toLowerCase();
+      if (tagName === 'a') {
+        const href = current.getAttribute('href') || current.getAttribute('xlink:href');
+        if (href) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.href = href;
+          return;
+        }
+      }
+      if (current.classList.contains('clickable') || current.getAttribute('clickable') === 'true') {
+        const href = current.getAttribute('href') || current.getAttribute('xlink:href');
+        if (href) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.href = href;
+          return;
+        }
+        const anchor = current.querySelector('a');
+        if (anchor) {
+          const aHref = anchor.getAttribute('href') || anchor.getAttribute('xlink:href');
+          if (aHref) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = aHref;
+            return;
+          }
+        }
+      }
+      current = current.parentElement;
+    }
+    toggleModal();
+  };
+
+  const handleModalDiagramClick = (e: React.MouseEvent) => {
+    let current = e.target as HTMLElement | null;
+    while (current && current !== e.currentTarget) {
+      const tagName = current.tagName.toLowerCase();
+      if (tagName === 'a') {
+        const href = current.getAttribute('href') || current.getAttribute('xlink:href');
+        if (href) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.href = href;
+          return;
+        }
+      }
+      if (current.classList.contains('clickable') || current.getAttribute('clickable') === 'true') {
+        const href = current.getAttribute('href') || current.getAttribute('xlink:href');
+        if (href) {
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.href = href;
+          return;
+        }
+        const anchor = current.querySelector('a');
+        if (anchor) {
+          const aHref = anchor.getAttribute('href') || anchor.getAttribute('xlink:href');
+          if (aHref) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = aHref;
+            return;
+          }
+        }
+      }
+      current = current.parentElement;
+    }
+  };
+
+  const setModalContainerRef = (el: HTMLDivElement | null) => {
+    (containerRef as any).current = el;
+    if (el && bindFunctionsRef.current) {
+      bindFunctionsRef.current(el);
+    }
+  };
+
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (isClickableElement(e.target as HTMLElement)) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(true);
@@ -578,6 +678,9 @@ export function Mermaid({ chart }: MermaidProps) {
   }, [isDragging, dragStart]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (isClickableElement(e.target as HTMLElement)) {
+      return;
+    }
     // We don't preventDefault here to allow clicks to possibly go through if needed, 
     // but we stop propagation to keep the modal from closing.
     e.stopPropagation();
@@ -683,7 +786,7 @@ export function Mermaid({ chart }: MermaidProps) {
         className="flex justify-center my-12 bg-black/40 backdrop-blur-sm p-10 rounded-3xl border border-white/10 overflow-hidden shadow-2xl group cursor-pointer relative min-h-[200px]"
         role="button"
         aria-label={t.mermaid.expand}
-        onClick={toggleModal}
+        onClick={handleMainContainerClick}
       >
         <AnimatePresence>
           {isLoading && (
@@ -762,9 +865,10 @@ export function Mermaid({ chart }: MermaidProps) {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-            <div 
-                ref={containerRef}
-                className="mermaid select-none flex items-center justify-center pointer-events-none"
+              <div 
+                ref={setModalContainerRef}
+                className="mermaid select-none flex items-center justify-center pointer-events-auto"
+                onClick={handleModalDiagramClick}
                 style={{ 
                   width: naturalSize.width ? `${naturalSize.width}px` : '100%',
                   height: naturalSize.height ? `${naturalSize.height}px` : '100%',
