@@ -225,3 +225,28 @@ export function validateMarkdownVideoBlocks(filePath: string, fileContent: strin
     }
   }
 }
+
+/**
+ * Compares two JSON objects ignoring originSyncTime in root or metadata.
+ */
+export function isContentEqual(a: any, b: any): boolean {
+  if (!a || !b) return false;
+
+  const cleanA = JSON.parse(JSON.stringify(a));
+  const cleanB = JSON.parse(JSON.stringify(b));
+
+  if (cleanA?.metadata?.originSyncTime !== undefined) {
+    delete cleanA.metadata.originSyncTime;
+  }
+  if (cleanB?.metadata?.originSyncTime !== undefined) {
+    delete cleanB.metadata.originSyncTime;
+  }
+  if (cleanA?.originSyncTime !== undefined) {
+    delete cleanA.originSyncTime;
+  }
+  if (cleanB?.originSyncTime !== undefined) {
+    delete cleanB.originSyncTime;
+  }
+
+  return JSON.stringify(cleanA) === JSON.stringify(cleanB);
+}

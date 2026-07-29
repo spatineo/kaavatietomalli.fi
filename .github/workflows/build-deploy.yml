@@ -95,6 +95,23 @@ jobs:
 
       - name: Test Markdown content
         run: npm run test:content
+ 
+      - name: Cache datamodels and codelists
+        id: cache-data
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: public/data/suomi.fi
+          key: suomi-data-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            suomi-data-${{ runner.os }}-
+
+      - name: Check if datamodels and codelists need fetching
+        id: check-data
+        run: npm run check-data-cache
+
+      - name: Fetch datamodels and codelists
+        if: steps.check-data.outputs.needs_fetch == 'true'
+        run: npm run fetch-data
 
       - name: Download Giscus stats
         run: npm run fetch-giscus-stats
