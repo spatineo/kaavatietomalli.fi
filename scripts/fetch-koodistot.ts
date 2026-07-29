@@ -91,6 +91,7 @@ export function transformCodelistData(
 
   return {
     id: metaData?.id || null,
+    technicalName: metaData?.codeValue || null,
     uri: uri,
     vocabulary: uri,
     documentationUrl,
