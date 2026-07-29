@@ -91,9 +91,6 @@ jobs:
       - name: Test Markdown content
         run: npm run test:content
 
-      - name: Download Giscus stats
-        run: npm run fetch-giscus-stats
-
       - name: Build
         run: npm run build
         env:
