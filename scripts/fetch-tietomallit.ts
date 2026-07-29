@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { isContentEqual } from './content-utils';
 
 export interface DataModelConfig {
@@ -31,6 +32,21 @@ export function getAllLabels(labelNode: any): Record<string, string> {
   return labels;
 }
 
+export function getClassTargetId(cls: any): string {
+  const targetClass = cls['sh:targetClass'];
+  if (targetClass) {
+    if (Array.isArray(targetClass)) {
+      const tcId = targetClass[0]?.['@id'] || (typeof targetClass[0] === 'string' ? targetClass[0] : null);
+      if (tcId) return tcId;
+    } else if (typeof targetClass === 'object' && targetClass['@id']) {
+      return targetClass['@id'];
+    } else if (typeof targetClass === 'string') {
+      return targetClass;
+    }
+  }
+  return cls['@id'];
+}
+
 export function transformJsonLdToModel(
   jsonContent: any,
   requestedModel: string,
@@ -53,21 +69,31 @@ export function transformJsonLdToModel(
       n['@type'] === 'sh:NodeShape' || (Array.isArray(n['@type']) && n['@type'].includes('sh:NodeShape'))
   );
 
-  // Pre-build a lookup map to resolve URI references back to properly labeled class names
+  // Pre-build lookup maps to resolve Shape / TargetClass URIs to refined Class IDs and labels
+  const shapeOrClassToRefinedId = new Map<string, string>();
   const targetClassToLabels = new Map<string, Record<string, string>>();
+
   classNodes.forEach((cls: any) => {
+    const refinedId = getClassTargetId(cls);
     const labels = getAllLabels(cls['rdfs:label']);
+
     if (cls['@id']) {
+      shapeOrClassToRefinedId.set(cls['@id'], refinedId);
       targetClassToLabels.set(cls['@id'], labels);
     }
 
     const targetClass = cls['sh:targetClass'];
     if (targetClass) {
-      const tcId = Array.isArray(targetClass) ? targetClass[0]?.['@id'] : targetClass['@id'];
+      const tcId = Array.isArray(targetClass)
+        ? (targetClass[0]?.['@id'] || (typeof targetClass[0] === 'string' ? targetClass[0] : null))
+        : (typeof targetClass === 'object' ? targetClass['@id'] : (typeof targetClass === 'string' ? targetClass : null));
       if (tcId) {
+        shapeOrClassToRefinedId.set(tcId, refinedId);
         targetClassToLabels.set(tcId, labels);
       }
     }
+
+    targetClassToLabels.set(refinedId, labels);
   });
 
   // Find Ontology metadata
@@ -155,12 +181,24 @@ export function transformJsonLdToModel(
           }
 
           if (isObjectProperty) {
-            const targetClassId = propNode['sh:class']?.['@id'];
+            const rawTargetClassId =
+              propNode['sh:class']?.['@id'] ||
+              (typeof propNode['sh:class'] === 'string' ? propNode['sh:class'] : null) ||
+              (Array.isArray(propNode['sh:class'])
+                ? propNode['sh:class'][0]?.['@id'] || (typeof propNode['sh:class'][0] === 'string' ? propNode['sh:class'][0] : null)
+                : null);
+
+            const targetClassId = rawTargetClassId
+              ? (shapeOrClassToRefinedId.get(rawTargetClassId) || rawTargetClassId)
+              : null;
+
             let targetClassName: Record<string, string> = { unknown: 'Unknown' };
 
             if (targetClassId) {
               if (targetClassToLabels.has(targetClassId)) {
                 targetClassName = targetClassToLabels.get(targetClassId)!;
+              } else if (rawTargetClassId && targetClassToLabels.has(rawTargetClassId)) {
+                targetClassName = targetClassToLabels.get(rawTargetClassId)!;
               } else {
                 targetClassName = { unknown: targetClassId.split('/').pop() || 'Unknown' };
               }
@@ -204,7 +242,8 @@ export function transformJsonLdToModel(
     associations.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
 
     outputJson.classes.push({
-      id: cls['@id'],
+      id: getClassTargetId(cls),
+      uri: cls['@id'],
       name: getAllLabels(cls['rdfs:label']),
       attributes,
       associations,
@@ -303,5 +342,7 @@ export async function fetchAndTransformTietomallit(
 }
 
 if (process.env.NODE_ENV !== 'test') {
-  fetchAndTransformTietomallit();
+  if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+    fetchAndTransformTietomallit();
+  }
 }
