@@ -1,5 +1,5 @@
 import { DataModelAccess } from './data-model-types';
-import { parseModelId } from './local-data-model-access';
+import { parseModelId } from './data-model-utils';
 
 export class FetchDataModelAccess implements DataModelAccess {
   private baseUrl: string;

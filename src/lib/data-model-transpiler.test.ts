@@ -4,7 +4,8 @@ import {
   transpileDataModelSnippetToMermaid,
   transpileDataModelSnippetsInMarkdown
 } from './data-model-transpiler';
-import { LocalFileDataModelAccess, parseModelId } from './local-data-model-access';
+import { LocalFileDataModelAccess } from './local-data-model-access';
+import { parseModelId } from './data-model-utils';
 import { DataModelAccess } from './data-model-types';
 
 const mockRytjKaavaModel = {

@@ -1,5 +1,5 @@
 import { DataModelAccess, DataModelSnippetConfig } from './data-model-types';
-import { parseModelId } from './local-data-model-access';
+import { parseModelId } from './data-model-utils';
 
 export function parseDataModelSnippetConfig(code: string): DataModelSnippetConfig {
   const lines = code.split('\n');
