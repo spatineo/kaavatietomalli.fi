@@ -177,6 +177,8 @@ export function transformJsonLdToModel(
     const classCodelists = new Set<string>();
     const attributes: any[] = [];
     const associations: any[] = [];
+    let superclass: string | null = null;
+    let hasSuperclass = false;
 
     let properties = cls['sh:property'];
     if (properties) {
@@ -223,25 +225,30 @@ export function transformJsonLdToModel(
               ? (shapeOrClassToRefinedId.get(rawTargetClassId) || rawTargetClassId)
               : null;
 
-            let targetClassName: Record<string, string> = { unknown: 'Unknown' };
+            if (propLabels?.fi === 'Yläluokka') {
+              hasSuperclass = true;
+              superclass = targetClassId || null;
+            } else {
+              let targetClassName: Record<string, string> = { unknown: 'Unknown' };
 
-            if (targetClassId) {
-              if (targetClassToLabels.has(targetClassId)) {
-                targetClassName = targetClassToLabels.get(targetClassId)!;
-              } else if (rawTargetClassId && targetClassToLabels.has(rawTargetClassId)) {
-                targetClassName = targetClassToLabels.get(rawTargetClassId)!;
-              } else {
-                targetClassName = { unknown: targetClassId.split('/').pop() || 'Unknown' };
+              if (targetClassId) {
+                if (targetClassToLabels.has(targetClassId)) {
+                  targetClassName = targetClassToLabels.get(targetClassId)!;
+                } else if (rawTargetClassId && targetClassToLabels.has(rawTargetClassId)) {
+                  targetClassName = targetClassToLabels.get(rawTargetClassId)!;
+                } else {
+                  targetClassName = { unknown: targetClassId.split('/').pop() || 'Unknown' };
+                }
               }
-            }
 
-            associations.push({
-              id: propNode['@id'],
-              name: propLabels,
-              targetClassId: targetClassId || null,
-              targetClassName,
-              cardinality
-            });
+              associations.push({
+                id: propNode['@id'],
+                name: propLabels,
+                targetClassId: targetClassId || null,
+                targetClassName,
+                cardinality
+              });
+            }
           } else {
             let datatype = propNode['sh:datatype'] || 'string';
             if (typeof datatype === 'string') {
@@ -272,14 +279,25 @@ export function transformJsonLdToModel(
     attributes.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
     associations.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
 
-    outputJson.classes.push({
-      id: getClassTargetId(cls),
+    const classId = getClassTargetId(cls);
+    const technicalName = classId ? classId.replace(/\/+$/, '').split('/').pop() || '' : '';
+
+    const classObj: any = {
+      id: classId,
+      technicalName,
       uri: cls['@id'],
-      name: getAllLabels(cls['rdfs:label']),
-      attributes,
-      associations,
-      codelists: sortedCodelists
-    });
+      name: getAllLabels(cls['rdfs:label'])
+    };
+
+    if (hasSuperclass) {
+      classObj.superclass = superclass;
+    }
+
+    classObj.attributes = attributes;
+    classObj.associations = associations;
+    classObj.codelists = sortedCodelists;
+
+    outputJson.classes.push(classObj);
   });
 
   // Alphabetically sort the top-level classes by ID

@@ -12,6 +12,8 @@ describe('fetch-koodistot script', () => {
     it('transforms metaData and codesData into target JSON structure', () => {
       const metaData = {
         id: 'meta-uuid-1234',
+        codeValue: 'Test',
+        codeRegistry: { codeValue: 'rytj' },
         prefLabel: { fi: 'Testi Koodisto', en: 'Test Codelist' },
         definition: { fi: 'Määritelmä' },
         description: { fi: 'Kuvaus' },
@@ -55,8 +57,10 @@ describe('fetch-koodistot script', () => {
       const result = transformCodelistData(metaData, codesData, uri, timestamp);
 
       expect(result.id).toBe('meta-uuid-1234');
+      expect(result.technicalName).toBe('Test');
       expect(result.uri).toBe(uri);
       expect(result.vocabulary).toBe(uri);
+      expect(result.documentationUrl).toBe('https://koodistot.suomi.fi/codescheme;registryCode=rytj;schemeCode=Test');
       expect(result.names).toEqual({ fi: 'Testi Koodisto', en: 'Test Codelist' });
       expect(result.definitions).toEqual({ fi: 'Määritelmä' });
       expect(result.descriptions).toEqual({ fi: 'Kuvaus' });
