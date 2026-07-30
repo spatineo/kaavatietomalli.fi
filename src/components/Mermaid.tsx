@@ -90,12 +90,14 @@ async function getMermaid() {
         }
 
         /* Prevent black and very dark fills in all diagrams */
+        /*
         .node rect, .node circle, .node polygon, .node path, .node ellipse {
           fill: #2C303B !important;
           fill-opacity: 1 !important;
           stroke: #FFAF00 !important;
           stroke-width: 1.5px !important;
         }
+        */
         
         /* Flowchart cluster / group container styling */
         .cluster rect {
@@ -125,6 +127,25 @@ async function getMermaid() {
         }
         g.classGroup line {
           stroke: #FFAF00 !important;
+        }
+
+        .node.default path {
+          fill: #2C303B !important;
+          fill-opacity: 1 !important;
+          stroke: #FFAF00 !important;
+          stroke-width: 1.5px !important;
+        }
+
+        .node.codelistClass path {
+          fill: #0a191c !important;  
+          stroke: #386365 !important;
+          stroke-width: 1.5px !important;
+        }
+
+        .node.plainClass path {
+          fill: #222222 !important;    
+          stroke: #616161 !important;
+          stroke-width: 1.5px !important;
         }
 
         /* State diagram styling and text visibility */
@@ -171,6 +192,15 @@ async function getMermaid() {
         path.mindmap-edge-3, .mindmap-edge-3, path.section-edge-3, .section-edge-3 { stroke: #EC4899 !important; stroke-width: 3px !important; }
         path.mindmap-edge-4, .mindmap-edge-4, path.section-edge-4, .section-edge-4 { stroke: #8B5CF6 !important; stroke-width: 3px !important; }
         path.mindmap-edge-5, .mindmap-edge-5, path.section-edge-5, .section-edge-5 { stroke: #F59E0B !important; stroke-width: 3px !important; }
+
+        g.nodes .mindmap-node.section-0 path { fill: #FFAF00 !important; }
+        g.nodes .mindmap-node.section-0 .label span { color: #2F2F2F !important; }
+        g.nodes .mindmap-node.section-1 path { fill: #3B82F6 !important; }
+        g.nodes .mindmap-node.section-2 path { fill: #10B981 !important; }
+        g.nodes .mindmap-node.section-2 .label span { color: #2F2F2F !important; }
+        g.nodes .mindmap-node.section-3 path { fill: #EC4899 !important; }
+        g.nodes .mindmap-node.section-4 path { fill: #8B5CF6 !important; }
+        g.nodes .mindmap-node.section-5 path { fill: #F59E0B !important; }
         
         /* Fallback for general mindmap edge/curves */
         .mindmap-edge {

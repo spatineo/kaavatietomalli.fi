@@ -127,6 +127,7 @@ export async function transpileDataModelSnippetToMermaid(
 
   const referencedCodelists = new Map<string, { data: any; uri: string }>();
   const codelistUseRelations: { classTechName: string; codelistTechName: string }[] = [];
+  const plainBoxTechNames = new Set<string>();
   const classBlocks: string[] = [];
   const relationLines: string[] = [];
 
@@ -151,9 +152,10 @@ export async function transpileDataModelSnippetToMermaid(
         let codelistTechName = '';
         if (codelistData?.technicalName) {
           codelistTechName = codelistData.technicalName;
-        } else if (codelistUri.includes('oikeusvaik_YK') || codelistUri.includes('yleiskaavan_oikeusvaikutukset')) {
-          codelistTechName = 'oikeusvaik_YK';
         } else {
+          if (!codelistData) {
+            console.warn(`Codelist not found for URI: ${codelistUri}`);
+          }
           const uriLast = codelistUri.replace(/\/+$/, '').split('/').pop() || 'codelist';
           codelistTechName = uriLast.replace(/_v\d+_\d+$/, '');
         }
@@ -174,7 +176,7 @@ export async function transpileDataModelSnippetToMermaid(
         cardinality = `[${cardinality}]`;
       }
 
-      attrLines.push(`        +${typeName} ${attrLocalizedName} ${cardinality}`);
+      attrLines.push(`        +${attrLocalizedName} : ${typeName} ${cardinality}`);
     }
 
     classBlocks.push(
@@ -196,9 +198,8 @@ export async function transpileDataModelSnippetToMermaid(
       codelistTechName;
     const vocabulary = data?.vocabulary || data?.uri || info.uri;
     const uri = data?.uri || data?.vocabulary || info.uri;
-
     codelistBlocks.push(
-      `    class ${codelistTechName}["${codelistLocalizedName}"] {\n        <<codelist>>\n        vocabulary = ${vocabulary} \n    }\n    click ${codelistTechName} href "${uri}"`
+      `    class ${codelistTechName}["${codelistLocalizedName}"]:::codelistClass {\n        <<codelist>>\n        vocabulary = ${vocabulary} \n    }\n    click ${codelistTechName} href "${uri}"`
     );
   }
 
@@ -223,6 +224,9 @@ export async function transpileDataModelSnippetToMermaid(
       );
       const superclassTechName = superclassClassObj?.technicalName || deriveTechNameFromId(superclassTargetId);
       relationLines.push(`    ${superclassTechName} <|-- ${classTechName}`);
+      if (!includedTechNames.has(superclassTechName) && !referencedCodelists.has(superclassTechName)) {
+        plainBoxTechNames.add(superclassTechName);
+      }
     }
 
     // Direct associations
@@ -247,6 +251,9 @@ export async function transpileDataModelSnippetToMermaid(
         assoc.name?.[lang] || assoc.name?.fi || assoc.name?.sv || assoc.name?.en || '';
 
       relationLines.push(`    ${classTechName} --> "${cardStr}" ${targetTechName} : ${assocLocalizedName}`);
+      if (!includedTechNames.has(targetTechName) && !referencedCodelists.has(targetTechName)) {
+        plainBoxTechNames.add(targetTechName);
+      }
     }
 
     // Codelist «use» relations
@@ -256,22 +263,45 @@ export async function transpileDataModelSnippetToMermaid(
     }
   }
 
+  const plainBoxBlocks: string[] = [];
+  for (const plainTechName of plainBoxTechNames) {
+    const plainClassObj = modelClasses.find(
+      (c: any) => c.technicalName === plainTechName || deriveTechNameFromId(c.id) === plainTechName
+    );
+    const plainLocalizedName =
+      plainClassObj?.name?.[lang] ||
+      plainClassObj?.name?.fi ||
+      plainClassObj?.name?.sv ||
+      plainClassObj?.name?.en ||
+      plainTechName;
+
+    plainBoxBlocks.push(`    class ${plainTechName}["${plainLocalizedName}"]:::plainClass`);
+  }
+
   const sections: string[] = [];
-  sections.push(`---
+  let header = `---
     config:
         layout: elk
         class:
             hideEmptyMembersBox: true
 ---
 classDiagram
-    ${noteLine}`);
+    ${noteLine}`;
+
+  sections.push(header);
 
   if (classBlocks.length > 0) {
     sections.push(classBlocks.join('\n\n'));
   }
+
+  if (plainBoxBlocks.length > 0) {
+    sections.push(plainBoxBlocks.join('\n'));
+  }
+
   if (codelistBlocks.length > 0) {
     sections.push(codelistBlocks.join('\n\n'));
   }
+
   if (relationLines.length > 0) {
     sections.push(relationLines.join('\n'));
   }

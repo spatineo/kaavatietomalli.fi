@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   parseDataModelSnippetConfig,
   transpileDataModelSnippetToMermaid,
@@ -123,13 +123,15 @@ classes: ["ChildClass"]
     expect(result).toContain('classDiagram');
     expect(result).toContain('note "Testimalli, versio: 2.0.0"');
     expect(result).toContain('class ChildClass["Lapsiluokka"] {');
-    expect(result).toContain('+test_code Tyyppikoodi [1..1]');
-    expect(result).toContain('class test_code["Testikoodisto"] {');
+    expect(result).toContain('+Tyyppikoodi : test_code [1..1]');
+    expect(result).toContain('class test_code["Testikoodisto"]:::codelistClass {');
     expect(result).toContain('vocabulary = http://uri.suomi.fi/codelist/test/test_code');
     expect(result).toContain('click test_code href "http://uri.suomi.fi/codelist/test/test_code"');
     expect(result).toContain('ParentClass <|-- ChildClass');
     expect(result).toContain('ChildClass --> "0..*" OtherClass : Liittyy');
     expect(result).toContain('ChildClass ..> test_code : «use»');
+    expect(result).toContain('class ParentClass["ParentClass"]:::plainClass');
+    expect(result).toContain('class OtherClass["OtherClass"]:::plainClass');
   });
 
   it('replaces data-model-snippet codeblocks in markdown text', async () => {
@@ -150,5 +152,49 @@ End of document.`;
     expect(result).toContain('```mermaid');
     expect(result).toContain('classDiagram');
     expect(result).toContain('class Kaava["Kaava"] {');
+  });
+
+  it('logs a warning and uses URI fallback when a codelist is missing', async () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const mockAccess: DataModelAccess = {
+      async getDataModel() {
+        return {
+          metadata: { id: 'missing-code-model', version: '1.0.0', name: { fi: 'Test' } },
+          classes: [
+            {
+              id: 'test:1.0/ClassA',
+              technicalName: 'ClassA',
+              attributes: [
+                {
+                  id: 'attrMissing',
+                  name: { fi: 'Tuntematon' },
+                  cardinality: '[0..1]',
+                  codelist: 'http://uri.suomi.fi/codelist/test/unknown_code_v1_0'
+                }
+              ]
+            }
+          ]
+        };
+      },
+      async getCodelist() {
+        return null;
+      }
+    };
+
+    const snippet = `
+modelId: missing-code-model
+classes: ["ClassA"]
+`;
+
+    const result = await transpileDataModelSnippetToMermaid(snippet, mockAccess);
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Codelist not found for URI: http://uri.suomi.fi/codelist/test/unknown_code_v1_0')
+    );
+    expect(result).toContain('+Tuntematon : unknown_code [0..1]');
+    expect(result).toContain('class unknown_code["unknown_code"]:::codelistClass {');
+
+    warnSpy.mockRestore();
   });
 });
