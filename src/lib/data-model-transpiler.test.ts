@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import {
   parseDataModelSnippetConfig,
   transpileDataModelSnippetToMermaid,
@@ -7,7 +7,79 @@ import {
 import { LocalFileDataModelAccess, parseModelId } from './local-data-model-access';
 import { DataModelAccess } from './data-model-types';
 
+const mockRytjKaavaModel = {
+  metadata: {
+    id: 'rytj-kaava',
+    version: '1.0.5',
+    name: { fi: 'Kaavatietomalli' }
+  },
+  classes: [
+    {
+      id: 'ak:1.0.0/Kaava',
+      technicalName: 'Kaava',
+      name: { fi: 'Kaava' },
+      attributes: [
+        {
+          id: 'attr_tyyppi',
+          name: { fi: 'Kaavatyyppi' },
+          cardinality: '[1..1]',
+          codelist: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi'
+        }
+      ],
+      associations: [
+        {
+          id: 'assoc_paatos',
+          name: { fi: 'Päätös' },
+          targetClassId: 'rak:1.0.0/Kaava-asianPaatos',
+          cardinality: '[1..1]'
+        }
+      ]
+    },
+    {
+      id: 'rak:1.0.0/Kaava-asianPaatos',
+      technicalName: 'Kaava-asianPaatos',
+      name: { fi: 'Kaava-asian päätös' },
+      attributes: [],
+      associations: []
+    }
+  ]
+};
+
+const mockKaavaTyyppiCodelist = {
+  uri: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi',
+  vocabulary: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi',
+  technicalName: 'kaava_tyyppi',
+  names: { fi: 'Kaavatyyppi' }
+};
+
 describe('data-model-transpiler', () => {
+  let getDataModelSpy: any;
+  let getCodelistSpy: any;
+
+  beforeAll(() => {
+    getDataModelSpy = vi.spyOn(LocalFileDataModelAccess.prototype, 'getDataModel')
+      .mockImplementation(async (modelId: string) => {
+        const { name, version } = parseModelId(modelId);
+        if (name === 'rytj-kaava' && version === '1.0.5') {
+          return mockRytjKaavaModel;
+        }
+        return null;
+      });
+
+    getCodelistSpy = vi.spyOn(LocalFileDataModelAccess.prototype, 'getCodelist')
+      .mockImplementation(async (uri: string) => {
+        if (uri === 'http://uri.suomi.fi/codelist/test/kaava_tyyppi') {
+          return mockKaavaTyyppiCodelist;
+        }
+        return null;
+      });
+  });
+
+  afterAll(() => {
+    if (getDataModelSpy) getDataModelSpy.mockRestore();
+    if (getCodelistSpy) getCodelistSpy.mockRestore();
+  });
+
   it('parses snippet config correctly from JSON array classes', () => {
     const snippet = `
 modelId: https://iri.suomi.fi/model/rytj-kaava/#v1.0.5
