@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import {
   parseDataModelSnippetConfig,
   transpileDataModelSnippetToMermaid,
-  transpileDataModelSnippetsInMarkdown
-} from './data-model-transpiler';
+  convertDataModelDiagramsToMermaid
+} from './data-model-diagram-generator';
 import { LocalFileDataModelAccess } from './local-data-model-access';
 import { parseModelId } from './data-model-utils';
 import { DataModelAccess } from './data-model-types';
@@ -53,7 +53,7 @@ const mockKaavaTyyppiCodelist = {
   names: { fi: 'Kaavatyyppi' }
 };
 
-describe('data-model-transpiler', () => {
+describe('data-model-diagram-generator', () => {
   let getDataModelSpy: any;
   let getCodelistSpy: any;
 
@@ -219,7 +219,7 @@ classes: ["Kaava"]
 
 End of document.`;
 
-    const result = await transpileDataModelSnippetsInMarkdown(markdown, access);
+    const result = await convertDataModelDiagramsToMermaid(markdown, access);
 
     expect(result).not.toContain('```data-model-snippet');
     expect(result).toContain('```mermaid');

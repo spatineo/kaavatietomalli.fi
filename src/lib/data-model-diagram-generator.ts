@@ -315,7 +315,7 @@ classDiagram
   return sections.join('\n\n');
 }
 
-export async function transpileDataModelSnippetsInMarkdown(
+export async function convertDataModelDiagramsToMermaid(
   markdown: string,
   access: DataModelAccess
 ): Promise<string> {
