@@ -4,7 +4,7 @@ import { CONFIG } from '../config';
 import { ErrorBoundary } from './ErrorBoundary';
 import { AlertTriangle } from 'lucide-react';
 import { transpileInstanceToMermaid } from '../lib/instance-diagram-transpiler';
-import { transpileDataModelSnippetToMermaid } from '../lib/data-model-transpiler';
+import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-generator';
 import { FetchDataModelAccess } from '../lib/fetch-data-model-access';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
