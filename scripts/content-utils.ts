@@ -197,7 +197,194 @@ export function validateVideoBlock(type: 'youtube' | 'vimeo', configString: stri
 }
 
 /**
- * Validates the markdown structure of a file for video embedding format correctness.
+ * Parses data model snippet config for validation purposes.
+ */
+export function parseDataModelSnippetConfigForValidation(content: string): { config: Record<string, any>; errors: string[] } {
+  const lines = content.split(/\r?\n/);
+  const config: Record<string, any> = {};
+  const errors: string[] = [];
+  let inClassesSection = false;
+  let classesList: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const trimmed = rawLine.trim();
+    if (!trimmed || trimmed.startsWith('#') || trimmed.startsWith('//')) {
+      continue;
+    }
+
+    if (inClassesSection && trimmed.startsWith('-')) {
+      const item = trimmed.substring(1).trim().replace(/^['"]|['"]$/g, '');
+      if (item) {
+        classesList.push(item);
+      }
+      continue;
+    }
+
+    const colonIndex = trimmed.indexOf(':');
+    if (colonIndex === -1) {
+      errors.push(`Invalid line format (missing colon): "${trimmed}"`);
+      continue;
+    }
+
+    const key = trimmed.substring(0, colonIndex).trim();
+    const valString = trimmed.substring(colonIndex + 1).trim();
+
+    if (key === 'modelId') {
+      config.modelId = valString.replace(/^['"]|['"]$/g, '');
+      inClassesSection = false;
+    } else if (key === 'lang') {
+      config.lang = valString.replace(/^['"]|['"]$/g, '');
+      inClassesSection = false;
+    } else if (key === 'classes') {
+      config.classes = true; // Mark presence of classes key
+      if (valString.startsWith('[') && valString.includes(']')) {
+        let parsedClasses: string[] = [];
+        try {
+          parsedClasses = JSON.parse(valString);
+        } catch {
+          parsedClasses = valString.slice(1, -1).split(',').map(s => s.trim().replace(/^['"]|['"]$/g, '')).filter(Boolean);
+        }
+        classesList = classesList.concat(parsedClasses);
+        inClassesSection = false;
+      } else if (valString === '' || valString === '[') {
+        inClassesSection = true;
+      } else {
+        classesList.push(valString.replace(/^['"]|['"]$/g, ''));
+        inClassesSection = false;
+      }
+    } else {
+      config[key] = valString;
+      inClassesSection = false;
+    }
+  }
+
+  if (config.classes) {
+    config.classes = classesList;
+  }
+
+  return { config, errors };
+}
+
+/**
+ * Validates a single data-model-snippet block structure.
+ */
+export function validateDataModelSnippetBlock(content: string, filePath: string, startLine: number): void {
+  const { config, errors } = parseDataModelSnippetConfigForValidation(content);
+  if (errors.length > 0) {
+    throw new Error(`In file ${filePath} near line ${startLine}: Syntax error in data-model-snippet:\n${errors.join('\n')}`);
+  }
+
+  const allowedKeys = new Set(['modelId', 'classes', 'lang']);
+  for (const key of Object.keys(config)) {
+    if (!allowedKeys.has(key)) {
+      throw new Error(`In file ${filePath} near line ${startLine}: Unknown configuration option "${key}" for data-model-snippet block. Allowed options: ${Array.from(allowedKeys).join(', ')}`);
+    }
+  }
+
+  if (config.modelId === undefined || config.modelId === null || String(config.modelId).trim() === '') {
+    throw new Error(`In file ${filePath} near line ${startLine}: "data-model-snippet" block is missing the required "modelId" parameter.`);
+  }
+
+  if (config.classes === undefined || config.classes === null) {
+    throw new Error(`In file ${filePath} near line ${startLine}: "data-model-snippet" block is missing the required "classes" parameter.`);
+  }
+
+  if (!Array.isArray(config.classes)) {
+    throw new Error(`In file ${filePath} near line ${startLine}: The "classes" parameter in "data-model-snippet" block must be a YAML sequence or a JSON array.`);
+  }
+
+  if (config.classes.length === 0) {
+    throw new Error(`In file ${filePath} near line ${startLine}: The "classes" parameter in "data-model-snippet" block must contain at least one class name.`);
+  }
+
+  for (const cls of config.classes) {
+    if (typeof cls !== 'string' || cls.trim() === '') {
+      throw new Error(`In file ${filePath} near line ${startLine}: Class name inside "classes" parameter must be a non-empty string. Received: ${cls}`);
+    }
+  }
+
+  if (config.lang !== undefined) {
+    if (typeof config.lang !== 'string' || config.lang.trim() === '') {
+      throw new Error(`In file ${filePath} near line ${startLine}: The "lang" parameter must be a non-empty string.`);
+    }
+  }
+}
+
+/**
+ * Validates a single instance/mermaid-instance DSL block structure.
+ */
+export function validateInstanceBlock(content: string, filePath: string, startLine: number): void {
+  const lines = content.split(/\r?\n/);
+  
+  const objectDeclRegex = /^(?:object|instance)\s+([a-zA-Z0-9_]+)\s*:\s*([a-zA-Z0-9_]+)(?:\s*\{)?$/;
+  const attrRegex = /^\s*([a-zA-Z0-9_]+)\s*=\s*(.+)$/;
+  const relationRegex = /^([a-zA-Z0-9_]+)\s*(<-{1,3}>|-{2,3}|-{1,2}>|\.->)\s*([a-zA-Z0-9_]+)(?:\s*:\s*(.+))?$/;
+
+  let currentId: string | null = null;
+  let hasBrace = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const line = rawLine.trim();
+    const currentFileLine = startLine + i;
+
+    if (!line || line.startsWith('%%') || line === 'instanceDiagram') {
+      continue;
+    }
+
+    const objMatch = line.match(objectDeclRegex);
+    if (objMatch) {
+      if (currentId && hasBrace) {
+        throw new Error(`In file ${filePath} near line ${currentFileLine}: Object/instance declaration cannot be nested or started before closing the previous block.`);
+      }
+      if (rawLine.endsWith('{')) {
+        currentId = objMatch[1];
+        hasBrace = true;
+      } else {
+        currentId = null;
+        hasBrace = false;
+      }
+      continue;
+    }
+
+    if (line === '}') {
+      if (!currentId || !hasBrace) {
+        throw new Error(`In file ${filePath} near line ${currentFileLine}: Found closing brace "}" without a corresponding opening brace "{".`);
+      }
+      currentId = null;
+      hasBrace = false;
+      continue;
+    }
+
+    const attrMatch = line.match(attrRegex);
+    if (attrMatch) {
+      if (!currentId) {
+        throw new Error(`In file ${filePath} near line ${currentFileLine}: Attribute assignment "${line}" must be inside an object/instance block.`);
+      }
+      continue;
+    }
+
+    const relMatch = line.match(relationRegex);
+    if (relMatch) {
+      if (currentId && hasBrace) {
+        throw new Error(`In file ${filePath} near line ${currentFileLine}: Relationship definition "${line}" cannot be inside an object/instance body block.`);
+      }
+      continue;
+    }
+
+    // Unrecognized line
+    throw new Error(`In file ${filePath} near line ${currentFileLine}: Unrecognized line syntax: "${line}"`);
+  }
+
+  if (currentId && hasBrace) {
+    throw new Error(`In file ${filePath} near line ${startLine + lines.length - 1}: Object/instance block for "${currentId}" was not closed with a matching "}".`);
+  }
+}
+
+/**
+ * Validates the markdown structure of a file for video embedding format,
+ * data-model-snippets, and instance diagrams correctness.
  */
 export function validateMarkdownVideoBlocks(filePath: string, fileContent: string) {
   const lines = fileContent.split(/\r?\n/);
@@ -209,14 +396,21 @@ export function validateMarkdownVideoBlocks(filePath: string, fileContent: strin
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (line.startsWith('```')) {
-      const match = line.match(/^```(\w+)/);
-      if (!isInsideBlock && match && (match[1] === 'youtube' || match[1] === 'vimeo')) {
+      const match = line.match(/^```([\w-]+)/);
+      if (!isInsideBlock && match && ['youtube', 'vimeo', 'data-model-snippet', 'instance', 'mermaid-instance'].includes(match[1])) {
         isInsideBlock = true;
         blockType = match[1];
         blockLines = [];
         blockStartLine = i + 1;
       } else if (isInsideBlock && line.startsWith('```')) {
-        validateVideoBlock(blockType as 'youtube' | 'vimeo', blockLines.join('\n'), filePath, blockStartLine);
+        const blockContent = blockLines.join('\n');
+        if (blockType === 'youtube' || blockType === 'vimeo') {
+          validateVideoBlock(blockType, blockContent, filePath, blockStartLine);
+        } else if (blockType === 'data-model-snippet') {
+          validateDataModelSnippetBlock(blockContent, filePath, blockStartLine);
+        } else if (blockType === 'instance' || blockType === 'mermaid-instance') {
+          validateInstanceBlock(blockContent, filePath, blockStartLine);
+        }
         isInsideBlock = false;
         blockType = '';
       }
