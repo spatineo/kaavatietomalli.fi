@@ -60,6 +60,7 @@ The platform operates as a **git-backed serverless developer CMS**. It requires 
    - `scripts/generate-search-index.ts`: Builds or registers a full-text client searchable schema into the Orama package.
    - `scripts/fetch-giscus-stats.ts`: Crawls discussions and retrieves comment indicators ahead of runtime presentation.
 3. **Pre-Rendered On-Demand Access**: The React SPA parses and queries these local static files and compiled search databases sequentially on-demand using native lightweight HTTP `fetch` requests as users browse views.
+4. **External API Content Synchronization (Suomi.fi)**: To showcase official data models and codelists, the platform downloads official specifications directly from the Finnish Interoperability Platform (*yhteentoimivuusalusta.suomi.fi*). These are fetched via external APIs, transformed and normalized into static JSON arrays, and stored locally within `/public/data/suomi.fi/`. This guarantees high performance and high availability, letting diagrams and codelists render instantly on the client without live API runtime dependencies.
 
 ---
 
@@ -279,6 +280,53 @@ Because spatial planning data (*kaavatietomalli*) is geographical, the website i
   - **Click to Inspect**: Click on any map marker, line, or polygon to open an informative popup detailing all attributes defined in the geometry's `"properties"` object.
   - **Expand to Fullscreen**: Toggle full-screen mode by clicking the expand button in the map header.
   - **Basemap Toggle**: Toggle between light and dark basemaps to highlight contrasting visual features.
+
+---
+
+#### D. Interactive Data Model Diagrams (`data-model-snippet`)
+You can automatically generate visual, interactive Mermaid class diagrams directly from the downloaded Suomi.fi data models by using the custom ````data-model-snippet```` codeblock in your Markdown:
+
+```markdown
+```data-model-snippet
+modelId: "rytj-kaava-1.0.5"
+classes:
+  - "Kaava"
+  - "Kaava-asianPaatos"
+lang: "fi"
+```
+
+
+* **Supported properties**:
+  - `modelId` (Required): The identifier of the fetched data model (e.g., `rytj-kaava-1.0.5` or `https://iri.suomi.fi/model/rytj-kaava/#v1.0.5`).
+  - `classes` (Required): An array of class names (written in standard YAML list format or a JSON-like array) to render. If specific classes are named, only those classes and their associated properties/relations are included in the generated diagram.
+  - `lang` (Optional, defaults to `"fi"`): The language code to use for rendering human-readable names of the classes and attributes (e.g., `fi`, `sv`, `en`).
+
+---
+
+#### E. Interactive Instance Diagrams (`instance` / `mermaid-instance`)
+You can quickly create styled object and instance diagrams representing actual structures of data with relationships using the custom ````instance```` or ````mermaid-instance```` codeblock:
+
+```markdown
+```instance
+instanceDiagram
+instance alice : User {
+  id = 101
+  role = "ADMIN"
+}
+instance ord1 : Order {
+  total = "45.50"
+}
+
+alice -> ord1 : places
+```
+
+* **Features and Syntax Guidelines**:
+  - **Start Marker**: Include `instanceDiagram` as the first line of the code content.
+  - **Object/Instance Declarations**: Declare instances using `instance name : ClassName { ... }` or `object name : ClassName { ... }` with inner `key = value` attributes.
+  - **Relationships**:
+    - Directed links: `alice -> ord1 : label` (transpiles to standard Arrow connections).
+    - Bidirectional links with dual roles: `alice <-> acc99 : owner | account` (displays a double-ended arrow decorated with distinct left and right role text).
+    - Undirected links with dual roles: `alice --- acc99 : owner | account` (displays a connection line decorated with role descriptions).
 
 ---
 
@@ -694,4 +742,16 @@ npm run test-local:run
 
 # Run Playwright E2E integration tests locally against stable test-content assets with auto-cleanup
 npm run test-local:e2e
+
+# --- Suomi.fi Content Synchronization Commands ---
+
+# Download and transform data models from the suomi.fi Interoperability Platform (interactive CLI use)
+npm run fetch-tietomallit
+
+# Download and transform codelists from the suomi.fi Interoperability Platform (interactive CLI use)
+npm run fetch-koodistot
+
+# Download and transform both data models and codelists (non-interactive workflow command; 
+# mainly meant to be executed automatically as part of GitHub CI/CD workflows and nightly rebuilds)
+npm run fetch-data
 ```
