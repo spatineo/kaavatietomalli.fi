@@ -19,7 +19,7 @@ describe('Instance Transpiler', () => {
     expect(output).toContain('---');
     expect(output).toContain('layout: elk');
     expect(output).toContain('flowchart LR');
-    expect(output).toContain('alice["<u><b>alice : User</b></u><hr/>id = 101<br/>role = &quot;ADMIN&quot;"]');
+    expect(output).toContain('alice["<b>alice : User</b><hr/>id = 101<br/>role = &quot;ADMIN&quot;"]');
   });
 
   it('correctly transpiles single direction relationships', () => {
