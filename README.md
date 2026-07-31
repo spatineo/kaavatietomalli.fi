@@ -5,8 +5,8 @@ A highly polished, serverless headless CMS website built with React, Vite, and T
 ---
 
 ## Table of Contents
-1. [Core CMS Operating Process](#-core-cms-operating-process)
-2. [Content Provider & Editorial Guide](#-content-provider--editorial-guide)
+1. [Core CMS Operating Process](#core-cms-operating-process)
+2. [Content Provider & Editorial Guide](#content-provider--editorial-guide)
    - [Structure of Content Directories](#1-structure-of-content-directories)
    - [Drafts vs. Scheduled Blog Posts](#2-drafts-vs-scheduled-blog-posts)
    - [Global Navigation & Theme Mapping](#3-global-navigation--theme-mapping)
@@ -14,14 +14,14 @@ A highly polished, serverless headless CMS website built with React, Vite, and T
    - [Advanced Rich Content Features](#5-advanced-rich-content-features)
    - [Testing & Validating Your Content](#6-testing--validating-your-content)
    - [Automated Nightly Publishing Pipeline](#7-automated-nightly-publishing-pipeline)
-3. [Project & Code Architecture](#-project--code-architecture)
-4. [Testing Implementation & Developer Guidance](#-testing-implementation--developer-guidance)
+3. [Project & Code Architecture](#project--code-architecture)
+4. [Testing Implementation & Developer Guidance](#testing-implementation--developer-guidance)
    - [Architectural Patterns & Component Isolation](#1-architectural-patterns--component-isolation)
-   - [Unit & Integration Testing (Vitest + RTL)](#2-unit--integration-testing-vitest--rtl)
-   - [End-to-End Testing (Playwright)](#3-end-to-end-testing-playwright)
+   - [Unit & Integration Testing (Vitest + RTL)](#3-unit--integration-testing-vitest--rtl)
+   - [End-to-End Testing (Playwright)](#5-end-to-end-testing-playwright)
    - [Test Content & Local-Test Variants](#6-test-content--local-test-variants)
-5. [Contribution Guidelines](#-contribution-guidelines)
-6. [Development & Build Commands](#-development--build-commands)
+5. [Contribution Guidelines](#contribution-guidelines)
+6. [Development & Build Commands](#development--build-commands)
 
 ---
 
