@@ -146,29 +146,35 @@ export async function transpileDataModelSnippetToMermaid(
 
       const codelistProp = attr.codelist;
       if (codelistProp && (Array.isArray(codelistProp) ? codelistProp.length > 0 : Boolean(codelistProp))) {
-        const codelistUri = Array.isArray(codelistProp) ? codelistProp[0] : codelistProp;
-        const codelistData = await access.getCodelist(codelistUri);
+        const codelistUris = Array.isArray(codelistProp) ? codelistProp : [codelistProp];
+        const techNames: string[] = [];
 
-        let codelistTechName = '';
-        if (codelistData?.technicalName) {
-          codelistTechName = codelistData.technicalName;
-        } else {
-          if (!codelistData) {
-            console.warn(`Codelist not found for URI: ${codelistUri}`);
+        for (const codelistUri of codelistUris) {
+          const codelistData = await access.getCodelist(codelistUri);
+
+          let codelistTechName = '';
+          if (codelistData?.technicalName) {
+            codelistTechName = codelistData.technicalName;
+          } else {
+            if (!codelistData) {
+              console.warn(`Codelist not found for URI: ${codelistUri}`);
+            }
+            const uriLast = codelistUri.replace(/\/+$/, '').split('/').pop() || 'codelist';
+            codelistTechName = uriLast.replace(/_v\d+_\d+$/, '');
           }
-          const uriLast = codelistUri.replace(/\/+$/, '').split('/').pop() || 'codelist';
-          codelistTechName = uriLast.replace(/_v\d+_\d+$/, '');
+
+          techNames.push(codelistTechName);
+
+          if (!referencedCodelists.has(codelistTechName)) {
+            referencedCodelists.set(codelistTechName, { data: codelistData, uri: codelistUri });
+          }
+
+          if (!codelistUseRelations.some(r => r.classTechName === classTechName && r.codelistTechName === codelistTechName)) {
+            codelistUseRelations.push({ classTechName, codelistTechName });
+          }
         }
 
-        typeName = codelistTechName;
-
-        if (!referencedCodelists.has(codelistTechName)) {
-          referencedCodelists.set(codelistTechName, { data: codelistData, uri: codelistUri });
-        }
-
-        if (!codelistUseRelations.some(r => r.classTechName === classTechName && r.codelistTechName === codelistTechName)) {
-          codelistUseRelations.push({ classTechName, codelistTechName });
-        }
+        typeName = techNames.join(' or ');
       }
 
       let cardinality = attr.cardinality || '[0..1]';
