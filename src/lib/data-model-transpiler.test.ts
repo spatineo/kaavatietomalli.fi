@@ -270,4 +270,53 @@ classes: ["ClassA"]
 
     warnSpy.mockRestore();
   });
+
+  it('supports multiple codelists on a single attribute separated by " or "', async () => {
+    const mockAccess: DataModelAccess = {
+      async getDataModel() {
+        return {
+          metadata: { id: 'multi-codelist-model', version: '1.0.0', name: { fi: 'Test' } },
+          classes: [
+            {
+              id: 'test:1.0/ClassB',
+              technicalName: 'ClassB',
+              attributes: [
+                {
+                  id: 'attrMulti',
+                  name: { fi: 'Koodivaihtoehdot' },
+                  cardinality: '[1..1]',
+                  codelist: [
+                    'http://uri.suomi.fi/codelist/test/first_code',
+                    'http://uri.suomi.fi/codelist/test/second_code'
+                  ]
+                }
+              ]
+            }
+          ]
+        };
+      },
+      async getCodelist(uri: string) {
+        if (uri === 'http://uri.suomi.fi/codelist/test/first_code') {
+          return { uri, vocabulary: uri, technicalName: 'first_code', names: { fi: 'Ensimmäinen' } };
+        }
+        if (uri === 'http://uri.suomi.fi/codelist/test/second_code') {
+          return { uri, vocabulary: uri, technicalName: 'second_code', names: { fi: 'Toinen' } };
+        }
+        return null;
+      }
+    };
+
+    const snippet = `
+modelId: multi-codelist-model
+classes: ["ClassB"]
+`;
+
+    const result = await transpileDataModelSnippetToMermaid(snippet, mockAccess);
+
+    expect(result).toContain('+Koodivaihtoehdot : first_code or second_code [1..1]');
+    expect(result).toContain('class first_code["Ensimmäinen"]:::codelistClass {');
+    expect(result).toContain('class second_code["Toinen"]:::codelistClass {');
+    expect(result).toContain('ClassB ..> first_code : «use»');
+    expect(result).toContain('ClassB ..> second_code : «use»');
+  });
 });
