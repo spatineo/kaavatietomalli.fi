@@ -93,8 +93,8 @@ jobs:
             test-results/
           retention-days: 30
 
-      - name: Test Markdown content
-        run: npm run test:content
+      - name: Validate Markdown content
+        run: npm run validate-content
  
       - name: Fetch datamodels and codelists
         run: npm run fetch-data
