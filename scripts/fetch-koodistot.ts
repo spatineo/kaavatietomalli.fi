@@ -44,6 +44,79 @@ export function getLaterDate(statusModified?: string | null, modified?: string |
   return statusModified || modified || null;
 }
 
+export function sortCodelistCodes(codes: any[]): any[] {
+  // Map of codeValue -> code
+  const codeMap = new Map<string, any>();
+  for (const c of codes) {
+    if (c.codeValue) {
+      codeMap.set(c.codeValue, c);
+    }
+  }
+
+  // Group by broaderCode
+  const childrenMap = new Map<string, any[]>();
+  const roots: any[] = [];
+
+  for (const c of codes) {
+    const parentCode = c.broaderCode;
+    if (parentCode && codeMap.has(parentCode)) {
+      if (!childrenMap.has(parentCode)) {
+        childrenMap.set(parentCode, []);
+      }
+      childrenMap.get(parentCode)!.push(c);
+    } else {
+      roots.push(c);
+    }
+  }
+
+  // Sort helper
+  const compareCodes = (a: any, b: any) => {
+    const orderA = a.order !== undefined && a.order !== null ? Number(a.order) : 0;
+    const orderB = b.order !== undefined && b.order !== null ? Number(b.order) : 0;
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    return (a.codeValue || '').localeCompare(b.codeValue || '');
+  };
+
+  // Sort roots and each children list
+  roots.sort(compareCodes);
+  for (const [parentCode, children] of childrenMap.entries()) {
+    children.sort(compareCodes);
+  }
+
+  const result: any[] = [];
+  const visited = new Set<string>();
+
+  function dfs(code: any) {
+    if (!code.codeValue) return;
+    if (visited.has(code.codeValue)) return;
+    visited.add(code.codeValue);
+
+    result.push(code);
+
+    const children = childrenMap.get(code.codeValue) || [];
+    for (const child of children) {
+      dfs(child);
+    }
+  }
+
+  for (const root of roots) {
+    dfs(root);
+  }
+
+  // If there are any unvisited codes (e.g., due to cycles or missing keys), append them
+  if (result.length < codes.length) {
+    const unvisited = codes.filter(c => !c.codeValue || !visited.has(c.codeValue));
+    unvisited.sort(compareCodes);
+    for (const c of unvisited) {
+      result.push(c);
+    }
+  }
+
+  return result;
+}
+
 export function transformCodelistData(
   metaData: any,
   codesData: any,
@@ -74,7 +147,11 @@ export function transformCodelistData(
         }
       }
 
-      return {
+      const broaderCodeValue = typeof codeObj.broaderCode === 'string'
+        ? codeObj.broaderCode
+        : (codeObj.broaderCode?.codeValue || null);
+
+      const code: any = {
         id: codeObj.id || null,
         uri: codeObj.uri || null,
         codeValue: codeObj.codeValue || null,
@@ -86,8 +163,19 @@ export function transformCodelistData(
         statusModified: codeObj.statusModified || null,
         description: desc
       };
-    })
-    .sort((a: any, b: any) => (a.uri || '').localeCompare(b.uri || ''));
+
+      if (broaderCodeValue) {
+        code.broaderCode = broaderCodeValue;
+      }
+
+      if (codeObj.order !== undefined && codeObj.order !== null) {
+        code.order = Number(codeObj.order);
+      }
+
+      return code;
+    });
+
+  const sortedCodes = sortCodelistCodes(codes);
 
   return {
     id: metaData?.id || null,
@@ -104,7 +192,7 @@ export function transformCodelistData(
     status: metaData?.status || null,
     originSyncTime: fetchTimestamp || new Date().toISOString(),
     allVersions: metaData?.allVersions || [],
-    codes: codes
+    codes: sortedCodes
   };
 }
 

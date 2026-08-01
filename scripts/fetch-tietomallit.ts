@@ -280,13 +280,15 @@ export function transformJsonLdToModel(
     associations.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
 
     const classId = getClassTargetId(cls);
-    const technicalName = classId ? classId.replace(/\/+$/, '').split('/').pop() || '' : '';
+    const lastPart = classId ? classId.replace(/\/+$/, '').split('/').pop() || '' : '';
+    const technicalName = lastPart.split(':').pop() || '';
 
     const classObj: any = {
       id: classId,
       technicalName,
       uri: cls['@id'],
-      name: getAllLabels(cls['rdfs:label'])
+      name: getAllLabels(cls['rdfs:label']),
+      description: getAllLabels(cls['rdfs:comment'])
     };
 
     if (hasSuperclass) {

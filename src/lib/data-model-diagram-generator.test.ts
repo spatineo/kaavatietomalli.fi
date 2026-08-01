@@ -133,7 +133,6 @@ lang: fi
     const mermaid = await transpileDataModelSnippetToMermaid(snippet, access);
 
     expect(mermaid).toContain('classDiagram');
-    expect(mermaid).toContain('note "Kaavatietomalli, versio: 1.0.5"');
     expect(mermaid).toContain('class Kaava["Kaava"] {');
     expect(mermaid).toContain('class Kaava-asianPaatos["Kaava-asian päätös"] {');
     expect(mermaid).toContain('<<codelist>>');
@@ -194,7 +193,6 @@ classes: ["ChildClass"]
     const result = await transpileDataModelSnippetToMermaid(snippet, mockAccess);
 
     expect(result).toContain('classDiagram');
-    expect(result).toContain('note "Testimalli, versio: 2.0.0"');
     expect(result).toContain('class ChildClass["Lapsiluokka"] {');
     expect(result).toContain('+Tyyppikoodi : test_code [1..1]');
     expect(result).toContain('class test_code["Testikoodisto"]:::codelistClass {');

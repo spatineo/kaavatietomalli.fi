@@ -4,7 +4,8 @@ import path from 'path';
 import {
   transformCodelistData,
   getLaterDate,
-  fetchAndTransformKoodistot
+  fetchAndTransformKoodistot,
+  sortCodelistCodes
 } from './fetch-koodistot';
 
 describe('fetch-koodistot script', () => {
@@ -74,6 +75,38 @@ describe('fetch-koodistot script', () => {
 
       expect(result.codes[1].codeValue).toBe('02');
       expect(result.codes[1].description).toEqual({ fi: 'Lyhyt nimi 2' });
+    });
+  });
+
+  describe('sortCodelistCodes', () => {
+    it('sorts codes hierarchically where narrower codes follow broader codes, ordered by order property', () => {
+      const mockCodes = [
+        { codeValue: 'A', broaderCode: null, order: 2 },
+        { codeValue: 'B', broaderCode: null, order: 1 },
+        { codeValue: 'C', broaderCode: 'B', order: 2 },
+        { codeValue: 'D', broaderCode: 'B', order: 1 },
+        { codeValue: 'E', broaderCode: 'A', order: 1 }
+      ];
+
+      const sorted = sortCodelistCodes(mockCodes);
+
+      // Expected order:
+      // B (root, order 1)
+      // D (child of B, order 1)
+      // C (child of B, order 2)
+      // A (root, order 2)
+      // E (child of A, order 1)
+      expect(sorted.map(c => c.codeValue)).toEqual(['B', 'D', 'C', 'A', 'E']);
+    });
+
+    it('falls back to alphabetical sorting of codeValue if order is identical or missing', () => {
+      const mockCodes = [
+        { codeValue: 'Y', broaderCode: null },
+        { codeValue: 'X', broaderCode: null }
+      ];
+
+      const sorted = sortCodelistCodes(mockCodes);
+      expect(sorted.map(c => c.codeValue)).toEqual(['X', 'Y']);
     });
   });
 

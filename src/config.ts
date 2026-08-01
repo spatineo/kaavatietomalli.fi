@@ -13,6 +13,12 @@ export const CONFIG = {
   repoOwner: PROJECT_CONFIG.repoOwner,
   repoName: PROJECT_CONFIG.repoName,
   language: 'fi',
+  dataLanguages: [
+    { code: 'fi', name: 'Suomi' },
+    { code: 'sv', name: 'Svenska' },
+    { code: 'en', name: 'English' }
+  ],
+  defaultDataLanguage: 'fi',
   giscus: {
     repo: `${PROJECT_CONFIG.repoOwner}/${PROJECT_CONFIG.repoName}`,
     repoId: env.VITE_GISCUS_REPO_ID || 'R_kgDOSWMhAA',
