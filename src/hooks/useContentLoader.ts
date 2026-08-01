@@ -149,6 +149,8 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
             if (!ignore) setContentNotFound(true);
           }
         }
+      } else if (activeView.type === 'model' && activeView.slug) {
+        window.scrollTo(0, 0);
       }
     };
  

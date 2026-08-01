@@ -2,7 +2,7 @@
   "nav": [
     { "label": "Blogi", "type": "blog" },
     { 
-      "label": "Yhteentoimivuus", 
+      "label": "Speksit", 
       "type": "menu",
       "subitems": [
         { "label": "Lait ja asetukset", "type": "page", "slug": "lainsaadanto" },
@@ -13,19 +13,20 @@
         { "label": "Kansainväliset standardit", "type": "page", "slug": "kv-standardit" }
       ]
     },
+    {
+      "label": "Tietomalliselain",
+      "type": "menu",
+      "subitems": [
+        { "label": "Kaavatietomalli", "type": "model", "slug": "rytj-kaava"}
+      ]
+    },
     { 
       "label": "Ratkaisut",
       "type": "menu",
       "subitems": [
         { "label": "Tietomallisparraukset ja koulutukset", "type": "tag", "slug": "sparraus" },
         { "label": "Ohjelmistotuotteet", "type": "tag", "slug": "ohjelmistot" },
-        { "label": "Markkinaselvitykset", "type": "tag", "slug": "markkinaselvitys" }
-      ]
-    },
-    { 
-      "label": "Kumppanit",
-      "type": "menu",
-      "subitems": [
+        { "label": "Markkinaselvitykset", "type": "tag", "slug": "markkinaselvitys" },
         { "label": "Spatineo Oy", "type": "page", "slug": "spatineo" }
       ]
     },

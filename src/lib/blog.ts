@@ -59,7 +59,7 @@ export interface ThemeItem {
 
 export interface NavItem {
   label?: string;
-  type: 'page' | 'tag' | 'blog' | 'menu';
+  type: 'page' | 'tag' | 'blog' | 'menu' | 'model';
   slug?: string;
   subitems?: NavItem[];
 }

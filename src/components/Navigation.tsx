@@ -15,11 +15,12 @@ interface HeaderProps {
   onNavigateTag: (tag: string | null) => void;
   onNavigatePost: (slug: string) => void;
   onNavigateAuthor: (slug: string) => void;
+  onNavigateModel: (slug: string) => void;
   onHome: () => void;
   onBlog: () => void;
 }
 
-export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNavigateAuthor, onHome, onBlog }: HeaderProps) {
+export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNavigateAuthor, onNavigateModel, onHome, onBlog }: HeaderProps) {
   const t = getTranslations(CONFIG.language as Language);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number | null>(null);
@@ -58,6 +59,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
       if (item.type === 'blog') handleNavClick(onBlog);
       else if (item.type === 'page' && item.slug) handleNavClick(() => onNavigatePage(item.slug!));
       else if (item.type === 'tag' && item.slug) handleNavClick(() => onNavigateTag(item.slug!));
+      else if (item.type === 'model' && item.slug) handleNavClick(() => onNavigateModel(item.slug!));
     }
   };
 
@@ -143,6 +145,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
                           if (sub.type === 'blog') handleNavClick(onBlog);
                           else if (sub.type === 'page' && sub.slug) handleNavClick(() => onNavigatePage(sub.slug!));
                           else if (sub.type === 'tag' && sub.slug) handleNavClick(() => onNavigateTag(sub.slug!));
+                          else if (sub.type === 'model' && sub.slug) handleNavClick(() => onNavigateModel(sub.slug!));
                         }}
                         className="text-slate-400 hover:text-brand-accent transition-colors text-left text-base font-medium"
                       >
@@ -190,6 +193,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
                         if (sub.type === 'blog') handleNavClick(onBlog);
                         else if (sub.type === 'page' && sub.slug) handleNavClick(() => onNavigatePage(sub.slug!));
                         else if (sub.type === 'tag' && sub.slug) handleNavClick(() => onNavigateTag(sub.slug!));
+                        else if (sub.type === 'model' && sub.slug) handleNavClick(() => onNavigateModel(sub.slug!));
                       }}
                       className="w-full px-6 py-2.5 text-left text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
                       role="menuitem"
