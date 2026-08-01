@@ -280,7 +280,8 @@ export function transformJsonLdToModel(
     associations.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
 
     const classId = getClassTargetId(cls);
-    const technicalName = classId ? classId.replace(/\/+$/, '').split('/').pop() || '' : '';
+    const lastPart = classId ? classId.replace(/\/+$/, '').split('/').pop() || '' : '';
+    const technicalName = lastPart.split(':').pop() || '';
 
     const classObj: any = {
       id: classId,

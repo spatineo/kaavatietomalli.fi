@@ -133,6 +133,31 @@ describe('fetch-tietomallit script', () => {
       expect(childClass.associations.length).toBe(0);
     });
 
+    it('handles prefixed protocol formats like rak:Kaava-asianPaatos correctly without including colons in technicalName', () => {
+      const jsonldContent = {
+        '@graph': [
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/',
+            '@type': 'owl:Ontology',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Testimalli' }],
+            'owl:versionInfo': '1.0.0'
+          },
+          {
+            '@id': 'rak:Kaava-asianPaatos',
+            '@type': 'sh:NodeShape',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Kaava-asian päätös' }],
+            'sh:property': []
+          }
+        ]
+      };
+
+      const result = transformJsonLdToModel(jsonldContent, 'test-model', '1.0.0', '2026-07-28T10:00:00.000Z');
+      const classObj = result.classes.find((c: any) => c.id === 'rak:Kaava-asianPaatos');
+
+      expect(classObj).toBeDefined();
+      expect(classObj.technicalName).toBe('Kaava-asianPaatos');
+    });
+
     it('transforms JSON-LD graph into target JSON structure', () => {
       const jsonldContent = {
         '@graph': [
