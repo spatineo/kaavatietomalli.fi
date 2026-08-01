@@ -47,6 +47,12 @@ export function ClassInfoPanel({
             </span>
           </div>
         </div>
+
+        {selectedClassObj.description && getLocalized(selectedClassObj.description) && (
+          <div className="text-sm text-slate-300 leading-relaxed border-t border-white/5 pt-4 mt-2">
+            {getLocalized(selectedClassObj.description)}
+          </div>
+        )}
       </div>
 
       {/* Mermaid diagram */}

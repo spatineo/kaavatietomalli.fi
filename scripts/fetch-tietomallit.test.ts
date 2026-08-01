@@ -175,6 +175,7 @@ describe('fetch-tietomallit script', () => {
             '@id': 'https://iri.suomi.fi/model/test-model/ClassA',
             '@type': 'sh:NodeShape',
             'rdfs:label': [{ '@language': 'fi', '@value': 'Luokka A' }],
+            'rdfs:comment': [{ '@language': 'fi', '@value': 'Luokan A kuvaus' }],
             'sh:property': [
               { '@id': 'https://iri.suomi.fi/model/test-model/attr1' },
               { '@id': 'https://iri.suomi.fi/model/test-model/assoc1' }
@@ -223,6 +224,7 @@ describe('fetch-tietomallit script', () => {
       expect(classA.technicalName).toBe('ClassA');
       expect(classA.uri).toBe('https://iri.suomi.fi/model/test-model/ClassA');
       expect(classA.name).toEqual({ fi: 'Luokka A' });
+      expect(classA.description).toEqual({ fi: 'Luokan A kuvaus' });
 
       expect(classA.attributes.length).toBe(1);
       expect(classA.attributes[0].id).toBe('https://iri.suomi.fi/model/test-model/attr1');

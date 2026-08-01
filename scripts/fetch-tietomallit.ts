@@ -287,7 +287,8 @@ export function transformJsonLdToModel(
       id: classId,
       technicalName,
       uri: cls['@id'],
-      name: getAllLabels(cls['rdfs:label'])
+      name: getAllLabels(cls['rdfs:label']),
+      description: getAllLabels(cls['rdfs:comment'])
     };
 
     if (hasSuperclass) {
