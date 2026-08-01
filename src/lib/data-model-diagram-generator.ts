@@ -85,10 +85,6 @@ export async function transpileDataModelSnippetToMermaid(
     metadata.name?.en ||
     metadata.id ||
     'Tietomalli';
-  const modelVersion = metadata.version || parseModelId(config.modelId).version || '';
-  const noteLine = modelVersion
-    ? `note "${modelName}, versio: ${modelVersion}"`
-    : `note "${modelName}"`;
 
   const modelClasses: any[] = dataModel.classes || [];
 
@@ -292,7 +288,7 @@ export async function transpileDataModelSnippetToMermaid(
             hideEmptyMembersBox: true
 ---
 classDiagram
-    ${noteLine}`;
+    `
 
   sections.push(header);
 

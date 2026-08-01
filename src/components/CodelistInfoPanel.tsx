@@ -247,7 +247,7 @@ export function CodelistInfoPanel({
                         <td className="px-6 py-4 text-right">
                           <button
                             onClick={() => onCopy(code.uri)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 text-slate-400 hover:text-white rounded-lg transition-all text-xs font-semibold font-mono"
+                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/10 text-slate-400 hover:text-white rounded-lg transition-all text-xs font-semibold font-mono min-w-32"
                             title={t.dataModel.copyUri}
                           >
                             {copiedCodeUri === code.uri ? (
