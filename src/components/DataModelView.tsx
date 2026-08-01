@@ -4,15 +4,18 @@ import {
   Globe, 
   ChevronDown, 
   ExternalLink, 
-  Database
+  Database,
+  Info,
+  BookOpen
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-generator';
 import { FetchDataModelAccess } from '../lib/fetch-data-model-access';
 
 // Sub-components
-import { ModelInfoPanel } from './ModelInfoPanel';
 import { ClassCodelistSelector } from './ClassCodelistSelector';
 import { ClassInfoPanel } from './ClassInfoPanel';
 import { CodelistInfoPanel } from './CodelistInfoPanel';
@@ -62,6 +65,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString }: Dat
   const [loading, setLoading] = useState<boolean>(true);
   const [loadingCodelist, setLoadingCodelist] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isModelInfoOpen, setIsModelInfoOpen] = useState<boolean>(false);
 
   // 2. Load model index and codelist index on mount
   useEffect(() => {
@@ -377,102 +381,158 @@ lang: ${dataLang}`;
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col gap-10">
       {/* Header and Controls */}
-      <div className="flex flex-col gap-6 md:flex-row md:justify-between border-b border-white/5 pb-8">
-        <div className="flex flex-col gap-4">
-          <button 
-            onClick={onBack}
-            className="self-start inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-semibold mb-2"
-          >
-            <ArrowLeft size={16} />
-            {t.common.backToHome}
-          </button>
-          <div className="flex items-center gap-6 mb-2 uppercase">
-            <Database size={24} className="text-brand-accent" aria-hidden="true" />
-            <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{t.dataModel.dataModelBrowser}</span>
-            <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
-          </div>
-          <h1 className="text-4xl font-black tracking-tighter leading-[0.8] text-white">
-                {getLocalized(metadata.name)}
-          </h1>
-          <a
-            href={metadata.modelUri || metadata.id}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm font-mono text-slate-500 flex items-center gap-1.5  hover:underline font-semibold"
-          >
-            <span className="text-brand-accent">{metadata.modelUri || metadata.id}</span>
-            <ExternalLink size={12} />
-            </a>
-          <div className="flex gap-3 flex-wrap items-center">
-          {metadata.lastModified && (
-            <div className="">
-                <span className="text-slate-500 font-semibold">{t.dataModel.modified}:</span>{' '}
-                <span className="font-semibold text-slate-200">
-                {new Date(metadata.lastModified).toLocaleDateString(dataLang)}
-                </span>
+      <div className="flex flex-col gap-6 border-b border-white/5 pb-8">
+        <div className="flex flex-col gap-6 md:flex-row md:justify-between items-start">
+          <div className="flex flex-col gap-4">
+            <button 
+              onClick={onBack}
+              className="self-start inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-semibold mb-2"
+            >
+              <ArrowLeft size={16} />
+              {t.common.backToHome}
+            </button>
+            <div className="flex items-center gap-6 mb-2 uppercase">
+              <Database size={24} className="text-brand-accent" aria-hidden="true" />
+              <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{t.dataModel.dataModelBrowser}</span>
+              <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
             </div>
+            <h1 className="text-4xl font-black tracking-tighter leading-[0.8] text-white">
+                  {getLocalized(metadata.name)}
+            </h1>
+            <a
+              href={metadata.modelUri || metadata.id}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-mono text-slate-500 flex items-center gap-1.5  hover:underline font-semibold"
+            >
+              <span className="text-brand-accent">{metadata.modelUri || metadata.id}</span>
+              <ExternalLink size={12} />
+              </a>
+            <div className="flex gap-3 flex-wrap items-center">
+            {metadata.lastModified && (
+              <div className="">
+                  <span className="text-slate-500 font-semibold">{t.dataModel.modified}:</span>{' '}
+                  <span className="font-semibold text-slate-200">
+                  {new Date(metadata.lastModified).toLocaleDateString(dataLang)}
+                  </span>
+              </div>
+              )}
+            {metadata.originSyncTime && (
+              <div className="">
+                  <span className="text-sm text-slate-500 font-semibold">{t.dataModel.originSyncTimeLabel}</span>{' '}
+                  <span className="font-semibold text-slate-200">
+                  {new Date(metadata.originSyncTime).toLocaleString(dataLang)}
+                  </span>
+              </div>
             )}
-          {metadata.originSyncTime && (
-            <div className="">
-                <span className="text-sm text-slate-500 font-semibold">{t.dataModel.originSyncTimeLabel}</span>{' '}
-                <span className="font-semibold text-slate-200">
-                {new Date(metadata.originSyncTime).toLocaleString(dataLang)}
-                </span>
             </div>
-          )}
+          </div>
+
+          {/* Dynamic Selectors */}
+          <div className="flex flex-col gap-4">
+            {/* Language Selector */}
+            <div className="flex grow-0 items-center gap-2 bg-black/40 border border-white/5 rounded-full px-4 py-2 text-sm">
+              <Globe size={16} className="text-slate-400" />
+              <div className="flex gap-1.5">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => handleSelectLanguage(lang.code)}
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                      dataLang === lang.code 
+                        ? 'bg-brand-accent text-black shadow-md' 
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    {lang.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Flexible Filler Spacer */}
+            <div className="flex grow"></div>
+
+            {/* Model Version Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedVersion}
+                onChange={(e) => handleSelectVersion(e.target.value)}
+                className="appearance-none bg-black/40 border border-white/5 hover:border-white/10 rounded-full pl-5 pr-10 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-1 focus:ring-brand-accent cursor-pointer"
+              >
+                {availableVersions.map((v) => (
+                  <option key={v.version} value={v.version} className="bg-slate-900 text-white">
+                    {t.dataModel.versionOptionLabel} {v.version} ({v.status})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
           </div>
         </div>
 
-        {/* Dynamic Selectors */}
-        <div className="flex flex-col gap-4">
-          {/* Language Selector */}
-          <div className="flex grow-0 items-center gap-2 bg-black/40 border border-white/5 rounded-full px-4 py-2 text-sm">
-            <Globe size={16} className="text-slate-400" />
-            <div className="flex gap-1.5">
-              {languages.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => handleSelectLanguage(lang.code)}
-                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                    dataLang === lang.code 
-                      ? 'bg-brand-accent text-black shadow-md' 
-                      : 'text-slate-400 hover:text-white hover:bg-white/5'
-                  }`}
-                >
-                  {lang.name}
-                </button>
-              ))}
+        {/* Compact Combined Description & Documentation (foldable, open by default) */}
+        <div className="bg-black/30 border border-white/5 rounded-2xl flex flex-col overflow-hidden text-sm animate-fade-in">
+          <button
+            onClick={() => setIsModelInfoOpen(!isModelInfoOpen)}
+            className="w-full text-left px-5 py-3 flex items-center justify-between group transition-colors hover:bg-white/[0.02]"
+          >
+            <div className="flex items-center gap-2">
+              <Info size={16} className="text-brand-accent" />
+              <span className="font-bold text-white">{t.dataModel.modelDetails}</span>
             </div>
-          </div>
-          
-          {/* Flexible Filler Spacer */}
-          <div className="flex grow"></div>
+            <div className="flex items-center gap-3 pl-3 border-l border-white/5">
+              <span className="text-xs font-semibold text-slate-400 group-hover:text-brand-accent transition-colors">
+                {isModelInfoOpen ? t.page.close : t.dataModel.showDocumentation}
+              </span>
+              <ChevronDown
+                size={16}
+                className={`text-slate-500 transition-transform duration-500 group-hover:text-brand-accent ${
+                  isModelInfoOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </div>
+          </button>
 
-          {/* Model Version Dropdown */}
-          <div>
-            <select
-              value={selectedVersion}
-              onChange={(e) => handleSelectVersion(e.target.value)}
-              className="appearance-none bg-black/40 border border-white/5 hover:border-white/10 rounded-full pl-5 pr-10 py-2.5 text-sm font-semibold text-white focus:outline-none focus:ring-1 focus:ring-brand-accent cursor-pointer"
-            >
-              {availableVersions.map((v) => (
-                <option key={v.version} value={v.version} className="bg-slate-900 text-white">
-                  {t.dataModel.versionOptionLabel} {v.version} ({v.status})
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-          </div>
+          <AnimatePresence>
+            {isModelInfoOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                className="overflow-hidden"
+              >
+                <div className="px-5 pb-5 pt-2 border-t border-white/5 flex flex-col gap-4">
+                  {/* Description */}
+                  {getLocalized(metadata.description) ? (
+                    <p className="text-slate-300 leading-relaxed text-sm">
+                      {getLocalized(metadata.description)}
+                    </p>
+                  ) : (
+                    <p className="text-slate-500 italic text-sm">
+                      {t.dataModel.noDescription}
+                    </p>
+                  )}
+
+                  {/* Documentation */}
+                  {metadata.documentation && (
+                    <div className="border-t border-white/5 pt-4 flex flex-col gap-2">
+                      <h3 className="font-bold text-slate-400 flex items-center gap-1.5">
+                        <BookOpen size={14} className="text-brand-accent" />
+                        {t.dataModel.documentationAndHistory}
+                      </h3>
+                      <div className="markdown-body prose prose-invert prose-sm max-w-none text-slate-300 max-h-[200px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                        <ReactMarkdown>{getLocalized(metadata.documentation)}</ReactMarkdown>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-
-      {/* 1. Model Info Panel */}
-      <ModelInfoPanel
-        metadata={metadata}
-        dataLang={dataLang}
-        getLocalized={getLocalized}
-        t={t}
-      />
 
       {/* Selector and Active Info Panels */}
       <div className="flex flex-col gap-8">
@@ -484,6 +544,8 @@ lang: ${dataLang}`;
           onSelectElement={handleSelectElement}
           getLocalized={getLocalized}
           t={t}
+          modelName={modelName}
+          selectedVersion={selectedVersion}
         />
 
         {/* 3. The class info panel */}

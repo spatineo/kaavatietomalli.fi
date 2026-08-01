@@ -222,5 +222,6 @@ export interface Translations {
     originSyncTimeLabel: string;
     showDocumentation: string;
     hideDocumentation: string;
+    filterCodesPlaceholder: string;
   };
 }

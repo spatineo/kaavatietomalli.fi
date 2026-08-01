@@ -38,6 +38,7 @@ async function generateSearchIndex() {
     author: 'string',
     tags: 'string[]',
     publishDate: 'string',
+    modelVersions: 'string[]',
   } as const;
 
   const dbFi = await create({
@@ -72,6 +73,64 @@ async function generateSearchIndex() {
   const authorsDir = path.join(CONTENT_DIR, 'authors');
   const now = new Date();
 
+  // Pre-calculate model versions where classes and codelists are used
+  const classToVersions: Record<string, Set<string>> = {};
+  const codelistUriToVersions: Record<string, Set<string>> = {};
+
+  const tietomallitIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', 'index.json');
+  if (fs.existsSync(tietomallitIndexPath)) {
+    const modelsIndex = JSON.parse(fs.readFileSync(tietomallitIndexPath, 'utf-8'));
+    
+    // Group by modelName
+    const modelsByGroup: Record<string, any[]> = {};
+    for (const m of modelsIndex) {
+      const match = m.path.match(/^(.+?)-([0-9.]+)\.json$/);
+      const mName = match ? match[1] : 'rytj-kaava';
+      if (!modelsByGroup[mName]) {
+        modelsByGroup[mName] = [];
+      }
+      modelsByGroup[mName].push(m);
+    }
+
+    for (const [groupName, groupModels] of Object.entries(modelsByGroup)) {
+      for (const model of groupModels) {
+        const modelFilePath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', model.path);
+        if (!fs.existsSync(modelFilePath)) continue;
+
+        try {
+          const modelJson = JSON.parse(fs.readFileSync(modelFilePath, 'utf-8'));
+          const classes = modelJson.classes || [];
+          const modelVersionString = `${groupName}:${model.version}`;
+
+          for (const cls of classes) {
+            if (!cls.id) continue;
+            if (!classToVersions[cls.id]) {
+              classToVersions[cls.id] = new Set();
+            }
+            classToVersions[cls.id].add(modelVersionString);
+
+            cls.codelists?.forEach((uri: string) => {
+              if (!codelistUriToVersions[uri]) {
+                codelistUriToVersions[uri] = new Set();
+              }
+              codelistUriToVersions[uri].add(modelVersionString);
+            });
+            cls.attributes?.forEach((attr: any) => {
+              attr.codelist?.forEach((uri: string) => {
+                if (!codelistUriToVersions[uri]) {
+                  codelistUriToVersions[uri] = new Set();
+                }
+                codelistUriToVersions[uri].add(modelVersionString);
+              });
+            });
+          }
+        } catch (e) {
+          console.error(`Error reading model file for mapping ${model.path}:`, e);
+        }
+      }
+    }
+  }
+
   // Helper to process directory using shared getFilesRecursive
   const processDir = async (dir: string, type: string) => {
     if (!fs.existsSync(dir)) return;
@@ -103,6 +162,7 @@ async function generateSearchIndex() {
         author: data.author || '',
         tags: data.tags || [],
         publishDate: data.publishDate || '',
+        modelVersions: [],
       });
     }
   };
@@ -114,7 +174,6 @@ async function generateSearchIndex() {
   // ----------------------------------------------------
   // Class indexing
   // ----------------------------------------------------
-  const tietomallitIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', 'index.json');
   if (fs.existsSync(tietomallitIndexPath)) {
     console.log('Indexing classes...');
     const models = JSON.parse(fs.readFileSync(tietomallitIndexPath, 'utf-8'));
@@ -159,6 +218,8 @@ async function generateSearchIndex() {
 
             const classSlug = `${groupName}:${cls.technicalName}`;
 
+            const classVersions = Array.from(classToVersions[cls.id] || []);
+
             await insert(dbFi, {
               title: cls.name?.fi || '',
               name: cls.technicalName || '',
@@ -170,6 +231,7 @@ async function generateSearchIndex() {
               author: '',
               tags: [],
               publishDate: '',
+              modelVersions: classVersions,
             });
 
             await insert(dbSv, {
@@ -183,6 +245,7 @@ async function generateSearchIndex() {
               author: '',
               tags: [],
               publishDate: '',
+              modelVersions: classVersions,
             });
 
             await insert(dbEn, {
@@ -196,6 +259,7 @@ async function generateSearchIndex() {
               author: '',
               tags: [],
               publishDate: '',
+              modelVersions: classVersions,
             });
           }
         } catch (e) {
@@ -234,6 +298,7 @@ async function generateSearchIndex() {
           const enCodes = codes.map((c: any) => c.names?.en || '').filter(Boolean).join(' ');
 
           const codelistSlug = `rytj-kaava:${codelist.technicalName}`;
+          const codelistVersions = Array.from(codelistUriToVersions[item.uri] || []);
 
           await insert(dbFi, {
             title: codelist.names?.fi || '',
@@ -246,6 +311,7 @@ async function generateSearchIndex() {
             author: '',
             tags: [],
             publishDate: '',
+            modelVersions: codelistVersions,
           });
 
           await insert(dbSv, {
@@ -259,6 +325,7 @@ async function generateSearchIndex() {
             author: '',
             tags: [],
             publishDate: '',
+            modelVersions: codelistVersions,
           });
 
           await insert(dbEn, {
@@ -272,6 +339,7 @@ async function generateSearchIndex() {
             author: '',
             tags: [],
             publishDate: '',
+            modelVersions: codelistVersions,
           });
         } catch (e) {
           console.error(`Error reading codelist file ${item.path}:`, e);

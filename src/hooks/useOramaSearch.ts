@@ -82,11 +82,16 @@ export function useOramaSearch() {
     init();
   }, [init]);
 
-  const performSearch = useCallback(async (term: string) => {
+  const performSearch = useCallback(async (
+    term: string,
+    options?: {
+      where?: Record<string, any>;
+    }
+  ) => {
     if (!dbs || term.length < 2) return [];
 
     try {
-      const searchConfig = {
+      const searchConfig: any = {
         term,
         properties: ['title', 'name', 'company', 'content', 'excerpt', 'tags'],
         boost: {
@@ -97,6 +102,10 @@ export function useOramaSearch() {
         },
         tolerance: 1,
       };
+
+      if (options?.where) {
+        searchConfig.where = options.where;
+      }
 
       const [resFi, resSv, resEn] = await Promise.all([
         search(dbs.fi, searchConfig),
