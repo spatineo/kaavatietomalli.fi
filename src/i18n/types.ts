@@ -188,7 +188,6 @@ export interface Translations {
     version: string;
     status: string;
     modified: string;
-    openSuomiFiModel: string;
     browseClassesAndCodelists: string;
     selectClassOrCodelistHelp: string;
     classesOptGroup: string;
