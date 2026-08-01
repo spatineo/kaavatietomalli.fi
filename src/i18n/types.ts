@@ -177,4 +177,48 @@ export interface Translations {
     button: string;
     blockError: string;
   };
+  dataModel: {
+    dataModelBrowser: string,
+    description: string;
+    noDescription: string;
+    documentationAndHistory: string;
+    modelDetails: string;
+    version: string;
+    status: string;
+    modified: string;
+    openSuomiFiModel: string;
+    browseClassesAndCodelists: string;
+    selectClassOrCodelistHelp: string;
+    classesOptGroup: string;
+    codelistsOptGroup: string;
+    classLabel: string;
+    codelistLabel: string;
+    technicalName: string;
+    uri: string;
+    classDiagram: string;
+    attributes: string;
+    name: string;
+    technicalNameOrId: string;
+    dataType: string;
+    cardinality: string;
+    associations: string;
+    roleOrAssociationName: string;
+    targetClass: string;
+    definition: string;
+    codelistStatus: string;
+    updated: string;
+    openCodelistService: string;
+    codesTitle: string;
+    codesCountSuffix: string;
+    codeValue: string;
+    copyUri: string;
+    copied: string;
+    noCodesAvailable: string;
+    loadingCodelistInfo: string;
+    errorLoadingCodelist: string;
+    versionOptionLabel: string;
+    originSyncTimeLabel: string;
+    showDocumentation: string;
+    hideDocumentation: string;
+  };
 }

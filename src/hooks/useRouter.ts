@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { CONFIG } from '../config';
 
-export type ViewType = 'home' | 'post' | 'page' | 'author' | 'tag';
+export type ViewType = 'home' | 'post' | 'page' | 'author' | 'tag' | 'model';
 
 export interface ActiveView {
   type: ViewType;
@@ -17,11 +17,13 @@ export function useRouter() {
 
   const activeView = useMemo<ActiveView>(() => {
     const params = new URLSearchParams(searchString);
+    const model = params.get('model');
     const post = params.get('post');
     const page = params.get('page');
     const author = params.get('author');
     const tag = params.get('tag');
 
+    if (model) return { type: 'model', slug: model };
     if (post) return { type: 'post', slug: post };
     if (page) return { type: 'page', slug: page };
     if (author) return { type: 'author', slug: author };
@@ -41,12 +43,19 @@ export function useRouter() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const navigate = useCallback((view: { type: string; slug: string | null }) => {
+  const navigate = useCallback((view: { type: string; slug: string | null; queryParams?: Record<string, string | null> }) => {
     if (typeof window === 'undefined') return;
 
     const params = new URLSearchParams();
     if (view.type !== 'home' && view.slug) {
       params.set(view.type, view.slug);
+    }
+    if (view.queryParams) {
+      Object.entries(view.queryParams).forEach(([k, v]) => {
+        if (v !== null && v !== undefined && v !== '') {
+          params.set(k, v);
+        }
+      });
     }
     
     const searchPart = params.toString() ? `?${params.toString()}` : '';

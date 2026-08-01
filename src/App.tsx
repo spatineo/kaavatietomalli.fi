@@ -12,6 +12,7 @@ import { AuthorView } from './components/AuthorView';
 import { NotFoundView } from './components/NotFoundView';
 import { HomeView } from './components/HomeView';
 import { TagView } from './components/TagView';
+import { DataModelView } from './components/DataModelView';
 import { CookieConsent } from './components/CookieConsent';
 import { getAllPostMetadata, getAuthorBySlug, PostMetadata, AuthorData } from './lib/blog';
 import { CONFIG } from './config';
@@ -37,6 +38,7 @@ export default function App() {
     setPendingScroll,
     onHome,
     scrollToBlog,
+    searchString,
   } = useRouter();
 
   const [selectedThemeTag, setSelectedThemeTag] = useState<string | null>(null);
@@ -142,7 +144,6 @@ export default function App() {
         />
         
         <main id="main-content" className="flex-grow">
-          <div className="mx-auto max-w-fit">
           <ErrorBoundary onReset={onHome}>
             <AnimatePresence>
             {contentNotFound ? (
@@ -251,6 +252,20 @@ export default function App() {
                   </div>
                 </motion.div>
               ) : <div key="pending-author" />
+            ) : activeView.type === 'model' ? (
+              <motion.div
+                key={`model-${activeView.slug}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <DataModelView
+                  modelName={activeView.slug!}
+                  onBack={onHome}
+                  navigate={navigate}
+                  searchString={searchString}
+                />
+              </motion.div>
             ) : activeView.type === 'tag' ? (
               <TagView
                 tagSlug={activeView.slug!}
@@ -276,7 +291,6 @@ export default function App() {
             )}
             </AnimatePresence>
           </ErrorBoundary>
-          </div>
         </main>
   
         <Footer />

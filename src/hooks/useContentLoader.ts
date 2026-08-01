@@ -162,6 +162,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
   const isDataReady = useMemo(() => {
     let ready = false;
     if (activeView.type === 'home') ready = true;
+    else if (activeView.type === 'model') ready = true;
     else if (activeView.type === 'post') ready = currentPost?.slug === activeView.slug;
     else if (activeView.type === 'page') ready = currentPage?.slug === activeView.slug;
     else if (activeView.type === 'author') ready = currentAuthor?.slug === activeView.slug;
