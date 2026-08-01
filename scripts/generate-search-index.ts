@@ -3,6 +3,8 @@ import path from 'path';
 import matter from 'gray-matter';
 import { create, insert, save } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
+import { stemmer as svStemmer } from '@orama/stemmers/swedish';
+import { stemmer as enStemmer } from '@orama/stemmers/english';
 import { getFilesRecursive } from './content-utils.js';
 
 const useTestContent = process.env.CONTENT_MODE === 'test' || process.env.CONTENT_MODE === 'dev/test' || process.env.CONTENT_MODE === 'dev';
@@ -14,22 +16,42 @@ const PUBLIC_DIR = path.join(process.cwd(), 'public');
 async function generateSearchIndex() {
   console.log('Generating search index...');
 
-  const db = await create({
-    schema: {
-      title: 'string',
-      name: 'string',
-      company: 'string',
-      content: 'string',
-      type: 'string',
-      slug: 'string',
-      excerpt: 'string',
-      author: 'string',
-      tags: 'string[]',
-      publishDate: 'string',
-    },
+  const schema = {
+    title: 'string',
+    name: 'string',
+    company: 'string',
+    content: 'string',
+    type: 'string',
+    slug: 'string',
+    excerpt: 'string',
+    author: 'string',
+    tags: 'string[]',
+    publishDate: 'string',
+  } as const;
+
+  const dbFi = await create({
+    schema,
     components: {
       tokenizer: {
         stemmer: fiStemmer,
+      },
+    },
+  });
+
+  const dbSv = await create({
+    schema,
+    components: {
+      tokenizer: {
+        stemmer: svStemmer,
+      },
+    },
+  });
+
+  const dbEn = await create({
+    schema,
+    components: {
+      tokenizer: {
+        stemmer: enStemmer,
       },
     },
   });
@@ -56,7 +78,10 @@ async function generateSearchIndex() {
         }
       }
 
-      await insert(db, {
+      const lang = data.language || 'fi';
+      const targetDb = lang === 'sv' ? dbSv : lang === 'en' ? dbEn : dbFi;
+
+      await insert(targetDb, {
         title: data.title || '',
         name: data.name || '',
         company: data.company || '',
@@ -75,14 +100,21 @@ async function generateSearchIndex() {
   await processDir(pagesDir, 'page');
   await processDir(authorsDir, 'author');
 
-  const index = await save(db);
+  const indexFi = await save(dbFi);
+  const indexSv = await save(dbSv);
+  const indexEn = await save(dbEn);
   
   if (!fs.existsSync(PUBLIC_DIR)) {
     fs.mkdirSync(PUBLIC_DIR, { recursive: true });
   }
 
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index.json'), JSON.stringify(index));
-  console.log('Search index generated at public/search-index.json');
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index-fi.json'), JSON.stringify(indexFi));
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index-sv.json'), JSON.stringify(indexSv));
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index-en.json'), JSON.stringify(indexEn));
+  // Backwards compatibility / default:
+  fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index.json'), JSON.stringify(indexFi));
+
+  console.log('Search indexes generated at public/search-index-{fi,sv,en}.json');
 }
 
 generateSearchIndex().catch(console.error);

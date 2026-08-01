@@ -97,7 +97,9 @@ describe('useOramaSearch hook', () => {
 
     expect(result.current.db).toEqual({ id: 'mock-db' });
     expect(result.current.error).toBeNull();
-    expect(fetchMock).toHaveBeenCalledWith(`/search-index.json?v=${BUILD_VERSION}`);
+    expect(fetchMock).toHaveBeenCalledWith(`/search-index-fi.json?v=${BUILD_VERSION}`);
+    expect(fetchMock).toHaveBeenCalledWith(`/search-index-sv.json?v=${BUILD_VERSION}`);
+    expect(fetchMock).toHaveBeenCalledWith(`/search-index-en.json?v=${BUILD_VERSION}`);
     expect(create).toHaveBeenCalled();
     expect(load).toHaveBeenCalledWith({ id: 'mock-db' }, { dummyKey: 'dummyValue' });
   });
@@ -117,7 +119,7 @@ describe('useOramaSearch hook', () => {
 
     expect(result.current.db).toBeNull();
     expect(result.current.error).toBeInstanceOf(Error);
-    expect(result.current.error?.message).toContain('Failed to fetch search index');
+    expect(result.current.error?.message).toContain('Failed to fetch search index for fi');
   });
 
   it('performs search and returns all results without redundant post-processing or date-filtering', async () => {
@@ -204,8 +206,8 @@ describe('useOramaSearch hook', () => {
       expect(result.current.db).not.toBeNull();
     });
 
-    // Initial load should trigger fetch exactly once
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // Initial load should trigger fetch exactly 3 times (one per language index)
+    expect(fetchMock).toHaveBeenCalledTimes(3);
 
     // Trigger multiple re-renders to simulate state transitions in standard React lifecycle
     rerender();
@@ -213,8 +215,8 @@ describe('useOramaSearch hook', () => {
     rerender();
 
     // Verify initializing didn't restart and no redundant fetch/create was made
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(create).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(create).toHaveBeenCalledTimes(3);
     expect(result.current.isInitializing).toBe(false);
   });
 });
