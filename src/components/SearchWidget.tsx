@@ -7,7 +7,7 @@ import { getTracker } from '../services/analytics';
 import { SearchBox } from './SearchBox';
 
 interface SearchWidgetProps {
-  onNavigate: (type: 'post' | 'page' | 'author', slug: string) => void;
+  onNavigate: (type: string, slug: string) => void;
   isMobile?: boolean;
 }
 
@@ -28,7 +28,7 @@ export function SearchWidget({ onNavigate, isMobile }: SearchWidgetProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const handleNavigate = (type: 'post' | 'page' | 'author', slug: string) => {
+  const handleNavigate = (type: string, slug: string) => {
     getTracker().trackCTA('Search Result Click', `${type}:${slug}`, 'widget');
     onNavigate(type, slug);
     setIsOpen(false);

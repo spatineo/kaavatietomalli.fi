@@ -1,4 +1,4 @@
-import { BookOpen, FileText, User, ArrowRight } from 'lucide-react';
+import { BookOpen, FileText, User, ArrowRight, Database, List } from 'lucide-react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 
@@ -20,6 +20,8 @@ export function SearchResultItem({ result, size = 'sm', onClick }: SearchResultI
       case 'post': return <BookOpen size={iconSize} />;
       case 'page': return <FileText size={iconSize} />;
       case 'author': return <User size={iconSize} />;
+      case 'class': return <Database size={iconSize} />;
+      case 'codelist': return <List size={iconSize} />;
       default: return null;
     }
   };

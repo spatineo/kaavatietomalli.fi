@@ -13,6 +13,17 @@ const CONTENT_DIR = useTestContent
   : path.join(process.cwd(), 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
 
+function compareVersions(v1: string, v2: string): number {
+  const parts1 = v1.split('.').map(Number);
+  const parts2 = v2.split('.').map(Number);
+  for (let i = 0; i < Math.max(parts1.length, parts2.length); i++) {
+    const p1 = parts1[i] || 0;
+    const p2 = parts2[i] || 0;
+    if (p1 !== p2) return p1 - p2;
+  }
+  return 0;
+}
+
 async function generateSearchIndex() {
   console.log('Generating search index...');
 
@@ -99,6 +110,177 @@ async function generateSearchIndex() {
   await processDir(postsDir, 'post');
   await processDir(pagesDir, 'page');
   await processDir(authorsDir, 'author');
+
+  // ----------------------------------------------------
+  // Class indexing
+  // ----------------------------------------------------
+  const tietomallitIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', 'index.json');
+  if (fs.existsSync(tietomallitIndexPath)) {
+    console.log('Indexing classes...');
+    const models = JSON.parse(fs.readFileSync(tietomallitIndexPath, 'utf-8'));
+    
+    // Group by modelName
+    const modelsByGroup: Record<string, any[]> = {};
+    for (const model of models) {
+      const match = model.path.match(/^(.+?)-([0-9.]+)\.json$/);
+      const mName = match ? match[1] : 'rytj-kaava';
+      if (!modelsByGroup[mName]) {
+        modelsByGroup[mName] = [];
+      }
+      modelsByGroup[mName].push(model);
+    }
+
+    for (const groupName of Object.keys(modelsByGroup)) {
+      modelsByGroup[groupName].sort((a, b) => compareVersions(b.version, a.version));
+    }
+
+    const processedClassIds = new Set<string>();
+
+    for (const [groupName, groupModels] of Object.entries(modelsByGroup)) {
+      for (const model of groupModels) {
+        const modelFilePath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', model.path);
+        if (!fs.existsSync(modelFilePath)) continue;
+
+        try {
+          const modelJson = JSON.parse(fs.readFileSync(modelFilePath, 'utf-8'));
+          const classes = modelJson.classes || [];
+
+          for (const cls of classes) {
+            if (!cls.id) continue;
+            if (processedClassIds.has(cls.id)) {
+              continue;
+            }
+            processedClassIds.add(cls.id);
+
+            const attributes = cls.attributes || [];
+            const fiAttrs = attributes.map((a: any) => a.name?.fi || '').filter(Boolean).join(' ');
+            const svAttrs = attributes.map((a: any) => a.name?.sv || '').filter(Boolean).join(' ');
+            const enAttrs = attributes.map((a: any) => a.name?.en || '').filter(Boolean).join(' ');
+
+            const classSlug = `${groupName}:${cls.technicalName}`;
+
+            await insert(dbFi, {
+              title: cls.name?.fi || '',
+              name: cls.technicalName || '',
+              company: '',
+              content: fiAttrs,
+              type: 'class',
+              slug: classSlug,
+              excerpt: cls.description?.fi || '',
+              author: '',
+              tags: [],
+              publishDate: '',
+            });
+
+            await insert(dbSv, {
+              title: cls.name?.sv || '',
+              name: '',
+              company: '',
+              content: svAttrs,
+              type: 'class',
+              slug: classSlug,
+              excerpt: cls.description?.sv || '',
+              author: '',
+              tags: [],
+              publishDate: '',
+            });
+
+            await insert(dbEn, {
+              title: cls.name?.en || '',
+              name: '',
+              company: '',
+              content: enAttrs,
+              type: 'class',
+              slug: classSlug,
+              excerpt: cls.description?.en || '',
+              author: '',
+              tags: [],
+              publishDate: '',
+            });
+          }
+        } catch (e) {
+          console.error(`Error reading model file ${model.path}:`, e);
+        }
+      }
+    }
+  }
+
+  // ----------------------------------------------------
+  // Codelist indexing
+  // ----------------------------------------------------
+  const koodistotIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'koodistot', 'index.json');
+  if (fs.existsSync(koodistotIndexPath)) {
+    console.log('Indexing codelists...');
+    try {
+      const codelistsIndex = JSON.parse(fs.readFileSync(koodistotIndexPath, 'utf-8'));
+      
+      for (const item of codelistsIndex) {
+        const codelistPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'koodistot', item.path);
+        if (!fs.existsSync(codelistPath)) continue;
+
+        try {
+          const codelist = JSON.parse(fs.readFileSync(codelistPath, 'utf-8'));
+          
+          const definitions = codelist.definitions || {};
+          const descriptions = codelist.descriptions || {};
+
+          const fiExcerpt = [definitions.fi, descriptions.fi].map(s => s?.trim()).filter(Boolean).join(' ');
+          const svExcerpt = [definitions.sv, descriptions.sv].map(s => s?.trim()).filter(Boolean).join(' ');
+          const enExcerpt = [definitions.en, descriptions.en].map(s => s?.trim()).filter(Boolean).join(' ');
+
+          const codes = codelist.codes || [];
+          const fiCodes = codes.map((c: any) => c.names?.fi || '').filter(Boolean).join(' ');
+          const svCodes = codes.map((c: any) => c.names?.sv || '').filter(Boolean).join(' ');
+          const enCodes = codes.map((c: any) => c.names?.en || '').filter(Boolean).join(' ');
+
+          const codelistSlug = `rytj-kaava:${codelist.technicalName}`;
+
+          await insert(dbFi, {
+            title: codelist.names?.fi || '',
+            name: codelist.technicalName || '',
+            company: '',
+            content: fiCodes,
+            type: 'codelist',
+            slug: codelistSlug,
+            excerpt: fiExcerpt,
+            author: '',
+            tags: [],
+            publishDate: '',
+          });
+
+          await insert(dbSv, {
+            title: codelist.names?.sv || '',
+            name: '',
+            company: '',
+            content: svCodes,
+            type: 'codelist',
+            slug: codelistSlug,
+            excerpt: svExcerpt,
+            author: '',
+            tags: [],
+            publishDate: '',
+          });
+
+          await insert(dbEn, {
+            title: codelist.names?.en || '',
+            name: '',
+            company: '',
+            content: enCodes,
+            type: 'codelist',
+            slug: codelistSlug,
+            excerpt: enExcerpt,
+            author: '',
+            tags: [],
+            publishDate: '',
+          });
+        } catch (e) {
+          console.error(`Error reading codelist file ${item.path}:`, e);
+        }
+      }
+    } catch (e) {
+      console.error('Error reading codelist index:', e);
+    }
+  }
 
   const indexFi = await save(dbFi);
   const indexSv = await save(dbSv);

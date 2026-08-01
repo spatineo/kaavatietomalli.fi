@@ -59,6 +59,8 @@ export const fi: Translations = {
       post: 'Artikkeli',
       page: 'Sivu',
       author: 'Kirjoittaja',
+      class: 'Luokka',
+      codelist: 'Koodisto',
     },
   },
   mermaid: {
@@ -183,7 +185,7 @@ export const fi: Translations = {
     dataModelBrowser: 'Tietomalliselain',
     description: 'Kuvaus',
     noDescription: 'Ei kuvausta saatavilla valitulla kielellä.',
-    documentationAndHistory: 'Dokumentaatio ja muutoshistoria',
+    documentationAndHistory: 'Dokumentaatio',
     modelDetails: 'Mallin tiedot',
     version: 'Versio',
     status: 'Tila',
@@ -221,6 +223,6 @@ export const fi: Translations = {
     versionOptionLabel: 'Versio',
     originSyncTimeLabel: 'Noudettu Yhteentoimivuusalustalta:',
     showDocumentation: 'Näytä dokumentaatio',
-    hideDocumentation: 'Piilota dokumentaatio',
+    hideDocumentation: 'Piilota dokumentaatio ',
   },
 };

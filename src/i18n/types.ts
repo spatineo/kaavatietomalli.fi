@@ -22,6 +22,8 @@ export interface Translations {
       post: string;
       page: string;
       author: string;
+      class: string;
+      codelist: string;
     };
   };
   navigation: {

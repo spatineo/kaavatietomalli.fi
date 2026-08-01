@@ -15,7 +15,7 @@ interface HeaderProps {
   onNavigateTag: (tag: string | null) => void;
   onNavigatePost: (slug: string) => void;
   onNavigateAuthor: (slug: string) => void;
-  onNavigateModel: (slug: string) => void;
+  onNavigateModel: (slug: string, queryParams?: Record<string, string | null>) => void;
   onHome: () => void;
   onBlog: () => void;
 }
@@ -74,10 +74,21 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearchNavigate = (type: 'post' | 'page' | 'author', slug: string) => {
+  const handleSearchNavigate = (type: string, slug: string) => {
     if (type === 'post') onNavigatePost(slug);
     else if (type === 'page') onNavigatePage(slug);
     else if (type === 'author') onNavigateAuthor(slug);
+    else if (type === 'class') {
+      const parts = slug.split(':');
+      const modelName = parts[0];
+      const technicalName = parts.slice(1).join(':');
+      onNavigateModel(modelName, { class: technicalName });
+    } else if (type === 'codelist') {
+      const parts = slug.split(':');
+      const modelName = parts[0];
+      const technicalName = parts.slice(1).join(':');
+      onNavigateModel(modelName, { codelist: technicalName });
+    }
     setIsMenuOpen(false);
   };
 

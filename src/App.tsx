@@ -139,7 +139,7 @@ export default function App() {
           onNavigateTag={(tag) => navigate({ type: 'tag', slug: tag })}
           onNavigatePost={(slug) => navigate({ type: 'post', slug })}
           onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
-          onNavigateModel={(slug) => navigate({ type: 'model', slug })}
+          onNavigateModel={(slug, queryParams) => navigate({ type: 'model', slug, queryParams })}
           onHome={onHome} 
           onBlog={scrollToBlog} 
         />
