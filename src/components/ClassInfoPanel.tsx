@@ -92,7 +92,27 @@ export function ClassInfoPanel({
                         {attr.id.split('/').pop()}
                       </td>
                       <td className="px-6 py-4">
-                        {nav ? (
+                        {attr.type === 'Literal' && attr.codelist && attr.codelist.length > 0 ? (
+                          <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                            {attr.codelist.map((uri: string, idx: number) => {
+                              const techName = uri.split('/').pop()?.split(':').pop() || '';
+                              return (
+                                <span key={uri} className="inline-flex items-center">
+                                  <button
+                                    onClick={() => onNavigateToType('codelist', techName)}
+                                    className="font-mono text-xs text-brand-accent hover:underline flex items-center gap-1 text-left"
+                                  >
+                                    {techName}
+                                    <Compass size={12} />
+                                  </button>
+                                  {idx < attr.codelist.length - 1 && (
+                                    <span className="text-slate-500 text-xs select-none mr-1">,</span>
+                                  )}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        ) : nav ? (
                           <button
                             onClick={() => onNavigateToType(nav.type, nav.name)}
                             className="font-mono text-xs text-brand-accent hover:underline flex items-center gap-1.5 text-left"
