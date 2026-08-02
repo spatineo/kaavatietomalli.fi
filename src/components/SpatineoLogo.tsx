@@ -37,13 +37,6 @@ const SpatineoLogo: React.FC<LogoProps> = ({
         </linearGradient>
       </defs>
       <g transform="translate(0,-1.9999999e-5)">
-        {/* Gray Background
-        <path
-          id="path1"
-          d="M 0,0 H 1600 V 600 H 0 Z"
-          fill="#606060"
-          transform="matrix(1.3333333,0,0,-1.3333333,0,800)"
-        /> */}
         {/* Gradient Icon */}
         <path
           id="path2"

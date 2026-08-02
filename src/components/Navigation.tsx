@@ -235,10 +235,11 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
               className="text-lg md:text-xl font-black tracking-tight text-white hover:text-brand-accent transition-colors flex items-center gap-3"
               aria-label={`${t.navigation.home} - Kaavatietomalli.fi`}
             >
-              <div className="relative w-8 h-8 md:w-10 md:h-10 flex items-center justify-center">
+              <div className="relative w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center">
                 <KaavatietomalliLogo className="w-full h-full" width="100%" height="100%" />
               </div>
-              <span className="hidden sm:inline">Kaavatietomalli.fi</span>
+              <span className="hidden sm:inline md:hidden">Kaavatietomalli.fi</span>
+              <span className="hidden lg:inline">Kaavatietomalli.fi</span>
               <span className="sm:hidden text-brand-accent">Kaavatietomalli.fi</span>
             </button>
             
@@ -326,9 +327,9 @@ export function Footer() {
   return (
     <footer data-testid="footer" className="py-12 border-t border-white/5 bg-black/40">
       <div className="mx-auto max-w-7xl">
-        <div className="max-w-7xl ml-5 mr-auto px-6 flex flex-col gap-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 pb-4">
-            <div className="flex flex-col md:flex-row items-center gap-8">
+        <div className="max-w-7xl ml-5 mr-auto px-6 flex flex-col gap-4">
+          <div className="flex flex-col md:flex-row items-start justify-between gap-8 pb-2">
+            <div className="flex flex-wrap items-start gap-8">
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.rights}</span>
                 <span className="text-sm font-semibold text-slate-200">&copy; {buildYear} Spatineo Oy ja kirjoittajat</span>
@@ -337,12 +338,12 @@ export function Footer() {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.contact}</span>
                 <span className="text-sm font-semibold text-slate-200">kaavatietomalli@spatineo.com</span>
               </div>
-            </div>
-            <div className="text-left md:text-left">
-              <SpatineoLogo width={250} height={70} className="header-logo" />
+              <div className="-translate-y-[10px] -translate-x-[30px] lg:-translate-x-0">
+                <SpatineoLogo width={250} height={70} className="footer-logo" />
+              </div>
             </div>
           </div>
-          <div className="border-t border-white/5 pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-600 font-mono">
+          <div className="border-t border-white/5 pt-2 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-600 font-mono">
             <span>Versio: {BUILD_VERSION}</span>
           </div>
         </div>
