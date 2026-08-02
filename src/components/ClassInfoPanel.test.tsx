@@ -12,8 +12,8 @@ const t = getTranslations();
 
 const mockClassObj = {
   id: 'http://uri.suomi.fi/model/rytj-kaava/Kaava',
-  technicalName: 'KaavaTekninen',
-  name: { fi: 'KaavaNimi', en: 'Plan' },
+  technicalName: 'Kaava',
+  name: { fi: 'Kaava', en: 'Plan' },
   description: { fi: 'Yleiskaavan kuvaus', en: 'General plan description' },
   attributes: [
     {
@@ -56,7 +56,7 @@ describe('ClassInfoPanel component', () => {
       />
     );
 
-    expect(screen.getByText('KaavaNimi')).toBeDefined();
+    expect(screen.getByRole('heading', { level: 2, name: 'Kaava' })).toBeDefined();
     expect(screen.getByText('Yleiskaavan kuvaus')).toBeDefined();
     expect(screen.getByText('http://uri.suomi.fi/model/rytj-kaava/Kaava')).toBeDefined();
   });

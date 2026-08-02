@@ -13,21 +13,22 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-generator';
-import { FetchDataModelAccess } from '../lib/fetch-data-model-access';
 
 // Sub-components
 import { ClassCodelistSelector } from './ClassCodelistSelector';
 import { ClassInfoPanel } from './ClassInfoPanel';
 import { CodelistInfoPanel } from './CodelistInfoPanel';
+import { DataModelAccess } from '../lib/data-model-types';
 
 interface DataModelViewProps {
   modelName: string; // e.g. "rytj-kaava"
   onBack: () => void;
   navigate: (view: { type: string; slug: string | null; queryParams?: Record<string, string | null> }) => void;
   searchString: string;
+  dataModelAccess: DataModelAccess;
 }
 
-export function DataModelView({ modelName, onBack, navigate, searchString }: DataModelViewProps) {
+export function DataModelView({ modelName, onBack, navigate, searchString, dataModelAccess }: DataModelViewProps) {
   const t = getTranslations(CONFIG.language as Language);
   
   // 1. Languages from CONFIG
@@ -258,12 +259,11 @@ classes:
 - ${selectedElement.name}
 lang: ${dataLang}`;
 
-    transpileDataModelSnippetToMermaid(snippet, new FetchDataModelAccess())
+    transpileDataModelSnippetToMermaid(snippet, dataModelAccess)
       .then(chart => {
         setMermaidChart(chart);
       })
       .catch(err => {
-        console.error('[DataModelView] Failed to generate class diagram:', err);
         setMermaidChart('');
       });
   }, [modelData, selectedVersion, selectedElement, dataLang, modelName]);

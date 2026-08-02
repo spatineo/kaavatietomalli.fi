@@ -23,9 +23,11 @@ import { useRouter } from './hooks/useRouter';
 import { useMetadataSync } from './hooks/useMetadataSync';
 import { useContentLoader } from './hooks/useContentLoader';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { FetchDataModelAccess } from './lib/fetch-data-model-access';
 
 export default function App() {
   const t = getTranslations(CONFIG.language as Language);
+  const dataModelAccess = new FetchDataModelAccess();
 
   useEffect(() => {
     document.documentElement.lang = CONFIG.language;
@@ -265,6 +267,7 @@ export default function App() {
                   onBack={onHome}
                   navigate={navigate}
                   searchString={searchString}
+                  dataModelAccess={dataModelAccess}
                 />
               </motion.div>
             ) : activeView.type === 'tag' ? (
