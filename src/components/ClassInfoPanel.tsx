@@ -1,6 +1,8 @@
+import { lazy, Suspense } from 'react';
 import { Compass, Layers } from 'lucide-react';
-import { Mermaid } from './Mermaid';
 import { Translations } from '../i18n/types';
+
+const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 
 interface ClassInfoPanelProps {
   selectedClassObj: any;
@@ -59,7 +61,13 @@ export function ClassInfoPanel({
       {mermaidChart && (
         <div>
           <h3 className="text-base font-bold text-white mb-2">{t.dataModel.classDiagram}</h3>
-          <Mermaid chart={mermaidChart} />
+          <Suspense fallback={
+            <div className="h-48 w-full flex items-center justify-center border border-white/5 bg-black/10 rounded-2xl animate-pulse">
+              <span className="text-xs text-slate-500 font-mono">Loading diagram...</span>
+            </div>
+          }>
+            <Mermaid chart={mermaidChart} />
+          </Suspense>
         </div>
       )}
 
