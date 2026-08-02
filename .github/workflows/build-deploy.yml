@@ -99,6 +99,13 @@ jobs:
       - name: Fetch datamodels and codelists
         run: npm run fetch-data
 
+      - name: Save datamodels and codelists to cache
+        id: cache-data
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: public/data/suomi.fi
+          key: suomi-data-${{ hashFiles('**/.json') }}
+
       - name: Download Giscus stats
         run: npm run fetch-giscus-stats
 
