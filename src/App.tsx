@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { PostView } from './components/PostView';
 import { PageView } from './components/PageView';
@@ -123,6 +123,28 @@ export default function App() {
     }
   }, [activeView, pendingScroll]);
 
+  const handleSearchNavigate = useCallback((type: string, slug: string) => {
+    if (type === 'post') {
+      navigate({ type: 'post', slug });
+    } else if (type === 'page') {
+      navigate({ type: 'page', slug });
+    } else if (type === 'author') {
+      navigate({ type: 'author', slug });
+    } else if (type === 'model') {
+      navigate({ type: 'model', slug });
+    } else if (type === 'class') {
+      const parts = slug.split(':');
+      const modelName = parts[0];
+      const technicalName = parts.slice(1).join(':');
+      navigate({ type: 'model', slug: modelName, queryParams: { class: technicalName } });
+    } else if (type === 'codelist') {
+      const parts = slug.split(':');
+      const modelName = parts[0];
+      const technicalName = parts.slice(1).join(':');
+      navigate({ type: 'model', slug: modelName, queryParams: { codelist: technicalName } });
+    }
+  }, [navigate]);
+
   return (
     <>
       <PasswordGate>
@@ -144,6 +166,7 @@ export default function App() {
           onNavigateModel={(slug, queryParams) => navigate({ type: 'model', slug, queryParams })}
           onHome={onHome} 
           onBlog={scrollToBlog} 
+          onSearchNavigate={handleSearchNavigate}
         />
         
         <main id="main-content" className="flex-grow">
@@ -159,7 +182,7 @@ export default function App() {
               >
                 <NotFoundView 
                   missingSlug={activeView.slug || undefined}
-                  onNavigate={(type, slug) => navigate({ type, slug })}
+                  onNavigate={handleSearchNavigate}
                   onHome={onHome}
                 />
               </motion.div>

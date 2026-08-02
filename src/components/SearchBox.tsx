@@ -8,7 +8,7 @@ import { SearchResultItem } from './SearchResultItem';
 
 interface SearchBoxProps {
   size?: 'sm' | 'lg';
-  onNavigate: (type: string, slug: string) => void;
+  onNavigate: (type: 'post' | 'page' | 'author' | 'class' | 'codelist' , slug: string) => void;
   initialQuery?: string;
   autoFocus?: boolean;
   showClose?: boolean;

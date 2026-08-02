@@ -177,4 +177,53 @@ describe('useContentLoader hook', () => {
     });
     expect(result.current.currentPage).toEqual(mockPage);
   });
+
+  it('loads a model successfully if it exists in the index', async () => {
+    const mockModelIndex = [
+      { path: 'rytj-kaava-1.0.5.json' }
+    ];
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockModelIndex)
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() =>
+      useContentLoader({ activeView: { type: 'model', slug: 'rytj-kaava' }, posts: [] })
+    );
+
+    expect(result.current.isDataReady).toBe(false);
+
+    await waitFor(() => {
+      expect(result.current.isDataReady).toBe(true);
+    });
+
+    expect(result.current.contentNotFound).toBe(false);
+    expect(fetchMock).toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
+  it('handles model loading failure and marks contentNotFound', async () => {
+    const mockModelIndex = [
+      { path: 'rytj-kaava-1.0.5.json' }
+    ];
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockModelIndex)
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() =>
+      useContentLoader({ activeView: { type: 'model', slug: 'invalid-model' }, posts: [] })
+    );
+
+    expect(result.current.isDataReady).toBe(false);
+
+    await waitFor(() => {
+      expect(result.current.contentNotFound).toBe(true);
+    });
+
+    expect(result.current.isDataReady).toBe(false);
+    vi.unstubAllGlobals();
+  });
 });
