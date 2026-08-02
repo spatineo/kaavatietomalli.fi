@@ -12,6 +12,7 @@
     "fetch-giscus-stats": "tsx scripts/fetch-giscus-stats.ts",
     "validate-content": "tsx scripts/validate-markdown-content.ts",
     "validate-test-content": "CONTENT_MODE=test tsx scripts/validate-markdown-content.ts",
+    "check-codelists": "tsx scripts/list-missing-codelists.ts",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",

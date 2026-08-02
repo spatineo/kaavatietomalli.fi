@@ -17,7 +17,8 @@
       "label": "Tietomalliselain",
       "type": "menu",
       "subitems": [
-        { "label": "Kaavatietomalli", "type": "model", "slug": "rytj-kaava"}
+        { "label": "Kaavatietomalli", "type": "model", "slug": "rytj-kaava"},
+        { "label": "Sitova tonttijako", "type": "model", "slug": "ryhti-tont"}
       ]
     },
     { 

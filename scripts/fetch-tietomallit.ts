@@ -12,6 +12,7 @@ export interface DataModelConfig {
   models: Array<{
     name: string;
     versions: string[];
+    overrides?: any[];
   }>;
 }
 
@@ -77,7 +78,8 @@ export function transformJsonLdToModel(
   jsonContent: any,
   requestedModel: string,
   requestedVersion: string,
-  fetchTimestamp: string
+  fetchTimestamp: string,
+  overrides?: any[]
 ) {
   const graph = jsonContent['@graph'] || [];
 
@@ -306,6 +308,98 @@ export function transformJsonLdToModel(
   // Alphabetically sort the top-level classes by ID
   outputJson.classes.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
 
+  // Helper to robustly match IDs with potential prefix differences
+  const matchesId = (actualId: string, overrideId: string): boolean => {
+    if (!actualId || !overrideId) return false;
+    if (actualId === overrideId) return true;
+    const normActual = actualId.replace('https://iri.suomi.fi/model/rak/', 'rak:');
+    const normOverride = overrideId.replace('https://iri.suomi.fi/model/rak/', 'rak:');
+    return normActual === normOverride;
+  };
+
+  // Carry out overrides if configured
+  if (overrides && Array.isArray(overrides)) {
+    overrides.forEach((override: any) => {
+      if (override.version !== requestedVersion) return;
+
+      if (Array.isArray(override.classes)) {
+        override.classes.forEach((classOverride: any) => {
+          const targetClass = outputJson.classes.find((c: any) => matchesId(c.id, classOverride.id));
+          if (!targetClass) return;
+
+          // Override attributes
+          if (Array.isArray(classOverride.attributes)) {
+            classOverride.attributes.forEach((attrOverride: any) => {
+              const targetAttr = targetClass.attributes.find((a: any) => matchesId(a.id, attrOverride.id));
+              if (targetAttr) {
+                // Apply name, type, cardinality, codelist overrides
+                if (attrOverride.name !== undefined) {
+                  targetAttr.name = attrOverride.name;
+                  console.log(`[OVERRIDE] Applied name override on class "${targetClass.id}" attribute "${targetAttr.id}"`);
+                }
+                if (attrOverride.type !== undefined) {
+                  targetAttr.type = attrOverride.type;
+                  console.log(`[OVERRIDE] Applied type override on class "${targetClass.id}" attribute "${targetAttr.id}"`);
+                }
+                if (attrOverride.cardinality !== undefined) {
+                  targetAttr.cardinality = attrOverride.cardinality;
+                  console.log(`[OVERRIDE] Applied cardinality override on class "${targetClass.id}" attribute "${targetAttr.id}"`);
+                }
+                if (attrOverride.codelist !== undefined) {
+                  const oldCodelist = targetAttr.codelist;
+                  targetAttr.codelist = attrOverride.codelist;
+                  console.log(`[OVERRIDE] Applied codelist override on class "${targetClass.id}" attribute "${targetAttr.id}" to: ${JSON.stringify(attrOverride.codelist)}`);
+
+                  // Rebuild class.codelists array by filtering out old and inserting new
+                  if (Array.isArray(targetClass.codelists)) {
+                    const otherAttrCodelists = new Set<string>();
+                    targetClass.attributes.forEach((a: any) => {
+                      if (!matchesId(a.id, targetAttr.id) && Array.isArray(a.codelist)) {
+                        a.codelist.forEach((c: string) => otherAttrCodelists.add(c));
+                      }
+                    });
+
+                    const newClassCodelists = new Set<string>(otherAttrCodelists);
+                    if (Array.isArray(attrOverride.codelist)) {
+                      attrOverride.codelist.forEach((c: string) => newClassCodelists.add(c));
+                    }
+                    targetClass.codelists = Array.from(newClassCodelists).sort();
+                  }
+                }
+              }
+            });
+          }
+
+          // Override associations
+          if (Array.isArray(classOverride.associations)) {
+            classOverride.associations.forEach((assocOverride: any) => {
+              const targetAssoc = targetClass.associations.find((a: any) => matchesId(a.id, assocOverride.id));
+              if (targetAssoc) {
+                // Apply name, targetClassId, targetClassName, cardinality overrides
+                if (assocOverride.name !== undefined) {
+                  targetAssoc.name = assocOverride.name;
+                  console.log(`[OVERRIDE] Applied name override on class "${targetClass.id}" association "${targetAssoc.id}"`);
+                }
+                if (assocOverride.targetClassId !== undefined) {
+                  targetAssoc.targetClassId = assocOverride.targetClassId;
+                  console.log(`[OVERRIDE] Applied targetClassId override on class "${targetClass.id}" association "${targetAssoc.id}"`);
+                }
+                if (assocOverride.targetClassName !== undefined) {
+                  targetAssoc.targetClassName = assocOverride.targetClassName;
+                  console.log(`[OVERRIDE] Applied targetClassName override on class "${targetClass.id}" association "${targetAssoc.id}"`);
+                }
+                if (assocOverride.cardinality !== undefined) {
+                  targetAssoc.cardinality = assocOverride.cardinality;
+                  console.log(`[OVERRIDE] Applied cardinality override on class "${targetClass.id}" association "${targetAssoc.id}"`);
+                }
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
   return outputJson;
 }
 
@@ -361,7 +455,7 @@ export async function fetchAndTransformTietomallit(
         }
 
         const jsonContent = await jsonResponse.json();
-        const modelOutput = transformJsonLdToModel(jsonContent, model.name, version, fetchTimestamp);
+        const modelOutput = transformJsonLdToModel(jsonContent, model.name, version, fetchTimestamp, model.overrides);
 
         const outputFilename = `${model.name}-${version}.json`;
         const outputPath = path.join(resolvedOutputDir, outputFilename);

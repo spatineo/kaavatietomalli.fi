@@ -72,6 +72,39 @@
                 },
                 {
                     "name": "RY_KaavanVuorovaikutustapahtumanLaji"
+                },
+                {
+                    "name": "alueidenkayttopaatoksennimi"
+                },
+                {
+                     "name": "AlueidenkayttopaatoksenNimi"
+                },
+                {
+                    "name": "RY_MaankayttorajoituksenKasittelytapahtumanLaji"
+                },
+                {
+                    "name": "RY_SuhdePeruskiinteistoon"
+                },
+                {
+                    "name": "RY_TonttijakosuunnitelmanAsiakirjanLaji"
+                },
+                {
+                    "name": "RY_TonttijakosuunnitelmanElinkaarentila"
+                },
+                {
+                    "name": "RY_TonttijakosuunnitelmanKasittelytapahtumanLaji"
+                },
+                {
+                    "name": "RY_TonttijakosuunnitelmanLaji"
+                },
+                {
+                    "name": "sitovanTonttijaonElinkaarenTila"
+                },
+                {
+                    "name": "sitovanTonttijaonKasittelytapahtumanLaji"
+                },
+                {
+                    "name": "sitovanTonttijaonLaji"
                 }
             ]
         },
@@ -83,6 +116,12 @@
                 },
                 {
                     "name": "maakunta_1_20230101"
+                },
+                {
+                    "name": "kunta_1_20240101"
+                },
+                {
+                    "name": "maakunta_1_20240101"
                 }
             ]
         },
