@@ -301,12 +301,12 @@ export async function fetchAndTransformKoodistot(
 
         if (contentChanged) {
           changedCount++;
+          fs.writeFileSync(outputPath, JSON.stringify(transformed, null, 2), 'utf-8');
           console.log(`Saved transformed codelist (CONTENT CHANGED) to ${outputPath}`);
         } else {
-          console.log(`Saved transformed codelist (content unchanged) to ${outputPath}`);
+          console.log(`Skipped transformed codelist (content unchanged) to ${outputPath}`);
         }
-
-        fs.writeFileSync(outputPath, JSON.stringify(transformed, null, 2), 'utf-8');
+        
       } catch (err) {
         console.error(`Failed to process codelist ${registry.name}/${codelist.name}:`, err);
       }
@@ -326,12 +326,11 @@ export async function fetchAndTransformKoodistot(
   }
 
   if (indexChanged) {
+    fs.writeFileSync(indexFilePath, JSON.stringify(indexItems, null, 2), 'utf-8');
     console.log(`Saved koodistot index (CONTENT CHANGED) to ${indexFilePath}`);
   } else {
-    console.log(`Saved koodistot index (content unchanged) to ${indexFilePath}`);
+    console.log(`Skipped koodistot index (content unchanged) to ${indexFilePath}`);
   }
-
-  fs.writeFileSync(indexFilePath, JSON.stringify(indexItems, null, 2), 'utf-8');
 
   return { totalProcessed, changedCount };
 }
