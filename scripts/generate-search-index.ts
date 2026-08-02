@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { create, insert, save } from '@orama/orama';
+import { create, insert, save, components } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
 import { stemmer as svStemmer } from '@orama/stemmers/swedish';
 import { stemmer as enStemmer } from '@orama/stemmers/english';
@@ -41,30 +41,41 @@ async function generateSearchIndex() {
     modelVersions: 'string[]',
   } as const;
 
+  const createCustomTokenizer = async (language: string, stemmerFn?: any) => {
+    const tokenizer = await components.tokenizer.createTokenizer({
+      language,
+      stemming: !!stemmerFn,
+      stemmer: stemmerFn,
+    });
+
+    tokenizer.tokenize = function (text: string) {
+      if (!text) return [];
+      const words = text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+      const stemmed = words.map(w => (this.stemmer ? this.stemmer(w) : w));
+      return stemmed.filter(Boolean);
+    };
+
+    return tokenizer;
+  };
+
   const dbFi = await create({
     schema,
     components: {
-      tokenizer: {
-        stemmer: fiStemmer,
-      },
+      tokenizer: await createCustomTokenizer('finnish', fiStemmer),
     },
   });
 
   const dbSv = await create({
     schema,
     components: {
-      tokenizer: {
-        stemmer: svStemmer,
-      },
+      tokenizer: await createCustomTokenizer('swedish', svStemmer),
     },
   });
 
   const dbEn = await create({
     schema,
     components: {
-      tokenizer: {
-        stemmer: enStemmer,
-      },
+      tokenizer: await createCustomTokenizer('english', enStemmer),
     },
   });
 
