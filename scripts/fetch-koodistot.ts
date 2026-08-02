@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isContentEqual } from './content-utils';
+import { CONFIG } from '../src/config';
 
 export interface CodelistItem {
   name: string;
@@ -261,8 +262,8 @@ export async function fetchAndTransformKoodistot(
         console.log(`Fetching codelist: ${registry.name}/${codelist.name}...`);
 
         const [metaRes, codesRes] = await Promise.all([
-          fetch(metaApiUrl),
-          fetch(codesApiUrl)
+          fetch(metaApiUrl, CONFIG.remoteFetchOptions),
+          fetch(codesApiUrl, CONFIG.remoteFetchOptions)
         ]);
 
         if (!metaRes.ok || !codesRes.ok) {

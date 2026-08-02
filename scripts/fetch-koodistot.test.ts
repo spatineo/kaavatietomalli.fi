@@ -195,20 +195,40 @@ describe('fetch-koodistot script', () => {
 
       expect(mockFetch).toHaveBeenNthCalledWith(
         1,
-        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/'
+        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/',
+        {
+          "headers": {
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+          }
+        }
       );
       expect(mockFetch).toHaveBeenNthCalledWith(
         2,
-        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/codes/'
+        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/codes/',
+        {
+          "headers": {
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+          }
+        }
       );
 
       expect(mockFetch).toHaveBeenNthCalledWith(
         3,
-        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/'
+        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/',
+        {
+          "headers": {
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+          }
+        }
       );
       expect(mockFetch).toHaveBeenNthCalledWith(
         4,
-        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/codes/'
+        'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/codes/',
+        {
+          "headers": {
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+          }
+        }
       );
 
       expect(writeSpy).toHaveBeenCalledWith(

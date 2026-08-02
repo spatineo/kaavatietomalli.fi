@@ -294,7 +294,13 @@ describe('fetch-tietomallit script', () => {
 
       await fetchAndTransformTietomallit('/data-index/suomi.fi/tietomallit/index.json', '/public/data/suomi.fi/tietomallit', 0);
 
-      expect(mockFetch).toHaveBeenCalledWith('https://test-api.suomi.fi/getModel?modelId=mock-model&fileType=JSON-LD&version=2.0.0');
+      expect(mockFetch).toHaveBeenCalledWith('https://test-api.suomi.fi/getModel?modelId=mock-model&fileType=JSON-LD&version=2.0.0',
+        {
+          "headers": {
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+          }
+        }
+      );
       expect(writeSpy).toHaveBeenCalledWith(
         path.join('/public/data/suomi.fi/tietomallit', 'mock-model-2.0.0.json'),
         expect.stringContaining('Mock Malli'),
