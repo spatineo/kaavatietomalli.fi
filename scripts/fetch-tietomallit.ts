@@ -387,12 +387,12 @@ export async function fetchAndTransformTietomallit(
 
         if (contentChanged) {
           changedCount++;
-          console.log(`Saved transformed model (CONTENT CHANGED) to ${outputPath}`);
+          fs.writeFileSync(outputPath, JSON.stringify(modelOutput, null, 2), 'utf-8');
+          console.log(`Saved transformed model (CONTENT CHANGED) to ${outputPath}`); 
         } else {
-          console.log(`Saved transformed model (content unchanged) to ${outputPath}`);
+          console.log(`Skipped transformed model (content unchanged) to ${outputPath}`);
         }
-
-        fs.writeFileSync(outputPath, JSON.stringify(modelOutput, null, 2), 'utf-8');
+        
       } catch (err) {
         console.error(`Failed to process data model ${model.name} version ${version}:`, err);
       }
@@ -412,12 +412,11 @@ export async function fetchAndTransformTietomallit(
   }
 
   if (indexChanged) {
+    fs.writeFileSync(indexFilePath, JSON.stringify(indexItems, null, 2), 'utf-8');
     console.log(`Saved tietomallit index (CONTENT CHANGED) to ${indexFilePath}`);
   } else {
-    console.log(`Saved tietomallit index (content unchanged) to ${indexFilePath}`);
+    console.log(`Skipped tietomallit index (content unchanged) to ${indexFilePath}`);
   }
-
-  fs.writeFileSync(indexFilePath, JSON.stringify(indexItems, null, 2), 'utf-8');
 
   return { totalProcessed, changedCount };
 }
