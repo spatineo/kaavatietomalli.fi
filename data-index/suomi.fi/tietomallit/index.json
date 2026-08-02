@@ -6,7 +6,67 @@
     "models": [
         {
             "name": "rytj-kaava",
-            "versions": [ "1.0.5", "1.0.4", "1.0.3", "1.0.2", "1.0.1"]
+            "versions": [ "1.0.5", "1.0.4", "1.0.3", "1.0.2", "1.0.1"],
+            "overrides": [
+                { 
+                    "version": "1.0.5",
+                    "classes": [
+                        {
+                            "id": "rak:1.0.0/Kaavamaarays",
+                            "attributes": [
+                                {
+                                    "id": "https://iri.suomi.fi/model/rytj-kaava/kaavamaarayslaji",
+                                    "codelist": [
+                                        "http://uri.suomi.fi/codelist/rytj/RY_Kaavamaarayslaji"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "id": "rak:1.0.0/Kaava",
+                            "attributes": [
+                                {
+                                    "id": "https://iri.suomi.fi/model/rytj-kaava/yleiskaavanOikeusvaikutus",
+                                    "codelist": [
+                                        "http://uri.suomi.fi/codelist/rytj/oikeusvaik_YK"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "version": "1.0.4",
+                    "classes": [
+                        {
+                            "id": "https://iri.suomi.fi/model/rak/1.0.0/Kaavamaarays",
+                            "attributes": [
+                                {
+                                    "id": "https://iri.suomi.fi/model/rytj-kaava/kaavamaarayslaji",
+                                    "codelist": [
+                                        "http://uri.suomi.fi/codelist/rytj/RY_Kaavamaarayslaji"
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "id": "https://iri.suomi.fi/model/rak/1.0.0/Kaava",
+                            "attributes": [
+                                {
+                                    "id": "https://iri.suomi.fi/model/rytj-kaava/yleiskaavanOikeusvaikutus",
+                                    "codelist": [
+                                        "http://uri.suomi.fi/codelist/rytj/oikeusvaik_YK"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "ryhti-tont",
+            "versions": [ "1.0.7", "1.0.6", "1.0.5", "1.0.4", "1.0.3", "1.0.2", "1.0.1", "1.0.0"]
         }
     ]
 }
