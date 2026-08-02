@@ -6,7 +6,8 @@ A highly polished, serverless headless CMS website built with React, Vite, and T
 
 ## Table of Contents
 1. [Core CMS Operating Process](#core-cms-operating-process)
-2. [Content Provider & Editorial Guide](#content-provider--editorial-guide)
+2. [Data Model Browser](#data-model-browser)
+3. [Content Provider & Editorial Guide](#content-provider--editorial-guide)
    - [Structure of Content Directories](#1-structure-of-content-directories)
    - [Drafts vs. Scheduled Blog Posts](#2-drafts-vs-scheduled-blog-posts)
    - [Global Navigation & Theme Mapping](#3-global-navigation--theme-mapping)
@@ -14,14 +15,17 @@ A highly polished, serverless headless CMS website built with React, Vite, and T
    - [Advanced Rich Content Features](#5-advanced-rich-content-features)
    - [Testing & Validating Your Content](#6-testing--validating-your-content)
    - [Automated Nightly Publishing Pipeline](#7-automated-nightly-publishing-pipeline)
-3. [Project & Code Architecture](#project--code-architecture)
-4. [Testing Implementation & Developer Guidance](#testing-implementation--developer-guidance)
+4. [Project & Code Architecture](#project--code-architecture)
+   - [Directory Structure & Responsibilities](#1-directory-structure--responsibilities)
+   - [Core Rendering Components](#2-core-rendering-components)
+   - [Orama-Based Site Search](#3-orama-based-site-search)
+5. [Testing Implementation & Developer Guidance](#testing-implementation--developer-guidance)
    - [Architectural Patterns & Component Isolation](#1-architectural-patterns--component-isolation)
    - [Unit & Integration Testing (Vitest + RTL)](#3-unit--integration-testing-vitest--rtl)
    - [End-to-End Testing (Playwright)](#5-end-to-end-testing-playwright)
    - [Test Content & Local-Test Variants](#6-test-content--local-test-variants)
-5. [Contribution Guidelines](#contribution-guidelines)
-6. [Development & Build Commands](#development--build-commands)
+6. [Contribution Guidelines](#contribution-guidelines)
+7. [Development & Build Commands](#development--build-commands)
 
 ---
 
@@ -61,6 +65,55 @@ The platform operates as a **git-backed serverless developer CMS**. It requires 
    - `scripts/fetch-giscus-stats.ts`: Crawls discussions and retrieves comment indicators ahead of runtime presentation.
 3. **Pre-Rendered On-Demand Access**: The React SPA parses and queries these local static files and compiled search databases sequentially on-demand using native lightweight HTTP `fetch` requests as users browse views.
 4. **External API Content Synchronization (Suomi.fi)**: To showcase official data models and codelists, the platform downloads official specifications directly from the Finnish Interoperability Platform (*yhteentoimivuusalusta.suomi.fi*). These are fetched via external APIs, transformed and normalized into static JSON arrays, and stored locally within `/public/data/suomi.fi/`. This guarantees high performance and high availability, letting diagrams and codelists render instantly on the client without live API runtime dependencies.
+
+---
+
+## Data Model Browser
+
+The website features an interactive **Data Model Browser** designed to make Finland's unified spatial planning data specifications (*kaavatietomalli*) accessible, queryable, and understandable to planners, developers, and public authorities.
+
+### Purpose and Core Functionality
+Implemented by the `DataModelView` component, the Data Model Browser provides a rich, single-page application interface to navigate complex geographic data structures:
+* **Interactive Class Diagrams**: Dynamically renders standard UML class diagrams of spatial planning entities using a responsive canvas powered by Mermaid.js. Clicking a class node isolates its local inheritance and association graph.
+* **Property & Association Inspector**: Details all technical attributes, allowed data types, cardinality constraints (e.g., `0..1`, `1..*`), and conceptual definitions for the selected class.
+* **Codelist Integration**: Interlinks class attributes directly with Finland's official reference codelists (*koodistot*), allowing users to browse valid enumerated values and classifications in place.
+* **Deep Linking & State Synchronization**: Synchronizes active browser selections with URL query parameters (such as `?model=<model-id>&class=<class-name>` or `?model=<model-id>&codelist=<codelist-name>`), enabling precise sharing, referencing, and navigation throughout the documentation.
+* **Tri-lingual Localization**: Seamlessly toggles metadata definitions, names, and comments between Finnish (`fi`), Swedish (`sv`), and English (`en`).
+
+### Architecture of Local Translated Content
+To eliminate expensive server-side databases and secure ultra-fast load times, the Data Model Browser operates purely on local, static JSON file copies:
+* **Storage Location**: Pre-processed schema files are saved locally inside `/public/data/suomi.fi/tietomallit/` (for data models) and `/public/data/suomi.fi/koodistot/` (for reference codelists).
+* **Multi-language Bundling**: The raw specifications are combined with their official translations from Suomi.fi during the pre-build phase, producing localized key-value structures. This ensures that the React application can switch languages instantly in the client’s browser without firing additional network requests to external APIs.
+
+### Automated Synchronization with Suomi.fi
+To ensure the website remains the single source of truth without manual editing, content is kept up-to-date automatically with the official registries on the **Suomi.fi Interoperability Platform** (*Yhteentoimivuusalusta*):
+
+```
+┌───────────────────────────────────────┐
+│ Suomi.fi Interoperability API Portal  │
+└───────────────────┬───────────────────┘
+                    │
+                    ▼ (npm run fetch-data via nightly GitHub Actions)
+┌───────────────────────────────────────┐
+│ Fetch RDF/JSON-LD Schemas & Codelists │
+└───────────────────┬───────────────────┘
+                    │
+                    ▼ (Local Transform & Translate)
+┌───────────────────────────────────────┐
+│  Generate Normalized JSON flat files  │
+└───────────────────┬───────────────────┘
+                    │
+                    ▼
+┌───────────────────────────────────────┐
+│      Pre-render and Build Site        │
+└───────────────────────────────────────┘
+```
+
+1. **Extraction Scripts**: The developer tooling provides two dedicated node-based synchronization scripts:
+   - `scripts/fetch-tietomallit.ts`: Downloads raw schemas via the Suomi.fi data model API (`getModelAsFile`), maps RDF properties, extracts attribute-level structures, and generates class diagram definitions.
+   - `scripts/fetch-koodistot.ts`: Queries the Suomi.fi code registry, extracts valid enumeration codes, names, and descriptions, and normalizes them into structured static arrays.
+2. **Transform and Normalize**: The ingestion scripts parse official Suomi.fi REST payloads, translate empty fields using automated fallback rules, and map complex URI properties onto a clean, standardized JSON format.
+3. **Continuous Nightly Sync**: As part of the nightly scheduled pipeline, the site runs the automated `npm run fetch-data` check. If any updates are detected on the Suomi.fi platform, the workflow automatically commits the updated JSON copies, builds the React bundle, and redeploys the site. This guarantees high availability and resilience—the browser never depends on a live external API connection to render specifications.
 
 ---
 
@@ -394,6 +447,8 @@ While many secondary helper components exist in `/src/components/` to handle vis
   - Orchestrates individual blog post or historical articles. It dynamically fetches the author's avatar to render a small details card linking to their full biography page. It parses Markdown content, provides a sticky Table of Contents, loads embedded custom blocks (videos, maps, diagrams), sets up Giscus comments, and renders promotional CTA panels with built-in conversion tracking.
 * **`PageView`**:
   - Renders static informational content pages (e.g., legislation, data models, or standard specifications). It converts page Markdown into stylized typographic grids and supports embedded Table of Contents navigation.
+* **`DataModelView`**:
+  - Renders the interactive Data Model Browser, enabling users to explore Finland's spatial planning data standards. It manages sidebar selectors for classes and reference codelists, constructs dynamic Mermaid class diagrams, displays detailed attribute and association tables in inspector panels, and synchronizes browser selections with URL query parameters for precise sharing and deep linking.
 * **`AuthorView`**:
   - Serves as the dedicated profile page for individual content contributors. It loads author-specific biographical Markdown, displays their professional contact coordinates (LinkedIn, Github, website, obfuscated email), highlights their list of specialties, and displays interactive custom Spatineo cooperation CTA sections.
 * **`TagView`**:
@@ -406,6 +461,38 @@ While many secondary helper components exist in `/src/components/` to handle vis
   - A robust safety boundary wrapping core viewport grids to gracefully capture and handle runtime compilation or rendering errors (e.g., from faulty Markdown formatting), showing user-friendly recovery options rather than crashing the site.
 * **`SearchBox`**:
   - The modal interface overlay for full-text search. It connects directly to the in-memory client-side Orama index to display immediate, keyboard-navigable suggestions and structured results.
+
+---
+
+### 3. Orama-Based Site Search
+
+The website implements a robust, client-side, full-text search capability powered by **Orama**, a lightning-fast, dependency-free search engine. This enables instantaneous results across articles, static documentation pages, data model entities, and reference codelists, without relying on external search APIs.
+
+#### A. Tri-Lingual Search Indexing
+Search indices are pre-compiled during the static build phase via `scripts/generate-search-index.ts`. This script builds three independent, language-specific Orama databases (`search-index-fi.json`, `search-index-sv.json`, and `search-index-en.json`):
+1. **Markdown Content**: Scans, parses, and extracts text content from all Markdown documents inside `/content/posts`, `/content/pages`, and `/content/authors`, mapping frontmatter metadata into standard schema properties.
+2. **Data Model Classes**: Iterates through local normalized JSON schemas inside `/public/data/suomi.fi/tietomallit/`. It indexes each class under `type: 'class'`, mapping class technical names, Finnish/Swedish/English localized labels, class descriptions, and structured string listings of attribute names for deeper matching.
+3. **Reference Codelists**: Iterates through local reference codelist JSON copies under `/public/data/suomi.fi/koodistot/`, mapping codelist technical keys, localized definitions, descriptions, and concatenated lists of allowed enumeration codes and codes' localized names under `type: 'codelist'`.
+4. **Natural Language Stemming**: Each language-specific index uses specialized tokenizer stemming components (`fiStemmer` for Finnish, `svStemmer` for Swedish, `enStemmer` for English) to normalize search query inputs and indexed terms, maximizing fuzzy matching accuracy.
+
+#### B. Querying and Reciprocal Rank Fusion (RRF)
+The client-side search logic is orchestrated by the `useOramaSearch` hook (`src/hooks/useOramaSearch.ts`):
+1. **Index Hydration**: Automatically loads and initializes the three language-specific search indices on application boot, with built-in versioning query params (`?v=${BUILD_VERSION}`) to invalidate outdated client-side cache layers.
+2. **Dynamic Query Weighting & Boosting**: Configures query fields with custom boost factors to prioritize highly-relevant fields over deep body text:
+   - `title`: Boost factor of `2.0` (highest weight)
+   - `name`: Boost factor of `2.0`
+   - `company`: Boost factor of `1.5`
+   - `tags`: Boost factor of `1.5`
+   - `content` / `excerpt`: Normal weight (`1.0`)
+3. **Multi-Index Querying**: Executes search queries across all three language databases concurrently.
+4. **Reciprocal Rank Fusion (RRF)**: Merges hits from the parallel queries into a single unified result list. RRF calculates a consolidated rank score for each document to ensure that items matching highly across multiple languages or appearing near the top of any single index are ranked optimally.
+
+#### C. Unified UI Integration
+The search service is consumed by three primary user-facing components to provide uniform navigation and instant search capabilities across the app:
+1. **`SearchWidget`**: Renders the global, persistent header search button. Clicking it activates a backdrop overlay and mounts the full-screen `SearchBox` modal. It triggers debounced search operations as the user types, displaying categorized and highlighted lists of matching documents.
+2. **`NotFoundView`**: The dedicated 404 error page. It parses the broken slug, populates an inline `SearchBox` with the closest natural language equivalent, and invites the user to run instant queries over the data models and publications to find their target destination.
+3. **`DataModelView`**: The class and codelist search within the selected data model is powered by the Orama indexes, with filtering to provide only hits related to the selected data model. The App also supports deep linking of class search results. When users click on a search result of type `class` or `codelist` in the generic site search, the search navigation resolves it directly, deep-linking them to the relevant data model and focusing on the class or codelist within the inspector sidebars.
+4. **Centralized Routing**: All search interactions feed into a single, unified `handleSearchNavigate` routing method in `src/App.tsx`. This avoids scattered routing logic by handling all search result redirects—including post navigation, page transitions, and deep linking into specific classes or codelists within the `DataModelView` browser—in a single place.
 
 ---
 
