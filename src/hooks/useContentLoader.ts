@@ -15,6 +15,7 @@ import {
   PageData, 
   AuthorData 
 } from '../lib/blog';
+import { CONFIG } from '../config';
 
 export interface UseContentLoaderProps {
   activeView: { type: string; slug: string | null };
@@ -28,6 +29,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
   const [currentPost, setCurrentPost] = useState<PostData | null>(null);
   const [currentPage, setCurrentPage] = useState<PageData | null>(null);
   const [currentAuthor, setCurrentAuthor] = useState<AuthorData | null>(null);
+  const [verifiedModelSlug, setVerifiedModelSlug] = useState<string | null>(null);
   const [contentNotFound, setContentNotFound] = useState(false);
   const [visibleTagCount, setVisibleTagCount] = useState(10);
 
@@ -46,6 +48,9 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
     if (activeView.type !== 'author') {
       setCurrentAuthor(null);
     }
+    if (activeView.type !== 'model') {
+      setVerifiedModelSlug(null);
+    }
     if (activeView.type !== 'tag') {
       setTagPosts([]);
       setTagPage(null);
@@ -61,6 +66,9 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
     }
     if (activeView.type === 'author' && currentAuthor?.slug !== activeView.slug) {
       setCurrentAuthor(null);
+    }
+    if (activeView.type === 'model' && verifiedModelSlug !== activeView.slug) {
+      setVerifiedModelSlug(null);
     }
     if (activeView.type === 'tag' && activeTagSlug !== activeView.slug) {
       setTagPosts([]);
@@ -150,7 +158,29 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
           }
         }
       } else if (activeView.type === 'model' && activeView.slug) {
-        window.scrollTo(0, 0);
+        if (verifiedModelSlug !== activeView.slug) {
+          try {
+            const res = await fetch(`${CONFIG.basePath}data/suomi.fi/tietomallit/index.json`);
+            if (!res.ok) {
+              throw new Error(`HTTP ${res.status}`);
+            }
+            const models = await res.json();
+            const exists = Array.isArray(models) && models.some((m: any) => m.path.startsWith(`${activeView.slug}-`));
+            if (!ignore) {
+              if (exists) {
+                setVerifiedModelSlug(activeView.slug);
+                window.scrollTo(0, 0);
+              } else {
+                setContentNotFound(true);
+              }
+            }
+          } catch (err) {
+            console.error('[ContentLoader] model check failed:', err);
+            if (!ignore) {
+              setContentNotFound(true);
+            }
+          }
+        }
       }
     };
  
@@ -158,13 +188,15 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
     return () => { 
       ignore = true; 
     };
-  }, [activeView.type, activeView.slug, posts.length]);
+  }, [activeView.type, activeView.slug, posts.length, verifiedModelSlug]);
 
   // Determine if the current data matches the requested view
   const isDataReady = useMemo(() => {
     let ready = false;
     if (activeView.type === 'home') ready = true;
-    else if (activeView.type === 'model') ready = true;
+    else if (activeView.type === 'model') {
+      ready = verifiedModelSlug === activeView.slug;
+    }
     else if (activeView.type === 'post') ready = currentPost?.slug === activeView.slug;
     else if (activeView.type === 'page') ready = currentPage?.slug === activeView.slug;
     else if (activeView.type === 'author') ready = currentAuthor?.slug === activeView.slug;

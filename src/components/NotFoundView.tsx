@@ -8,7 +8,7 @@ import { SearchBox } from './SearchBox';
 
 interface NotFoundViewProps {
   missingSlug?: string;
-  onNavigate: (type: 'post' | 'page' | 'author', slug: string) => void;
+  onNavigate: (type: 'post' | 'page' | 'author' | 'class' | 'codelist', slug: string) => void;
   onHome: () => void;
 }
 
@@ -18,7 +18,7 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
   // Format initial search query from missingSlug
   const initialQuery = missingSlug ? missingSlug.replace(/[-_]/g, ' ') : '';
 
-  const handleNavigate = (type: 'post' | 'page' | 'author', slug: string) => {
+  const handleNavigate = (type: 'post' | 'page' | 'author' | 'class' | 'codelist', slug: string) => {
     getTracker().trackCTA('404 Search Result Click', `${type}:${slug}`, '404_page');
     onNavigate(type, slug);
   };

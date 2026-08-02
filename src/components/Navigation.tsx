@@ -18,9 +18,10 @@ interface HeaderProps {
   onNavigateModel: (slug: string, queryParams?: Record<string, string | null>) => void;
   onHome: () => void;
   onBlog: () => void;
+  onSearchNavigate: (type: string, slug: string) => void;
 }
 
-export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNavigateAuthor, onNavigateModel, onHome, onBlog }: HeaderProps) {
+export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNavigateAuthor, onNavigateModel, onHome, onBlog, onSearchNavigate }: HeaderProps) {
   const t = getTranslations(CONFIG.language as Language);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number | null>(null);
@@ -75,20 +76,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
   }, []);
 
   const handleSearchNavigate = (type: string, slug: string) => {
-    if (type === 'post') onNavigatePost(slug);
-    else if (type === 'page') onNavigatePage(slug);
-    else if (type === 'author') onNavigateAuthor(slug);
-    else if (type === 'class') {
-      const parts = slug.split(':');
-      const modelName = parts[0];
-      const technicalName = parts.slice(1).join(':');
-      onNavigateModel(modelName, { class: technicalName });
-    } else if (type === 'codelist') {
-      const parts = slug.split(':');
-      const modelName = parts[0];
-      const technicalName = parts.slice(1).join(':');
-      onNavigateModel(modelName, { codelist: technicalName });
-    }
+    onSearchNavigate(type, slug);
     setIsMenuOpen(false);
   };
 
