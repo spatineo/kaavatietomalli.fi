@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { create, search, load, type AnyOrama } from '@orama/orama';
+import { create, search, load, components, type AnyOrama } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
 import { stemmer as svStemmer } from '@orama/stemmers/swedish';
 import { stemmer as enStemmer } from '@orama/stemmers/english';
@@ -34,6 +34,23 @@ export function useOramaSearch() {
         en: enStemmer
       };
 
+      const createCustomTokenizer = async (language: string, stemmerFn?: any) => {
+        const tokenizer = await components.tokenizer.createTokenizer({
+          language,
+          stemming: !!stemmerFn,
+          stemmer: stemmerFn,
+        });
+
+        tokenizer.tokenize = function (text: string) {
+          if (!text) return [];
+          const words = text.toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
+          const stemmed = words.map(w => (this.stemmer ? this.stemmer(w) : w));
+          return stemmed.filter(Boolean);
+        };
+
+        return tokenizer;
+      };
+
       const loadedDbs = await Promise.all(
         languages.map(async (lang) => {
           const targetUrl = `${baseUrl}search-index-${lang}.json?v=${BUILD_VERSION}`;
@@ -43,14 +60,15 @@ export function useOramaSearch() {
           }
           const indexData = await response.json();
           
+          const oramaLang = lang === 'fi' ? 'finnish' : lang === 'sv' ? 'swedish' : 'english';
+          const customTokenizer = await createCustomTokenizer(oramaLang, stemmers[lang]);
+
           const instance = await create({
             schema: {
               __placeholder: 'string'
             },
             components: {
-              tokenizer: {
-                stemmer: stemmers[lang]
-              }
+              tokenizer: customTokenizer
             }
           });
 
@@ -117,23 +135,26 @@ export function useOramaSearch() {
       const hitsSv = (resSv.hits || []) as SearchResult[];
       const hitsEn = (resEn.hits || []) as SearchResult[];
 
-      // Reciprocal Rank Fusion (RRF)
-      const k = 60;
-      const rrfScores: Record<string, { item: SearchResult; score: number }> = {};
+      // Score-based merge using the maximum BM25 score across the language indices
+      const mergedScores: Record<string, { item: SearchResult; score: number }> = {};
 
       const processList = (list: SearchResult[]) => {
-        list.forEach((hit, index) => {
+        list.forEach((hit) => {
           const key = `${hit.document.type}-${hit.document.slug}`;
-          const rank = index + 1;
-          const scoreContribution = 1 / (k + rank);
+          const currentScore = hit.score;
 
-          if (!rrfScores[key]) {
-            rrfScores[key] = {
+          if (!mergedScores[key]) {
+            mergedScores[key] = {
               item: hit,
-              score: 0
+              score: currentScore
             };
+          } else {
+            if (currentScore > mergedScores[key].score) {
+              mergedScores[key].score = currentScore;
+              // Use the document that scored highest
+              mergedScores[key].item = hit;
+            }
           }
-          rrfScores[key].score += scoreContribution;
         });
       };
 
@@ -141,7 +162,7 @@ export function useOramaSearch() {
       processList(hitsSv);
       processList(hitsEn);
 
-      const sorted = Object.values(rrfScores).sort((a, b) => b.score - a.score);
+      const sorted = Object.values(mergedScores).sort((a, b) => b.score - a.score);
 
       return sorted.map(({ item, score }) => ({
         ...item,

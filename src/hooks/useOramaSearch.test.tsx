@@ -46,10 +46,19 @@ vi.mock('@orama/orama', () => {
     ],
   };
 
+  const mockTokenizer = {
+    tokenize: vi.fn(),
+  };
+
   return {
     create: vi.fn().mockResolvedValue(mockDb),
     load: vi.fn().mockResolvedValue(undefined),
     search: vi.fn().mockResolvedValue(mockHits),
+    components: {
+      tokenizer: {
+        createTokenizer: vi.fn().mockResolvedValue(mockTokenizer),
+      },
+    },
   };
 });
 
@@ -138,9 +147,9 @@ describe('useOramaSearch hook', () => {
 
     // Expecting all hits to be returned directly as pre-filtered at build-time
     expect(searchResults).toHaveLength(3);
-    expect(searchResults[0].id).toBe('hit1');
-    expect(searchResults[1].id).toBe('hit2');
-    expect(searchResults[2].id).toBe('hit3');
+    expect(searchResults[0].id).toBe('hit1'); // score 1
+    expect(searchResults[1].id).toBe('hit3'); // score 0.9
+    expect(searchResults[2].id).toBe('hit2'); // score 0.8
   });
 
   it('returns an empty array immediately if the query term length is less than 2', async () => {
