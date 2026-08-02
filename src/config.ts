@@ -35,5 +35,10 @@ export const CONFIG = {
   },
   analytics: {
     gaTrackingId: env.VITE_GA_TRACKING_ID || 'G-E9YTLR7C10'
+  },
+  remoteFetchOptions: {
+    headers: {
+      'User-Agent': 'Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)',
+    }
   }
 };

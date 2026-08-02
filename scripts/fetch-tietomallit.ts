@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isContentEqual } from './content-utils';
+import { CONFIG } from '../src/config';
 
 export interface DataModelConfig {
   remote: {
@@ -354,7 +355,7 @@ export async function fetchAndTransformTietomallit(
         const jsonldUrl = `${baseUrl}?modelId=${model.name}&fileType=JSON-LD&version=${version}`;
 
         console.log(`Fetching data model: ${model.name} (v${version}) from ${jsonldUrl}...`);
-        const jsonResponse = await fetch(jsonldUrl);
+        const jsonResponse = await fetch(jsonldUrl, CONFIG.remoteFetchOptions);
         if (!jsonResponse.ok) {
           throw new Error(`HTTP ${jsonResponse.status}: ${jsonResponse.statusText}`);
         }
