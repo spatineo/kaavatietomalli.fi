@@ -13,7 +13,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-generator';
-// import { FetchDataModelAccess } from '../lib/fetch-data-model-access';
 
 // Sub-components
 import { ClassCodelistSelector } from './ClassCodelistSelector';
