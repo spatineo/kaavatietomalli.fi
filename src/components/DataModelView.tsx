@@ -350,6 +350,24 @@ lang: ${dataLang}`;
     return null;
   }, [selectedElement, modelData]);
 
+  // Smooth scroll to the details panel when navigating with/selecting a class or codelist
+  useEffect(() => {
+    if (loading) return;
+
+    const params = new URLSearchParams(searchString);
+    const hasClassOrCodelistParam = params.has('class') || params.has('codelist');
+
+    if (hasClassOrCodelistParam && selectedElement) {
+      const timer = setTimeout(() => {
+        const element = document.getElementById('data-model-info-panel');
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, selectedElement, searchString]);
+
   // Render
   if (loading && !modelData) {
     return (
@@ -551,29 +569,33 @@ lang: ${dataLang}`;
 
         {/* 3. The class info panel */}
         {selectedElement?.type === 'class' && selectedClassObj && (
-          <ClassInfoPanel
-            selectedClassObj={selectedClassObj}
-            mermaidChart={mermaidChart}
-            dataLang={dataLang}
-            getLocalized={getLocalized}
-            onNavigateToType={(type, name) => handleSelectElement(`${type}:${name}`)}
-            getTypeNavigation={getTypeNavigation}
-            t={t}
-            modelMetadata={metadata}
-          />
+          <div id="data-model-info-panel" className="scroll-mt-24">
+            <ClassInfoPanel
+              selectedClassObj={selectedClassObj}
+              mermaidChart={mermaidChart}
+              dataLang={dataLang}
+              getLocalized={getLocalized}
+              onNavigateToType={(type, name) => handleSelectElement(`${type}:${name}`)}
+              getTypeNavigation={getTypeNavigation}
+              t={t}
+              modelMetadata={metadata}
+            />
+          </div>
         )}
 
         {/* 4. The codelist info panel */}
         {selectedElement?.type === 'codelist' && (
-          <CodelistInfoPanel
-            codelistDetail={codelistDetail}
-            loadingCodelist={loadingCodelist}
-            dataLang={dataLang}
-            getLocalized={getLocalized}
-            copiedCodeUri={copiedCodeUri}
-            onCopy={copyToClipboard}
-            t={t}
-          />
+          <div id="data-model-info-panel" className="scroll-mt-24">
+            <CodelistInfoPanel
+              codelistDetail={codelistDetail}
+              loadingCodelist={loadingCodelist}
+              dataLang={dataLang}
+              getLocalized={getLocalized}
+              copiedCodeUri={copiedCodeUri}
+              onCopy={copyToClipboard}
+              t={t}
+            />
+          </div>
         )}
       </div>
     </div>
