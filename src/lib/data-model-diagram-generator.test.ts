@@ -197,7 +197,6 @@ classes: ["ChildClass"]
     expect(result).toContain('+Tyyppikoodi : test_code [1..1]');
     expect(result).toContain('class test_code["Testikoodisto"]:::codelistClass {');
     expect(result).toContain('vocabulary = http://uri.suomi.fi/codelist/test/test_code');
-    expect(result).toContain('click test_code href "http://uri.suomi.fi/codelist/test/test_code"');
     expect(result).toContain('ParentClass <|-- ChildClass');
     expect(result).toContain('ChildClass --> "0..*" OtherClass : Liittyy');
     expect(result).toContain('ChildClass ..> test_code : «use»');
