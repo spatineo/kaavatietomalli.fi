@@ -53,6 +53,7 @@ describe('ClassInfoPanel component', () => {
         onNavigateToType={vi.fn()}
         getTypeNavigation={vi.fn().mockReturnValue(null)}
         t={t}
+        modelMetadata=""
       />
     );
 
@@ -71,6 +72,7 @@ describe('ClassInfoPanel component', () => {
         onNavigateToType={vi.fn()}
         getTypeNavigation={vi.fn().mockReturnValue(null)}
         t={t}
+        modelMetadata=""
       />
     );
 
@@ -93,6 +95,7 @@ describe('ClassInfoPanel component', () => {
         onNavigateToType={navSpy}
         getTypeNavigation={getTypeNavigation}
         t={t}
+        modelMetadata=""
       />
     );
 
@@ -117,6 +120,7 @@ describe('ClassInfoPanel component', () => {
         onNavigateToType={navSpy}
         getTypeNavigation={vi.fn().mockReturnValue(null)}
         t={t}
+        modelMetadata=""
       />
     );
 

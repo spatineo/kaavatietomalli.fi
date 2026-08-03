@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-generator';
+import { getStatusLabel } from '../lib/data-model-utils';
 
 // Sub-components
 import { ClassCodelistSelector } from './ClassCodelistSelector';
@@ -462,7 +463,7 @@ lang: ${dataLang}`;
               >
                 {availableVersions.map((v) => (
                   <option key={v.version} value={v.version} className="bg-slate-900 text-white">
-                    {t.dataModel.versionOptionLabel} {v.version} ({v.status})
+                    {t.dataModel.versionOptionLabel} {v.version} ({getStatusLabel(v.status)})
                   </option>
                 ))}
               </select>
@@ -558,6 +559,7 @@ lang: ${dataLang}`;
             onNavigateToType={(type, name) => handleSelectElement(`${type}:${name}`)}
             getTypeNavigation={getTypeNavigation}
             t={t}
+            modelMetadata={metadata}
           />
         )}
 

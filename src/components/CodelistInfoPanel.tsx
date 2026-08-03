@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Info, FileText, ExternalLink, Layers, Check, Copy, Search, X } from 'lucide-react';
 import { Translations } from '../i18n/types';
+import { getStatusLabel } from '../lib/data-model-utils';
 
 interface CodelistInfoPanelProps {
   codelistDetail: any;
@@ -102,6 +103,10 @@ export function CodelistInfoPanel({
           <h2 className="text-2xl font-bold text-white">
             {getLocalized(codelistDetail.names) || codelistDetail.technicalName}
           </h2>
+          <div className="flex-grow"></div>
+          {codelistDetail.status !== 'VALID' && (
+            <div className="font-bold text-sm text-white bg-red-950 px-1.5 py-0.5 rounded"> {getStatusLabel(codelistDetail.status)}</div>
+          )}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-slate-400">
@@ -145,9 +150,6 @@ export function CodelistInfoPanel({
 
       {/* Status and dates */}
       <div className="flex flex-wrap items-center gap-6 text-xs text-slate-400 border-t border-b border-white/5 py-4">
-        <div>
-          {t.dataModel.codelistStatus} <span className="font-bold text-brand-accent px-1.5 py-0.5 bg-brand-accent/5 rounded">{codelistDetail.status}</span>
-        </div>
         {codelistDetail.modified && (
           <div>
             {t.dataModel.updated} <span className="font-semibold text-slate-300">{new Date(codelistDetail.modified).toLocaleDateString(dataLang)}</span>
@@ -213,7 +215,7 @@ export function CodelistInfoPanel({
                 <tr className="bg-white/5 text-xs text-slate-400 font-bold uppercase border-b border-white/5">
                   <th className="px-6 py-4">{t.dataModel.codeValue}</th>
                   <th className="px-6 py-4">{t.dataModel.name}</th>
-                  <th className="px-6 py-4">{t.dataModel.status}</th>
+                  <th className="px-6 py-4 whitespace-nowrap">{t.dataModel.status}</th>
                   <th className="px-6 py-4 text-right">{t.dataModel.copyUri}</th>
                 </tr>
               </thead>
@@ -236,12 +238,12 @@ export function CodelistInfoPanel({
                           {getLocalized(code.names) || (Object.values(code.names || {})[0] as any)}
                         </td>
                         <td className="px-6 py-4 text-xs font-mono">
-                          <span className={`px-2 py-0.5 rounded ${
+                          <span className={`whitespace-nowrap px-2 py-0.5 rounded ${
                             code.status === 'VALID' 
                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' 
                               : 'bg-amber-500/10 text-amber-400 border border-amber-500/10'
                           }`}>
-                            {code.status}
+                            {getStatusLabel(code.status)}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">

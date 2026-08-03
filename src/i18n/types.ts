@@ -222,5 +222,13 @@ export interface Translations {
     showDocumentation: string;
     hideDocumentation: string;
     filterCodesPlaceholder: string;
+    statusValid: string;
+    statusDraft: string;
+    statusSuperceded: string;
+    statusRetired: string;
+    statusInvalid: string;
+    statusSuggested: string;
+    statusIncomplete: string;
+    statusHidden: string;
   };
 }
