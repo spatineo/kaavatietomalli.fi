@@ -475,7 +475,7 @@ Search indices are pre-compiled during the static build phase via `scripts/gener
 3. **Reference Codelists**: Iterates through local reference codelist JSON copies under `/public/data/suomi.fi/koodistot/`, mapping codelist technical keys, localized definitions, descriptions, and concatenated lists of allowed enumeration codes and codes' localized names under `type: 'codelist'`.
 4. **Natural Language Stemming**: Each language-specific index uses specialized tokenizer stemming components (`fiStemmer` for Finnish, `svStemmer` for Swedish, `enStemmer` for English) to normalize search query inputs and indexed terms, maximizing fuzzy matching accuracy.
 
-#### B. Querying and Reciprocal Rank Fusion (RRF)
+#### B. Querying and Result Merging
 The client-side search logic is orchestrated by the `useOramaSearch` hook (`src/hooks/useOramaSearch.ts`):
 1. **Index Hydration**: Automatically loads and initializes the three language-specific search indices on application boot, with built-in versioning query params (`?v=${BUILD_VERSION}`) to invalidate outdated client-side cache layers.
 2. **Dynamic Query Weighting & Boosting**: Configures query fields with custom boost factors to prioritize highly-relevant fields over deep body text:
@@ -485,7 +485,7 @@ The client-side search logic is orchestrated by the `useOramaSearch` hook (`src/
    - `tags`: Boost factor of `1.5`
    - `content` / `excerpt`: Normal weight (`1.0`)
 3. **Multi-Index Querying**: Executes search queries across all three language databases concurrently.
-4. **Reciprocal Rank Fusion (RRF)**: Merges hits from the parallel queries into a single unified result list. RRF calculates a consolidated rank score for each document to ensure that items matching highly across multiple languages or appearing near the top of any single index are ranked optimally.
+4. **Result Merging**: Merges hits from the parallel queries into a single unified result list. The results from the language-specific are merged into a combined ranking using the max score method.
 
 #### C. Unified UI Integration
 The search service is consumed by three primary user-facing components to provide uniform navigation and instant search capabilities across the app:
