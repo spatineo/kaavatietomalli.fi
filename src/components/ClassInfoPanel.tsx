@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Compass, Layers } from 'lucide-react';
 import { Translations } from '../i18n/types';
 import { getStatusLabel } from '../lib/data-model-utils';
+import { ExternalLink } from 'lucide-react';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 
@@ -26,7 +27,16 @@ export function ClassInfoPanel({
   t,
   modelMetadata
 }: ClassInfoPanelProps) {
-  return (
+  
+    let classDocumentationUrl = null;
+    if (modelMetadata && modelMetadata.documentationUrl) {
+        classDocumentationUrl = modelMetadata.documentationUrl.split('?')[0];
+        if (!classDocumentationUrl.endsWith('/')) {
+            classDocumentationUrl += '/';
+        }
+        classDocumentationUrl += `class/${selectedClassObj.technicalName}?ver=${modelMetadata.version}`;
+    }
+    return (
     <div className="bg-black/20 border border-white/5 rounded-3xl p-8 md:p-10 flex flex-col gap-8 animate-fade-in">
       {/* Header Info */}
       <div className="flex flex-col gap-4 border-b border-white/5 pb-6">
@@ -48,12 +58,26 @@ export function ClassInfoPanel({
           </div>
           <div className="flex gap-2">
             <span className="text-slate-500">{t.dataModel.uri}</span>
-            <span 
-              className="text-slate-300 select-all overflow-hidden text-ellipsis whitespace-nowrap" 
-              title={selectedClassObj.uri || selectedClassObj.id}
-            >
-              {selectedClassObj.uri || selectedClassObj.id}
-            </span>
+            { classDocumentationUrl ? (
+                <div>
+                <a
+                href={classDocumentationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-500 flex items-center gap-1.5 hover:underline font-semibold"
+                >
+                    <span className="text-brand-accent">{selectedClassObj.uri || selectedClassObj.id}</span>
+                    <ExternalLink size={12} />
+                </a>
+              </div>
+            ) : (
+                <span 
+                className="text-slate-300 select-all overflow-hidden text-ellipsis whitespace-nowrap" 
+                title={selectedClassObj.uri || selectedClassObj.id}
+                >
+                {selectedClassObj.uri || selectedClassObj.id}
+                </span>
+            )}
           </div>
         </div>
 

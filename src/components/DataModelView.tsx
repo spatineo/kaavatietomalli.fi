@@ -418,8 +418,9 @@ lang: ${dataLang}`;
             <h1 className="text-4xl font-black tracking-tighter leading-[0.8] text-white">
                   {getLocalized(metadata.name)}
             </h1>
+            { metadata.documentationUrl && (
             <a
-              href={metadata.modelUri || metadata.id}
+              href={metadata.documentationUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-mono text-slate-500 flex items-center gap-1.5  hover:underline font-semibold"
@@ -427,6 +428,7 @@ lang: ${dataLang}`;
               <span className="text-brand-accent">{metadata.modelUri || metadata.id}</span>
               <ExternalLink size={12} />
               </a>
+            )}
             <div className="flex gap-3 flex-wrap items-center">
             {metadata.lastModified && (
               <div className="">

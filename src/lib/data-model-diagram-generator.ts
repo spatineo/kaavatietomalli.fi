@@ -201,7 +201,7 @@ export async function transpileDataModelSnippetToMermaid(
     const vocabulary = data?.vocabulary || data?.uri || info.uri;
     const uri = data?.uri || data?.vocabulary || info.uri;
     codelistBlocks.push(
-      `    class ${codelistTechName}["${codelistLocalizedName}"]:::codelistClass {\n        <<codelist>>\n        vocabulary = ${vocabulary} \n    }\n    click ${codelistTechName} href "${uri}"`
+      `    class ${codelistTechName}["${codelistLocalizedName}"]:::codelistClass {\n        <<codelist>>\n        vocabulary = ${vocabulary} \n    }\n`
     );
   }
 
