@@ -38,7 +38,7 @@ async function generateSearchIndex() {
     author: 'string',
     tags: 'string[]',
     publishDate: 'string',
-    modelVersions: 'string[]',
+    modelVersions: 'enum[]',
   } as const;
 
   const createCustomTokenizer = async (language: string, stemmerFn?: any) => {
@@ -157,6 +157,10 @@ async function generateSearchIndex() {
         if (now < new Date(data.publishDate)) {
           continue;
         }
+      }
+      // Filter by post or page draft status
+      if ( ((type === 'post') || (type === 'page')) && data.draft === true) {
+        continue;
       }
 
       const lang = data.language || 'fi';

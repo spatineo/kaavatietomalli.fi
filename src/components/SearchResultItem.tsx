@@ -45,7 +45,10 @@ export function SearchResultItem({ key, result, size = 'sm', onClick }: SearchRe
         <div className={`font-bold text-white group-hover:text-brand-accent transition-colors leading-tight truncate ${
           isLarge ? 'text-xl mb-1' : 'text-sm mb-0.5'
         }`}>
-          {result.document.name || result.document.title} ({result.document.slug})
+          {result.document.name || result.document.title}
+          {(result.document.type === 'class' || result.document.type === 'codelist' )&& (
+            <span> ({result.document.slug.split(':')[0]})</span>
+          )}
         </div>
         
         {result.document.type === 'author' && result.document.name && (result.document.title || result.document.company) && (
