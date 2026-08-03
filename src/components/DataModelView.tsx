@@ -14,6 +14,7 @@ import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-generator';
 import { getStatusLabel } from '../lib/data-model-utils';
+import { fetchJsonCached } from '../lib/fetch-cache';
 
 // Sub-components
 import { ClassCodelistSelector } from './ClassCodelistSelector';
@@ -76,8 +77,8 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
     setError(null);
 
     Promise.all([
-      fetch(`${CONFIG.basePath}data/suomi.fi/tietomallit/index.json`).then(r => r.json()),
-      fetch(`${CONFIG.basePath}data/suomi.fi/koodistot/index.json`).then(r => r.json())
+      fetchJsonCached(`${CONFIG.basePath}data/suomi.fi/tietomallit/index.json`),
+      fetchJsonCached(`${CONFIG.basePath}data/suomi.fi/koodistot/index.json`)
     ])
       .then(([models, codelists]) => {
         if (!isMounted) return;
@@ -173,8 +174,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
     let isMounted = true;
     setLoading(true);
 
-    fetch(`${CONFIG.basePath}data/suomi.fi/tietomallit/${versionItem.path}`)
-      .then(r => r.json())
+    fetchJsonCached(`${CONFIG.basePath}data/suomi.fi/tietomallit/${versionItem.path}`)
       .then(data => {
         if (!isMounted) return;
         setModelData(data);
@@ -231,8 +231,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
     let isMounted = true;
     setLoadingCodelist(true);
 
-    fetch(`${CONFIG.basePath}data/suomi.fi/koodistot/${item.path}`)
-      .then(r => r.json())
+    fetchJsonCached(`${CONFIG.basePath}data/suomi.fi/koodistot/${item.path}`)
       .then(data => {
         if (!isMounted) return;
         setCodelistDetail(data);
@@ -418,9 +417,8 @@ lang: ${dataLang}`;
             <h1 className="text-4xl font-black tracking-tighter leading-[0.8] text-white">
                   {getLocalized(metadata.name)}
             </h1>
-            { metadata.documentationUrl && (
             <a
-              href={metadata.documentationUrl}
+              href={metadata.modelUri || metadata.id}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-mono text-slate-500 flex items-center gap-1.5  hover:underline font-semibold"
@@ -428,7 +426,6 @@ lang: ${dataLang}`;
               <span className="text-brand-accent">{metadata.modelUri || metadata.id}</span>
               <ExternalLink size={12} />
               </a>
-            )}
             <div className="flex gap-3 flex-wrap items-center">
             {metadata.lastModified && (
               <div className="">

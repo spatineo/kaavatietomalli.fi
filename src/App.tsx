@@ -91,6 +91,7 @@ export default function App() {
     currentAuthor,
     isDataReady,
     contentNotFound,
+    searchString,
   });
 
 
