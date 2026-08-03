@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Compass, Layers } from 'lucide-react';
 import { Translations } from '../i18n/types';
+import { getStatusLabel } from '../lib/data-model-utils';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 
@@ -12,6 +13,7 @@ interface ClassInfoPanelProps {
   onNavigateToType: (type: 'class' | 'codelist', name: string) => void;
   getTypeNavigation: (type: string, attributeCodelists?: string[]) => { type: 'class' | 'codelist'; name: string } | null;
   t: Translations;
+  modelMetadata: any;
 }
 
 export function ClassInfoPanel({
@@ -21,7 +23,8 @@ export function ClassInfoPanel({
   getLocalized,
   onNavigateToType,
   getTypeNavigation,
-  t
+  t,
+  modelMetadata
 }: ClassInfoPanelProps) {
   return (
     <div className="bg-black/20 border border-white/5 rounded-3xl p-8 md:p-10 flex flex-col gap-8 animate-fade-in">
@@ -32,6 +35,10 @@ export function ClassInfoPanel({
           <h2 className="text-2xl font-bold text-white">
             {getLocalized(selectedClassObj.name) || selectedClassObj.technicalName}
           </h2>
+          <div className="flex-grow"></div>
+          {modelMetadata.status !== 'VALID' && (
+            <div className="font-bold text-sm text-white bg-red-950 px-1.5 py-0.5 rounded"> {getStatusLabel(modelMetadata.status)}</div>
+          )}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-slate-400">

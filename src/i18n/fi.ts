@@ -224,5 +224,13 @@ export const fi: Translations = {
     showDocumentation: 'Näytä dokumentaatio',
     hideDocumentation: 'Piilota dokumentaatio',
     filterCodesPlaceholder: 'Suodata koodeja koodiarvon tai nimen perusteella...',
+    statusValid: 'Voimassa',
+    statusDraft: 'Luonnos',
+    statusSuperceded: 'Korvattu',
+    statusRetired: 'Poistettu käytöstä',
+    statusInvalid: 'Virheellinen',
+    statusSuggested: 'Ehdotus',
+    statusIncomplete: 'Keskeneräinen',
+    statusHidden: 'Piilotettu'
   },
 };
