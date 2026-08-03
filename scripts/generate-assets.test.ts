@@ -354,10 +354,15 @@ Partner description.`,
       expect(tagsOutput['schema'].pages).toContain('info-page');
 
       // Rule Check 5: XML Sitemap matches the active posts and pages
+      expect(writtenFiles['sitemap-base.xml']).toBeDefined();
+      expect(writtenFiles['sitemap-base.xml']).toContain('?post=valid-active-post');
+      expect(writtenFiles['sitemap-base.xml']).not.toContain('?post=future-post');
+      expect(writtenFiles['sitemap-base.xml']).toContain('?page=info-page');
+
+      // Verify the main sitemap.xml is a sitemapindex linking to sitemap-base.xml
       expect(writtenFiles['sitemap.xml']).toBeDefined();
-      expect(writtenFiles['sitemap.xml']).toContain('?post=valid-active-post');
-      expect(writtenFiles['sitemap.xml']).not.toContain('?post=future-post');
-      expect(writtenFiles['sitemap.xml']).toContain('?page=info-page');
+      expect(writtenFiles['sitemap.xml']).toContain('<sitemapindex');
+      expect(writtenFiles['sitemap.xml']).toContain('sitemap-base.xml');
 
       // Rule Check 6: Promotional and Partner Post details correctly parsed
       const sponsoredPost = postsOutput.find((p: any) => p.slug === 'sponsored-post');
@@ -642,10 +647,13 @@ Active author bio.`,
         expect(tagsOutput['docs'].pages).not.toContain('draft-page');
       }
 
-      expect(writtenFiles['sitemap.xml']).toContain('?post=active-post');
-      expect(writtenFiles['sitemap.xml']).not.toContain('?post=draft-post');
-      expect(writtenFiles['sitemap.xml']).toContain('?page=active-page');
-      expect(writtenFiles['sitemap.xml']).not.toContain('?page=draft-page');
+      expect(writtenFiles['sitemap-base.xml']).toContain('?post=active-post');
+      expect(writtenFiles['sitemap-base.xml']).not.toContain('?post=draft-post');
+      expect(writtenFiles['sitemap-base.xml']).toContain('?page=active-page');
+      expect(writtenFiles['sitemap-base.xml']).not.toContain('?page=draft-page');
+
+      expect(writtenFiles['sitemap.xml']).toContain('<sitemapindex');
+      expect(writtenFiles['sitemap.xml']).toContain('sitemap-base.xml');
 
     } finally {
       CONFIG.prelaunch = originalPrelaunch;

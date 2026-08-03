@@ -9,6 +9,7 @@ import { getTranslations } from '../src/i18n/index.js';
 import { getFilesRecursive, escapeXml, validateMarkdownVideoBlocks } from './content-utils.js';
 import { LocalFileDataModelAccess } from '../src/lib/local-data-model-access.js';
 import { convertDataModelDiagramsToMermaid } from '../src/lib/data-model-diagram-generator.js';
+import { parseModelId } from '../src/lib/data-model-utils.js';
 
 dotenv.config();
 
@@ -302,8 +303,11 @@ export async function generateAssets() {
 <!-- PRE-LAUNCH STATE: Search engines and AI crawlers are denied access. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 </urlset>`;
+    fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemap, 'utf-8');
+    console.log('Generated prelaunch sitemap.xml');
   } else {
-    sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+    // Generate sitemap-base.xml containing home, page, and post URLs
+    const sitemapBaseXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>${BASE_URL}/</loc>
@@ -319,10 +323,172 @@ ${posts.map(post => `  <url>
     <priority>0.6</priority>
   </url>`).join('\n')}
 </urlset>`;
-  }
+    fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap-base.xml'), sitemapBaseXml, 'utf-8');
+    console.log('Generated sitemap-base.xml');
 
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemap, 'utf-8');
-  console.log(`Generated sitemap.xml (${CONFIG.prelaunch ? 'prelaunch' : 'public'})`);
+    // Load tietomallit and koodistot indexes to generate model-specific sitemaps
+    let modelsIndex: any[] = [];
+    let codelistsIndex: any[] = [];
+
+    try {
+      const modelsIndexFile = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', 'index.json');
+      if (fs.existsSync(modelsIndexFile)) {
+        const content = fs.readFileSync(modelsIndexFile, 'utf-8');
+        if (content && content.trim()) {
+          modelsIndex = JSON.parse(content);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load or parse tietomallit index:', err);
+    }
+
+    try {
+      const codelistsIndexFile = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'koodistot', 'index.json');
+      if (fs.existsSync(codelistsIndexFile)) {
+        const content = fs.readFileSync(codelistsIndexFile, 'utf-8');
+        if (content && content.trim()) {
+          codelistsIndex = JSON.parse(content);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load or parse koodistot index:', err);
+    }
+
+    const modelSitemaps: { fileName: string; url: string }[] = [];
+
+    if (Array.isArray(modelsIndex)) {
+      // Group valid versions by modelName
+      const validModelsByGroup = new Map<string, any[]>();
+      for (const model of modelsIndex) {
+        if (!model.path) continue;
+        if (model.status?.toUpperCase() !== 'VALID') continue;
+
+        const { name: modelName } = parseModelId(model.id || model.path);
+        if (!modelName) continue;
+
+        if (!validModelsByGroup.has(modelName)) {
+          validModelsByGroup.set(modelName, []);
+        }
+        validModelsByGroup.get(modelName)!.push(model);
+      }
+
+      // Find the latest valid version for each model group and generate its sitemap
+      for (const [modelName, models] of validModelsByGroup.entries()) {
+        // Sort models by version descending (so models[0] is the latest)
+        models.sort((a, b) => {
+          const versionA = a.version || parseModelId(a.id || a.path).version || '1.0.0';
+          const versionB = b.version || parseModelId(b.id || b.path).version || '1.0.0';
+          const partsA = versionA.split('.').map(Number);
+          const partsB = versionB.split('.').map(Number);
+          for (let i = 0; i < Math.max(partsA.length, partsB.length); i++) {
+            const valA = partsA[i] || 0;
+            const valB = partsB[i] || 0;
+            if (valA !== valB) return valB - valA;
+          }
+          return 0;
+        });
+
+        const model = models[0];
+        try {
+          const { version: parsedVersion } = parseModelId(model.id || model.path);
+          const modelVersion = model.version || parsedVersion || '1.0.0';
+
+          const modelFilePath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', model.path);
+          if (fs.existsSync(modelFilePath)) {
+            const content = fs.readFileSync(modelFilePath, 'utf-8');
+            if (content && content.trim()) {
+              const modelData = JSON.parse(content);
+              const classesList: string[] = [];
+              const codelistsList: string[] = [];
+
+              if (Array.isArray(modelData.classes)) {
+                // Collect classes
+                modelData.classes.forEach((cls: any) => {
+                  if (cls.technicalName) {
+                    classesList.push(cls.technicalName);
+                  }
+                });
+
+                // Collect used codelists
+                const usedCodelistUris = new Set<string>();
+                modelData.classes.forEach((cls: any) => {
+                  if (Array.isArray(cls.codelists)) {
+                    cls.codelists.forEach((uri: any) => {
+                      if (typeof uri === 'string') usedCodelistUris.add(uri);
+                    });
+                  }
+                  if (Array.isArray(cls.attributes)) {
+                    cls.attributes.forEach((attr: any) => {
+                      if (Array.isArray(attr.codelist)) {
+                        attr.codelist.forEach((uri: any) => {
+                          if (typeof uri === 'string') usedCodelistUris.add(uri);
+                        });
+                      }
+                    });
+                  }
+                });
+
+                if (Array.isArray(codelistsIndex)) {
+                  codelistsIndex.forEach((c: any) => {
+                    if (c.uri && usedCodelistUris.has(c.uri)) {
+                      const techName = c.uri.split('/').pop()?.split(':').pop() || '';
+                      if (techName) {
+                        codelistsList.push(techName);
+                      }
+                    }
+                  });
+                }
+              }
+
+              // Generate separate sitemap content
+              const modelSitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${BASE_URL}/?model=${modelName}&amp;version=${modelVersion}</loc>
+    <priority>0.7</priority>
+  </url>
+${classesList.map(cls => `  <url>
+    <loc>${BASE_URL}/?model=${modelName}&amp;version=${modelVersion}&amp;class=${cls}</loc>
+    <priority>0.6</priority>
+  </url>`).join('\n')}
+${codelistsList.map(code => `  <url>
+    <loc>${BASE_URL}/?model=${modelName}&amp;version=${modelVersion}&amp;codelist=${code}</loc>
+    <priority>0.5</priority>
+  </url>`).join('\n')}
+</urlset>`;
+
+              const sitemapFileName = `sitemap-model-${modelName}-${modelVersion}.xml`;
+              fs.writeFileSync(path.join(PUBLIC_DIR, sitemapFileName), modelSitemapXml, 'utf-8');
+              console.log(`Generated model-specific sitemap: ${sitemapFileName}`);
+              modelSitemaps.push({
+                fileName: sitemapFileName,
+                url: `${BASE_URL}/${sitemapFileName}`
+              });
+            }
+          }
+        } catch (err) {
+          console.warn(`Could not generate sitemap for model ${model.path}:`, err);
+        }
+      }
+    }
+
+    // Generate sitemap index file at sitemap.xml
+    const todayStr = new Date().toISOString().split('T')[0];
+    const sitemapIndexXml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${BASE_URL}/sitemap-base.xml</loc>
+    <lastmod>${todayStr}</lastmod>
+  </sitemap>
+${modelSitemaps.map(ms => `  <sitemap>
+    <loc>${ms.url}</loc>
+    <lastmod>${todayStr}</lastmod>
+  </sitemap>`).join('\n')}
+</sitemapindex>`;
+
+    fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemapIndexXml, 'utf-8');
+    console.log(`Generated sitemap.xml index with ${modelSitemaps.length} model sitemaps linked`);
+  }
 
   // Generate robots.txt denying search engine and AI crawler access if prelaunch is active
   let robotsTxt = '';
