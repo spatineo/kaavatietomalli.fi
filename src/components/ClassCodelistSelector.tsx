@@ -71,7 +71,9 @@ export function ClassCodelistSelector({
 
     performSearch(searchQuery, {
       where: {
-        modelVersions: currentModelVersionStr
+        modelVersions: {
+          containsAll: [currentModelVersionStr]
+        }
       }
     })
       .then((results) => {
@@ -79,7 +81,9 @@ export function ClassCodelistSelector({
 
         const filtered = results.filter((hit: any) => {
           const doc = hit.document;
-          return doc.type === 'class' || doc.type === 'codelist';
+          const isClassOrCodelist = doc.type === 'class' || doc.type === 'codelist';
+          if (!isClassOrCodelist) return false;
+          return doc.modelVersions?.includes(currentModelVersionStr);
         });
 
         setSearchResults(filtered);

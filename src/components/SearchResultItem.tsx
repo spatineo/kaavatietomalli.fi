@@ -3,12 +3,13 @@ import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 
 interface SearchResultItemProps {
+  key: string,
   result: any;
   size?: 'sm' | 'lg';
   onClick: (type: string, slug: string) => void;
 }
 
-export function SearchResultItem({ result, size = 'sm', onClick }: SearchResultItemProps) {
+export function SearchResultItem({ key, result, size = 'sm', onClick }: SearchResultItemProps) {
   const t = getTranslations(CONFIG.language as Language);
   const isLarge = size === 'lg';
 
@@ -45,6 +46,9 @@ export function SearchResultItem({ result, size = 'sm', onClick }: SearchResultI
           isLarge ? 'text-xl mb-1' : 'text-sm mb-0.5'
         }`}>
           {result.document.name || result.document.title}
+          {(result.document.type === 'class' || result.document.type === 'codelist' )&& (
+            <span> ({result.document.slug.split(':')[0]})</span>
+          )}
         </div>
         
         {result.document.type === 'author' && result.document.name && (result.document.title || result.document.company) && (

@@ -38,7 +38,7 @@ async function generateSearchIndex() {
     author: 'string',
     tags: 'string[]',
     publishDate: 'string',
-    modelVersions: 'string[]',
+    modelVersions: 'enum[]',
   } as const;
 
   const createCustomTokenizer = async (language: string, stemmerFn?: any) => {
@@ -115,10 +115,10 @@ async function generateSearchIndex() {
 
           for (const cls of classes) {
             if (!cls.id) continue;
-            if (!classToVersions[cls.id]) {
-              classToVersions[cls.id] = new Set();
+            if (!classToVersions[cls.uri]) {
+              classToVersions[cls.uri] = new Set();
             }
-            classToVersions[cls.id].add(modelVersionString);
+            classToVersions[cls.uri].add(modelVersionString);
 
             cls.codelists?.forEach((uri: string) => {
               if (!codelistUriToVersions[uri]) {
@@ -157,6 +157,10 @@ async function generateSearchIndex() {
         if (now < new Date(data.publishDate)) {
           continue;
         }
+      }
+      // Filter by post or page draft status
+      if ( ((type === 'post') || (type === 'page')) && data.draft === true) {
+        continue;
       }
 
       const lang = data.language || 'fi';
@@ -216,11 +220,11 @@ async function generateSearchIndex() {
           const classes = modelJson.classes || [];
 
           for (const cls of classes) {
-            if (!cls.id) continue;
-            if (processedClassIds.has(cls.id)) {
+            if (!cls.uri) continue;
+            if (processedClassIds.has(cls.uri)) {
               continue;
             }
-            processedClassIds.add(cls.id);
+            processedClassIds.add(cls.uri);
 
             const attributes = cls.attributes || [];
             const fiAttrs = attributes.map((a: any) => a.name?.fi || '').filter(Boolean).join(' ');
@@ -229,8 +233,8 @@ async function generateSearchIndex() {
 
             const classSlug = `${groupName}:${cls.technicalName}`;
 
-            const classVersions = Array.from(classToVersions[cls.id] || []);
-
+            const classVersions = Array.from(classToVersions[cls.uri] || []);
+            
             await insert(dbFi, {
               title: cls.name?.fi || '',
               name: cls.technicalName || '',
