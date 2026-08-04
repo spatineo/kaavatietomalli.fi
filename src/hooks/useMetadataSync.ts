@@ -277,18 +277,18 @@ export function useMetadataSync({
         document.head.appendChild(dcLink);
       }
 
-      const folder = type === 'post' ? 'posts' : 'pages';
       let resolvedFile = `${slug}.md`;
-      if (type === 'post' && currentPost && currentPost.slug === slug && currentPost.file) {
-        resolvedFile = currentPost.file;
-      } else if (type === 'page' && currentPage && currentPage.slug === slug && currentPage.file) {
-        resolvedFile = currentPage.file;
+      if (type === 'post' && currentPost && currentPost.slug === slug) {
+        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/content/posts/${slug}.md`;
+      } else if (type === 'page' && currentPage && currentPage.slug === slug) {
+        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/content/pages/${slug}.md`;
+      } else if (type === 'author' && currentAuthor && currentAuthor.slug === slug) {
+        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/content/authors/${slug}.md`;
       }
-
-      dcLink.setAttribute('href', `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/content/${folder}/${resolvedFile}`);
+      dcLink.setAttribute('href', resolvedFile);
     };
 
-    if (activeView.type === 'post' || activeView.type === 'page') {
+    if (activeView.type === 'post' || activeView.type === 'page' || activeView.type === 'author') {
       updateDiscoveryLink(activeView.type, activeView.slug);
     } else {
       updateDiscoveryLink('', null);

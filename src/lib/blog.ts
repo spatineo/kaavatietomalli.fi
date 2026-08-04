@@ -27,6 +27,7 @@ export interface PageData {
   title: string;
   content: string;
   draft?: boolean;
+  tags: string[];
   file?: string;
   partner?: string;
 }
@@ -149,10 +150,6 @@ export async function getPageBySlug(slug: string): Promise<PageData | null> {
     console.error(`Error loading page ${slug}:`, error);
     return null;
   }
-}
-
-export async function getAllAuthors(): Promise<AuthorData[]> {
-  return await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/content/authors.json`) as AuthorData[] || [];
 }
 
 export async function getAuthorBySlug(slug: string): Promise<AuthorData | null> {
