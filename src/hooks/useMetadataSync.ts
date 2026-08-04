@@ -273,7 +273,7 @@ export function useMetadataSync({
         dcLink = document.createElement('link');
         dcLink.setAttribute('rel', 'alternate');
         dcLink.setAttribute('type', 'text/markdown');
-        dcLink.setAttribute('title', 'Raw Markdown');
+        dcLink.setAttribute('title', 'Content in Markdown format');
         document.head.appendChild(dcLink);
       }
 
