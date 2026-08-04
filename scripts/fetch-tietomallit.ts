@@ -246,7 +246,7 @@ export function transformJsonLdToModel(
       status: modelStatus,
       description: modelDescription,
       documentation: modelDocumentation,
-      documentationUrl: `https://tietomallit.suomi.fi/model/${requestedModel}?ver=${modelVersion}`,
+      documentationUrl: `https://tietomallit.suomi.fi/model/${getModelShortName(requestedModel)}?ver=${modelVersion}`,
       lastModified: modelModified,
       originSyncTime: fetchTimestamp
     } as ModelMetadata,
