@@ -36,23 +36,6 @@ function ObfuscatedEmailIcon({ email }: { email: string }) {
 
 export function AuthorView({ author, onBack }: AuthorViewProps) {
   const t = getTranslations(CONFIG.language as Language);
-  useEffect(() => {
-    // Add discovery link for LLMs
-    const link = document.createElement('link');
-    link.rel = 'alternate';
-    link.type = 'text/markdown';
-    link.title = 'Raw Markdown';
-    const authorFile = author.file || `${author.slug}.md`;
-    link.href = `https://raw.githubusercontent.com/${CONFIG.repoOwner}/${CONFIG.repoName}/refs/heads/main/content/authors/${authorFile}`;
-    document.head.appendChild(link);
-
-    return () => {
-      if (link.parentNode === document.head) {
-        document.head.removeChild(link);
-      }
-    };
-  }, [author.slug]);
-
   const hasSocial = author.social && Object.values(author.social).some(val => !!val);
 
   return (
