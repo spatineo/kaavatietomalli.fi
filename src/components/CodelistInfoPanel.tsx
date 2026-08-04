@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { Info, FileText, ExternalLink, Layers, Check, Copy, Search, X } from 'lucide-react';
 import { Translations } from '../i18n/types';
 import { getStatusLabel } from '../lib/data-model-utils';
+import type { Codelist, CodeItem } from '../lib/data-model-types';
 
 interface CodelistInfoPanelProps {
-  codelistDetail: any;
+  codelistDetail: Codelist | null;
   loadingCodelist: boolean;
   dataLang: string;
   getLocalized: (obj: any) => string;
@@ -61,7 +62,7 @@ export function CodelistInfoPanel({
 
     for (const code of codelistDetail.codes) {
       const codeVal = code.codeValue || '';
-      const namesObj = code.names || {};
+      const namesObj = code.name || {};
       const localizedName = getLocalized(namesObj);
       const fallbackName = (Object.values(namesObj)[0] as string) || '';
       const nameText = localizedName || fallbackName;
@@ -101,7 +102,7 @@ export function CodelistInfoPanel({
         <div className="flex items-center gap-2">
           <span className="text-[10px] uppercase font-bold tracking-widest text-brand-accent bg-brand-accent/10 px-2.5 py-0.5 rounded">{t.dataModel.codelistLabel}</span>
           <h2 className="text-2xl font-bold text-white">
-            {getLocalized(codelistDetail.names) || codelistDetail.technicalName}
+            {getLocalized(codelistDetail.name) || codelistDetail.technicalName}
           </h2>
           <div className="flex-grow"></div>
           {codelistDetail.status !== 'VALID' && (
@@ -133,16 +134,16 @@ export function CodelistInfoPanel({
             <Info size={14} className="text-brand-accent" /> {t.dataModel.description}
           </h4>
           <p className="text-sm text-slate-300 leading-relaxed">
-            {getLocalized(codelistDetail.descriptions) || t.dataModel.noDescription}
+            {getLocalized(codelistDetail.description) || t.dataModel.noDescription}
           </p>
         </div>
-        {codelistDetail.definitions && Object.keys(codelistDetail.definitions).length > 0 && (
+        {codelistDetail.definition && Object.keys(codelistDetail.definition).length > 0 && (
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">
             <h4 className="text-sm font-bold text-slate-200 mb-2 flex items-center gap-2">
               <FileText size={14} className="text-brand-accent" /> {t.dataModel.definition}
             </h4>
             <p className="text-sm text-slate-300 leading-relaxed">
-              {getLocalized(codelistDetail.definitions)}
+              {getLocalized(codelistDetail.definition)}
             </p>
           </div>
         )}
@@ -221,9 +222,15 @@ export function CodelistInfoPanel({
               </thead>
               <tbody className="text-sm divide-y divide-white/5 text-slate-300">
                 {displayedCodes.length > 0 ? (
-                  displayedCodes.map((code: any) => {
-                    const hasIndent = code.hierarchyLevel && code.hierarchyLevel > 1;
-                    const indentStyle = hasIndent ? { paddingLeft: `${(code.hierarchyLevel - 1) * 1.5 + 1.5}rem` } : {};
+                  displayedCodes.map((code: CodeItem) => {
+                    let hasIndent: number | boolean = false;
+                    let indentStyle = {}; 
+                    if (code.hierarchyLevel) {
+                        hasIndent = code.hierarchyLevel && code.hierarchyLevel > 1;
+                        if (hasIndent) {
+                            indentStyle = { paddingLeft: `${(code.hierarchyLevel - 1) * 1.5 + 1.5}rem` };
+                        }
+                    }
                     return (
                       <tr key={code.uri} className="hover:bg-white/[0.02] transition-colors">
                         <td className="px-6 py-4 font-mono text-sm text-brand-accent font-semibold">
@@ -235,7 +242,7 @@ export function CodelistInfoPanel({
                           </div>
                         </td>
                         <td className="px-6 py-4 font-medium text-slate-200">
-                          {getLocalized(code.names) || (Object.values(code.names || {})[0] as any)}
+                          {getLocalized(code.name) || (Object.values(code.name || {})[0] as any)}
                         </td>
                         <td className="px-6 py-4 text-xs font-mono">
                           <span className={`whitespace-nowrap px-2 py-0.5 rounded ${

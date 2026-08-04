@@ -2,7 +2,35 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isContentEqual } from './content-utils';
+import { DataModel, ModelMetadata, ClassModel, Attribute, Association, LocalizedText } from '@/src/lib/data-model-types';
 import { CONFIG } from '../src/config';
+
+export interface AttributeDefinitionOverrride {
+  id: string;
+  name?: LocalizedText;
+  type?: string;
+  cardinality? : string;
+  codelist?: string[];
+}
+
+export interface AssociationDefinitionOverride {
+  id: string;
+  name?: LocalizedText;
+  targetClassId?: string;
+  targetClassName?: LocalizedText;
+  cardinality? : string;
+}
+
+export interface ClassDefinitionOverride {
+  id: string;
+  attributes?: AttributeDefinitionOverrride[];
+  associations?: AssociationDefinitionOverride[];
+}
+
+export interface ModelDefinitionOverride {
+  version: string;
+  classes?: ClassDefinitionOverride[];
+}
 
 export interface DataModelConfig {
   remote: {
@@ -10,18 +38,18 @@ export interface DataModelConfig {
     name: string;
   };
   models: Array<{
-    name: string;
+    id: string;
     versions: string[];
-    overrides?: any[];
+    overrides?: ModelDefinitionOverride[];
   }>;
 }
 
 export interface TietomalliIndexItem {
   id: string;
-  names: Record<string, string>;
+  names?: LocalizedText;
   version: string;
-  status: string;
-  lastModified: string;
+  status?: string;
+  lastModified?: string;
   path: string;
 }
 
@@ -59,7 +87,40 @@ export function getAllLabels(labelNode: any): Record<string, string> {
   return labels;
 }
 
-export function getClassTargetId(cls: any): string {
+let prefixMap: Record<string, string> = {
+  "rak": "https://iri.suomi.fi/model/rak/",
+  "rytj-kaava": "https://iri.suomi.fi/model/rytj-kaava/",
+  "ryhti-tont": "https://iri.suomi.fi/model/ryhti-tont/"
+};
+
+try {
+  const prefixMapPath = path.join(process.cwd(), 'data-index', 'prefixes.json');
+  if (fs.existsSync(prefixMapPath)) {
+    const rawPrefixes = fs.readFileSync(prefixMapPath, 'utf-8');
+    prefixMap = JSON.parse(rawPrefixes);
+  }
+} catch (err) {
+  // Silent fallback to standard map
+}
+
+export function expandUri(uri: string): string {
+  if (!uri) return uri;
+  if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    return uri.replace('http://iri.suomi.fi/', 'https://iri.suomi.fi/');
+  }
+
+  const colonIdx = uri.indexOf(':');
+  if (colonIdx !== -1) {
+    const prefix = uri.substring(0, colonIdx);
+    if (prefixMap[prefix]) {
+      return prefixMap[prefix] + uri.substring(colonIdx + 1);
+    }
+  }
+  return uri;
+}
+
+export function getShTargetClass(cls: any): string | null {
+  if (!cls) return null;
   const targetClass = cls['sh:targetClass'];
   if (targetClass) {
     if (Array.isArray(targetClass)) {
@@ -71,7 +132,22 @@ export function getClassTargetId(cls: any): string {
       return targetClass;
     }
   }
-  return cls['@id'];
+  return null;
+}
+
+export function getClassTargetId(cls: any): string {
+  // Kept for backward compatibility, returns expanded class ID based on @id
+  return cls ? expandUri(cls['@id']) : '';
+}
+
+export function getModelShortName(fullModelId: string) {
+  if (!fullModelId) return null;
+  
+  if (fullModelId.startsWith('http://') || fullModelId.startsWith('https://')) {
+    return fullModelId.split('/').pop();
+  } else {
+    return fullModelId.split(':').pop();
+  }
 }
 
 export function transformJsonLdToModel(
@@ -79,7 +155,7 @@ export function transformJsonLdToModel(
   requestedModel: string,
   requestedVersion: string,
   fetchTimestamp: string,
-  overrides?: any[]
+  overrides?: ModelDefinitionOverride[]
 ) {
   const graph = jsonContent['@graph'] || [];
 
@@ -88,6 +164,7 @@ export function transformJsonLdToModel(
   graph.forEach((node: any) => {
     if (node && node['@id']) {
       nodes.set(node['@id'], node);
+      nodes.set(expandUri(node['@id']), node);
     }
   });
 
@@ -102,26 +179,26 @@ export function transformJsonLdToModel(
   const targetClassToLabels = new Map<string, Record<string, string>>();
 
   classNodes.forEach((cls: any) => {
-    const refinedId = getClassTargetId(cls);
+    const rawClassId = cls['@id'];
+    if (!rawClassId) return;
+    const expandedClassId = expandUri(rawClassId);
     const labels = getAllLabels(cls['rdfs:label']);
 
-    if (cls['@id']) {
-      shapeOrClassToRefinedId.set(cls['@id'], refinedId);
-      targetClassToLabels.set(cls['@id'], labels);
-    }
+    shapeOrClassToRefinedId.set(rawClassId, expandedClassId);
+    shapeOrClassToRefinedId.set(expandedClassId, expandedClassId);
 
-    const targetClass = cls['sh:targetClass'];
+    targetClassToLabels.set(rawClassId, labels);
+    targetClassToLabels.set(expandedClassId, labels);
+
+    const targetClass = getShTargetClass(cls);
     if (targetClass) {
-      const tcId = Array.isArray(targetClass)
-        ? (targetClass[0]?.['@id'] || (typeof targetClass[0] === 'string' ? targetClass[0] : null))
-        : (typeof targetClass === 'object' ? targetClass['@id'] : (typeof targetClass === 'string' ? targetClass : null));
-      if (tcId) {
-        shapeOrClassToRefinedId.set(tcId, refinedId);
-        targetClassToLabels.set(tcId, labels);
-      }
-    }
+      const expandedTargetClassId = expandUri(targetClass);
+      shapeOrClassToRefinedId.set(targetClass, expandedClassId);
+      shapeOrClassToRefinedId.set(expandedTargetClassId, expandedClassId);
 
-    targetClassToLabels.set(refinedId, labels);
+      targetClassToLabels.set(targetClass, labels);
+      targetClassToLabels.set(expandedTargetClassId, labels);
+    }
   });
 
   // Find Ontology metadata
@@ -160,35 +237,38 @@ export function transformJsonLdToModel(
   const verWithV = modelVersion.startsWith('v') ? modelVersion : `v${modelVersion}`;
   const uniqueId = `${rawModelUri}#${verWithV}`;
 
-  const outputJson = {
+  const outputJson: DataModel = {
+    id: uniqueId,
+    version: modelVersion,
     metadata: {
-      id: uniqueId,
       modelUri: rawModelUri,
       name: modelName,
-      version: modelVersion,
       status: modelStatus,
       description: modelDescription,
       documentation: modelDocumentation,
       documentationUrl: `https://tietomallit.suomi.fi/model/${requestedModel}?ver=${modelVersion}`,
       lastModified: modelModified,
       originSyncTime: fetchTimestamp
-    },
-    classes: [] as any[]
+    } as ModelMetadata,
+    classes: [] as ClassModel[]
   };
 
   classNodes.forEach((cls: any) => {
     const classCodelists = new Set<string>();
-    const attributes: any[] = [];
-    const associations: any[] = [];
+    const attributes: Attribute[] = [];
+    const associations: Association[] = [];
     let superclass: string | null = null;
     let hasSuperclass = false;
+
+    const classTargetConceptClass = getShTargetClass(cls);
+    if (!classTargetConceptClass) return;
 
     let properties = cls['sh:property'];
     if (properties) {
       if (!Array.isArray(properties)) properties = [properties];
 
       properties.forEach((propRef: any) => {
-        const propNode = nodes.get(propRef['@id']);
+        const propNode = nodes.get(propRef['@id']) || nodes.get(expandUri(propRef['@id']));
         if (propNode) {
           const propLabels = getAllLabels(propNode['rdfs:label']);
 
@@ -210,8 +290,9 @@ export function transformJsonLdToModel(
             const clArray = Array.isArray(cl) ? cl : [cl];
             clArray.forEach((c: any) => {
               if (c['@id']) {
-                attrCodelists.push(c['@id']);
-                classCodelists.add(c['@id']);
+                const fullCodelistUri = expandUri(c['@id']);
+                attrCodelists.push(fullCodelistUri);
+                classCodelists.add(fullCodelistUri);
               }
             });
           }
@@ -224,8 +305,10 @@ export function transformJsonLdToModel(
                 ? propNode['sh:class'][0]?.['@id'] || (typeof propNode['sh:class'][0] === 'string' ? propNode['sh:class'][0] : null)
                 : null);
 
-            const targetClassId = rawTargetClassId
-              ? (shapeOrClassToRefinedId.get(rawTargetClassId) || rawTargetClassId)
+            const expandedRawTargetClassId = rawTargetClassId ? expandUri(rawTargetClassId) : null;
+
+            const targetClassId = expandedRawTargetClassId
+              ? (shapeOrClassToRefinedId.get(expandedRawTargetClassId) || shapeOrClassToRefinedId.get(rawTargetClassId) || expandedRawTargetClassId)
               : null;
 
             if (propLabels?.fi === 'Yläluokka') {
@@ -245,7 +328,7 @@ export function transformJsonLdToModel(
               }
 
               associations.push({
-                id: propNode['@id'],
+                id: expandUri(propNode['@id']),
                 name: propLabels,
                 targetClassId: targetClassId || null,
                 targetClassName,
@@ -258,8 +341,8 @@ export function transformJsonLdToModel(
               datatype = datatype.split('#').pop()?.split('/').pop() || 'string';
             }
 
-            const attributeObj: any = {
-              id: propNode['@id'],
+            const attributeObj: Attribute = {
+              id: expandUri(propNode['@id']),
               name: propLabels,
               type: datatype,
               cardinality
@@ -282,19 +365,23 @@ export function transformJsonLdToModel(
     attributes.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
     associations.sort((a, b) => (a.id || '').localeCompare(b.id || ''));
 
-    const classId = getClassTargetId(cls);
-    const lastPart = classId ? classId.replace(/\/+$/, '').split('/').pop() || '' : '';
+    const rawId = cls['@id'];
+    const lastPart = rawId ? rawId.replace(/\/+$/, '').split('/').pop() || '' : '';
     const technicalName = lastPart.split(':').pop() || '';
 
-    const classObj: any = {
-      id: classId,
+    const classObj: ClassModel = {
+      id: expandUri(rawId),
       technicalName,
-      uri: cls['@id'],
       name: getAllLabels(cls['rdfs:label']),
       description: getAllLabels(cls['rdfs:comment'])
     };
 
-    if (hasSuperclass) {
+    const targetClass = getShTargetClass(cls);
+    if (targetClass) {
+      classObj.conceptId = expandUri(targetClass);
+    }
+
+    if (hasSuperclass && superclass) {
       classObj.superclass = superclass;
     }
 
@@ -312,25 +399,25 @@ export function transformJsonLdToModel(
   const matchesId = (actualId: string, overrideId: string): boolean => {
     if (!actualId || !overrideId) return false;
     if (actualId === overrideId) return true;
-    const normActual = actualId.replace('https://iri.suomi.fi/model/rak/', 'rak:');
-    const normOverride = overrideId.replace('https://iri.suomi.fi/model/rak/', 'rak:');
+    const normActual = expandUri(actualId);
+    const normOverride = expandUri(overrideId);
     return normActual === normOverride;
   };
 
   // Carry out overrides if configured
   if (overrides && Array.isArray(overrides)) {
-    overrides.forEach((override: any) => {
+    overrides.forEach((override: ModelDefinitionOverride) => {
       if (override.version !== requestedVersion) return;
 
       if (Array.isArray(override.classes)) {
-        override.classes.forEach((classOverride: any) => {
-          const targetClass = outputJson.classes.find((c: any) => matchesId(c.id, classOverride.id));
+        override.classes.forEach((classOverride: ClassDefinitionOverride) => {
+          const targetClass = outputJson.classes.find((c: ClassModel) => matchesId(c.id, classOverride.id));
           if (!targetClass) return;
-
           // Override attributes
-          if (Array.isArray(classOverride.attributes)) {
-            classOverride.attributes.forEach((attrOverride: any) => {
-              const targetAttr = targetClass.attributes.find((a: any) => matchesId(a.id, attrOverride.id));
+            if (Array.isArray(classOverride.attributes)) {
+            classOverride.attributes.forEach((attrOverride: AttributeDefinitionOverrride) => {
+              const targetAttr = targetClass.attributes?.find((a: Attribute) => matchesId(a.id, attrOverride.id));
+             
               if (targetAttr) {
                 // Apply name, type, cardinality, codelist overrides
                 if (attrOverride.name !== undefined) {
@@ -353,7 +440,7 @@ export function transformJsonLdToModel(
                   // Rebuild class.codelists array by filtering out old and inserting new
                   if (Array.isArray(targetClass.codelists)) {
                     const otherAttrCodelists = new Set<string>();
-                    targetClass.attributes.forEach((a: any) => {
+                    targetClass.attributes?.forEach((a: any) => {
                       if (!matchesId(a.id, targetAttr.id) && Array.isArray(a.codelist)) {
                         a.codelist.forEach((c: string) => otherAttrCodelists.add(c));
                       }
@@ -369,11 +456,12 @@ export function transformJsonLdToModel(
               }
             });
           }
+        
 
           // Override associations
           if (Array.isArray(classOverride.associations)) {
-            classOverride.associations.forEach((assocOverride: any) => {
-              const targetAssoc = targetClass.associations.find((a: any) => matchesId(a.id, assocOverride.id));
+            classOverride.associations.forEach((assocOverride: AssociationDefinitionOverride) => {
+              const targetAssoc = targetClass.associations?.find((a: Association) => matchesId(a.id, assocOverride.id));
               if (targetAssoc) {
                 // Apply name, targetClassId, targetClassName, cardinality overrides
                 if (assocOverride.name !== undefined) {
@@ -446,26 +534,26 @@ export async function fetchAndTransformTietomallit(
 
       try {
         const fetchTimestamp = new Date().toISOString();
-        const jsonldUrl = `${baseUrl}?modelId=${model.name}&fileType=JSON-LD&version=${version}`;
+        const jsonldUrl = `${baseUrl}?modelId=${getModelShortName(model.id)}&fileType=JSON-LD&version=${version}`;
 
-        console.log(`Fetching data model: ${model.name} (v${version}) from ${jsonldUrl}...`);
+        console.log(`Fetching data model: ${model.id} (v${version}) from ${jsonldUrl}...`);
         const jsonResponse = await fetch(jsonldUrl, CONFIG.remoteFetchOptions);
         if (!jsonResponse.ok) {
           throw new Error(`HTTP ${jsonResponse.status}: ${jsonResponse.statusText}`);
         }
 
         const jsonContent = await jsonResponse.json();
-        const modelOutput = transformJsonLdToModel(jsonContent, model.name, version, fetchTimestamp, model.overrides);
+        const modelOutput = transformJsonLdToModel(jsonContent, model.id, version, fetchTimestamp, model.overrides);
 
-        const outputFilename = `${model.name}-${version}.json`;
+        const outputFilename = `${getModelShortName(model.id)}-${version}.json`;
         const outputPath = path.join(resolvedOutputDir, outputFilename);
 
         indexItems.push({
-          id: modelOutput.metadata.id,
-          names: modelOutput.metadata.name,
-          version: modelOutput.metadata.version,
-          status: modelOutput.metadata.status,
-          lastModified: modelOutput.metadata.lastModified,
+          id: modelOutput.id,
+          names: modelOutput.metadata?.name,
+          version: modelOutput.version,
+          status: modelOutput.metadata?.status || '',
+          lastModified: modelOutput.metadata?.lastModified || '',
           path: outputFilename
         });
 
@@ -489,7 +577,7 @@ export async function fetchAndTransformTietomallit(
         }
         
       } catch (err) {
-        console.error(`Failed to process data model ${model.name} version ${version}:`, err);
+        console.error(`Failed to process data model ${model.id} version ${version}:`, err);
       }
     }
   }

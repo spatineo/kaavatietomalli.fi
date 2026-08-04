@@ -1,5 +1,4 @@
-import { DataModelAccess, DataModelSnippetConfig } from './data-model-types';
-import { parseModelId } from './data-model-utils';
+import { DataModelAccess, DataModelSnippetConfig, DataModel, ClassModel, Codelist, Attribute, Association } from './data-model-types';
 
 export function parseDataModelSnippetConfig(code: string): DataModelSnippetConfig {
   const lines = code.split('\n');
@@ -54,7 +53,7 @@ export function parseDataModelSnippetConfig(code: string): DataModelSnippetConfi
   return { modelId, classes, lang };
 }
 
-function deriveTechNameFromId(id: string): string {
+function deriveTechNameFromId(id: string | null): string {
   if (!id) return 'UnknownClass';
   const cleaned = id.replace(/\/+$/, '');
   const lastPart = cleaned.split('/').pop() || cleaned;
@@ -77,32 +76,23 @@ export async function transpileDataModelSnippetToMermaid(
     return `classDiagram\n    note "Tietomallia ei löytynyt: ${config.modelId}"`;
   }
 
-  const metadata = dataModel.metadata || {};
-  const modelName =
-    metadata.name?.[lang] ||
-    metadata.name?.fi ||
-    metadata.name?.sv ||
-    metadata.name?.en ||
-    metadata.id ||
-    'Tietomalli';
-
-  const modelClasses: any[] = dataModel.classes || [];
+  const modelClasses: ClassModel[] = dataModel.classes || [];
 
   // Map requested classes
-  const includedClassObjs: any[] = [];
+  const includedClassObjs: ClassModel[] = [];
   const includedTechNames = new Set<string>();
 
   for (const requestedId of config.classes) {
     const techNameFromReq = deriveTechNameFromId(requestedId);
-    let matchedClass = modelClasses.find((c: any) => c.id === requestedId || c.uri === requestedId);
+    let matchedClass = modelClasses.find((c: ClassModel) => c.id === requestedId);
     if (!matchedClass) {
       matchedClass = modelClasses.find(
-        (c: any) => c.technicalName === techNameFromReq || (c.id && c.id.endsWith('/' + techNameFromReq))
+        (c: ClassModel) => c.technicalName === techNameFromReq || (c.id && c.id.endsWith('/' + techNameFromReq))
       );
     }
     if (!matchedClass) {
       matchedClass = modelClasses.find(
-        (c: any) =>
+        (c: ClassModel) =>
           c.technicalName?.toLowerCase() === techNameFromReq.toLowerCase() ||
           (c.id && c.id.toLowerCase().endsWith('/' + techNameFromReq.toLowerCase()))
       );
@@ -121,7 +111,7 @@ export async function transpileDataModelSnippetToMermaid(
     includedTechNames.add(techName);
   }
 
-  const referencedCodelists = new Map<string, { data: any; uri: string }>();
+  const referencedCodelists = new Map<string, { data: Codelist; uri: string }>();
   const codelistUseRelations: { classTechName: string; codelistTechName: string }[] = [];
   const plainBoxTechNames = new Set<string>();
   const classBlocks: string[] = [];
@@ -149,24 +139,24 @@ export async function transpileDataModelSnippetToMermaid(
           const codelistData = await access.getCodelist(codelistUri);
 
           let codelistTechName = '';
-          if (codelistData?.technicalName) {
-            codelistTechName = codelistData.technicalName;
+          if (!codelistData) {
+            console.warn(`Codelist not found for URI: ${codelistUri}`);
           } else {
-            if (!codelistData) {
-              console.warn(`Codelist not found for URI: ${codelistUri}`);
+            if (codelistData.technicalName) {
+              codelistTechName = codelistData.technicalName;
             }
             const uriLast = codelistUri.replace(/\/+$/, '').split('/').pop() || 'codelist';
             codelistTechName = uriLast.replace(/_v\d+_\d+$/, '');
-          }
 
-          techNames.push(codelistTechName);
+            techNames.push(codelistTechName);
 
-          if (!referencedCodelists.has(codelistTechName)) {
-            referencedCodelists.set(codelistTechName, { data: codelistData, uri: codelistUri });
-          }
+            if (!referencedCodelists.has(codelistTechName)) {
+              referencedCodelists.set(codelistTechName, { data: codelistData, uri: codelistUri });
+            }
 
-          if (!codelistUseRelations.some(r => r.classTechName === classTechName && r.codelistTechName === codelistTechName)) {
-            codelistUseRelations.push({ classTechName, codelistTechName });
+            if (!codelistUseRelations.some(r => r.classTechName === classTechName && r.codelistTechName === codelistTechName)) {
+              codelistUseRelations.push({ classTechName, codelistTechName });
+            }
           }
         }
 
@@ -191,10 +181,10 @@ export async function transpileDataModelSnippetToMermaid(
   for (const [codelistTechName, info] of referencedCodelists.entries()) {
     const data = info.data;
     const codelistLocalizedName =
-      data?.names?.[lang] ||
-      data?.names?.fi ||
-      data?.names?.sv ||
-      data?.names?.en ||
+      data?.name?.[lang] ||
+      data?.name?.fi ||
+      data?.name?.sv ||
+      data?.name?.en ||
       data?.name?.[lang] ||
       data?.name?.fi ||
       codelistTechName;
@@ -213,7 +203,7 @@ export async function transpileDataModelSnippetToMermaid(
     let superclassTargetId = cls.superclass || null;
     if (!superclassTargetId && Array.isArray(cls.associations)) {
       const ylaluokkaAssoc = cls.associations.find(
-        (a: any) => a.name?.fi === 'Yläluokka' || a.name?.en === 'Upper category' || a.name?.sv === 'Överkategori'
+        (a: Association) => a.name?.fi === 'Yläluokka' || a.name?.en === 'Upper category' || a.name?.sv === 'Överkategori'
       );
       if (ylaluokkaAssoc) {
         superclassTargetId = ylaluokkaAssoc.targetClassId;
@@ -222,7 +212,7 @@ export async function transpileDataModelSnippetToMermaid(
 
     if (superclassTargetId) {
       const superclassClassObj = modelClasses.find(
-        (c: any) => c.id === superclassTargetId || c.uri === superclassTargetId
+        (c: ClassModel) => c.id === superclassTargetId
       );
       const superclassTechName = superclassClassObj?.technicalName || deriveTechNameFromId(superclassTargetId);
       relationLines.push(`    ${superclassTechName} <|-- ${classTechName}`);
@@ -242,7 +232,7 @@ export async function transpileDataModelSnippetToMermaid(
       }
 
       const targetClassObj = modelClasses.find(
-        (c: any) => c.id === assoc.targetClassId || c.uri === assoc.targetClassId
+        (c: ClassModel) => c.id === assoc.targetClassId
       );
       const targetTechName = targetClassObj?.technicalName || deriveTechNameFromId(assoc.targetClassId);
 
@@ -268,7 +258,7 @@ export async function transpileDataModelSnippetToMermaid(
   const plainBoxBlocks: string[] = [];
   for (const plainTechName of plainBoxTechNames) {
     const plainClassObj = modelClasses.find(
-      (c: any) => c.technicalName === plainTechName || deriveTechNameFromId(c.id) === plainTechName
+      (c: ClassModel) => c.technicalName === plainTechName || deriveTechNameFromId(c.id) === plainTechName
     );
     const plainLocalizedName =
       plainClassObj?.name?.[lang] ||

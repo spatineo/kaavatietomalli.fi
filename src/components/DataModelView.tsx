@@ -20,7 +20,7 @@ import { fetchJsonCached } from '../lib/fetch-cache';
 import { ClassCodelistSelector } from './ClassCodelistSelector';
 import { ClassInfoPanel } from './ClassInfoPanel';
 import { CodelistInfoPanel } from './CodelistInfoPanel';
-import { DataModelAccess } from '../lib/data-model-types';
+import { DataModelAccess, DataModel, ClassModel, Codelist, CodelistIndexItem, ModelIndexItem } from '../lib/data-model-types';
 
 interface DataModelViewProps {
   modelName: string; // e.g. "rytj-kaava"
@@ -57,12 +57,12 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
   };
 
   // State
-  const [modelIndex, setModelIndex] = useState<any[]>([]);
-  const [allCodelists, setAllCodelists] = useState<any[]>([]);
+  const [modelIndex, setModelIndex] = useState<ModelIndexItem[]>([]);
+  const [allCodelists, setAllCodelists] = useState<CodelistIndexItem[]>([]);
   const [selectedVersion, setSelectedVersion] = useState<string>('');
-  const [modelData, setModelData] = useState<any>(null);
+  const [modelData, setModelData] = useState<DataModel | null>(null);
   const [selectedElement, setSelectedElement] = useState<{ type: 'class' | 'codelist'; name: string } | null>(null);
-  const [codelistDetail, setCodelistDetail] = useState<any>(null);
+  const [codelistDetail, setCodelistDetail] = useState<Codelist | null>(null);
   const [copiedCodeUri, setCopiedCodeUri] = useState<string | null>(null);
   const [mermaidChart, setMermaidChart] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
@@ -86,7 +86,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
         setAllCodelists(codelists);
 
         // Find available versions for this modelName
-        const versions = models.filter((m: any) => m.path.startsWith(`${modelName}-`));
+        const versions = models.filter((m: ModelIndexItem) => m.path.startsWith(`${modelName}-`));
         if (versions.length === 0) {
           throw new Error(`Data model "${modelName}" not found.`);
         }
@@ -94,7 +94,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
         // Determine version from URL or default to the first one
         const params = new URLSearchParams(window.location.search);
         const versionParam = params.get('version');
-        const matchedVersion = versions.find((v: any) => v.version === versionParam);
+        const matchedVersion = versions.find((v: ModelIndexItem) => v.version === versionParam);
         
         const initialVersion = matchedVersion ? matchedVersion.version : versions[0].version;
         setSelectedVersion(initialVersion);
@@ -112,7 +112,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
 
   // Filter versions of current model
   const availableVersions = useMemo(() => {
-    return modelIndex.filter((m: any) => m.path.startsWith(`${modelName}-`));
+    return modelIndex.filter((m: ModelIndexItem) => m.path.startsWith(`${modelName}-`));
   }, [modelIndex, modelName]);
 
   // Keep dataLang in sync with searchString
@@ -129,7 +129,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
     if (availableVersions.length === 0) return;
     const params = new URLSearchParams(searchString);
     const versionParam = params.get('version');
-    const matchedVersion = availableVersions.find((v: any) => v.version === versionParam);
+    const matchedVersion = availableVersions.find((v: ModelIndexItem) => v.version === versionParam);
     const targetVersion = matchedVersion ? matchedVersion.version : availableVersions[0].version;
     if (targetVersion && targetVersion !== selectedVersion) {
       setSelectedVersion(targetVersion);
@@ -147,7 +147,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
     let targetElement: { type: 'class' | 'codelist'; name: string } | null = null;
 
     if (classParam) {
-      const exists = modelData.classes?.some((c: any) => c.technicalName === classParam);
+      const exists = modelData.classes?.some((c: ClassModel) => c.technicalName === classParam);
       if (exists) {
         targetElement = { type: 'class', name: classParam };
       }
@@ -195,17 +195,17 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
   const usedCodelists = useMemo(() => {
     if (!modelData) return [];
     const uris = new Set<string>();
-    modelData.classes?.forEach((cls: any) => {
+    modelData.classes?.forEach((cls: ClassModel) => {
       cls.codelists?.forEach((uri: string) => uris.add(uri));
-      cls.attributes?.forEach((attr: any) => {
+      cls.attributes?.forEach((attr) => {
         attr.codelist?.forEach((uri: string) => uris.add(uri));
       });
     });
 
     // Match each URI with codelists index
     return allCodelists
-      .filter((c: any) => uris.has(c.uri))
-      .map((c: any) => ({
+      .filter((c: CodelistIndexItem) => uris.has(c.uri))
+      .map((c: CodelistIndexItem) => ({
         ...c,
         technicalName: c.uri.split('/').pop()?.split(':').pop() || ''
       }));
@@ -290,13 +290,13 @@ lang: ${dataLang}`;
     }
 
     // Check if type matches a class in this model
-    const classExists = modelData?.classes?.find((c: any) => c.technicalName === type);
+    const classExists = modelData?.classes?.find((c: ClassModel) => c.technicalName === type);
     if (classExists) {
       return { type: 'class', name: type };
     }
 
     // Check if matches a used codelist
-    const codelistExists = usedCodelists.find((c: any) => c.technicalName === type);
+    const codelistExists = usedCodelists.find(c => c.technicalName === type);
     if (codelistExists) {
       return { type: 'codelist', name: type };
     }
@@ -344,7 +344,7 @@ lang: ${dataLang}`;
   // Extract selected class details
   const selectedClassObj = useMemo(() => {
     if (selectedElement?.type === 'class' && modelData?.classes) {
-      return modelData.classes.find((c: any) => c.technicalName === selectedElement.name);
+      return modelData.classes.find((c: ClassModel) => c.technicalName === selectedElement.name);
     }
     return null;
   }, [selectedElement, modelData]);
@@ -418,12 +418,12 @@ lang: ${dataLang}`;
                   {getLocalized(metadata.name)}
             </h1>
             <a
-              href={metadata.modelUri || metadata.id}
+              href={metadata.modelUri || modelData?.id}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-mono text-slate-500 flex items-center gap-1.5  hover:underline font-semibold"
             >
-              <span className="text-brand-accent">{metadata.modelUri || metadata.id}</span>
+              <span className="text-brand-accent">{metadata.modelUri || modelData?.id}</span>
               <ExternalLink size={12} />
               </a>
             <div className="flex gap-3 flex-wrap items-center">
@@ -577,7 +577,7 @@ lang: ${dataLang}`;
               onNavigateToType={(type, name) => handleSelectElement(`${type}:${name}`)}
               getTypeNavigation={getTypeNavigation}
               t={t}
-              modelMetadata={metadata}
+              model={modelData || undefined}
             />
           </div>
         )}

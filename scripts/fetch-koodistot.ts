@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { isContentEqual } from './content-utils';
+import { Codelist, CodeItem, LocalizedText  } from '@/src/lib/data-model-types';
 import { CONFIG } from '../src/config';
 
 export interface CodelistItem {
@@ -24,7 +25,7 @@ export interface CodelistConfig {
 export interface CodelistIndexItem {
   id: string | null;
   uri: string;
-  names: Record<string, string>;
+  name?: LocalizedText;
   status: string | null;
   lastModified: string | null;
   registry: string;
@@ -45,9 +46,9 @@ export function getLaterDate(statusModified?: string | null, modified?: string |
   return statusModified || modified || null;
 }
 
-export function sortCodelistCodes(codes: any[]): any[] {
+export function sortCodelistCodes(codes: CodeItem[]): CodeItem[] {
   // Map of codeValue -> code
-  const codeMap = new Map<string, any>();
+  const codeMap = new Map<string, CodeItem>();
   for (const c of codes) {
     if (c.codeValue) {
       codeMap.set(c.codeValue, c);
@@ -124,7 +125,7 @@ export function transformCodelistData(
   uri: string,
   fetchTimestamp?: string
 ) {
-  let codelistLabels: Record<string, string> = { unknown: uri.split('/').pop() || 'UnknownCodelist' };
+  let codelistLabels: LocalizedText = { unknown: uri.split('/').pop() || 'UnknownCodelist' };
   if (metaData && metaData.prefLabel) {
     codelistLabels = metaData.prefLabel;
   }
@@ -136,7 +137,7 @@ export function transformCodelistData(
 
   const rawCodes = Array.isArray(codesData) ? codesData : (codesData?.results || []);
 
-  const codes = rawCodes
+  const codes: CodeItem[] = rawCodes
     .map((codeObj: any) => {
       const desc: Record<string, string> = codeObj.description ? { ...codeObj.description } : {};
 
@@ -152,11 +153,10 @@ export function transformCodelistData(
         ? codeObj.broaderCode
         : (codeObj.broaderCode?.codeValue || null);
 
-      const code: any = {
-        id: codeObj.id || null,
+      const code: CodeItem = {
         uri: codeObj.uri || null,
         codeValue: codeObj.codeValue || null,
-        names: codeObj.prefLabel || {},
+        name: codeObj.prefLabel || {},
         hierarchyLevel: codeObj.hierarchyLevel || 1,
         status: codeObj.status || null,
         created: codeObj.created || null,
@@ -172,11 +172,10 @@ export function transformCodelistData(
       if (codeObj.order !== undefined && codeObj.order !== null) {
         code.order = Number(codeObj.order);
       }
-
       return code;
     });
 
-  const sortedCodes = sortCodelistCodes(codes);
+  const sortedCodes: CodeItem[] = sortCodelistCodes(codes);
 
   return {
     id: metaData?.id || null,
@@ -184,9 +183,9 @@ export function transformCodelistData(
     uri: uri,
     vocabulary: uri,
     documentationUrl,
-    names: codelistLabels,
-    definitions: metaData?.definition || {},
-    descriptions: metaData?.description || {},
+    name: codelistLabels,
+    definition: metaData?.definition || {},
+    description: metaData?.description || {},
     created: metaData?.created || null,
     modified: metaData?.modified || null,
     statusModified: metaData?.statusModified || null,
@@ -194,7 +193,7 @@ export function transformCodelistData(
     originSyncTime: fetchTimestamp || new Date().toISOString(),
     allVersions: metaData?.allVersions || [],
     codes: sortedCodes
-  };
+  } as Codelist;
 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -273,7 +272,7 @@ export async function fetchAndTransformKoodistot(
         const metaData = await metaRes.json();
         const codesData = await codesRes.json();
 
-        const transformed = transformCodelistData(metaData, codesData, uri, fetchTimestamp);
+        const transformed: Codelist = transformCodelistData(metaData, codesData, uri, fetchTimestamp);
 
         const outputFilename = `${codelist.name}.json`;
         const outputPath = path.join(registryDir, outputFilename);
@@ -282,7 +281,7 @@ export async function fetchAndTransformKoodistot(
         indexItems.push({
           id: transformed.id,
           uri: transformed.uri,
-          names: transformed.names,
+          name: transformed.name,
           status: transformed.status,
           lastModified: getLaterDate(transformed.statusModified, transformed.modified),
           registry: registry.name,

@@ -6,6 +6,7 @@ import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
 import { stemmer as svStemmer } from '@orama/stemmers/swedish';
 import { stemmer as enStemmer } from '@orama/stemmers/english';
 import { getFilesRecursive } from './content-utils.js';
+import type { ClassModel, Codelist } from '../src/lib/data-model-types';
 
 const useTestContent = process.env.CONTENT_MODE === 'test' || process.env.CONTENT_MODE === 'dev/test' || process.env.CONTENT_MODE === 'dev';
 const CONTENT_DIR = useTestContent
@@ -110,15 +111,15 @@ async function generateSearchIndex() {
 
         try {
           const modelJson = JSON.parse(fs.readFileSync(modelFilePath, 'utf-8'));
-          const classes = modelJson.classes || [];
+          const classes: ClassModel[] = modelJson.classes || [];
           const modelVersionString = `${groupName}:${model.version}`;
 
           for (const cls of classes) {
             if (!cls.id) continue;
-            if (!classToVersions[cls.uri]) {
-              classToVersions[cls.uri] = new Set();
+            if (!classToVersions[cls.id]) {
+              classToVersions[cls.id] = new Set();
             }
-            classToVersions[cls.uri].add(modelVersionString);
+            classToVersions[cls.id].add(modelVersionString);
 
             cls.codelists?.forEach((uri: string) => {
               if (!codelistUriToVersions[uri]) {
@@ -126,7 +127,7 @@ async function generateSearchIndex() {
               }
               codelistUriToVersions[uri].add(modelVersionString);
             });
-            cls.attributes?.forEach((attr: any) => {
+            cls.attributes?.forEach((attr) => {
               attr.codelist?.forEach((uri: string) => {
                 if (!codelistUriToVersions[uri]) {
                   codelistUriToVersions[uri] = new Set();
@@ -217,23 +218,23 @@ async function generateSearchIndex() {
 
         try {
           const modelJson = JSON.parse(fs.readFileSync(modelFilePath, 'utf-8'));
-          const classes = modelJson.classes || [];
+          const classes: ClassModel[] = modelJson.classes || [];
 
           for (const cls of classes) {
-            if (!cls.uri) continue;
-            if (processedClassIds.has(cls.uri)) {
+            if (!cls.id) continue;
+            if (processedClassIds.has(cls.id)) {
               continue;
             }
-            processedClassIds.add(cls.uri);
+            processedClassIds.add(cls.id);
 
             const attributes = cls.attributes || [];
-            const fiAttrs = attributes.map((a: any) => a.name?.fi || '').filter(Boolean).join(' ');
-            const svAttrs = attributes.map((a: any) => a.name?.sv || '').filter(Boolean).join(' ');
-            const enAttrs = attributes.map((a: any) => a.name?.en || '').filter(Boolean).join(' ');
+            const fiAttrs = attributes.map((a) => a.name?.fi || '').filter(Boolean).join(' ');
+            const svAttrs = attributes.map((a) => a.name?.sv || '').filter(Boolean).join(' ');
+            const enAttrs = attributes.map((a) => a.name?.en || '').filter(Boolean).join(' ');
 
             const classSlug = `${groupName}:${cls.technicalName}`;
 
-            const classVersions = Array.from(classToVersions[cls.uri] || []);
+            const classVersions = Array.from(classToVersions[cls.id] || []);
             
             await insert(dbFi, {
               title: cls.name?.fi || '',
@@ -298,25 +299,25 @@ async function generateSearchIndex() {
         if (!fs.existsSync(codelistPath)) continue;
 
         try {
-          const codelist = JSON.parse(fs.readFileSync(codelistPath, 'utf-8'));
+          const codelist: Codelist = JSON.parse(fs.readFileSync(codelistPath, 'utf-8'));
           
-          const definitions = codelist.definitions || {};
-          const descriptions = codelist.descriptions || {};
+          const definitions = codelist.definition || {};
+          const descriptions = codelist.description || {};
 
           const fiExcerpt = [definitions.fi, descriptions.fi].map(s => s?.trim()).filter(Boolean).join(' ');
           const svExcerpt = [definitions.sv, descriptions.sv].map(s => s?.trim()).filter(Boolean).join(' ');
           const enExcerpt = [definitions.en, descriptions.en].map(s => s?.trim()).filter(Boolean).join(' ');
 
           const codes = codelist.codes || [];
-          const fiCodes = codes.map((c: any) => c.names?.fi || '').filter(Boolean).join(' ');
-          const svCodes = codes.map((c: any) => c.names?.sv || '').filter(Boolean).join(' ');
-          const enCodes = codes.map((c: any) => c.names?.en || '').filter(Boolean).join(' ');
+          const fiCodes = codes.map((c) => c.name?.fi || '').filter(Boolean).join(' ');
+          const svCodes = codes.map((c) => c.name?.sv || '').filter(Boolean).join(' ');
+          const enCodes = codes.map((c) => c.name?.en || '').filter(Boolean).join(' ');
 
           const codelistSlug = `rytj-kaava:${codelist.technicalName}`;
           const codelistVersions = Array.from(codelistUriToVersions[item.uri] || []);
 
           await insert(dbFi, {
-            title: codelist.names?.fi || '',
+            title: codelist.name?.fi || '',
             name: codelist.technicalName || '',
             company: '',
             content: fiCodes,
@@ -330,7 +331,7 @@ async function generateSearchIndex() {
           });
 
           await insert(dbSv, {
-            title: codelist.names?.sv || '',
+            title: codelist.name?.sv || '',
             name: '',
             company: '',
             content: svCodes,
@@ -344,7 +345,7 @@ async function generateSearchIndex() {
           });
 
           await insert(dbEn, {
-            title: codelist.names?.en || '',
+            title: codelist.name?.en || '',
             name: '',
             company: '',
             content: enCodes,

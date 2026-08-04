@@ -5,14 +5,14 @@
     },
     "models": [
         {
-            "name": "rytj-kaava",
+            "id": "https://iri.suomi.fi/model/rytj-kaava",
             "versions": [ "1.0.5", "1.0.4", "1.0.3", "1.0.2", "1.0.1"],
             "overrides": [
                 { 
                     "version": "1.0.5",
                     "classes": [
                         {
-                            "id": "rak:1.0.0/Kaavamaarays",
+                            "id": "https://iri.suomi.fi/model/rytj-kaava/Kaavamaarays",
                             "attributes": [
                                 {
                                     "id": "https://iri.suomi.fi/model/rytj-kaava/kaavamaarayslaji",
@@ -23,7 +23,7 @@
                             ]
                         },
                         {
-                            "id": "rak:1.0.0/Kaava",
+                            "id": "https://iri.suomi.fi/model/rytj-kaava/Kaava",
                             "attributes": [
                                 {
                                     "id": "https://iri.suomi.fi/model/rytj-kaava/yleiskaavanOikeusvaikutus",
@@ -39,7 +39,7 @@
                     "version": "1.0.4",
                     "classes": [
                         {
-                            "id": "https://iri.suomi.fi/model/rak/1.0.0/Kaavamaarays",
+                            "id": "https://iri.suomi.fi/model/rytj-kaava/Kaavamaarays",
                             "attributes": [
                                 {
                                     "id": "https://iri.suomi.fi/model/rytj-kaava/kaavamaarayslaji",
@@ -50,7 +50,7 @@
                             ]
                         },
                         {
-                            "id": "https://iri.suomi.fi/model/rak/1.0.0/Kaava",
+                            "id": "https://iri.suomi.fi/model/rytj-kaava/Kaava",
                             "attributes": [
                                 {
                                     "id": "https://iri.suomi.fi/model/rytj-kaava/yleiskaavanOikeusvaikutus",
@@ -65,7 +65,7 @@
             ]
         },
         {
-            "name": "ryhti-tont",
+            "id": "https://iri.suomi.fi/model/ryhti-tont",
             "versions": [ "1.0.7", "1.0.6", "1.0.5", "1.0.4", "1.0.3", "1.0.2", "1.0.1", "1.0.0"]
         }
     ]

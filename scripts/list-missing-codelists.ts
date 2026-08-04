@@ -1,12 +1,7 @@
 import fs from 'fs';
 import path from 'path';
-
-interface TietomallitIndex {
-  models: Array<{
-    name: string;
-    versions: string[];
-  }>;
-}
+import { DataModelConfig, getModelShortName } from './fetch-tietomallit';
+import { DataModel, ClassModel, Attribute } from '@/src/lib/data-model-types';
 
 interface KoodistotIndex {
   registries: Array<{
@@ -69,12 +64,12 @@ async function listMissingCodelists() {
   console.log('');
 
   // 2. Parse data models to find used codelists
-  const tietomallitConfig: TietomallitIndex = JSON.parse(fs.readFileSync(TIETOMALLIT_INDEX_PATH, 'utf-8'));
+  const tietomallitConfig: DataModelConfig = JSON.parse(fs.readFileSync(TIETOMALLIT_INDEX_PATH, 'utf-8'));
   const codelistUsages = new Map<string, CodelistUsage[]>();
 
   for (const model of tietomallitConfig.models) {
     for (const version of model.versions) {
-      const filename = `${model.name}-${version}.json`;
+      const filename = `${getModelShortName(model.id)}-${version}.json`;
       const filePath = path.join(PUBLIC_TIETOMALLIT_DIR, filename);
 
       if (!fs.existsSync(filePath)) {
@@ -83,7 +78,7 @@ async function listMissingCodelists() {
       }
 
       try {
-        const modelContent = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        const modelContent: DataModel = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
         const classes = modelContent.classes || [];
 
         for (const cls of classes) {
@@ -99,7 +94,7 @@ async function listMissingCodelists() {
                   codelistUsages.set(normalizedUri, []);
                 }
                 codelistUsages.get(normalizedUri)!.push({
-                  model: model.name,
+                  model: model.id,
                   version,
                   className,
                   classId
@@ -110,7 +105,7 @@ async function listMissingCodelists() {
 
           // B. Check attribute-level codelists (as extra safety)
           if (Array.isArray(cls.attributes)) {
-            cls.attributes.forEach((attr: any) => {
+            cls.attributes.forEach((attr: Attribute) => {
               const attrName = attr.name?.fi || attr.name?.en || attr.id || 'UnnamedAttribute';
               if (Array.isArray(attr.codelist)) {
                 attr.codelist.forEach((uri: string) => {
@@ -122,14 +117,14 @@ async function listMissingCodelists() {
                     // Avoid duplicate usage entries for the same attribute
                     const existing = codelistUsages.get(normalizedUri)!;
                     const isDup = existing.some(u => 
-                      u.model === model.name && 
+                      u.model === model.id && 
                       u.version === version && 
                       u.className === className && 
                       u.attributeName === attrName
                     );
                     if (!isDup) {
                       existing.push({
-                        model: model.name,
+                        model: model.id,
                         version,
                         className,
                         classId,
