@@ -10,6 +10,7 @@ import { getFilesRecursive, escapeXml, validateMarkdownVideoBlocks } from './con
 import { LocalFileDataModelAccess } from '../src/lib/local-data-model-access.js';
 import { convertDataModelDiagramsToMermaid } from '../src/lib/data-model-diagram-generator.js';
 import { parseModelId } from '../src/lib/data-model-utils.js';
+import { PostData, PageData, AuthorData } from '@/src/lib/blog.js';
 
 dotenv.config();
 
@@ -77,8 +78,6 @@ export function getGitHistoryOfContent(): Record<string, GitCommitInfo[]> {
   return historyMap;
 }
 
-// Removed duplicate escapeXml and getFilesRecursive; now loaded from content-utils.js
-
 export async function generateAssets() {
   const t = getTranslations('fi');
   const historyMap = getGitHistoryOfContent();
@@ -102,7 +101,7 @@ export async function generateAssets() {
 
   const now = new Date();
 
-  const allPosts = postFiles.map(file => {
+  const allPosts: PostData[] = postFiles.map(file => {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(postsDir, file), 'utf-8');
     validateMarkdownVideoBlocks(path.join(postsDir, file), content);
@@ -111,36 +110,33 @@ export async function generateAssets() {
       console.warn(`Warning: Post in "${file}" has missing or empty "title" metadata.`);
     }
     return {
-      metadata: {
-        slug,
-        category: data.category || 'journal',
-        title: data.title || '',
-        excerpt: data.excerpt || '',
-        date: data.date || '',
-        dateLabel: data.dateLabel || '',
-        author: data.author || '',
-        authorSlug: data.authorSlug || '',
-        tags: data.tags || [],
-        coverImage: data.coverImage || '',
-        publishDate: data.publishDate || null,
-        draft: data.draft === true || data.draft === 'true',
-        file: file.replace(/\\/g, '/'),
-        promotional: typeof data.promotional === 'boolean' ? data.promotional : (data.promotional === 'true' ? true : (typeof data.promotional === 'string' && data.promotional.trim().length > 0 && data.promotional !== 'false')),
-        partner: data.partner || (typeof data.promotional === 'string' && data.promotional !== 'true' && data.promotional !== 'false' ? data.promotional : undefined),
-        callToAction: data.callToAction || undefined
-      },
+      slug,
+      category: data.category || 'journal',
+      title: data.title || '',
+      excerpt: data.excerpt || '',
+      date: data.date || '',
+      dateLabel: data.dateLabel || '',
+      author: data.author || '',
+      authorSlug: data.authorSlug || '',
+      tags: data.tags || [],
+      coverImage: data.coverImage || '',
+      publishDate: data.publishDate || null,
+      draft: data.draft === true || data.draft === 'true',
+      file: file.replace(/\\/g, '/'),
+      promotional: typeof data.promotional === 'boolean' ? data.promotional : (data.promotional === 'true' ? true : (typeof data.promotional === 'string' && data.promotional.trim().length > 0 && data.promotional !== 'false')),
+      partner: data.partner || (typeof data.promotional === 'string' && data.promotional !== 'true' && data.promotional !== 'false' ? data.promotional : undefined),
+      callToAction: data.callToAction || undefined,
       content: textContent,
-      file: file.replace(/\\/g, '/')
-    };
+    } as PostData;
   });
 
-  const posts = allPosts.filter(post => {
-    if (post.metadata.draft) return false;
-    if (!post.metadata.publishDate) return true;
-    return now >= new Date(post.metadata.publishDate);
+  const posts: PostData[] = allPosts.filter(post => {
+    if (post.draft) return false;
+    if (!post.publishDate) return true;
+    return now >= new Date(post.publishDate);
   });
 
-  const allPages = pageFiles.map(file => {
+  const allPages: PageData[] = pageFiles.map(file => {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(pagesDir, file), 'utf-8');
     validateMarkdownVideoBlocks(path.join(pagesDir, file), content);
@@ -149,46 +145,41 @@ export async function generateAssets() {
       console.warn(`Warning: Page in "${file}" has missing or empty "title" metadata.`);
     }
     return {
-      metadata: {
-        slug,
-        title: data.title || slug,
-        tags: data.tags || [],
-        draft: data.draft === true || data.draft === 'true',
-        file: file.replace(/\\/g, '/'),
-        partner: data.partner || undefined
-      },
+      slug,
+      title: data.title || slug,
+      tags: data.tags || [],
+      draft: data.draft === true || data.draft === 'true',
+      file: file.replace(/\\/g, '/'),
+      partner: data.partner || undefined,
       content: textContent,
-      file: file.replace(/\\/g, '/')
-    };
+    } as PageData;
   });
 
-  const pages = allPages.filter(page => !page.metadata.draft);
+  const pages: PageData[] = allPages.filter(page => !page.draft);
 
-  const allAuthors = authorFiles.map(file => {
+  const allAuthors: AuthorData[] = authorFiles.map(file => {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(authorsDir, file), 'utf-8');
     const { data, content: textContent } = matter(content);
     return {
-      metadata: {
-        slug,
-        name: data.name || '',
-        title: data.title || '',
-        company: data.company || '',
-        image: data.image || '',
-        shortBio: data.shortBio || '',
-        social: data.social || {},
-        skills: data.skills || [],
-        file: file.replace(/\\/g, '/'),
-        ...data,
-        draft: data.draft === true || data.draft === 'true'
-      },
+      slug,
+      name: data.name || '',
+      title: data.title || '',
+      company: data.company || '',
+      image: data.image || '',
+      shortBio: data.shortBio || '',
+      social: data.social || {},
+      skills: data.skills || [],
+      file: file.replace(/\\/g, '/'),
+      ...data,
+      draft: data.draft === true || data.draft === 'true',
       content: textContent
-    };
+    } as AuthorData;
   });
 
-  const authors = allAuthors.filter(author => !author.metadata.draft);
+  const authors: AuthorData[] = allAuthors.filter(author => !author.draft);
 
-  // Generate JSONP index files (Metadata only)
+  // Generate JSON index files (Metadata only)
   const CONTENT_OUT_DIR = path.join(PUBLIC_DIR, 'content');
   const IMAGES_OUT_DIR = path.join(PUBLIC_DIR, 'images');
   [CONTENT_OUT_DIR, IMAGES_OUT_DIR].forEach(dir => {
@@ -200,19 +191,19 @@ export async function generateAssets() {
   // Generate Tag Index
   const tagIndex: Record<string, { posts: string[], pages: string[] }> = {};
 
-  posts.sort((a, b) => new Date(b.metadata.date).getTime() - new Date(a.metadata.date).getTime()).forEach(post => {
-    (post.metadata.tags || []).forEach((tag: string) => {
+  posts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).forEach(post => {
+    (post.tags || []).forEach((tag: string) => {
       const normalizedTag = tag.toLowerCase().trim();
       if (!tagIndex[normalizedTag]) tagIndex[normalizedTag] = { posts: [], pages: [] };
-      tagIndex[normalizedTag].posts.push(post.metadata.slug);
+      tagIndex[normalizedTag].posts.push(post.slug);
     });
   });
 
   pages.forEach(page => {
-    (page.metadata.tags || []).forEach((tag: string) => {
+    (page.tags || []).forEach((tag: string) => {
       const normalizedTag = tag.toLowerCase().trim();
       if (!tagIndex[normalizedTag]) tagIndex[normalizedTag] = { posts: [], pages: [] };
-      tagIndex[normalizedTag].pages.push(page.metadata.slug);
+      tagIndex[normalizedTag].pages.push(page.slug);
     });
   });
 
@@ -224,17 +215,12 @@ export async function generateAssets() {
 
   fs.writeFileSync(
     path.join(CONTENT_OUT_DIR, 'posts.json'), 
-    JSON.stringify(posts.map(p => p.metadata), null, 2),
+    JSON.stringify(posts.map(({ content, ...rest}) => rest), null, 2),
     'utf-8'
   );
   fs.writeFileSync(
     path.join(CONTENT_OUT_DIR, 'pages.json'), 
-    JSON.stringify(pages.map(p => p.metadata), null, 2),
-    'utf-8'
-  );
-  fs.writeFileSync(
-    path.join(CONTENT_OUT_DIR, 'authors.json'), 
-    JSON.stringify(authors.map(a => a.metadata), null, 2),
+    JSON.stringify(pages.map(({ content, ...rest}) => rest), null, 2),
     'utf-8'
   );
 
@@ -262,11 +248,20 @@ export async function generateAssets() {
     if (post.content && post.content.includes('```data-model-snippet')) {
       post.content = await convertDataModelDiagramsToMermaid(post.content, dataAccess);
     }
-    const outPath = path.join(POSTS_OUT_DIR, `${post.metadata.slug}.json`);
+    const outPath = path.join(POSTS_OUT_DIR, `${post.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      JSON.stringify({ ...post.metadata, content: post.content }, null, 2),
+      JSON.stringify(post , null, 2),
+      'utf-8'
+    );
+
+    const markdownOutPath = path.join(POSTS_OUT_DIR, `${post.slug}.md`);
+    let markdownContent = '# ' + post.title + '\n\n';
+    markdownContent += post.content;
+    fs.writeFileSync(
+      markdownOutPath,
+      markdownContent,
       'utf-8'
     );
   }
@@ -275,26 +270,44 @@ export async function generateAssets() {
     if (page.content && page.content.includes('```data-model-snippet')) {
       page.content = await convertDataModelDiagramsToMermaid(page.content, dataAccess);
     }
-    const outPath = path.join(PAGES_OUT_DIR, `${page.metadata.slug}.json`);
+    const outPath = path.join(PAGES_OUT_DIR, `${page.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      JSON.stringify({ ...page.metadata, content: page.content }, null, 2),
+      JSON.stringify(page , null, 2),
+      'utf-8'
+    );
+
+    const markdownOutPath = path.join(PAGES_OUT_DIR, `${page.slug}.md`);
+    let markdownContent = '# ' + page.title + '\n\n';
+    markdownContent += page.content;
+    fs.writeFileSync(
+      markdownOutPath,
+      markdownContent,
       'utf-8'
     );
   }
 
   authors.forEach(author => {
-    const outPath = path.join(AUTHORS_OUT_DIR, `${author.metadata.slug}.json`);
+    const outPath = path.join(AUTHORS_OUT_DIR, `${author.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      JSON.stringify({ ...author.metadata, content: author.content }, null, 2),
+      JSON.stringify(author , null, 2),
+      'utf-8'
+    );
+
+    const markdownOutPath = path.join(AUTHORS_OUT_DIR, `${author.slug}.md`);
+    let markdownContent = '# ' + author.title + '\n\n';
+    markdownContent += author.content;
+    fs.writeFileSync(
+      markdownOutPath,
+      markdownContent,
       'utf-8'
     );
   });
 
-  console.log('Generated JSON content index and individual files');
+  console.log('Generated JSON index and individual JSON and Markdown files');
 
   // Generate sitemap.xml
   let sitemap = '';
@@ -314,12 +327,12 @@ export async function generateAssets() {
     <priority>1.0</priority>
   </url>
 ${pages.map(page => `  <url>
-    <loc>${BASE_URL}/?page=${page.metadata.slug}</loc>
+    <loc>${BASE_URL}/?page=${page.slug}</loc>
     <priority>0.8</priority>
   </url>`).join('\n')}
 ${posts.map(post => `  <url>
-    <loc>${BASE_URL}/?post=${post.metadata.slug}</loc>
-    <lastmod>${post.metadata.date ? new Date(post.metadata.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
+    <loc>${BASE_URL}/?post=${post.slug}</loc>
+    <lastmod>${post.date ? new Date(post.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
     <priority>0.6</priority>
   </url>`).join('\n')}
 </urlset>`;
@@ -540,9 +553,9 @@ ${modelSitemaps.map(ms => `  <sitemap>
   llmsTxt += `## ${t.llms.articlesFeatured}\n`;
   const featuredPosts = posts.slice(0, 5);
   featuredPosts.forEach(post => {
-    let line = `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.file})`;
-    if (post.metadata.promotional) {
-      line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.metadata.partner || ''}]`;
+    let line = `- [${post.title}](${BASE_URL}/?post=${post.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.file})`;
+    if (post.promotional) {
+      line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.partner || ''}]`;
     }
     llmsTxt += line + '\n';
   });
@@ -550,7 +563,7 @@ ${modelSitemaps.map(ms => `  <sitemap>
   
   llmsTxt += `## ${t.llms.pages}\n`;
   pages.forEach(page => {
-    llmsTxt += `- [${page.metadata.title}](${BASE_URL}/?page=${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.file})\n`;
+    llmsTxt += `- [${page.title}](${BASE_URL}/?page=${page.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.file})\n`;
   });
   llmsTxt += `\n`;
   
@@ -571,9 +584,9 @@ ${modelSitemaps.map(ms => `  <sitemap>
   
   llmsFullTxt += `## ${t.llms.articles}\n`;
   posts.forEach(post => {
-    let line = `- [${post.metadata.title}](${BASE_URL}/?post=${post.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.metadata.file})`;
-    if (post.metadata.promotional) {
-      line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.metadata.partner || ''}]`;
+    let line = `- [${post.title}](${BASE_URL}/?post=${post.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/posts/${post.file})`;
+    if (post.promotional) {
+      line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.partner || ''}]`;
     }
     llmsFullTxt += line + '\n';
   });
@@ -581,21 +594,21 @@ ${modelSitemaps.map(ms => `  <sitemap>
   
   llmsFullTxt += `## ${t.llms.pages}\n`;
   pages.forEach(page => {
-    llmsFullTxt += `- [${page.metadata.title}](${BASE_URL}/?page=${page.metadata.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.metadata.file})\n`;
+    llmsFullTxt += `- [${page.title}](${BASE_URL}/?page=${page.slug}) - [Raw Markdown](${RAW_GITHUB_BASE}/pages/${page.file})\n`;
   });
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'llms-full.txt'), llmsFullTxt, 'utf-8');
   console.log('Generated llms-full.txt');
 
   // Generate RSS 2.0 Feed for the 50 latest created or updated journal (blog) posts.
-  const journalPostsOnly = posts.filter(post => post.metadata.category === 'journal');
+  const journalPostsOnly = posts.filter(post => post.category === 'journal');
 
   const postsWithGitDates = journalPostsOnly.map(post => {
     const filePath = `${useTestContent ? 'test-content' : 'content'}/posts/${post.file}`;
     const fileCommits = historyMap[filePath] || [];
 
-    let createdDate = post.metadata.date || post.metadata.publishDate || '';
-    let updatedDate = post.metadata.date || post.metadata.publishDate || '';
+    let createdDate = post.date || post.publishDate || '';
+    let updatedDate = post.date || post.publishDate || '';
     let lastCommitMessage = '';
     let lastCommitHash = '';
 
@@ -633,14 +646,14 @@ ${modelSitemaps.map(ms => `  <sitemap>
 
   let rssItemsXml = '';
   latestPostsForFeed.forEach(({ post, createdDate, updatedDate, lastCommitMessage, lastCommitHash }) => {
-    const postUrl = `${BASE_URL}/?post=${post.metadata.slug}`;
+    const postUrl = `${BASE_URL}/?post=${post.slug}`;
     const pubDateRfc822 = new Date(updatedDate).toUTCString();
 
-    let displayTitle = post.metadata.title;
-    let descriptionText = post.metadata.excerpt || '';
+    let displayTitle = post.title;
+    let descriptionText = post.excerpt || '';
 
-    if (post.metadata.promotional) {
-      const partnerName = post.metadata.partner || '';
+    if (post.promotional) {
+      const partnerName = post.partner || '';
       displayTitle = `[Kaupallinen yhteistyö - ${partnerName}] ${displayTitle}`;
       const promoNotice = `Tämä kirjoitus on osa kaupallista yhteistyötä Kaavatietomalli.fi-sivuston ja ${partnerName}:n välillä. / This is sponsored promotional content in co-operation with ${partnerName}.`;
       descriptionText = `(${promoNotice}) ${descriptionText}`;
@@ -651,12 +664,12 @@ ${modelSitemaps.map(ms => `  <sitemap>
 
     const guid = postUrl;
 
-    const categoriesXml = (post.metadata.tags || [])
+    const categoriesXml = (post.tags || [])
       .map((tag: string) => `      <category>${escapeXml(tag)}</category>`)
       .join('\n');
 
-    const authorXml = post.metadata.author
-      ? `      <dc:creator>${escapeXml(post.metadata.author)}</dc:creator>`
+    const authorXml = post.author
+      ? `      <dc:creator>${escapeXml(post.author)}</dc:creator>`
       : `      <dc:creator>Spatineo Oy</dc:creator>`;
 
     rssItemsXml += `    <item>

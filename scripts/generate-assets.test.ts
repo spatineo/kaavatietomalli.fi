@@ -1,8 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
-import path from 'path';
 import { generateAssets, getGitHistoryOfContent } from './generate-assets';
-import { getFilesRecursive, escapeXml, parseVideoConfig, validateVideoBlock, validateMarkdownVideoBlocks } from './content-utils';
+import { escapeXml, parseVideoConfig, validateVideoBlock, validateMarkdownVideoBlocks } from './content-utils';
 import { CONFIG } from '../src/config';
 
 describe('Content Utilities', () => {
@@ -622,20 +621,15 @@ Active author bio.`,
 
       expect(writtenFiles['content/posts.json']).toBeDefined();
       expect(writtenFiles['content/pages.json']).toBeDefined();
-      expect(writtenFiles['content/authors.json']).toBeDefined();
 
       const postsOutput = JSON.parse(writtenFiles['content/posts.json']);
       const pagesOutput = JSON.parse(writtenFiles['content/pages.json']);
-      const authorsOutput = JSON.parse(writtenFiles['content/authors.json']);
 
       expect(postsOutput.find((p: any) => p.slug === 'active-post')).toBeDefined();
       expect(postsOutput.find((p: any) => p.slug === 'draft-post')).toBeUndefined();
 
       expect(pagesOutput.find((p: any) => p.slug === 'active-page')).toBeDefined();
       expect(pagesOutput.find((p: any) => p.slug === 'draft-page')).toBeUndefined();
-
-      expect(authorsOutput.find((a: any) => a.slug === 'active-author')).toBeDefined();
-      expect(authorsOutput.find((a: any) => a.slug === 'draft-author')).toBeUndefined();
 
       const tagsOutput = JSON.parse(writtenFiles['content/tags.json']);
       if (tagsOutput['gis']) {
