@@ -23,6 +23,8 @@ const mockDataModelAccess: DataModelAccess = {
 const { mockModelSchema, mockCodelistDetail } = vi.hoisted(() => {
   return {
     mockModelSchema: {
+      id: 'http://uri.suomi.fi/model/rytj-kaava-1.0.5',
+      version: '1.0.5',
       metadata: {
         id: 'http://uri.suomi.fi/model/rytj-kaava-1.0.5',
         version: '1.0.5',
@@ -50,13 +52,18 @@ const { mockModelSchema, mockCodelistDetail } = vi.hoisted(() => {
     },
     mockCodelistDetail: {
       id: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi',
+      uri: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi',
       technicalName: 'kaava_tyyppi',
-      names: { fi: 'Kaavalaji', en: 'Plan type' },
+      name: { fi: 'Kaavalaji', en: 'Plan type' },
+      status: 'VALID',
+      originSyncTime: '',
+      allVersions: [],
+      vocabulary: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi',
       codes: [
         {
           uri: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi/1',
           codeValue: '1',
-          names: { fi: 'Asemakaava' },
+          name: { fi: 'Asemakaava' },
           status: 'VALID'
         }
       ]

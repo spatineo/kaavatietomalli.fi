@@ -3,18 +3,20 @@ import { Compass, Layers } from 'lucide-react';
 import { Translations } from '../i18n/types';
 import { getStatusLabel } from '../lib/data-model-utils';
 import { ExternalLink } from 'lucide-react';
+import type { ClassModel, Attribute, Association, DataModel } from '../lib/data-model-types';
+import { mode } from 'happy-dom/lib/PropertySymbol';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 
 interface ClassInfoPanelProps {
-  selectedClassObj: any;
+  selectedClassObj: ClassModel;
   mermaidChart: string;
   dataLang: string;
   getLocalized: (obj: any) => string;
   onNavigateToType: (type: 'class' | 'codelist', name: string) => void;
   getTypeNavigation: (type: string, attributeCodelists?: string[]) => { type: 'class' | 'codelist'; name: string } | null;
   t: Translations;
-  modelMetadata: any;
+  model?: DataModel;
 }
 
 export function ClassInfoPanel({
@@ -25,16 +27,17 @@ export function ClassInfoPanel({
   onNavigateToType,
   getTypeNavigation,
   t,
-  modelMetadata
+  model
 }: ClassInfoPanelProps) {
   
     let classDocumentationUrl = null;
-    if (modelMetadata && modelMetadata.documentationUrl) {
-        classDocumentationUrl = modelMetadata.documentationUrl.split('?')[0];
-        if (!classDocumentationUrl.endsWith('/')) {
+    const modelMetadata = model?.metadata || undefined;
+    if (model && model.metadata?.documentationUrl) {
+        classDocumentationUrl = modelMetadata?.documentationUrl?.split('?')[0];
+        if (!classDocumentationUrl?.endsWith('/')) {
             classDocumentationUrl += '/';
         }
-        classDocumentationUrl += `class/${selectedClassObj.technicalName}?ver=${modelMetadata.version}`;
+        classDocumentationUrl += `class/${selectedClassObj.technicalName}?ver=${model.version}`;
     }
     return (
     <div className="bg-black/20 border border-white/5 rounded-3xl p-8 md:p-10 flex flex-col gap-8 animate-fade-in">
@@ -46,8 +49,8 @@ export function ClassInfoPanel({
             {getLocalized(selectedClassObj.name) || selectedClassObj.technicalName}
           </h2>
           <div className="flex-grow"></div>
-          {modelMetadata.status !== 'VALID' && (
-            <div className="font-bold text-sm text-white bg-red-950 px-1.5 py-0.5 rounded"> {getStatusLabel(modelMetadata.status)}</div>
+          {modelMetadata?.status !== 'VALID' && (
+            <div className="font-bold text-sm text-white bg-red-950 px-1.5 py-0.5 rounded"> {getStatusLabel(modelMetadata?.status)}</div>
           )}
         </div>
         
@@ -66,16 +69,16 @@ export function ClassInfoPanel({
                 rel="noopener noreferrer"
                 className="text-slate-500 flex items-center gap-1.5 hover:underline font-semibold"
                 >
-                    <span className="text-brand-accent">{selectedClassObj.uri || selectedClassObj.id}</span>
+                    <span className="text-brand-accent">{selectedClassObj.id}</span>
                     <ExternalLink size={12} />
                 </a>
               </div>
             ) : (
                 <span 
                 className="text-slate-300 select-all overflow-hidden text-ellipsis whitespace-nowrap" 
-                title={selectedClassObj.uri || selectedClassObj.id}
+                title={selectedClassObj.id}
                 >
-                {selectedClassObj.uri || selectedClassObj.id}
+                {selectedClassObj.id}
                 </span>
             )}
           </div>
@@ -120,8 +123,8 @@ export function ClassInfoPanel({
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-white/5 text-slate-300">
-                {selectedClassObj.attributes.map((attr: any) => {
-                  const nav = getTypeNavigation(attr.type, attr.codelist);
+                {selectedClassObj.attributes.map((attr: Attribute) => {
+                  const nav = getTypeNavigation(attr.type || '', attr.codelist);
                   return (
                     <tr key={attr.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4 font-semibold text-slate-200">
@@ -144,7 +147,7 @@ export function ClassInfoPanel({
                                     {techName}
                                     <Compass size={12} />
                                   </button>
-                                  {idx < attr.codelist.length - 1 && (
+                                  {(attr.codelist && idx < attr.codelist.length - 1) && (
                                     <span className="text-slate-500 text-xs select-none mr-1">,</span>
                                   )}
                                 </span>
@@ -192,8 +195,8 @@ export function ClassInfoPanel({
                 </tr>
               </thead>
               <tbody className="text-sm divide-y divide-white/5 text-slate-300">
-                {selectedClassObj.associations.map((assoc: any) => {
-                  const targetTechName = assoc.targetClassId.split('/').pop()?.split(':').pop() || '';
+                {selectedClassObj.associations.map((assoc: Association) => {
+                  const targetTechName = assoc.targetClassId ? (assoc.targetClassId.split('/').pop()?.split(':').pop() || '') : '';
                   return (
                     <tr key={assoc.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="px-6 py-4 font-semibold text-slate-200">

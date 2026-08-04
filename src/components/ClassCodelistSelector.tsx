@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, ChevronDown, Check, FolderOpen, Database, X, Loader2 } from 'lucide-react';
 import { useOramaSearch } from '../hooks/useOramaSearch';
 import { Translations } from '../i18n/types';
+import { ClassModel, Codelist } from '../lib/data-model-types';
 
 interface ClassCodelistSelectorProps {
-  classes: any[];
-  usedCodelists: any[];
+  classes: ClassModel[];
+  usedCodelists: Codelist[];
   selectedElement: { type: 'class' | 'codelist'; name: string } | null;
   onSelectElement: (val: string) => void;
   getLocalized: (obj: any) => string;
@@ -49,11 +50,11 @@ export function ClassCodelistSelector({
   const selectedLabel = useMemo(() => {
     if (!selectedElement) return '';
     if (selectedElement.type === 'class') {
-      const cls = classes.find(c => c.technicalName === selectedElement.name);
+      const cls: ClassModel | undefined = classes.find(c => c.technicalName === selectedElement.name);
       return cls ? (getLocalized(cls.name) || cls.technicalName) : selectedElement.name;
     } else {
-      const codelist = usedCodelists.find(c => c.technicalName === selectedElement.name);
-      return codelist ? (getLocalized(codelist.names) || codelist.technicalName) : selectedElement.name;
+      const codelist: Codelist | undefined = usedCodelists.find(c => c.technicalName === selectedElement.name);
+      return codelist ? (getLocalized(codelist.name) || codelist.technicalName) : selectedElement.name;
     }
   }, [selectedElement, classes, usedCodelists, getLocalized]);
 
@@ -115,7 +116,7 @@ export function ClassCodelistSelector({
     if (!searchQuery.trim()) return usedCodelists;
     const query = searchQuery.toLowerCase();
     return usedCodelists.filter(c => {
-      const name = getLocalized(c.names).toLowerCase();
+      const name = getLocalized(c.name).toLowerCase();
       const techName = c.technicalName.toLowerCase();
       return name.includes(query) || techName.includes(query);
     });
@@ -298,7 +299,7 @@ export function ClassCodelistSelector({
                     </div>
                     {localFilteredCodelists.map((cl) => {
                       const isSelected = selectedElement?.type === 'codelist' && selectedElement?.name === cl.technicalName;
-                      const label = getLocalized(cl.names) || cl.technicalName;
+                      const label = getLocalized(cl.name) || cl.technicalName;
 
                       return (
                         <button

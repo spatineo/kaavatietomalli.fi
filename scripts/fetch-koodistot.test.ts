@@ -7,6 +7,7 @@ import {
   fetchAndTransformKoodistot,
   sortCodelistCodes
 } from './fetch-koodistot';
+import { Codelist } from '@/src/lib/data-model-types';
 
 describe('fetch-koodistot script', () => {
   describe('transformCodelistData', () => {
@@ -55,16 +56,16 @@ describe('fetch-koodistot script', () => {
 
       const uri = 'http://uri.suomi.fi/codelist/rytj/Test';
       const timestamp = '2026-07-28T12:00:00.000Z';
-      const result = transformCodelistData(metaData, codesData, uri, timestamp);
+      const result: Codelist = transformCodelistData(metaData, codesData, uri, timestamp);
 
       expect(result.id).toBe('meta-uuid-1234');
       expect(result.technicalName).toBe('Test');
       expect(result.uri).toBe(uri);
       expect(result.vocabulary).toBe(uri);
       expect(result.documentationUrl).toBe('https://koodistot.suomi.fi/codescheme;registryCode=rytj;schemeCode=Test');
-      expect(result.names).toEqual({ fi: 'Testi Koodisto', en: 'Test Codelist' });
-      expect(result.definitions).toEqual({ fi: 'Määritelmä' });
-      expect(result.descriptions).toEqual({ fi: 'Kuvaus' });
+      expect(result.name).toEqual({ fi: 'Testi Koodisto', en: 'Test Codelist' });
+      expect(result.definition).toEqual({ fi: 'Määritelmä' });
+      expect(result.description).toEqual({ fi: 'Kuvaus' });
       expect(result.status).toBe('VALID');
       expect(result.originSyncTime).toBe(timestamp);
 
@@ -81,11 +82,11 @@ describe('fetch-koodistot script', () => {
   describe('sortCodelistCodes', () => {
     it('sorts codes hierarchically where narrower codes follow broader codes, ordered by order property', () => {
       const mockCodes = [
-        { codeValue: 'A', broaderCode: null, order: 2 },
-        { codeValue: 'B', broaderCode: null, order: 1 },
-        { codeValue: 'C', broaderCode: 'B', order: 2 },
-        { codeValue: 'D', broaderCode: 'B', order: 1 },
-        { codeValue: 'E', broaderCode: 'A', order: 1 }
+        { codeValue: 'A',  order: 2, uri: 'http://fooA', name: { fi: 'ACode' } },
+        { codeValue: 'B',  order: 1, uri: 'http://fooB', name: { fi: 'BCode' }},
+        { codeValue: 'C', broaderCode: 'B', order: 2, uri: 'http://fooC', name: { fi: 'ACode' } },
+        { codeValue: 'D', broaderCode: 'B', order: 1, uri: 'http://fooD', name: { fi: 'DCode' } },
+        { codeValue: 'E', broaderCode: 'A', order: 1, uri: 'http://fooE', name: { fi: 'ECode' } }
       ];
 
       const sorted = sortCodelistCodes(mockCodes);
@@ -101,8 +102,8 @@ describe('fetch-koodistot script', () => {
 
     it('falls back to alphabetical sorting of codeValue if order is identical or missing', () => {
       const mockCodes = [
-        { codeValue: 'Y', broaderCode: null },
-        { codeValue: 'X', broaderCode: null }
+        { codeValue: 'Y', uri: 'http://fooY', name: { fi: 'YCode' } },
+        { codeValue: 'X',  uri: 'http://fooX', name: { fi: 'XCode' }}
       ];
 
       const sorted = sortCodelistCodes(mockCodes);

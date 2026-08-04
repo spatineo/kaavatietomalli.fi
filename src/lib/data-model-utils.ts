@@ -35,7 +35,7 @@ export function parseModelId(modelId: string): { name: string; version?: string 
   return { name, version };
 }
 
-export function getStatusLabel(statusCode: string) {
+export function getStatusLabel(statusCode?: string) {
   const t = getTranslations(CONFIG.language as Language);
   if (t) {
     switch (statusCode) {

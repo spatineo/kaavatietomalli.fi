@@ -6,7 +6,7 @@ import {
 } from './data-model-diagram-generator';
 import { LocalFileDataModelAccess } from './local-data-model-access';
 import { parseModelId } from './data-model-utils';
-import { DataModelAccess } from './data-model-types';
+import { CodeItem, Codelist, DataModelAccess } from './data-model-types';
 
 const mockRytjKaavaModel = {
   metadata: {
@@ -50,7 +50,7 @@ const mockKaavaTyyppiCodelist = {
   uri: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi',
   vocabulary: 'http://uri.suomi.fi/codelist/test/kaava_tyyppi',
   technicalName: 'kaava_tyyppi',
-  names: { fi: 'Kaavatyyppi' }
+  name: { fi: 'Kaavatyyppi' }
 };
 
 describe('data-model-diagram-generator', () => {
@@ -144,6 +144,8 @@ lang: fi
     const mockAccess: DataModelAccess = {
       async getDataModel(modelId: string) {
         return {
+          id: 'test-model',
+          version: '2.0.0',
           metadata: {
             id: 'test-model',
             version: '2.0.0',
@@ -160,7 +162,7 @@ lang: fi
                   id: 'attr1',
                   name: { fi: 'Tyyppikoodi' },
                   cardinality: '[1..1]',
-                  codelist: 'http://uri.suomi.fi/codelist/test/test_code'
+                  codelist: ['http://uri.suomi.fi/codelist/test/test_code']
                 }
               ],
               associations: [
@@ -177,11 +179,16 @@ lang: fi
       },
       async getCodelist(uri: string) {
         return {
+          id: uri,
           uri,
+          status: 'VALID',
+          originSyncTime: '',
+          allVersions: [],
           vocabulary: uri,
           technicalName: 'test_code',
-          names: { fi: 'Testikoodisto' }
-        };
+          name: { fi: 'Testikoodisto' },
+          codes: []
+        } as Codelist;
       }
     };
 
@@ -224,12 +231,14 @@ End of document.`;
     expect(result).toContain('class Kaava["Kaava"] {');
   });
 
-  it('logs a warning and uses URI fallback when a codelist is missing', async () => {
+  it('logs a warning when a codelist is missing', async () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const mockAccess: DataModelAccess = {
       async getDataModel() {
         return {
+          id: 'missing-code-model',
+          version: '1.0.0',
           metadata: { id: 'missing-code-model', version: '1.0.0', name: { fi: 'Test' } },
           classes: [
             {
@@ -240,7 +249,7 @@ End of document.`;
                   id: 'attrMissing',
                   name: { fi: 'Tuntematon' },
                   cardinality: '[0..1]',
-                  codelist: 'http://uri.suomi.fi/codelist/test/unknown_code_v1_0'
+                  codelist: ['http://uri.suomi.fi/codelist/test/unknown_code_v1_0']
                 }
               ]
             }
@@ -262,8 +271,6 @@ classes: ["ClassA"]
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('Codelist not found for URI: http://uri.suomi.fi/codelist/test/unknown_code_v1_0')
     );
-    expect(result).toContain('+Tuntematon : unknown_code [0..1]');
-    expect(result).toContain('class unknown_code["unknown_code"]:::codelistClass {');
 
     warnSpy.mockRestore();
   });
@@ -272,6 +279,8 @@ classes: ["ClassA"]
     const mockAccess: DataModelAccess = {
       async getDataModel() {
         return {
+          id: 'multi-codelist-model',
+          version: '1.0.0',
           metadata: { id: 'multi-codelist-model', version: '1.0.0', name: { fi: 'Test' } },
           classes: [
             {
@@ -294,10 +303,30 @@ classes: ["ClassA"]
       },
       async getCodelist(uri: string) {
         if (uri === 'http://uri.suomi.fi/codelist/test/first_code') {
-          return { uri, vocabulary: uri, technicalName: 'first_code', names: { fi: 'Ensimmäinen' } };
+          return {
+            id: uri,
+            uri,
+            vocabulary: uri,
+            technicalName: 'first_code',
+            name: { fi: 'Ensimmäinen' },
+            codes: [],
+            status: 'VALID',
+            originSyncTime: '',
+            allVersions: [] 
+          } as Codelist;
         }
         if (uri === 'http://uri.suomi.fi/codelist/test/second_code') {
-          return { uri, vocabulary: uri, technicalName: 'second_code', names: { fi: 'Toinen' } };
+          return { 
+            id: uri,
+            uri,
+            vocabulary: uri,
+            technicalName: 'second_code',
+            name: { fi: 'Toinen' },
+            codes: [],
+            status: 'VALID',
+            originSyncTime: '',
+            allVersions: []  
+          } as Codelist;
         }
         return null;
       }

@@ -6,17 +6,25 @@ import {
   getClassTargetId,
   formatStatus,
   transformJsonLdToModel,
-  fetchAndTransformTietomallit
+  fetchAndTransformTietomallit,
+  expandUri,
+  getShTargetClass
 } from './fetch-tietomallit';
+import { Association, Attribute } from '@/src/lib/data-model-types';
 
 describe('fetch-tietomallit script', () => {
-  describe('getClassTargetId', () => {
+  describe('expandUri and getShTargetClass', () => {
+    it('expands known prefixes using prefixMap', () => {
+      expect(expandUri('rak:1.0.0/Kaava')).toBe('https://iri.suomi.fi/model/rak/1.0.0/Kaava');
+      expect(expandUri('rytj-kaava:Kaava')).toBe('https://iri.suomi.fi/model/rytj-kaava/Kaava');
+    });
+
     it('returns targetClass @id if present in array', () => {
       const cls = {
         '@id': 'http://example.org/ShapeA',
         'sh:targetClass': [{ '@id': 'http://example.org/ClassA' }]
       };
-      expect(getClassTargetId(cls)).toBe('http://example.org/ClassA');
+      expect(getShTargetClass(cls)).toBe('http://example.org/ClassA');
     });
 
     it('returns targetClass @id if present as object', () => {
@@ -24,14 +32,14 @@ describe('fetch-tietomallit script', () => {
         '@id': 'http://example.org/ShapeA',
         'sh:targetClass': { '@id': 'http://example.org/ClassA' }
       };
-      expect(getClassTargetId(cls)).toBe('http://example.org/ClassA');
+      expect(getShTargetClass(cls)).toBe('http://example.org/ClassA');
     });
 
-    it('returns fallback @id when sh:targetClass is missing', () => {
+    it('returns null when sh:targetClass is missing', () => {
       const cls = {
         '@id': 'http://example.org/ShapeA'
       };
-      expect(getClassTargetId(cls)).toBe('http://example.org/ShapeA');
+      expect(getShTargetClass(cls)).toBeNull();
     });
   });
   describe('getAllLabels', () => {
@@ -97,7 +105,7 @@ describe('fetch-tietomallit script', () => {
         ]
       };
       const result = transformJsonLdToModel(jsonldContent, 'test-model', '1.0.0', '2026-07-28T10:00:00.000Z');
-      expect(result.metadata.status).toBe('VALID');
+      expect(result.metadata?.status).toBe('VALID');
     });
     it('handles Yläluokka association by creating superclass property and excluding it from regular associations', () => {
       const jsonldContent = {
@@ -112,6 +120,7 @@ describe('fetch-tietomallit script', () => {
             '@id': 'https://iri.suomi.fi/model/test-model/ChildClass',
             '@type': 'sh:NodeShape',
             'rdfs:label': [{ '@language': 'fi', '@value': 'Lapsiluokka' }],
+            'sh:targetClass': [{ '@id': 'https://iri.suomi.fi/model/test-model/ChildClass' }],
             'sh:property': [
               { '@id': 'https://iri.suomi.fi/model/test-model/ylaluokka-prop' }
             ]
@@ -129,8 +138,8 @@ describe('fetch-tietomallit script', () => {
       const childClass = result.classes.find((c: any) => c.id.endsWith('ChildClass'));
 
       expect(childClass).toBeDefined();
-      expect(childClass.superclass).toBe('rak:1.0.0/SuperClass');
-      expect(childClass.associations.length).toBe(0);
+      expect(childClass?.superclass).toBe('https://iri.suomi.fi/model/rak/1.0.0/SuperClass');
+      expect(childClass?.associations?.length).toBe(0);
     });
 
     it('handles prefixed protocol formats like rak:Kaava-asianPaatos correctly without including colons in technicalName', () => {
@@ -146,16 +155,17 @@ describe('fetch-tietomallit script', () => {
             '@id': 'rak:Kaava-asianPaatos',
             '@type': 'sh:NodeShape',
             'rdfs:label': [{ '@language': 'fi', '@value': 'Kaava-asian päätös' }],
+            'sh:targetClass': [{ '@id': 'https://iri.suomi.fi/model/test-model/TargetB' }],
             'sh:property': []
           }
         ]
       };
 
       const result = transformJsonLdToModel(jsonldContent, 'test-model', '1.0.0', '2026-07-28T10:00:00.000Z');
-      const classObj = result.classes.find((c: any) => c.id === 'rak:Kaava-asianPaatos');
+      const classObj = result.classes.find((c: any) => c.id === 'https://iri.suomi.fi/model/rak/Kaava-asianPaatos');
 
       expect(classObj).toBeDefined();
-      expect(classObj.technicalName).toBe('Kaava-asianPaatos');
+      expect(classObj?.technicalName).toBe('Kaava-asianPaatos');
     });
 
     it('transforms JSON-LD graph into target JSON structure', () => {
@@ -176,6 +186,7 @@ describe('fetch-tietomallit script', () => {
             '@type': 'sh:NodeShape',
             'rdfs:label': [{ '@language': 'fi', '@value': 'Luokka A' }],
             'rdfs:comment': [{ '@language': 'fi', '@value': 'Luokan A kuvaus' }],
+            'sh:targetClass': [{ '@id': 'https://iri.suomi.fi/model/test-model/TargetA' }],
             'sh:property': [
               { '@id': 'https://iri.suomi.fi/model/test-model/attr1' },
               { '@id': 'https://iri.suomi.fi/model/test-model/assoc1' }
@@ -208,41 +219,45 @@ describe('fetch-tietomallit script', () => {
 
       const result = transformJsonLdToModel(jsonldContent, 'test-model', '1.0.0', '2026-07-28T10:00:00.000Z');
 
-      expect(result.metadata.id).toBe('https://iri.suomi.fi/model/test-model/#v1.0.0');
-      expect(result.metadata.modelUri).toBe('https://iri.suomi.fi/model/test-model/');
-      expect(result.metadata.name).toEqual({ fi: 'Testimalli' });
-      expect(result.metadata.version).toBe('1.0.0');
-      expect(result.metadata.status).toBe('VALID');
-      expect(result.metadata.documentationUrl).toBe('https://tietomallit.suomi.fi/model/test-model?ver=1.0.0');
-      expect(result.metadata.lastModified).toBe('2026-01-01T00:00:00Z');
-      expect(result.metadata.originSyncTime).toBe('2026-07-28T10:00:00.000Z');
+      expect(result.id).toBe('https://iri.suomi.fi/model/test-model/#v1.0.0');
+      expect(result.metadata?.modelUri).toBe('https://iri.suomi.fi/model/test-model/');
+      expect(result.metadata?.name).toEqual({ fi: 'Testimalli' });
+      expect(result.version).toBe('1.0.0');
+      expect(result.metadata?.status).toBe('VALID');
+      expect(result.metadata?.documentationUrl).toBe('https://tietomallit.suomi.fi/model/test-model?ver=1.0.0');
+      expect(result.metadata?.lastModified).toBe('2026-01-01T00:00:00Z');
+      expect(result.metadata?.originSyncTime).toBe('2026-07-28T10:00:00.000Z');
 
       expect(result.classes.length).toBe(2);
 
       const classA = result.classes.find((c: any) => c.id.endsWith('ClassA'));
       expect(classA).toBeDefined();
-      expect(classA.technicalName).toBe('ClassA');
-      expect(classA.uri).toBe('https://iri.suomi.fi/model/test-model/ClassA');
-      expect(classA.name).toEqual({ fi: 'Luokka A' });
-      expect(classA.description).toEqual({ fi: 'Luokan A kuvaus' });
+      expect(classA?.technicalName).toBe('ClassA');
+      expect(classA?.name).toEqual({ fi: 'Luokka A' });
+      expect(classA?.description).toEqual({ fi: 'Luokan A kuvaus' });
 
-      expect(classA.attributes.length).toBe(1);
-      expect(classA.attributes[0].id).toBe('https://iri.suomi.fi/model/test-model/attr1');
-      expect(classA.attributes[0].cardinality).toBe('[1..1]');
-      expect(classA.attributes[0].type).toBe('string');
+      expect(classA?.attributes?.length).toBe(1);
+      
+      const firstAttr: Attribute | undefined = classA?.attributes?.at(0);
+      expect(firstAttr?.id).toBe('https://iri.suomi.fi/model/test-model/attr1');
+      expect(firstAttr?.cardinality).toBe('[1..1]');
+      expect(firstAttr?.type).toBe('string');
 
-      expect(classA.associations.length).toBe(1);
-      expect(classA.associations[0].id).toBe('https://iri.suomi.fi/model/test-model/assoc1');
-      expect(classA.associations[0].cardinality).toBe('[0..*]');
-      expect(classA.associations[0].targetClassId).toBe('https://iri.suomi.fi/model/test-model/TargetB');
-      expect(classA.associations[0].targetClassName).toEqual({ fi: 'Luokka B' });
+      expect(classA?.associations?.length).toBe(1);
 
-      const classB = result.classes.find((c: any) => c.id.endsWith('TargetB'));
+      const firstAssoc: Association | undefined = classA?.associations?.at(0);
+      expect(firstAssoc?.id).toBe('https://iri.suomi.fi/model/test-model/assoc1');
+      expect(firstAssoc?.cardinality).toBe('[0..*]');
+      expect(firstAssoc?.targetClassId).toBe('https://iri.suomi.fi/model/test-model/ClassB');
+      expect(firstAssoc?.targetClassName).toEqual({ fi: 'Luokka B' });
+
+      const classB = result.classes.find((c: any) => c.id.endsWith('ClassB'));
       expect(classB).toBeDefined();
-      expect(classB.id).toBe('https://iri.suomi.fi/model/test-model/TargetB');
+      expect(classB?.id).toBe('https://iri.suomi.fi/model/test-model/ClassB');
+      expect(classB?.conceptId).toBe('https://iri.suomi.fi/model/test-model/TargetB');
 
-      expect(classA.codelists).toEqual(['http://uri.suomi.fi/codelist/test']);
-      expect(classA.codelistIds).toBeUndefined();
+      expect(classA?.codelists).toEqual(['http://uri.suomi.fi/codelist/test']);
+      expect(classB?.codelists).toEqual([]);
     });
   });
 
@@ -266,7 +281,7 @@ describe('fetch-tietomallit script', () => {
         },
         models: [
           {
-            name: 'mock-model',
+            id: 'mock-model',
             versions: ['2.0.0']
           }
         ]
