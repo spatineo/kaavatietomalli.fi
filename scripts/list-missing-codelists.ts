@@ -1,9 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { DataModelConfig, getModelShortName } from './fetch-tietomallit';
+import { DataModelConfig, getModelShortName } from './fetch-data-models';
 import { DataModel, ClassModel, Attribute } from '@/src/lib/data-model-types';
 
-interface KoodistotIndex {
+interface CodelistsIndex {
   registries: Array<{
     name: string;
     codelists: Array<{
@@ -21,30 +21,30 @@ interface CodelistUsage {
 }
 
 async function listMissingCodelists() {
-  const TIETOMALLIT_INDEX_PATH = path.join(process.cwd(), 'data-index', 'suomi.fi', 'tietomallit', 'index.json');
-  const KOODISTOT_INDEX_PATH = path.join(process.cwd(), 'data-index', 'suomi.fi', 'koodistot', 'index.json');
-  const PUBLIC_TIETOMALLIT_DIR = path.join(process.cwd(), 'public', 'data', 'suomi.fi', 'tietomallit');
+  const DATA_MODELS_INDEX_PATH = path.join(process.cwd(), 'data-index', 'suomi.fi', 'tietomallit', 'index.json');
+  const CODELISTS_INDEX_PATH = path.join(process.cwd(), 'data-index', 'suomi.fi', 'koodistot', 'index.json');
+  const PUBLIC_DATA_MODELS_DIR = path.join(process.cwd(), 'public', 'data', 'suomi.fi', 'tietomallit');
 
   console.log('================================================================');
-  console.log('   KAAVATIETOMALLI - CODELIST CONSISTENCY ANALYSIS UTILITY     ');
+  console.log('   KAAVATIETOMALLI.FI - CODELIST CONSISTENCY ANALYSIS UTILITY     ');
   console.log('================================================================\n');
 
-  if (!fs.existsSync(TIETOMALLIT_INDEX_PATH)) {
-    console.error(`❌ Data models config not found at: ${TIETOMALLIT_INDEX_PATH}`);
+  if (!fs.existsSync(DATA_MODELS_INDEX_PATH)) {
+    console.error(`❌ Data models config not found at: ${DATA_MODELS_INDEX_PATH}`);
     process.exit(1);
   }
 
-  if (!fs.existsSync(KOODISTOT_INDEX_PATH)) {
-    console.error(`❌ Codelists config not found at: ${KOODISTOT_INDEX_PATH}`);
+  if (!fs.existsSync(CODELISTS_INDEX_PATH)) {
+    console.error(`❌ Codelists config not found at: ${CODELISTS_INDEX_PATH}`);
     process.exit(1);
   }
 
   // 1. Parse configured codelists
-  const koodistotConfig: KoodistotIndex = JSON.parse(fs.readFileSync(KOODISTOT_INDEX_PATH, 'utf-8'));
+  const codelistsConfig: CodelistsIndex = JSON.parse(fs.readFileSync(CODELISTS_INDEX_PATH, 'utf-8'));
   const configuredCodelists = new Set<string>();
   const configuredRegistryMap = new Map<string, string[]>();
 
-  koodistotConfig.registries.forEach(registry => {
+  codelistsConfig.registries.forEach(registry => {
     const regName = registry.name.trim();
     const list: string[] = [];
     registry.codelists.forEach(cl => {
@@ -64,13 +64,13 @@ async function listMissingCodelists() {
   console.log('');
 
   // 2. Parse data models to find used codelists
-  const tietomallitConfig: DataModelConfig = JSON.parse(fs.readFileSync(TIETOMALLIT_INDEX_PATH, 'utf-8'));
+  const dataModelsConfig: DataModelConfig = JSON.parse(fs.readFileSync(DATA_MODELS_INDEX_PATH, 'utf-8'));
   const codelistUsages = new Map<string, CodelistUsage[]>();
 
-  for (const model of tietomallitConfig.models) {
+  for (const model of dataModelsConfig.models) {
     for (const version of model.versions) {
       const filename = `${getModelShortName(model.id)}-${version}.json`;
-      const filePath = path.join(PUBLIC_TIETOMALLIT_DIR, filename);
+      const filePath = path.join(PUBLIC_DATA_MODELS_DIR, filename);
 
       if (!fs.existsSync(filePath)) {
         console.warn(`⚠️ Transformed model file not found, skipping: ${filename}`);

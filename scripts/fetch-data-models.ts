@@ -246,7 +246,7 @@ export function transformJsonLdToModel(
       status: modelStatus,
       description: modelDescription,
       documentation: modelDocumentation,
-      documentationUrl: `https://tietomallit.suomi.fi/model/${requestedModel}?ver=${modelVersion}`,
+      documentationUrl: `https://tietomallit.suomi.fi/model/${getModelShortName(requestedModel)}?ver=${modelVersion}`,
       lastModified: modelModified,
       originSyncTime: fetchTimestamp
     } as ModelMetadata,
@@ -493,7 +493,7 @@ export function transformJsonLdToModel(
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function fetchAndTransformTietomallit(
+export async function fetchAndTransformDataModels(
   configPath?: string,
   outputBaseDir?: string,
   delayMs: number = 500
@@ -596,9 +596,9 @@ export async function fetchAndTransformTietomallit(
 
   if (indexChanged) {
     fs.writeFileSync(indexFilePath, JSON.stringify(indexItems, null, 2), 'utf-8');
-    console.log(`Saved tietomallit index (CONTENT CHANGED) to ${indexFilePath}`);
+    console.log(`Saved data models index (CONTENT CHANGED) to ${indexFilePath}`);
   } else {
-    console.log(`Skipped tietomallit index (content unchanged) to ${indexFilePath}`);
+    console.log(`Skipped data models index (content unchanged) to ${indexFilePath}`);
   }
 
   return { totalProcessed, changedCount };
@@ -606,6 +606,6 @@ export async function fetchAndTransformTietomallit(
 
 if (process.env.NODE_ENV !== 'test') {
   if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-    fetchAndTransformTietomallit();
+    fetchAndTransformDataModels();
   }
 }

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { isContentEqual } from './content-utils';
 import { fetchAllData } from './fetch-data';
-import * as fetchTietomallitModule from './fetch-tietomallit';
-import * as fetchKoodistotModule from './fetch-koodistot';
+import * as fetchDataModelsModule from './fetch-data-models';
+import * as fetchCodelistsModule from './fetch-codelists';
 import fs from 'fs';
 
 describe('isContentEqual', () => {
@@ -74,11 +74,11 @@ describe('fetchAllData', () => {
   });
 
   it('returns dataChanged: false when no files changed', async () => {
-    vi.spyOn(fetchTietomallitModule, 'fetchAndTransformTietomallit').mockResolvedValue({
+    vi.spyOn(fetchDataModelsModule, 'fetchAndTransformDataModels').mockResolvedValue({
       totalProcessed: 2,
       changedCount: 0
     });
-    vi.spyOn(fetchKoodistotModule, 'fetchAndTransformKoodistot').mockResolvedValue({
+    vi.spyOn(fetchCodelistsModule, 'fetchAndTransformCodelists').mockResolvedValue({
       totalProcessed: 5,
       changedCount: 0
     });
@@ -89,11 +89,11 @@ describe('fetchAllData', () => {
   });
 
   it('returns dataChanged: true when at least one file changed', async () => {
-    vi.spyOn(fetchTietomallitModule, 'fetchAndTransformTietomallit').mockResolvedValue({
+    vi.spyOn(fetchDataModelsModule, 'fetchAndTransformDataModels').mockResolvedValue({
       totalProcessed: 2,
       changedCount: 1
     });
-    vi.spyOn(fetchKoodistotModule, 'fetchAndTransformKoodistot').mockResolvedValue({
+    vi.spyOn(fetchCodelistsModule, 'fetchAndTransformCodelists').mockResolvedValue({
       totalProcessed: 5,
       changedCount: 0
     });

@@ -6,13 +6,13 @@ import {
   getClassTargetId,
   formatStatus,
   transformJsonLdToModel,
-  fetchAndTransformTietomallit,
+  fetchAndTransformDataModels,
   expandUri,
   getShTargetClass
-} from './fetch-tietomallit';
+} from './fetch-data-models';
 import { Association, Attribute } from '@/src/lib/data-model-types';
 
-describe('fetch-tietomallit script', () => {
+describe('fetch-data-models script', () => {
   describe('expandUri and getShTargetClass', () => {
     it('expands known prefixes using prefixMap', () => {
       expect(expandUri('rak:1.0.0/Kaava')).toBe('https://iri.suomi.fi/model/rak/1.0.0/Kaava');
@@ -261,7 +261,7 @@ describe('fetch-tietomallit script', () => {
     });
   });
 
-  describe('fetchAndTransformTietomallit', () => {
+  describe('fetchAndTransformDataModels', () => {
     let mockFetch: any;
 
     beforeEach(() => {
@@ -307,7 +307,7 @@ describe('fetch-tietomallit script', () => {
         json: async () => mockJsonLd
       });
 
-      await fetchAndTransformTietomallit('/data-index/suomi.fi/tietomallit/index.json', '/public/data/suomi.fi/tietomallit', 0);
+      await fetchAndTransformDataModels('/data-index/suomi.fi/tietomallit/index.json', '/public/data/suomi.fi/tietomallit', 0);
 
       expect(mockFetch).toHaveBeenCalledWith('https://test-api.suomi.fi/getModel?modelId=mock-model&fileType=JSON-LD&version=2.0.0',
         {

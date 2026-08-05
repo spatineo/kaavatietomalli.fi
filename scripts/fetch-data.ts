@@ -1,22 +1,22 @@
 import fs from 'fs';
-import { fetchAndTransformTietomallit } from './fetch-tietomallit';
-import { fetchAndTransformKoodistot } from './fetch-koodistot';
+import { fetchAndTransformDataModels } from './fetch-data-models';
+import { fetchAndTransformCodelists } from './fetch-codelists';
 
 export async function fetchAllData() {
-  console.log('--- Fetching Tietomallit ---');
-  const resTietomallit = await fetchAndTransformTietomallit();
+  console.log('--- Fetching data models ---');
+  const resDataModels = await fetchAndTransformDataModels();
 
-  console.log('\n--- Fetching Koodistot ---');
-  const resKoodistot = await fetchAndTransformKoodistot();
+  console.log('\n--- Fetching codelists ---');
+  const resCodelists = await fetchAndTransformCodelists();
 
-  const tietomallitChanged = resTietomallit?.changedCount || 0;
-  const koodistotChanged = resKoodistot?.changedCount || 0;
-  const totalChanged = tietomallitChanged + koodistotChanged;
+  const dataModelsChanged = resDataModels?.changedCount || 0;
+  const codelistsChanged = resCodelists?.changedCount || 0;
+  const totalChanged = dataModelsChanged + codelistsChanged;
   const dataChanged = totalChanged > 0;
 
   console.log(`\n--- Fetch Data Summary ---`);
-  console.log(`Tietomallit processed: ${resTietomallit?.totalProcessed || 0}, changed: ${tietomallitChanged}`);
-  console.log(`Koodistot processed: ${resKoodistot?.totalProcessed || 0}, changed: ${koodistotChanged}`);
+  console.log(`Data models processed: ${resDataModels?.totalProcessed || 0}, changed: ${dataModelsChanged}`);
+  console.log(`Codelists processed: ${resCodelists?.totalProcessed || 0}, changed: ${codelistsChanged}`);
   console.log(`Total files modified (excluding originSyncTime): ${totalChanged}`);
   console.log(`Data changed decision: ${dataChanged}`);
 
@@ -26,7 +26,7 @@ export async function fetchAllData() {
     console.log(`Logged to GITHUB_OUTPUT: data_changed=${dataChanged}`);
   }
 
-  return { resTietomallit, resKoodistot, dataChanged, totalChanged };
+  return { resDataModels, resCodelists, dataChanged, totalChanged };
 }
 
 if (process.env.NODE_ENV !== 'test') {

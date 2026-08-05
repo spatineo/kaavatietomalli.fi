@@ -198,7 +198,7 @@ export function transformCodelistData(
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function fetchAndTransformKoodistot(
+export async function fetchAndTransformCodelists(
   configPath?: string,
   outputBaseDir?: string,
   delayMs: number = 500
@@ -327,9 +327,9 @@ export async function fetchAndTransformKoodistot(
 
   if (indexChanged) {
     fs.writeFileSync(indexFilePath, JSON.stringify(indexItems, null, 2), 'utf-8');
-    console.log(`Saved koodistot index (CONTENT CHANGED) to ${indexFilePath}`);
+    console.log(`Saved codelists index (CONTENT CHANGED) to ${indexFilePath}`);
   } else {
-    console.log(`Skipped koodistot index (content unchanged) to ${indexFilePath}`);
+    console.log(`Skipped codelists index (content unchanged) to ${indexFilePath}`);
   }
 
   return { totalProcessed, changedCount };
@@ -337,6 +337,6 @@ export async function fetchAndTransformKoodistot(
 
 if (process.env.NODE_ENV !== 'test') {
   if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-    fetchAndTransformKoodistot();
+    fetchAndTransformCodelists();
   }
 }
