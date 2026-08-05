@@ -18,23 +18,23 @@ export class LocalFileDataModelAccess implements DataModelAccess {
     }
 
     const { name, version } = parseModelId(modelId);
-    const tietomallitDir = path.join(this.baseDir, 'public', 'data', 'suomi.fi', 'tietomallit');
+    const dataModelsDir = path.join(this.baseDir, 'public', 'data', 'suomi.fi', 'tietomallit');
 
     let targetFile = '';
     if (version) {
-      targetFile = path.join(tietomallitDir, `${name}-${version}.json`);
+      targetFile = path.join(dataModelsDir, `${name}-${version}.json`);
     } else {
-      if (fs.existsSync(tietomallitDir)) {
-        const files = fs.readdirSync(tietomallitDir).filter(f => f.startsWith(name) && f.endsWith('.json'));
+      if (fs.existsSync(dataModelsDir)) {
+        const files = fs.readdirSync(dataModelsDir).filter(f => f.startsWith(name) && f.endsWith('.json'));
         if (files.length > 0) {
           files.sort().reverse();
-          targetFile = path.join(tietomallitDir, files[0]);
+          targetFile = path.join(dataModelsDir, files[0]);
         }
       }
     }
 
     if (!targetFile || !fs.existsSync(targetFile)) {
-      const altPath = path.join(tietomallitDir, `${modelId}.json`);
+      const altPath = path.join(dataModelsDir, `${modelId}.json`);
       if (fs.existsSync(altPath)) {
         targetFile = altPath;
       }
@@ -59,8 +59,8 @@ export class LocalFileDataModelAccess implements DataModelAccess {
       return this.codelistCache.get(codelistUriOrId);
     }
 
-    const koodistotDir = path.join(this.baseDir, 'public', 'data', 'suomi.fi', 'koodistot');
-    if (!fs.existsSync(koodistotDir)) {
+    const codelistsDir = path.join(this.baseDir, 'public', 'data', 'suomi.fi', 'koodistot');
+    if (!fs.existsSync(codelistsDir)) {
       return null;
     }
 
@@ -69,12 +69,12 @@ export class LocalFileDataModelAccess implements DataModelAccess {
     const registry = parts.length >= 2 ? parts[parts.length - 2] : '';
 
     let fileToLoad = '';
-    if (registry && fs.existsSync(path.join(koodistotDir, registry, `${codeName}.json`))) {
-      fileToLoad = path.join(koodistotDir, registry, `${codeName}.json`);
+    if (registry && fs.existsSync(path.join(codelistsDir, registry, `${codeName}.json`))) {
+      fileToLoad = path.join(codelistsDir, registry, `${codeName}.json`);
     } else {
       const codeNameBase = codeName.replace(/_v\d+_\d+$/, '');
-      if (registry && fs.existsSync(path.join(koodistotDir, registry, `${codeNameBase}.json`))) {
-        fileToLoad = path.join(koodistotDir, registry, `${codeNameBase}.json`);
+      if (registry && fs.existsSync(path.join(codelistsDir, registry, `${codeNameBase}.json`))) {
+        fileToLoad = path.join(codelistsDir, registry, `${codeNameBase}.json`);
       }
     }
 
@@ -102,7 +102,7 @@ export class LocalFileDataModelAccess implements DataModelAccess {
         }
         return null;
       };
-      const foundPath = scanDir(koodistotDir);
+      const foundPath = scanDir(codelistsDir);
       if (foundPath) fileToLoad = foundPath;
     }
 

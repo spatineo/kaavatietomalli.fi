@@ -23,6 +23,7 @@ const CONTENT_DIR = useTestContent
   ? path.join(process.cwd(), 'test-content')
   : path.join(process.cwd(), 'content');
 const PUBLIC_DIR = path.join(process.cwd(), 'public');
+const RESOURCES_DIR = path.join(process.cwd(), 'src','resources');
 
 if (!fs.existsSync(PUBLIC_DIR)) {
   fs.mkdirSync(PUBLIC_DIR, { recursive: true });
@@ -339,7 +340,7 @@ ${posts.map(post => `  <url>
     fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap-base.xml'), sitemapBaseXml, 'utf-8');
     console.log('Generated sitemap-base.xml');
 
-    // Load tietomallit and koodistot indexes to generate model-specific sitemaps
+    // Load data models and codelists indexes to generate model-specific sitemaps
     let modelsIndex: any[] = [];
     let codelistsIndex: any[] = [];
 
@@ -352,7 +353,7 @@ ${posts.map(post => `  <url>
         }
       }
     } catch (err) {
-      console.warn('Could not load or parse tietomallit index:', err);
+      console.warn('Could not load or parse data models index:', err);
     }
 
     try {
@@ -364,7 +365,7 @@ ${posts.map(post => `  <url>
         }
       }
     } catch (err) {
-      console.warn('Could not load or parse koodistot index:', err);
+      console.warn('Could not load or parse codelists index:', err);
     }
 
     const modelSitemaps: { fileName: string; url: string }[] = [];
@@ -824,10 +825,19 @@ ${rssItemsXml}  </channel>
   fs.writeFileSync(path.join(PUBLIC_DIR, '404.html'), notFoundHtml, 'utf-8');
   console.log('Generated 404.html');
 
-  // Copy content/images folder to public/images
-  const srcImagesDir = path.join(CONTENT_DIR, 'images');
+  // Copy content & resources images folder to public/images
+  
+  const srcImagesDir = path.join(RESOURCES_DIR, 'images');
   if (fs.existsSync(srcImagesDir)) {
     copyFolderRecursiveSync(srcImagesDir, IMAGES_OUT_DIR);
+    console.log('Copied resources/images to public/images');
+  } else {
+    console.warn('resources/images directory not found!');
+  }
+
+  const contentImagesDir = path.join(CONTENT_DIR, 'images');
+  if (fs.existsSync(contentImagesDir)) {
+    copyFolderRecursiveSync(contentImagesDir, IMAGES_OUT_DIR);
     console.log('Copied content/images to public/images');
   } else {
     console.warn('content/images directory not found!');

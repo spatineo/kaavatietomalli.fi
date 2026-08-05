@@ -89,9 +89,9 @@ async function generateSearchIndex() {
   const classToVersions: Record<string, Set<string>> = {};
   const codelistUriToVersions: Record<string, Set<string>> = {};
 
-  const tietomallitIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', 'index.json');
-  if (fs.existsSync(tietomallitIndexPath)) {
-    const modelsIndex = JSON.parse(fs.readFileSync(tietomallitIndexPath, 'utf-8'));
+  const dataModelsIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'tietomallit', 'index.json');
+  if (fs.existsSync(dataModelsIndexPath)) {
+    const modelsIndex = JSON.parse(fs.readFileSync(dataModelsIndexPath, 'utf-8'));
     
     // Group by modelName
     const modelsByGroup: Record<string, any[]> = {};
@@ -190,9 +190,9 @@ async function generateSearchIndex() {
   // ----------------------------------------------------
   // Class indexing
   // ----------------------------------------------------
-  if (fs.existsSync(tietomallitIndexPath)) {
+  if (fs.existsSync(dataModelsIndexPath)) {
     console.log('Indexing classes...');
-    const models = JSON.parse(fs.readFileSync(tietomallitIndexPath, 'utf-8'));
+    const models = JSON.parse(fs.readFileSync(dataModelsIndexPath, 'utf-8'));
     
     // Group by modelName
     const modelsByGroup: Record<string, any[]> = {};
@@ -288,11 +288,11 @@ async function generateSearchIndex() {
   // ----------------------------------------------------
   // Codelist indexing
   // ----------------------------------------------------
-  const koodistotIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'koodistot', 'index.json');
-  if (fs.existsSync(koodistotIndexPath)) {
+  const codelistsIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'koodistot', 'index.json');
+  if (fs.existsSync(codelistsIndexPath)) {
     console.log('Indexing codelists...');
     try {
-      const codelistsIndex = JSON.parse(fs.readFileSync(koodistotIndexPath, 'utf-8'));
+      const codelistsIndex = JSON.parse(fs.readFileSync(codelistsIndexPath, 'utf-8'));
       
       for (const item of codelistsIndex) {
         const codelistPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'koodistot', item.path);

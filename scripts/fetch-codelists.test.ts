@@ -4,12 +4,12 @@ import path from 'path';
 import {
   transformCodelistData,
   getLaterDate,
-  fetchAndTransformKoodistot,
+  fetchAndTransformCodelists,
   sortCodelistCodes
-} from './fetch-koodistot';
+} from './fetch-codelists';
 import { Codelist } from '@/src/lib/data-model-types';
 
-describe('fetch-koodistot script', () => {
+describe('fetch-codelists script', () => {
   describe('transformCodelistData', () => {
     it('transforms metaData and codesData into target JSON structure', () => {
       const metaData = {
@@ -127,7 +127,7 @@ describe('fetch-koodistot script', () => {
     });
   });
 
-  describe('fetchAndTransformKoodistot', () => {
+  describe('fetchAndTransformCodelists', () => {
     let mockFetch: any;
 
     beforeEach(() => {
@@ -192,7 +192,7 @@ describe('fetch-koodistot script', () => {
       mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockMetaData });
       mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockCodesData });
 
-      await fetchAndTransformKoodistot('/data-index/suomi.fi/koodistot/index.json', '/public/data/suomi.fi/koodistot', 0);
+      await fetchAndTransformCodelists('/data-index/suomi.fi/koodistot/index.json', '/public/data/suomi.fi/koodistot', 0);
 
       expect(mockFetch).toHaveBeenNthCalledWith(
         1,

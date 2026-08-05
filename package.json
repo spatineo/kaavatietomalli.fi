@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "prebuild": "tsx scripts/generate-assets.ts && tsx scripts/generate-search-index.ts",
-    "fetch-tietomallit": "tsx scripts/fetch-tietomallit.ts",
-    "fetch-koodistot": "tsx scripts/fetch-koodistot.ts",
+    "fetch-data-models": "tsx scripts/fetch-data-models.ts",
+    "fetch-codelists": "tsx scripts/fetch-codelists.ts",
     "fetch-data": "tsx scripts/fetch-data.ts",
     "fetch-giscus-stats": "tsx scripts/fetch-giscus-stats.ts",
     "validate-content": "tsx scripts/validate-markdown-content.ts",
