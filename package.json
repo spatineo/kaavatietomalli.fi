@@ -37,6 +37,7 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "gray-matter": "^4.0.3",
+    "katex": "^0.18.1",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.546.0",
     "mermaid": "^11.14.0",
@@ -46,6 +47,8 @@
     "react-dom": "^19.2.5",
     "react-markdown": "^10.1.0",
     "react-syntax-highlighter": "^16.1.1",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {

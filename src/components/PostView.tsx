@@ -10,11 +10,10 @@ import { resolveImageUrl } from '../lib/utils';
 import { getTracker } from '../services/analytics';
 import { RelatedPosts } from './RelatedPosts';
 import { ContentFooter } from './ContentFooter';
-
-import { CodeBlock } from './CodeBlock';
 import { PostComments } from './PostComments';
-import { MarkdownHeading, useHeadings, slugify, getUniqueHeadings, HeadingRegistryProvider } from './MarkdownHeading';
+import { useHeadings, getUniqueHeadings, HeadingRegistryProvider } from './MarkdownHeading';
 import { TableOfContents } from './TableOfContents';
+import { MarkdownRenderer } from './RichMarkdownRenderer';
 
 interface PostViewProps {
   post: PostData;
@@ -280,43 +279,12 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
         {headings.length > 2 && (
           <TableOfContents headings={combinedHeadings} />
         )}
-
         <div className={`markdown-body prose prose-xl prose-stone ${isSponsored ? 'journal-sponsored' : 'journal-normal'}`}>
-          <ReactMarkdown
-            urlTransform={(url) => resolveImageUrl(url)}
-            components={{
-              h1({ children }: any) { return <MarkdownHeading level={1}>{children}</MarkdownHeading>; },
-              h2({ children }: any) { return <MarkdownHeading level={2}>{children}</MarkdownHeading>; },
-              h3({ children }: any) { return <MarkdownHeading level={3}>{children}</MarkdownHeading>; },
-              h4({ children }: any) { return <MarkdownHeading level={4}>{children}</MarkdownHeading>; },
-              h5({ children }: any) { return <MarkdownHeading level={5}>{children}</MarkdownHeading>; },
-              h6({ children }: any) { return <MarkdownHeading level={6}>{children}</MarkdownHeading>; },
-              pre({ node, children, ...props }: any) {
-                const codeEl = children && (children as any).props;
-                const className = codeEl?.className || '';
-                const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
-                
-                if (isInteractive) {
-                  return <>{children}</>;
-                }
-                return <pre {...props}>{children}</pre>;
-              },
-              code({ node, className, children, ref, ...props }: any) {
-                return (
-                  <CodeBlock
-                    className={className}
-                    filePath={`src/${post.slug}.md`}
-                    placeholderHeight="h-64"
-                    {...props}
-                  >
-                    {children}
-                  </CodeBlock>
-                );
-              },
-            }}
-          >
-            {post.content}
-          </ReactMarkdown>
+          <MarkdownRenderer 
+              markdownContent={post.content}
+              slug={post.slug}
+            >
+            </MarkdownRenderer>
         </div>
       </div>
       {isSponsored && (
