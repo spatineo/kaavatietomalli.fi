@@ -137,6 +137,11 @@
   text-rendering: optimizeLegibility !important;
 }
 
+.mermaid text.classDiagramTitleText {
+  font-size: 24pt !important;
+  font-weight: bold !important;
+}
+
 /* Specific resets for markdown body to prevent inheritance leaks */
 .markdown-body .mermaid p,
 .markdown-body .mermaid div,
@@ -157,6 +162,10 @@
   max-width: none !important;
   display: inline-block !important;
   overflow: visible !important;
+}
+
+.mermaid .classDiagam text.classDiagramTitleText {
+  font-size: 24pt;
 }
 
 @layer utilities {

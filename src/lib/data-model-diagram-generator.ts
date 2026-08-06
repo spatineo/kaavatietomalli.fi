@@ -6,6 +6,7 @@ export function parseDataModelSnippetConfig(code: string): DataModelSnippetConfi
   let classes: string[] = [];
   let lang = 'fi';
   let inClassesSection = false;
+  let title;
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -33,6 +34,9 @@ export function parseDataModelSnippetConfig(code: string): DataModelSnippetConfi
     } else if (key === 'lang') {
       lang = val.replace(/^['"]|['"]$/g, '') || 'fi';
       inClassesSection = false;
+    } else if (key == 'title') {
+      title = val.replace(/^['"]|['"]$/g, '');
+      inClassesSection = false;
     } else if (key === 'classes') {
       if (val.startsWith('[') && val.includes(']')) {
         try {
@@ -50,7 +54,7 @@ export function parseDataModelSnippetConfig(code: string): DataModelSnippetConfi
     }
   }
 
-  return { modelId, classes, lang };
+  return { modelId, classes, title, lang };
 }
 
 function deriveTechNameFromId(id: string | null): string {
@@ -71,12 +75,13 @@ export async function transpileDataModelSnippetToMermaid(
     return `classDiagram\n    note "Error: No modelId specified in snippet"`;
   }
 
-  const dataModel = await access.getDataModel(config.modelId);
+  const dataModel: DataModel | null = await access.getDataModel(config.modelId);
   if (!dataModel) {
     return `classDiagram\n    note "Tietomallia ei löytynyt: ${config.modelId}"`;
   }
 
   const modelClasses: ClassModel[] = dataModel.classes || [];
+  const diagramTitle = config.title;
 
   // Map requested classes
   const includedClassObjs: ClassModel[] = [];
@@ -272,12 +277,15 @@ export async function transpileDataModelSnippetToMermaid(
 
   const sections: string[] = [];
   let header = `---
+    title: ${diagramTitle || ''}
     config:
         layout: elk
         class:
             hideEmptyMembersBox: true
 ---
 classDiagram
+    %% Automatically generated from ${dataModel.id} modified on ${dataModel.metadata?.lastModified || '[n/a]'}
+    %% Information downloaded from tietomallit.suomi.fi on ${dataModel.metadata?.originSyncTime || '[n/a]'}
     `
 
   sections.push(header);
