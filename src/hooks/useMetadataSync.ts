@@ -294,6 +294,41 @@ export function useMetadataSync({
       updateDiscoveryLink('', null);
     }
 
+    // Discovery link for model JSON (alternative)
+    const updateModelJsonLink = () => {
+      let jsonLink = document.querySelector('link[rel="alternative"][type="application/json"]');
+      if (activeView.type === 'model' && activeView.slug && modelIndex.length > 0) {
+        const modelName = activeView.slug;
+        const versions = modelIndex.filter((m: any) => m.path.startsWith(`${modelName}-`));
+        if (versions.length > 0) {
+          const versionParam = params.get('version');
+          const matchedVersion = versions.find((v: any) => v.version === versionParam);
+          const targetVersion = matchedVersion ? matchedVersion.version : versions[0].version;
+          const versionItem = versions.find(v => v.version === targetVersion);
+
+          if (versionItem) {
+            const jsonFileUrl = `${CONFIG.basePath}data/suomi.fi/tietomallit/${versionItem.path}`;
+            if (!jsonLink) {
+              jsonLink = document.createElement('link');
+              jsonLink.setAttribute('rel', 'alternative');
+              jsonLink.setAttribute('type', 'application/json');
+              document.head.appendChild(jsonLink);
+            }
+            jsonLink.setAttribute('title', `Data model ${modelName} in JSON format`);
+            jsonLink.setAttribute('href', jsonFileUrl);
+            return;
+          }
+        }
+      }
+
+      // If not viewing a model, or model details aren't ready, remove the element
+      if (jsonLink && jsonLink.parentNode === document.head) {
+        document.head.removeChild(jsonLink);
+      }
+    };
+
+    updateModelJsonLink();
+
   }, [
     activeView,
     currentPost,
