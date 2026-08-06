@@ -96,6 +96,7 @@ export interface DataModelAccess {
 export interface DataModelSnippetConfig {
   modelId: string;
   classes: string[];
+  title?: string;
   lang?: string;
 }
 

@@ -236,6 +236,9 @@ export function parseDataModelSnippetConfigForValidation(content: string): { con
     } else if (key === 'lang') {
       config.lang = valString.replace(/^['"]|['"]$/g, '');
       inClassesSection = false;
+    } else if (key == 'title') {
+      config.title = valString.replace(/^['"]|['"]$/g, '');
+      inClassesSection = false;
     } else if (key === 'classes') {
       config.classes = true; // Mark presence of classes key
       if (valString.startsWith('[') && valString.includes(']')) {
@@ -275,7 +278,7 @@ export function validateDataModelSnippetBlock(content: string, filePath: string,
     throw new Error(`In file ${filePath} near line ${startLine}: Syntax error in data-model-snippet:\n${errors.join('\n')}`);
   }
 
-  const allowedKeys = new Set(['modelId', 'classes', 'lang']);
+  const allowedKeys = new Set(['modelId', 'classes', 'lang', 'title']);
   for (const key of Object.keys(config)) {
     if (!allowedKeys.has(key)) {
       throw new Error(`In file ${filePath} near line ${startLine}: Unknown configuration option "${key}" for data-model-snippet block. Allowed options: ${Array.from(allowedKeys).join(', ')}`);
@@ -307,6 +310,12 @@ export function validateDataModelSnippetBlock(content: string, filePath: string,
   if (config.lang !== undefined) {
     if (typeof config.lang !== 'string' || config.lang.trim() === '') {
       throw new Error(`In file ${filePath} near line ${startLine}: The "lang" parameter must be a non-empty string.`);
+    }
+  }
+
+  if (config.title !== undefined) {
+    if (typeof config.title !== 'string' || config.title.trim() === '') {
+      throw new Error(`In file ${filePath} near line ${startLine}: The "title" parameter must be a non-empty string.`);
     }
   }
 }
