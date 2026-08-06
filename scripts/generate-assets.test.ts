@@ -1,6 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
-import { generateAssets, getGitHistoryOfContent } from './generate-assets';
+import {
+  generateAssets,
+  getGitHistoryOfContent,
+  loadAndParsePosts,
+  loadAndParsePages,
+  loadAndParseAuthors,
+  generateTagIndex,
+  generateRobotsTxt,
+} from './generate-assets';
 import { escapeXml, parseVideoConfig, validateVideoBlock, validateMarkdownVideoBlocks } from './content-utils';
 import { CONFIG } from '../src/config';
 
@@ -658,5 +666,157 @@ Active author bio.`,
       writeSpy.mockRestore();
       mkdirSpy.mockRestore();
     }
+  });
+});
+
+describe('Modular Sub-pipelines', () => {
+  describe('loadAndParsePosts', () => {
+    it('should correctly load and parse active posts, discarding future and draft ones', () => {
+      const mockFiles: Record<string, string> = {
+        'posts/p1.md': '---\ntitle: "P1"\ndate: "2026-05-01"\npublishDate: "2026-05-01T00:00:00Z"\n---\nPost 1 content',
+        'posts/p2.md': '---\ntitle: "P2"\ndate: "2026-05-02"\ndraft: true\n---\nDraft post',
+        'posts/p3.md': '---\ntitle: "P3"\ndate: "2026-05-03"\npublishDate: "2026-12-31T00:00:00Z"\n---\nFuture post',
+      };
+
+      const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+      const readdirSpy = vi.spyOn(fs, 'readdirSync').mockReturnValue(['p1.md', 'p2.md', 'p3.md'] as any);
+      const readSpy = vi.spyOn(fs, 'readFileSync').mockImplementation((p: any) => {
+        const filename = String(p).split('/').pop() || '';
+        return mockFiles[`posts/${filename}`] || '';
+      });
+      const statSpy = vi.spyOn(fs, 'statSync').mockReturnValue({
+        isDirectory: () => false,
+      } as any);
+
+      try {
+        const now = new Date('2026-06-01T00:00:00Z');
+        const posts = loadAndParsePosts('posts', now);
+        
+        expect(posts).toHaveLength(1);
+        expect(posts[0].title).toBe('P1');
+        expect(posts[0].slug).toBe('p1');
+      } finally {
+        existsSpy.mockRestore();
+        readdirSpy.mockRestore();
+        readSpy.mockRestore();
+        statSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('loadAndParsePages', () => {
+    it('should correctly load active pages and filter draft ones', () => {
+      const mockFiles: Record<string, string> = {
+        'pages/g1.md': '---\ntitle: "G1"\n---\nPage 1 content',
+        'pages/g2.md': '---\ntitle: "G2"\ndraft: true\n---\nDraft page',
+      };
+
+      const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+      const readdirSpy = vi.spyOn(fs, 'readdirSync').mockReturnValue(['g1.md', 'g2.md'] as any);
+      const readSpy = vi.spyOn(fs, 'readFileSync').mockImplementation((p: any) => {
+        const filename = String(p).split('/').pop() || '';
+        return mockFiles[`pages/${filename}`] || '';
+      });
+      const statSpy = vi.spyOn(fs, 'statSync').mockReturnValue({
+        isDirectory: () => false,
+      } as any);
+
+      try {
+        const pages = loadAndParsePages('pages');
+        expect(pages).toHaveLength(1);
+        expect(pages[0].title).toBe('G1');
+      } finally {
+        existsSpy.mockRestore();
+        readdirSpy.mockRestore();
+        readSpy.mockRestore();
+        statSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('loadAndParseAuthors', () => {
+    it('should correctly parse authors and exclude drafts', () => {
+      const mockFiles: Record<string, string> = {
+        'authors/a1.md': '---\nname: "A1"\n---\nAuthor 1',
+        'authors/a2.md': '---\nname: "A2"\ndraft: true\n---\nDraft Author',
+      };
+
+      const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+      const readdirSpy = vi.spyOn(fs, 'readdirSync').mockReturnValue(['a1.md', 'a2.md'] as any);
+      const readSpy = vi.spyOn(fs, 'readFileSync').mockImplementation((p: any) => {
+        const filename = String(p).split('/').pop() || '';
+        return mockFiles[`authors/${filename}`] || '';
+      });
+      const statSpy = vi.spyOn(fs, 'statSync').mockReturnValue({
+        isDirectory: () => false,
+      } as any);
+
+      try {
+        const authors = loadAndParseAuthors('authors');
+        expect(authors).toHaveLength(1);
+        expect(authors[0].name).toBe('A1');
+      } finally {
+        existsSpy.mockRestore();
+        readdirSpy.mockRestore();
+        readSpy.mockRestore();
+        statSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('generateTagIndex', () => {
+    it('should build grouped and normalized tag indices correctly', () => {
+      const mockPosts: any[] = [
+        { slug: 'p1', tags: ['Spatial', 'GIS'] },
+        { slug: 'p2', tags: ['gis', 'Finnish'] }
+      ];
+      const mockPages: any[] = [
+        { slug: 'g1', tags: ['Spatial', 'Docs'] }
+      ];
+
+      const tags = generateTagIndex(mockPosts, mockPages);
+      expect(tags['spatial'].posts).toContain('p1');
+      expect(tags['spatial'].pages).toContain('g1');
+      expect(tags['gis'].posts).toContain('p1');
+      expect(tags['gis'].posts).toContain('p2');
+      expect(tags['finnish'].posts).toContain('p2');
+      expect(tags['docs'].pages).toContain('g1');
+    });
+  });
+
+  describe('generateRobotsTxt', () => {
+    it('should generate prelaunch-restricted robots.txt when prelaunch is true', () => {
+      const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+      const originalPrelaunch = CONFIG.prelaunch;
+      try {
+        CONFIG.prelaunch = true;
+        generateRobotsTxt('/public', 'https://example.com');
+        expect(writeSpy).toHaveBeenCalledWith(
+          expect.stringContaining('robots.txt'),
+          'User-agent: *\nDisallow: /',
+          'utf-8'
+        );
+      } finally {
+        CONFIG.prelaunch = originalPrelaunch;
+        writeSpy.mockRestore();
+      }
+    });
+
+    it('should generate standard public robots.txt when prelaunch is false', () => {
+      const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+      const originalPrelaunch = CONFIG.prelaunch;
+      try {
+        CONFIG.prelaunch = false;
+        generateRobotsTxt('/public', 'https://example.com');
+        expect(writeSpy).toHaveBeenCalledWith(
+          expect.stringContaining('robots.txt'),
+          'User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml',
+          'utf-8'
+        );
+      } finally {
+        CONFIG.prelaunch = originalPrelaunch;
+        writeSpy.mockRestore();
+      }
+    });
   });
 });
