@@ -242,7 +242,7 @@ export function CodelistInfoPanel({
                           </div>
                         </td>
                         <td className="px-6 py-4 font-medium text-slate-200">
-                          {getLocalized(code.name) || (Object.values(code.name || {})[0] as any)}
+                          <span title={getLocalized(code.description)}>{getLocalized(code.name) || (Object.values(code.name || {})[0] as any)}</span>
                         </td>
                         <td className="px-6 py-4 text-xs font-mono">
                           <span className={`whitespace-nowrap px-2 py-0.5 rounded ${

@@ -44,7 +44,7 @@ export function SearchResultItem({ result, size = 'sm', onClick }: SearchResultI
         <div className={`font-bold text-white group-hover:text-brand-accent transition-colors leading-tight truncate ${
           isLarge ? 'text-xl mb-1' : 'text-sm mb-0.5'
         }`}>
-          {result.document.name || result.document.title}
+          {result.document.title || result.document.name }
           {(result.document.type === 'class' || result.document.type === 'codelist' )&& (
             <span> ({result.document.slug.split(':')[0]})</span>
           )}
