@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo } from 'react';
-import ReactMarkdown from 'react-markdown';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, ArrowRight, Award } from 'lucide-react';
 import { motion } from 'motion/react';
