@@ -10,6 +10,7 @@ import { resolveImageUrl } from '../lib/utils';
 import { CodeBlock } from './CodeBlock';
 import { MarkdownHeading, useHeadings, slugify, getUniqueHeadings, HeadingRegistryProvider } from './MarkdownHeading';
 import { TableOfContents } from './TableOfContents';
+import { MarkdownRenderer } from './RichMarkdownRenderer';
 
 interface PageViewProps {
   page: PageData;
@@ -57,40 +58,11 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
     return (
       <HeadingRegistryProvider uniqueHeadings={combinedHeadings}>
         <div className="markdown-body prose prose-xl prose-stone">
-          <ReactMarkdown
-            urlTransform={(url) => resolveImageUrl(url)}
-            components={{
-              h1({ children }: any) { return <MarkdownHeading level={1}>{children}</MarkdownHeading>; },
-              h2({ children }: any) { return <MarkdownHeading level={2}>{children}</MarkdownHeading>; },
-              h3({ children }: any) { return <MarkdownHeading level={3}>{children}</MarkdownHeading>; },
-              h4({ children }: any) { return <MarkdownHeading level={4}>{children}</MarkdownHeading>; },
-              h5({ children }: any) { return <MarkdownHeading level={5}>{children}</MarkdownHeading>; },
-              h6({ children }: any) { return <MarkdownHeading level={6}>{children}</MarkdownHeading>; },
-              pre({ node, children, ...props }: any) {
-                const codeEl = children && (children as any).props;
-                const className = codeEl?.className || '';
-                const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
-                
-                if (isInteractive) {
-                  return <>{children}</>;
-                }
-                return <pre {...props}>{children}</pre>;
-              },
-              code({ node, className, children, ref, ...props }: any) {
-                return (
-                  <CodeBlock
-                    className={className}
-                    placeholderHeight="h-48"
-                    {...props}
-                  >
-                    {children}
-                  </CodeBlock>
-                );
-              }
-            }}
-          >
-            {page.content}
-          </ReactMarkdown>
+          <MarkdownRenderer 
+              markdownContent={page.content}
+              slug={page.slug}
+            >
+            </MarkdownRenderer>
         </div>
       </HeadingRegistryProvider>
     );
@@ -125,42 +97,12 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
           {headings.length > 2 && (
             <TableOfContents headings={combinedHeadings} />
           )}
-          
           <div className="markdown-body prose prose-xl prose-stone">
-            <ReactMarkdown
-              urlTransform={(url) => resolveImageUrl(url)}
-              components={{
-                h1({ children }: any) { return <MarkdownHeading level={1}>{children}</MarkdownHeading>; },
-                h2({ children }: any) { return <MarkdownHeading level={2}>{children}</MarkdownHeading>; },
-                h3({ children }: any) { return <MarkdownHeading level={3}>{children}</MarkdownHeading>; },
-                h4({ children }: any) { return <MarkdownHeading level={4}>{children}</MarkdownHeading>; },
-                h5({ children }: any) { return <MarkdownHeading level={5}>{children}</MarkdownHeading>; },
-                h6({ children }: any) { return <MarkdownHeading level={6}>{children}</MarkdownHeading>; },
-                pre({ node, children, ...props }: any) {
-                  const codeEl = children && (children as any).props;
-                  const className = codeEl?.className || '';
-                  const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
-                  
-                  if (isInteractive) {
-                    return <>{children}</>;
-                  }
-                  return <pre {...props}>{children}</pre>;
-                },
-                code({ node, className, children, ref, ...props }: any) {
-                  return (
-                    <CodeBlock
-                      className={className}
-                      placeholderHeight="h-64"
-                      {...props}
-                    >
-                      {children}
-                    </CodeBlock>
-                  );
-                }
-              }}
+            <MarkdownRenderer 
+              markdownContent={page.content}
+              slug={page.slug}
             >
-              {page.content}
-            </ReactMarkdown>
+            </MarkdownRenderer>
           </div>
         </div>
 
