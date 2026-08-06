@@ -362,7 +362,7 @@ lang: ${dataLang}`;
         if (element) {
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-      }, 100);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [loading, selectedElement, searchString]);
@@ -565,37 +565,35 @@ lang: ${dataLang}`;
           modelName={modelName}
           selectedVersion={selectedVersion}
         />
-
+        
+        <div id="data-model-info-panel" className="scroll-mt-24">
         {/* 3. The class info panel */}
         {selectedElement?.type === 'class' && selectedClassObj && (
-          <div id="data-model-info-panel" className="scroll-mt-24">
-            <ClassInfoPanel
-              selectedClassObj={selectedClassObj}
-              mermaidChart={mermaidChart}
-              dataLang={dataLang}
-              getLocalized={getLocalized}
-              onNavigateToType={(type, name) => handleSelectElement(`${type}:${name}`)}
-              getTypeNavigation={getTypeNavigation}
-              t={t}
-              model={modelData || undefined}
-            />
-          </div>
+          <ClassInfoPanel
+            selectedClassObj={selectedClassObj}
+            mermaidChart={mermaidChart}
+            dataLang={dataLang}
+            getLocalized={getLocalized}
+            onNavigateToType={(type, name) => handleSelectElement(`${type}:${name}`)}
+            getTypeNavigation={getTypeNavigation}
+            t={t}
+            model={modelData || undefined}
+          />
         )}
 
         {/* 4. The codelist info panel */}
         {selectedElement?.type === 'codelist' && (
-          <div id="data-model-info-panel" className="scroll-mt-24">
-            <CodelistInfoPanel
-              codelistDetail={codelistDetail}
-              loadingCodelist={loadingCodelist}
-              dataLang={dataLang}
-              getLocalized={getLocalized}
-              copiedCodeUri={copiedCodeUri}
-              onCopy={copyToClipboard}
-              t={t}
-            />
-          </div>
+          <CodelistInfoPanel
+            codelistDetail={codelistDetail}
+            loadingCodelist={loadingCodelist}
+            dataLang={dataLang}
+            getLocalized={getLocalized}
+            copiedCodeUri={copiedCodeUri}
+            onCopy={copyToClipboard}
+            t={t}
+          />
         )}
+        </div>
       </div>
     </div>
   );

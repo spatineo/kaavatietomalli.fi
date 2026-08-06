@@ -3,13 +3,12 @@ import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 
 interface SearchResultItemProps {
-  key: string,
   result: any;
   size?: 'sm' | 'lg';
   onClick: (type: string, slug: string) => void;
 }
 
-export function SearchResultItem({ key, result, size = 'sm', onClick }: SearchResultItemProps) {
+export function SearchResultItem({ result, size = 'sm', onClick }: SearchResultItemProps) {
   const t = getTranslations(CONFIG.language as Language);
   const isLarge = size === 'lg';
 

@@ -6,7 +6,7 @@ import { ClassModel, Codelist } from '../lib/data-model-types';
 
 interface ClassCodelistSelectorProps {
   classes: ClassModel[];
-  usedCodelists: Codelist[];
+  usedCodelists: any[];
   selectedElement: { type: 'class' | 'codelist'; name: string } | null;
   onSelectElement: (val: string) => void;
   getLocalized: (obj: any) => string;
@@ -53,7 +53,7 @@ export function ClassCodelistSelector({
       const cls: ClassModel | undefined = classes.find(c => c.technicalName === selectedElement.name);
       return cls ? (getLocalized(cls.name) || cls.technicalName) : selectedElement.name;
     } else {
-      const codelist: Codelist | undefined = usedCodelists.find(c => c.technicalName === selectedElement.name);
+      const codelist = usedCodelists.find(c => c.technicalName === selectedElement.name);
       return codelist ? (getLocalized(codelist.name) || codelist.technicalName) : selectedElement.name;
     }
   }, [selectedElement, classes, usedCodelists, getLocalized]);

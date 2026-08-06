@@ -1,4 +1,3 @@
-import ReactMarkdown from 'react-markdown';
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useEffect, useMemo } from 'react';
@@ -6,9 +5,7 @@ import { ContentFooter } from './ContentFooter';
 import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
-import { resolveImageUrl } from '../lib/utils';
-import { CodeBlock } from './CodeBlock';
-import { MarkdownHeading, useHeadings, slugify, getUniqueHeadings, HeadingRegistryProvider } from './MarkdownHeading';
+import { useHeadings, getUniqueHeadings, HeadingRegistryProvider } from './MarkdownHeading';
 import { TableOfContents } from './TableOfContents';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
 
