@@ -92,7 +92,7 @@ jobs:
         run: npm run validate-content
 
       - name: Prebuild
-        if: steps.filter.outputs.code !== 'true'
+        if: steps.filter.outputs.code != 'true'
         run: npm run prebuild
         
       - name: Build
