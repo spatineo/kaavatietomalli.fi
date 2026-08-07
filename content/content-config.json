@@ -6,7 +6,7 @@
       "type": "menu",
       "subitems": [
         { "label": "Lait ja asetukset", "type": "page", "slug": "lainsaadanto" },
-        { "label": "Kaavatietomallin määrittely", "type": "page", "slug": "kaavatietomalli-yalusta" },
+        { "label": "Kaavatietomalli", "type": "page", "slug": "kaavatietomalli-yalusta" },
         { "label": "Kaavatietomallin soveltamisohjeet", "type": "page", "slug": "soveltamisohjeet" },
         { "label": "Ryhti-järjestelmä", "type": "page", "slug": "ryhti-jarjestelma" },
         { "label": "Kaavatieto kuntajärjestelmissä", "type": "page", "slug": "kuntajarjestelmat" },
@@ -26,9 +26,8 @@
       "type": "menu",
       "subitems": [
         { "label": "Tietomallisparraukset ja koulutukset", "type": "tag", "slug": "sparraus" },
-        { "label": "Ohjelmistotuotteet", "type": "tag", "slug": "ohjelmistot" },
         { "label": "Markkinaselvitykset", "type": "tag", "slug": "markkinaselvitys" },
-        { "label": "Spatineo Oy", "type": "page", "slug": "spatineo" }
+        { "label": "Kumppani: Spatineo Oy", "type": "page", "slug": "spatineo" }
       ]
     },
     { 

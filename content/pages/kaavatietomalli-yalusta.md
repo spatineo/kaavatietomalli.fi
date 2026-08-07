@@ -1,5 +1,5 @@
 ---
-title: "Kaavanlaadinnan tietomalli"
+title: "Valtakunnallinen kaavatietomalli"
 ---
 
 ## Kaavatietomalli: perusteiden alkeet
@@ -27,6 +27,8 @@ Kaavatietomalli on niin sanottu loogisen tason tietomalli, josta voidaan tuottaa
 
 Kaavatietomalli koostuu hierarkkisista ja toisiinsa liittyvistä tietokohteista. Tässä kuvataan niistä keskeisimmät.
 
+
+
 #### Kaava (kaavasuunnitelma)
 Kaava(suunnitelma) toimii kokonaisuuden kehyksenä. Siihen liittyvät yleiset tiedot, kuten:
 * Kaavan hyväksymispäivä ja voimassaolotieto.
@@ -36,12 +38,12 @@ Kaava(suunnitelma) toimii kokonaisuuden kehyksenä. Siihen liittyvät yleiset ti
 * Kaavaan sisältyvät kaavakohteet ja yleismääräykset.
 
 #### Kaavakohde
-Kaavakohde edustaa tiettyä aluetta, viivaa tai pistettä kaavakartalla. Kaavakohde on tapa kohdistaa kaavan kaavamääräykset tiettyyn sijaintiin tai alueeseen kaavan maantieteellisen rajauksen sisällä. Sopivia kaavamääräyksiä kaavakohteisiin kohdistamalla saadaan aikaan esimerkiksi seuraavan tyyppisiä kohdistettuja kaavamääräyksiä:
+Kaavakohde edustaa tiettyä aluetta, viivaa tai pistettä kaavakartalla. Kaavakohde on tapa kohdistaa kaavamääräykset tiettyyn sijaintiin tai alueeseen kaavan maantieteellisen rajauksen sisällä. Sopivia kaavamääräyksiä kaavakohteisiin kohdistamalla saadaan aikaan esimerkiksi seuraavan tyyppisiä kohdistettuja kaavamääräyksiä:
 * **Käyttötarkoitusalueet:** Asuinalueet (A), liikealueet (C), teollisuusalueet (T), puistoalueet (VP).
 * **Osa-alueet ja rajat:** Rakennusala, suojelualue, kaava-alueen raja.
 * **Pistemäiset ja viivamaiset kohteet:** Liittymäkiellot, suojeltavat puut, ajoneuvoliittymät.
 
-#### Kaavamääräys
+#### Kaavamääräykset ja kaavamääräysryhmät
 Jokaiseen kaavakohteeseen kytkeytyy yksi tai useampia kaavamääräyksiä. Määräykset voivat koskea muun muassa:
 * Kerrosalaa ja tehokkuutta ($e$-luku tai kerrosala $m^2$).
 * Kerroslukua ja korkeusasemaa.
@@ -49,6 +51,64 @@ Jokaiseen kaavakohteeseen kytkeytyy yksi tai useampia kaavamääräyksiä. Mää
 
 Tietomallissa määräys ei ole pelkkää vapaamuotoista tekstiä, vaan se esitetään tietomallin kuvaamassa rakenteisessa määrämuodossa. Kaavan yksittäisen kaavamääräyksen tiedot voivat koostua useammasta koneluettavasta kentästä: kaavamääräyksen laji, määräyksen arvo, lisätieto mahdollisine omine arvoineen. Sanallisten kaavamääräysten avulla voidaan kuitenkin aina tarvittaessa kuvata määräyksen sisältö tekstiä, elleivät kenttien koneluettavat kentät riittävän hyvin taivu spesifiseen määräystarpeeseen. 
 
+Kaavatietomallissa kaavamääräykset kootaan yhden tai useamman määräyksen kaavamääräysryhmiksi, joiden kautta kohdistaminen kaavakohteisiin tehdään. Kaavamääräysryhmille voidaan antaa otsikko ja kaavakartalla näkyvä kirjaintunnus. 
+
+```mermaid
+---
+title: Kaavasuunnitelma, kaavakohde, kaavamääräys ja kaavasuositus
+config:
+    layout: elk
+    class:
+        hideEmptyMembersBox: true
+---
+classDiagram
+    class Kaava {
+        Kuvaus
+        Mittakaava
+        Aluerajaus
+        Hyväksymispäivä
+        Voimassaoloaika
+        Elinkaaren tila
+    }
+
+    class Kaavamääräysryhmä {
+        Otsikko
+        Kirjaintunnus
+    }
+
+    class Yleismääräysryhmä {
+        Otsikko
+    }
+
+    class Kaavamääräys {
+        Kaavamääräyksen laji
+        Kaavamääräyksen arvo
+        Kaavamääräyksen lisätieto
+        Voimassaoloaika
+        Elinkaaren tila
+    }
+
+    class Kaavakohde {
+        Kohteen nimi
+        Sijaintigeometria
+        Voimassaoloaika
+        Elinkaaren tila
+    }
+
+    class Kaavasuositus {
+        Kaavamääräyksen arvo
+        Voimassaoloaika
+        Elinkaaren tila
+    }
+
+    Kaava o--> "1..*" Kaavakohde
+    Kaava o--> "0..*" Yleismääräysryhmä
+    Kaavakohde "1..*" <--> "1..*" Kaavamääräysryhmä
+    Kaavamääräysryhmä *--> "1..*" Kaavamääräys
+    Yleismääräysryhmä *--> "0..*" Kaavamääräys
+    Kaavamääräysryhmä *--> "0..*" Kaavasuositus
+    Yleismääräysryhmä *--> "0..*" Kaavasuositus
+```
 
 ### Kaavahanke ja sen vaiheet: Kaava-asia
 
@@ -79,6 +139,76 @@ gantt
 ```
 
 Kaavatietomallissa jokaisella kaavasuunnitelman versiolla ja niiden sisältämillä kaavakohteillä ja -määräyksillä on tilatieto (elinkaaren tila). Kaava-asiaan liitetään prosessin kuluessa kunkin vaiheen tiedot kaavasuunnitelmineen ja asiakirjoineen. Tämä mahdollistaa kaavan tarkastelun myös kaavaprosessin aikana, esimerkiksi sen ollessa julkisesti nähtävillä. Kaavan elinkaaren vaiheiden avulla on myös helppo nähdä onko kaava hyväksytty, onko valitusaika vielä kesken, onko se lainvoimainen ja mahdollisesti kokonaan tai osittain kumottu.
+
+```mermaid
+---
+title: Kaava-asia, sen vaiheet, tapahtumat ja päätökset
+config:
+    layout: elk
+    class:
+        hideEmptyMembersBox: true
+---
+classDiagram
+    
+    class Kaava-asia {
+        Kaavalaji
+        Pysyvä kaavatunnus
+        Diaarinumero
+        Nimi
+        Kuvaus
+        Hallinnollisen alueen tunnus
+        Virelletulopäivämäärä
+    }
+
+    class `Osallistumis- ja arviointisuunnitelma` {
+        Tiedosto
+    }
+
+    class `Kaava-asian vaihe` {
+        Elinkaaren tila
+        Aluerajaus
+    }
+
+    class Vuorovaikutustapahtuma {
+        Vuorovaikutustapahtuman laji
+        Kuvaus
+        Nimi
+        Tapahtuma-aika
+        Sijainti
+    }
+
+    class Käsittelytapahtuma {
+        Käsittelytapahtuman laji
+        Kuvaus
+        Nimi
+        Tapahtuma-aika
+        Käsittelijä
+    }
+
+    class `Kaava-asian päätös` {
+        Päätöksen nimi
+        Päätöspäivämäärä
+        Päätöksen antopäivämäärä
+        Päätöksentekijän laji
+    }
+
+    class Kaava {
+        Kuvaus
+        Mittakaava
+        Aluerajaus
+        Hyväksymispäivä
+        Voimassaoloaika
+        Elinkaaren tila
+    }
+
+    Kaava-asia *-- "1..*" `Kaava-asian vaihe`
+    Kaava-asia o--> "0..1" `Osallistumis- ja arviointisuunnitelma`
+    `Kaava-asian vaihe` o-- "0..*" `Kaava-asian päätös`
+    `Kaava-asian vaihe` o--> "0..*" Vuorovaikutustapahtuma
+    `Kaava-asian vaihe` o--> "1..*" Käsittelytapahtuma
+    `Kaava-asian päätös` o-- "0.." Kaava 
+    
+```
 
 ### Tietomallimuotoinen kaavatieto mahdollistaa paljon
 
@@ -135,18 +265,13 @@ Seuraavissa luvuissa on esitetty Kaavatietomallin keskeisimmät luokat yksityisk
 
 ### Kaavasuunnitelma, kaavakohteet ja kaavamääräykset
 
+
 ```data-model-snippet
-    title: Kaava ja Yleismääräysryhmä
+    title: Kaava, Yleismääräysryhmä, Kaavakohde, Kaavamääräysryhmä, Kaavamääräys, Kaavamääräyksen lisätieto ja Kaavasuositus 
     modelId: rytj-kaava-1.0.5
     classes:
         - "https://iri.suomi.fi/model/rytj-kaava/Kaava"
         - "https://iri.suomi.fi/model/rytj-kaava/Yleismaaraysryhma"
-```
-
-```data-model-snippet
-    title: Kaavakohde, Kaavamääräysryhmä, Kaavamääräys, Kaavamääräyksen lisätieto ja Kaavasuositus 
-    modelId: rytj-kaava-1.0.5
-    classes:
         - "https://iri.suomi.fi/model/rytj-kaava/Kaavakohde"
         - "https://iri.suomi.fi/model/rytj-kaava/Kaavamaaraysryhma"
         - "https://iri.suomi.fi/model/rytj-kaava/Kaavamaarays"
