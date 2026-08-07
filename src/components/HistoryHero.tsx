@@ -26,8 +26,23 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
   const checkScroll = () => {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 5);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+      const isScrollable = scrollWidth > clientWidth;
+      
+      const children = Array.from(scrollContainerRef.current.children) as HTMLElement[];
+      const itemElements = children.filter(child => child.classList.contains('snap-start'));
+      
+      if (isScrollable && itemElements.length > 0) {
+        // Can scroll left if we are not at absolute left edge and there is an item to the left
+        const hasItemLeft = itemElements.some(el => el.offsetLeft < scrollLeft - 10);
+        setCanScrollLeft(scrollLeft > 5 && hasItemLeft);
+        
+        // Can scroll right if we are not at absolute right edge and there is an item to the right
+        const hasItemRight = itemElements.some(el => el.offsetLeft > scrollLeft + 10);
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5 && hasItemRight);
+      } else {
+        setCanScrollLeft(false);
+        setCanScrollRight(false);
+      }
       
       const maxScroll = scrollWidth - clientWidth;
       if (maxScroll > 0) {
@@ -58,11 +73,47 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
   const handleScroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
-      const scrollAmount = container.clientWidth * 0.6; // Scroll roughly 60% of viewport width
-      container.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth'
-      });
+      const children = Array.from(container.children) as HTMLElement[];
+      const itemElements = children.filter(child => child.classList.contains('snap-start'));
+      
+      if (itemElements.length === 0) return;
+      
+      const currentScrollLeft = container.scrollLeft;
+      
+      if (direction === 'right') {
+        const nextElement = itemElements.find(
+          el => el.offsetLeft > currentScrollLeft + 10
+        );
+        if (nextElement) {
+          container.scrollTo({
+            left: nextElement.offsetLeft,
+            behavior: 'smooth'
+          });
+        } else {
+          // Fallback if none found
+          container.scrollBy({
+            left: container.clientWidth * 0.6,
+            behavior: 'smooth'
+          });
+        }
+      } else {
+        const prevElements = itemElements.filter(
+          el => el.offsetLeft < currentScrollLeft - 10
+        );
+        if (prevElements.length > 0) {
+          const prevElement = prevElements[prevElements.length - 1];
+          container.scrollTo({
+            left: prevElement.offsetLeft,
+            behavior: 'smooth'
+          });
+        } else {
+          // Fallback
+          container.scrollBy({
+            left: -container.clientWidth * 0.6,
+            behavior: 'smooth'
+          });
+        }
+      }
     }
   };
 
@@ -105,10 +156,10 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
           {chronologicalPosts.map((post, idx) => (
             <motion.button
               key={post.slug}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.1, duration: 0.6 }}
+              transition={{ delay: idx * 0.1, duration: 0.3 }}
               className="flex-shrink-0 w-80 group text-left mx-5 outline-none cursor-pointer snap-start"
               onClick={() => onSelectPost(post.slug)}
               role="listitem"
