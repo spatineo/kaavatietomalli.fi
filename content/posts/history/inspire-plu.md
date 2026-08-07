@@ -1,11 +1,11 @@
 ---
-title: "INSPIRE Planned Land Use (PLU) -tietomalli"
-date: "2009-01-01"
-dateLabel: "2009"
+title: "EU Inspire Planned Land Use -tietomalli"
+date: "2002-01-01"
+dateLabel: "2002-13"
 author: "Ilkka Rinne"
 authorSlug: "ilkka-rinne"
-excerpt: "EU-direktiivin tuoma vaatimus maankäyttötietojen (Planned Land Use) raportoinnille ja sen herättämä arkkitehtonis-kognitiivinen shokki."
-tags: ["INSPIRE", "PLU", "tietomalli" ]
+excerpt: "EU-direktiivin tuoma vaatimus maankäyttötietojen (Planned Land Use) raportoinnille."
+tags: ["INSPIRE", "PLU", "TWG LU", "TWG Land Use", "EU", "tietomalli", "maankäyttö" ]
 category: "history"
 ---
 

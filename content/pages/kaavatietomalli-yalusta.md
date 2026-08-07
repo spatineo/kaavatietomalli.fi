@@ -1,5 +1,5 @@
 ---
-title: "Kaavanlaadinnan tietomalli"
+title: "Valtakunnallinen kaavatietomalli"
 ---
 
 ## Kaavatietomalli: perusteiden alkeet
@@ -182,7 +182,6 @@ classDiagram
         Kuvaus
         Nimi
         Tapahtuma-aika
-        Sijainti
         Käsittelijä
     }
 
@@ -207,7 +206,7 @@ classDiagram
     `Kaava-asian vaihe` o-- "0..*" `Kaava-asian päätös`
     `Kaava-asian vaihe` o--> "0..*" Vuorovaikutustapahtuma
     `Kaava-asian vaihe` o--> "1..*" Käsittelytapahtuma
-    `Kaava-asian päätös` o--> "0.." Kaava 
+    `Kaava-asian päätös` o-- "0.." Kaava 
     
 ```
 
