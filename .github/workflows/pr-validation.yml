@@ -91,10 +91,12 @@ jobs:
       - name: Validate Markdown content
         run: npm run validate-content
 
-      - name: Download Giscus stats
-        run: npm run fetch-giscus-stats
-
+      - name: Prebuild
+        if: steps.filter.outputs.code !== 'true'
+        run: npm run prebuild
+        
       - name: Build
+        if: steps.filter.outputs.code == 'true'
         run: npm run build
         env:
           VITE_BASE_PATH: /
