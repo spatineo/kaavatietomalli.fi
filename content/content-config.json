@@ -2,7 +2,7 @@
   "nav": [
     { "label": "Blogi", "type": "blog" },
     { 
-      "label": "Speksit", 
+      "label": "Määrittelyt", 
       "type": "menu",
       "subitems": [
         { "label": "Lait ja asetukset", "type": "page", "slug": "lainsaadanto" },
