@@ -87,7 +87,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       <div className="relative max-w-7xl ml-5 lg:ml-20 px-6">
         <div 
           ref={scrollContainerRef}
-          className="flex gap-8 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10" 
+          className="flex gap-8 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10 snap-x snap-mandatory" 
           role="list"
         >
         
@@ -109,7 +109,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1, duration: 0.6 }}
-              className="flex-shrink-0 w-80 group text-left mx-5 outline-none cursor-pointer"
+              className="flex-shrink-0 w-80 group text-left mx-5 outline-none cursor-pointer snap-start"
               onClick={() => onSelectPost(post.slug)}
               role="listitem"
               aria-label={`${t.post.readMore}: ${post.title}`}
@@ -127,11 +127,11 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
                 <div className="w-3 h-3 rounded-full bg-black border-4 border-brand-accent group-hover:scale-125 group-focus-visible:scale-125 transition-transform" />
               </div>
 
-              <div className="bg-white/5 p-8 border border-white/10 rounded-2xl group-hover:border-brand-accent/50 group-focus-visible:border-brand-accent transition-all backdrop-blur-sm shadow-2xl min-h-[16em]">
+              <div className="bg-white/5 p-8 border border-white/10 rounded-2xl group-hover:border-brand-accent/50 group-focus-visible:border-brand-accent transition-all backdrop-blur-sm shadow-2xl min-h-[16em] max-h-[16em]">
                 <h3 className="text-xl font-bold leading-tight mb-4 group-hover:text-brand-accent transition-colors">
                   {post.title}
                 </h3>
-                <p className="text-slate-400 text-sm font-medium line-clamp-3 mb-8 leading-relaxed">
+                <p className="text-slate-400 text-sm font-medium line-clamp-3 mb-4 leading-relaxed">
                   {post.excerpt}
                 </p>
                 <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-brand-accent transition-opacity">
