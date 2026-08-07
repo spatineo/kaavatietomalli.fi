@@ -254,6 +254,18 @@ Seuraavissa luvuissa on esitetty Kaavatietomallin keskeisimmät luokat yksityisk
 
 ### Kaava-asia, sen vaiheet ja päätökset
 
+Kaava-asia-luokka kuvaa kaavahankkeen perustiedot, muun muassa minkätyyppinen kaava on kyseessä, minkä kunnan tai maakunnan hallinnolliselle alueelle se on laadittu, minkä niminen kaava on, milloin kaava on tullut vireille, onko kyseessä alunperin tietomallimuotoon laadittu kaava vai onko kyseessä aiemman, perinteisen kaavan digitointi Kaavatietomallin muodoon. Kaava-asia ei sisällä suunnitelmatietoja, mutta siihen voidaan liittää kuvauksia käytetyistä lähtötietoaineistoista ja osallistumis- ja arviointisuunnitelma, kaavahankkeen vastuutahon nimi ja erilaisia hankkeeseen liittyviä asiakirjoja. Kaava-asian tietoihin kuuluu kaavan pysyvä tunnus, joka haetaan Ryhti-järjestelmän kautta kaavahankkeen alussa. 
+
+Kaava-asiaan liittyy aina vähintään yksi Kaava-asian vaihe, tyypillisesti ensimmäisen vaiheen elinkaaren tila on *Vireillä* tai *Valmistelu*. Kuhunkin vaiheeseen puolestaan liitetään vähintään yksi sen aloittanut käsittelytapahtuma, kuten nähtäville asettamisesta tai hyväksymisestä päättäminen. 
+
+Käsittelytapahtuman lisäksi Kaava-asian vaiheeseen liitetään yleensä myös käsittelytapahtumassa tehdyn päätöksen tiedot, vähintään päätöksen laji (attribuutti *Päätöksen nimi*), päätöksen tekijän laji, ja päivämäärätiedot. Kaavatietomallin nykyisessä versiossa kukin vaiheen alun tilanne kaavasuunnitelmasta, eli kaavakohteista ja niihin kohdistetuista kaavamääräyksistä, liittyy kaavan vaiheeseen aina Kaava-asian päätös -luokan kautta. Tällä Ryhti-järjestelmän suunnittelun ja toteuksen aikana tehdyllä muutoksella on haluttu tehdä selväksi, että Ryhti-järjestelmään vietäviea suunnitelmien tulee aina sellaisia versioita, josta on kunnassa tai maakunnassa tehty jokin päätös. 
+
+Kaavatietomallin aiemmissa suunnitteluversioissa Kaava-asian ja kaavasuunnitelman tiedot oli kuvattu yhdellä Kaava-luokalla, jonka elinkaaren tila päivittyi kaavaprosessin edetessä. Kaava-luokkaan siihen liittyi sen elinkaaren aikana useampia päätöksiä ja tapahtumia ja sen kuvaamaan kaavasuunnitelman sisältö eli prosessin mukana. Kaikki kaavaan tehtävät muutokset voitiin jatkuvasti tallentaa kaavatietovarantoon, ja järjestelmä huolehtii muutostenhallinnasta ja tietojen versionnista: Esimerkiksi siirryttäessä uuteen kaavan elinkaaren vaiheeseen aiemman elinkaaren vaiheen viimeisin tila koko kaavasta tallennetaan siten, että siihen voidaan tarvittaessa palata. 
+
+Ryhti-järjestelmään tallentamisen selkeyttämiseksi Kaavatietomalliin halutiin rakenne, jossa kunta tai maakunta tuo erikseen Ryhtiin hankkeen perustiedot (Kaava-asia ja ensimmäinen vaihe) ja myöhemmin erillisinä kokonaisuuksinaan yhden vaiheen kokonaisen kaavasuunnitelman uusine, aiemmista suunitelman vaiheista erillisine kaavakohteineen ja -määräyksineen. Tässä siis luovuttiin myös mahdollisuudesta kaavakohde- ja kaavamääräyskohtaisen muutoshistorian kuvaamiseen: Vaikka jokin kaavakohde ja siihen kohdistuvat kaavamääräykset olisivat täysin identtisiä esimerkiksi kaavaehdotusvaiheessa ja lopullisessa hyväksyssä kaavassa, ne kuvataan tietomallissa erillisinä, eri vaiheisiin liittyviä kopiotietoina, joden välillä ei ole tietomallissa mitään yhteyttä. Tämä toki helpottaa kaavan teknistä tiedonhallintaa siinä mielessä, että kukin kaavan vaiheen mukainen kaavasuunnitelma sisältää täydelliset tiedot kaikista sen kaavakohteista ja -määräyksistä ilman tarvetta viitata muuttumattomien tietojen osalta aiemmassa vaiheessa tallennettuihin versioihin suunnitelmaan kuuluvista kaavakohde- ja kaavamääräystiedoista.
+
+Nykyisen, Ryhti-järjestelmään toteutetun Kaavatietomallin mukaiset kaava-asian, sen vaiheiden ja päätösten attirubuutit ja luokkien keskinäiset suhteet on esitetty alla olevassa UML-luokkakaaviossa:
+
 ```data-model-snippet
     title: Kaava-asia, Kaava-asian vaihe ja Kaava-asian päätös
     modelId: rytj-kaava-1.0.5
@@ -262,6 +274,8 @@ Seuraavissa luvuissa on esitetty Kaavatietomallin keskeisimmät luokat yksityisk
         - "https://iri.suomi.fi/model/rytj-kaava/Kaava-asianVaihe"
         - "https://iri.suomi.fi/model/rytj-kaava/Kaava-asianPaatos"   
 ```
+
+Kaaviossa on selkeyden vuoksi esitetty kokonaisuudessaan vain nämä kolme luokkaa ja niiden attribuuteissa käytetyt koodistot (stereotyyppi *codelist*). Näiden kolmen luokan assosiaaatiot muihin tietomallin luokkiin on myös esitetty, mutta näiden liittyvien luokkien yksityiskohtia ei. 
 
 ### Kaavasuunnitelma, kaavakohteet ja kaavamääräykset
 
