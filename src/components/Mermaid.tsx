@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { X, Maximize2, ZoomIn, ZoomOut, Maximize, Expand } from 'lucide-react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 
@@ -289,6 +289,23 @@ async function getMermaid() {
   return mermaidInstance;
 }
 
+const ZOOM_STEPS = [0.05, 0.1, 0.15, 0.25, 0.35, 0.5, 0.65, 0.8, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0];
+const FULL_ZOOM = 0.92; // Use 92% of viewport
+
+function getZoomFractionalIndex(z: number): number {
+  if (z <= ZOOM_STEPS[0]) return 0;
+  if (z >= ZOOM_STEPS[ZOOM_STEPS.length - 1]) return ZOOM_STEPS.length - 1;
+  for (let i = 0; i < ZOOM_STEPS.length - 1; i++) {
+    const low = ZOOM_STEPS[i];
+    const high = ZOOM_STEPS[i + 1];
+    if (z >= low && z <= high) {
+      const ratio = (z - low) / (high - low);
+      return i + ratio;
+    }
+  }
+  return 0;
+}
+
 interface MermaidProps {
   chart: string;
 }
@@ -298,6 +315,7 @@ export function Mermaid({ chart }: MermaidProps) {
   const ref = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
+  const glasspaneRef = useRef<HTMLDivElement>(null);
   const bindFunctionsRef = useRef<((el: Element) => void) | null>(null);
   const [svgContent, setSvgContent] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -311,6 +329,31 @@ export function Mermaid({ chart }: MermaidProps) {
   const [initialPinchMidpoint, setInitialPinchMidpoint] = useState<{ x: number; y: number } | null>(null);
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
   const [isLoading, setIsLoading] = useState(true);
+
+  const [isZooming, setIsZooming] = useState(false);
+  const [continuousZoom, setContinuousZoom] = useState<number | null>(null);
+  const zoomTimeoutRef = useRef<any>(null);
+
+
+  const triggerZoomFeedback = (targetZ: number) => {
+    setContinuousZoom(targetZ);
+    setIsZooming(true);
+    if (zoomTimeoutRef.current) {
+      clearTimeout(zoomTimeoutRef.current);
+    }
+    zoomTimeoutRef.current = setTimeout(() => {
+      setIsZooming(false);
+      setContinuousZoom(null);
+    }, 750);
+  };
+
+  // Drag, wheel, and tap state trackers
+  const wheelAccumulatorRef = useRef(0);
+  const dragStartPosRef = useRef({ x: 0, y: 0 });
+  const hasMovedRef = useRef(false);
+  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
+  const touchHasMovedRef = useRef(false);
+  const touchIsDraggingRef = useRef(false);
 
   // Prevent background scroll when modal is open
   useEffect(() => {
@@ -410,12 +453,9 @@ export function Mermaid({ chart }: MermaidProps) {
 
   const calculateFitZoom = (size: { width: number, height: number }) => {
     if (!size.width || !size.height) return 1;
-    
-    const padding = 0.92; // Use 92% of viewport
-    const zoomX = (window.innerWidth * padding) / size.width;
-    const zoomY = (window.innerHeight * padding) / size.height;
-    
-    return Math.min(zoomX, zoomY);
+    const sizeRatio = size.width / size.height;
+    const viewportRatio = window.innerWidth / window.innerHeight;
+    return Math.min(FULL_ZOOM, FULL_ZOOM * (1 - ((viewportRatio - sizeRatio) / viewportRatio)));
   };
 
   const toggleModal = () => {
@@ -461,25 +501,34 @@ export function Mermaid({ chart }: MermaidProps) {
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
       }
+      if (zoomTimeoutRef.current) {
+        clearTimeout(zoomTimeoutRef.current);
+      }
     };
   }, []);
 
   const handleZoomIn = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const nextZoom = Math.min(zoomRef.current * 1.2, 10);
+    const currentZoom = zoomRef.current;
+    const nextZoom = ZOOM_STEPS.find(s => s > currentZoom + 0.001) || 10.0;
     updateTransform(nextZoom, positionRef.current);
+    triggerZoomFeedback(nextZoom);
   };
 
   const handleZoomOut = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    const nextZoom = Math.max(zoomRef.current * 0.8, 0.05);
+    const currentZoom = zoomRef.current;
+    const reversedSteps = [...ZOOM_STEPS].reverse();
+    const nextZoom = reversedSteps.find(s => s < currentZoom - 0.001) || 0.05;
     updateTransform(nextZoom, positionRef.current);
+    triggerZoomFeedback(nextZoom);
   };
 
-  const handleResetZoom = (e: React.MouseEvent) => {
+  const handleZoomToFit = (e: React.MouseEvent) => {
     e.stopPropagation();
     const fitZoom = calculateFitZoom(naturalSize);
     updateTransform(fitZoom, { x: 0, y: 0 });
+    triggerZoomFeedback(fitZoom);
   };
 
   useEffect(() => {
@@ -494,36 +543,65 @@ export function Mermaid({ chart }: MermaidProps) {
     const el = modalRef.current;
     if (!el || !isModalOpen) return;
 
+    wheelAccumulatorRef.current = 0;
+
     const onWheelEvent = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
       
-      // On trackpads, pinches send wheel events with e.ctrlKey === true.
-      // We use a higher scale base for pinch-to-zoom than standard scrolling to make it snappier.
       const isPinch = e.ctrlKey;
-      const base = isPinch ? 1.008 : 1.003;
-      const factor = Math.pow(base, -e.deltaY);
+      const threshold = isPinch ? 15 : 80;
+      
+      wheelAccumulatorRef.current += e.deltaY;
       
       const currentZoom = zoomRef.current;
-      const currentPos = positionRef.current;
+      const currentIdx = ZOOM_STEPS.indexOf(currentZoom);
       
-      const nextZoom = Math.min(Math.max(currentZoom * factor, 0.05), 10);
-      const scaleChange = nextZoom / currentZoom;
+      let tempContinuousZoom = currentZoom;
+      const progress = -wheelAccumulatorRef.current / threshold; // positive means zooming in (higher index)
+      if (progress > 0 && currentIdx < ZOOM_STEPS.length - 1) {
+        const nextZoom = ZOOM_STEPS[currentIdx + 1];
+        tempContinuousZoom = currentZoom + progress * (nextZoom - currentZoom);
+      } else if (progress < 0 && currentIdx > 0) {
+        const prevZoom = ZOOM_STEPS[currentIdx - 1];
+        tempContinuousZoom = currentZoom + Math.abs(progress) * (prevZoom - currentZoom);
+      }
       
-      const rect = el.getBoundingClientRect();
-      const C_orig_x = rect.left + rect.width / 2;
-      const C_orig_y = rect.top + rect.height / 2;
+      triggerZoomFeedback(tempContinuousZoom);
       
-      const mouseX = e.clientX;
-      const mouseY = e.clientY;
-      
-      const nextX = (mouseX - C_orig_x) * (1 - scaleChange) + currentPos.x * scaleChange;
-      const nextY = (mouseY - C_orig_y) * (1 - scaleChange) + currentPos.y * scaleChange;
-      
-      updateTransform(nextZoom, { x: nextX, y: nextY });
+      if (Math.abs(wheelAccumulatorRef.current) >= threshold) {
+        const zoomIn = wheelAccumulatorRef.current < 0;
+        
+        let nextZoom;
+        if (zoomIn) {
+          nextZoom = ZOOM_STEPS.find(s => s > currentZoom + 0.001) || 10.0;
+        } else {
+          const reversedSteps = [...ZOOM_STEPS].reverse();
+          nextZoom = reversedSteps.find(s => s < currentZoom - 0.001) || 0.05;
+        }
+        
+        wheelAccumulatorRef.current = 0;
+        
+        if (nextZoom === currentZoom) return;
+        
+        const scaleChange = nextZoom / currentZoom;
+        const currentPos = positionRef.current;
+        
+        const rect = el.getBoundingClientRect();
+        const C_orig_x = rect.left + rect.width / 2;
+        const C_orig_y = rect.top + rect.height / 2;
+        
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        
+        const nextX = (mouseX - C_orig_x) * (1 - scaleChange) + currentPos.x * scaleChange;
+        const nextY = (mouseY - C_orig_y) * (1 - scaleChange) + currentPos.y * scaleChange;
+        
+        updateTransform(nextZoom, { x: nextX, y: nextY });
+        triggerZoomFeedback(nextZoom);
+      }
     };
 
-    // Handle Safari high-precision native trackpad gestures
     const onGestureStart = (e: any) => {
       e.preventDefault();
       e.stopPropagation();
@@ -534,11 +612,19 @@ export function Mermaid({ chart }: MermaidProps) {
       e.preventDefault();
       e.stopPropagation();
       if (gestureStartZoomRef.current !== null) {
-        // Boost pinch speed by a factor of 1.5 to make it feel more responsive
         const adjustedScale = 1 + (e.scale - 1) * 1.5;
-        const nextZoom = Math.min(Math.max(gestureStartZoomRef.current * adjustedScale, 0.05), 10);
+        const targetZoom = Math.min(Math.max(gestureStartZoomRef.current * adjustedScale, 0.05), 10);
+        
+        triggerZoomFeedback(targetZoom);
+        
+        // Find nearest step in ZOOM_STEPS
+        const nextZoom = ZOOM_STEPS.reduce((prev, curr) => 
+          Math.abs(curr - targetZoom) < Math.abs(prev - targetZoom) ? curr : prev
+        );
         
         const currentZoom = zoomRef.current;
+        if (nextZoom === currentZoom) return;
+        
         const currentPos = positionRef.current;
         const scaleChange = nextZoom / currentZoom;
         
@@ -574,21 +660,6 @@ export function Mermaid({ chart }: MermaidProps) {
       el.removeEventListener('gestureend', onGestureEnd);
     };
   }, [isModalOpen]);
-
-  const isClickableElement = (target: HTMLElement | null): boolean => {
-    let current = target;
-    while (current && current !== containerRef.current && current !== ref.current) {
-      if (
-        current.tagName.toLowerCase() === 'a' || 
-        current.classList.contains('clickable') ||
-        current.getAttribute('clickable') === 'true'
-      ) {
-        return true;
-      }
-      current = current.parentElement;
-    }
-    return false;
-  };
 
   const handleMainContainerClick = (e: React.MouseEvent) => {
     let current = e.target as HTMLElement | null;
@@ -627,39 +698,55 @@ export function Mermaid({ chart }: MermaidProps) {
     toggleModal();
   };
 
-  const handleModalDiagramClick = (e: React.MouseEvent) => {
-    let current = e.target as HTMLElement | null;
-    while (current && current !== e.currentTarget) {
-      const tagName = current.tagName.toLowerCase();
-      if (tagName === 'a') {
-        const href = current.getAttribute('href') || current.getAttribute('xlink:href');
-        if (href) {
-          e.preventDefault();
-          e.stopPropagation();
-          window.location.href = href;
-          return;
-        }
-      }
-      if (current.classList.contains('clickable') || current.getAttribute('clickable') === 'true') {
-        const href = current.getAttribute('href') || current.getAttribute('xlink:href');
-        if (href) {
-          e.preventDefault();
-          e.stopPropagation();
-          window.location.href = href;
-          return;
-        }
-        const anchor = current.querySelector('a');
-        if (anchor) {
-          const aHref = anchor.getAttribute('href') || anchor.getAttribute('xlink:href');
-          if (aHref) {
-            e.preventDefault();
-            e.stopPropagation();
-            window.location.href = aHref;
+  const handlePointerClick = (clientX: number, clientY: number) => {
+    if (!glasspaneRef.current || !containerRef.current) return;
+
+    // 1. Temporarily disable pointer events on the glasspane
+    const originalPointerEvents = glasspaneRef.current.style.pointerEvents;
+    glasspaneRef.current.style.pointerEvents = 'none';
+
+    // 2. Find the element at the coordinate
+    const targetEl = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+
+    // 3. Restore pointer events on the glasspane
+    glasspaneRef.current.style.pointerEvents = originalPointerEvents;
+
+    if (!targetEl) return;
+
+    // Check if the target element is inside our diagram container
+    const container = containerRef.current;
+    if (container.contains(targetEl)) {
+      // Find if we clicked on a link or a clickable element
+      let current: HTMLElement | null = targetEl;
+      while (current && current !== container) {
+        const tagName = current.tagName.toLowerCase();
+        if (tagName === 'a') {
+          const href = current.getAttribute('href') || current.getAttribute('xlink:href');
+          if (href) {
+            window.location.href = href;
             return;
           }
         }
+        if (current.classList.contains('clickable') || current.getAttribute('clickable') === 'true') {
+          const href = current.getAttribute('href') || current.getAttribute('xlink:href');
+          if (href) {
+            window.location.href = href;
+            return;
+          }
+          const anchor = current.querySelector('a');
+          if (anchor) {
+            const aHref = anchor.getAttribute('href') || anchor.getAttribute('xlink:href');
+            if (aHref) {
+              window.location.href = aHref;
+              return;
+            }
+          }
+        }
+        current = current.parentElement;
       }
-      current = current.parentElement;
+    } else {
+      // Clicked outside the diagram container (on the background). Close the modal!
+      toggleModal();
     }
   };
 
@@ -671,31 +758,46 @@ export function Mermaid({ chart }: MermaidProps) {
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (isClickableElement(e.target as HTMLElement)) {
-      return;
-    }
+    // Only handle left clicks
+    if (e.button !== 0) return;
+    
     e.preventDefault();
     e.stopPropagation();
+    
     setIsDragging(true);
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    hasMovedRef.current = false;
+    
+    dragStartPosRef.current = { x: e.clientX, y: e.clientY };
+    setDragStart({ x: e.clientX - positionRef.current.x, y: e.clientY - positionRef.current.y });
   };
 
   useEffect(() => {
     if (!isDragging) return;
 
     const handleGlobalMouseMove = (e: MouseEvent) => {
-      // e.buttons !== 1 check ensures dragging ends if user releases the mouse button outside the window
       if (e.buttons !== 1) {
         setIsDragging(false);
         return;
       }
+      
+      const dx = e.clientX - dragStartPosRef.current.x;
+      const dy = e.clientY - dragStartPosRef.current.y;
+      
+      // Threshold to distinguish dragging from clicking
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        hasMovedRef.current = true;
+      }
+      
       const nextX = e.clientX - dragStart.x;
       const nextY = e.clientY - dragStart.y;
       updateTransform(zoomRef.current, { x: nextX, y: nextY });
     };
 
-    const handleGlobalMouseUp = () => {
+    const handleGlobalMouseUp = (e: MouseEvent) => {
       setIsDragging(false);
+      if (!hasMovedRef.current) {
+        handlePointerClick(e.clientX, e.clientY);
+      }
     };
 
     window.addEventListener('mousemove', handleGlobalMouseMove);
@@ -708,32 +810,30 @@ export function Mermaid({ chart }: MermaidProps) {
   }, [isDragging, dragStart]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (isClickableElement(e.target as HTMLElement)) {
-      return;
-    }
-    // We don't preventDefault here to allow clicks to possibly go through if needed, 
-    // but we stop propagation to keep the modal from closing.
     e.stopPropagation();
     
     const count = e.touches.length;
     if (count === 1) {
       // Enable panning
       const touch = e.touches[0];
-      setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
-      setIsDragging(true);
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+      setDragStart({ x: touch.clientX - positionRef.current.x, y: touch.clientY - positionRef.current.y });
+      touchIsDraggingRef.current = true;
+      touchHasMovedRef.current = false;
+      
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
       setInitialPinchPosition(null);
       setInitialPinchMidpoint(null);
     } else if (count === 2) {
       // Enable pinching, disable panning
-      setIsDragging(false);
+      touchIsDraggingRef.current = false;
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       setInitialPinchDistance(dist);
-      setInitialPinchZoom(zoom);
-      setInitialPinchPosition(position);
+      setInitialPinchZoom(zoomRef.current);
+      setInitialPinchPosition(positionRef.current);
       const midX = (touch1.clientX + touch2.clientX) / 2;
       const midY = (touch1.clientY + touch2.clientY) / 2;
       setInitialPinchMidpoint({ x: midX, y: midY });
@@ -741,14 +841,21 @@ export function Mermaid({ chart }: MermaidProps) {
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    // Essential for iPad to prevent system-level gestures like page scroll/zoom
     if (e.cancelable) e.preventDefault();
     e.stopPropagation();
 
     const count = e.touches.length;
     
-    if (count === 1 && isDragging) {
+    if (count === 1 && touchIsDraggingRef.current) {
       const touch = e.touches[0];
+      
+      const dx = touch.clientX - (touchStartRef.current?.x ?? touch.clientX);
+      const dy = touch.clientY - (touchStartRef.current?.y ?? touch.clientY);
+      
+      if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+        touchHasMovedRef.current = true;
+      }
+      
       const nextX = touch.clientX - dragStart.x;
       const nextY = touch.clientY - dragStart.y;
       updateTransform(zoomRef.current, { x: nextX, y: nextY });
@@ -757,7 +864,19 @@ export function Mermaid({ chart }: MermaidProps) {
       const touch2 = e.touches[1];
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       const factor = dist / initialPinchDistance;
-      const nextZoom = Math.min(Math.max(initialPinchZoom * factor, 0.05), 10);
+      const targetZoom = Math.min(Math.max(initialPinchZoom * factor, 0.05), 10);
+      
+      triggerZoomFeedback(targetZoom);
+
+      // Find nearest step in ZOOM_STEPS
+      const nextZoom = ZOOM_STEPS.reduce((prev, curr) => 
+        Math.abs(curr - targetZoom) < Math.abs(prev - targetZoom) ? curr : prev
+      );
+      
+      if (nextZoom === zoomRef.current) {
+        // Skip updating if we haven't crossed into a new step
+        return;
+      }
       
       const currentMidX = (touch1.clientX + touch2.clientX) / 2;
       const currentMidY = (touch1.clientY + touch2.clientY) / 2;
@@ -781,11 +900,20 @@ export function Mermaid({ chart }: MermaidProps) {
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
     const count = e.touches.length;
     
     if (count === 0) {
       // All fingers lifted
-      setIsDragging(false);
+      if (touchIsDraggingRef.current && !touchHasMovedRef.current && touchStartRef.current) {
+        const duration = Date.now() - touchStartRef.current.time;
+        if (duration < 300) {
+          // This is a tap!
+          handlePointerClick(touchStartRef.current.x, touchStartRef.current.y);
+        }
+      }
+      
+      touchIsDraggingRef.current = false;
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
       setInitialPinchPosition(null);
@@ -793,21 +921,30 @@ export function Mermaid({ chart }: MermaidProps) {
     } else if (count === 1) {
       // One finger remains, transition back to panning mode
       const touch = e.touches[0];
-      // Reset drag start relative to current position to avoid jumps
-      setDragStart({ x: touch.clientX - position.x, y: touch.clientY - position.y });
-      setIsDragging(true);
+      touchStartRef.current = { x: touch.clientX, y: touch.clientY, time: Date.now() };
+      setDragStart({ x: touch.clientX - positionRef.current.x, y: touch.clientY - positionRef.current.y });
+      touchIsDraggingRef.current = true;
+      touchHasMovedRef.current = false;
+      
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
       setInitialPinchPosition(null);
       setInitialPinchMidpoint(null);
     } else {
-      // More than 1 finger remains but wasn't handled, reset pinch
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
       setInitialPinchPosition(null);
       setInitialPinchMidpoint(null);
     }
   };
+
+  const currentStepIdx = ZOOM_STEPS.reduce((closestIdx, step, idx) => {
+    const currentDiff = Math.abs(ZOOM_STEPS[closestIdx] - zoom);
+    const thisDiff = Math.abs(step - zoom);
+    return thisDiff < currentDiff ? idx : closestIdx;
+  }, 8);
+
+  const continuousIdx = continuousZoom !== null ? getZoomFractionalIndex(continuousZoom) : currentStepIdx;
 
   return (
     <>
@@ -851,7 +988,7 @@ export function Mermaid({ chart }: MermaidProps) {
             onClick={toggleModal}
           >
             <div className="absolute top-6 right-6 flex items-center gap-4 z-[110]">
-              <div className="flex bg-white/10 backdrop-blur-md border border-white/10 rounded-full p-1 shadow-2xl">
+              <div className="flex items-center bg-white/10 backdrop-blur-md border border-white/10 rounded-full p-1 px-3 shadow-2xl gap-1">
                 <button 
                   onClick={handleZoomOut}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
@@ -860,11 +997,13 @@ export function Mermaid({ chart }: MermaidProps) {
                   <ZoomOut size={18} className="text-white/70" />
                 </button>
                 <button 
-                  onClick={handleResetZoom}
+                  onClick={handleZoomToFit}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
-                  title={t.mermaid.reset}
+                  title={t.mermaid.zoomToFit}
                 >
-                  <RotateCcw size={18} className="text-white/70" />
+                  <Maximize size={18} className="text-white/70">
+                    <Expand size={12}  x={6} y={6} className="text-white/70"/>
+                  </Maximize>
                 </button>
                 <button 
                   onClick={handleZoomIn}
@@ -872,7 +1011,7 @@ export function Mermaid({ chart }: MermaidProps) {
                   title={t.mermaid.zoomIn}
                 >
                   <ZoomIn size={18} className="text-white/70" />
-                </button>
+                </button>                
               </div>
 
               <button 
@@ -884,21 +1023,74 @@ export function Mermaid({ chart }: MermaidProps) {
               </button>
             </div>
 
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full h-full overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing touch-none"
+            <AnimatePresence>
+              {isZooming && (
+                <motion.div
+                  initial={{ opacity: 0, x: 0 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 0 }}
+                  className="absolute right-21 top-55 -translate-y-1/2 flex flex-col items-center bg-black/55 backdrop-blur-xl border border-white/10 rounded-2xl pr-4 py-5 shadow-2xl z-[110] pointer-events-none w-25"
+                >
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white mb-3 ml-3 text-center min-w-[11em]">
+                    ZOOM {Math.round(zoom * 100)}%
+                  </span>
+                  
+                  <div className="relative h-48 w-6 flex items-center justify-center mr-4">
+                    {/* The vertical track line */}
+                    <div className="absolute inset-y-0 w-0.5 bg-white/15 rounded-full" />
+                    
+                    {/* Discrete Tick Marks */}
+                    {ZOOM_STEPS.map((step, idx) => {
+                      const isKey = idx === 0 || idx === 5 || idx === 8 || idx === 14 || idx === 19;
+                      return (
+                        <div
+                          key={idx}
+                          className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
+                          style={{ bottom: `${(idx / 19) * 100}%` }}
+                        >
+                          <div 
+                            className={`h-[2px] transition-all rounded-full ${
+                              idx === currentStepIdx 
+                                ? 'w-3.5 bg-brand-accent' 
+                                : isKey 
+                                  ? 'w-2 bg-white/45' 
+                                  : 'w-1 bg-white/20'
+                            }`} 
+                          />
+                          {isKey && (
+                            <span className="absolute left-4 text-[8px] font-bold text-white/40 tracking-wider min-w-[4em]">
+                              {Math.round(step * 100)}%
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {/* Dynamic continuous zoom pointer (Amber color to show micro-movements) */}
+                    {continuousZoom !== null && (
+                      <div
+                        className="absolute w-5 h-1 bg-amber-400 rounded-full shadow-lg shadow-amber-400/50 -translate-x-1/2 left-1/2 transition-all duration-75 z-20 border border-black/40"
+                        style={{ bottom: `calc(${(continuousIdx / 19) * 100}% - 1px)` }}
+                      />
+                    )}
+
+                    {/* Discrete Zoom step pointer (Brand Accent) */}
+                    <div
+                      className="absolute w-3 h-3 bg-brand-accent rounded-full -translate-x-1/2 left-1/2 shadow-md transition-all duration-150 z-10 border border-white/50"
+                      style={{ bottom: `calc(${(currentStepIdx / 19) * 100}% - 6px)` }}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div 
+              className="relative w-full h-full overflow-hidden flex items-center justify-center touch-none"
               onClick={e => e.stopPropagation()}
-              onMouseDown={handleMouseDown}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
             >
               <div 
                 ref={setModalContainerRef}
-                className="mermaid select-none flex items-center justify-center pointer-events-auto"
-                onClick={handleModalDiagramClick}
+                className="mermaid select-none flex items-center justify-center"
                 style={{ 
                   width: naturalSize.width ? `${naturalSize.width}px` : '100%',
                   height: naturalSize.height ? `${naturalSize.height}px` : '100%',
@@ -907,14 +1099,17 @@ export function Mermaid({ chart }: MermaidProps) {
                 }}
                 dangerouslySetInnerHTML={{ __html: svgContent }}
               />
-            </motion.div>
 
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
-              <div className="px-6 py-2 bg-white/5 border border-white/10 rounded-full backdrop-blur-md shadow-2xl">
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
-                  {Math.round(zoom * 100)}% {t.mermaid.viewInfo}
-                </p>
-              </div>
+              {/* Transparent Glasspane that catches all mouse/touch gesture inputs */}
+              <div
+                ref={glasspaneRef}
+                data-testid="mermaid-glasspane"
+                className="absolute inset-0 cursor-grab active:cursor-grabbing touch-none z-10"
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              />
             </div>
           </motion.div>
         )}
