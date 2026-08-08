@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from './frontmatter.js';
 import {
   getFilesRecursive,
   validateMarkdownVideoBlocks
@@ -62,7 +62,7 @@ if (fs.existsSync(postsDir)) {
     // Front matter parsing
     let parsed: any;
     try {
-      parsed = matter(rawContent);
+      parsed = parseFrontmatter(rawContent);
     } catch (err: any) {
       errors.push(`[File: ${file}] Front matter parsing failed: ${err.message || err}`);
       continue;
@@ -129,7 +129,7 @@ if (fs.existsSync(pagesDir)) {
     // Front matter parsing
     let parsed: any;
     try {
-      parsed = matter(rawContent);
+      parsed = parseFrontmatter(rawContent);
     } catch (err: any) {
       errors.push(`[File: ${file}] Front matter parsing failed: ${err.message || err}`);
       continue;
@@ -162,7 +162,7 @@ if (fs.existsSync(authorsDir)) {
     // Front matter parsing
     let parsed: any;
     try {
-      parsed = matter(rawContent);
+      parsed = parseFrontmatter(rawContent);
     } catch (err: any) {
       errors.push(`[File: ${file}] Front matter parsing failed: ${err.message || err}`);
       continue;

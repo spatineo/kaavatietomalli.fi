@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from './frontmatter.js';
 import { create, insert, save, components } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
 import { stemmer as svStemmer } from '@orama/stemmers/swedish';
@@ -151,7 +151,7 @@ async function generateSearchIndex() {
       const fullPath = path.join(dir, file);
       const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
       const fileContent = fs.readFileSync(fullPath, 'utf-8');
-      const { data, content } = matter(fileContent);
+      const { data, content } = parseFrontmatter(fileContent);
 
       // Filter by publishDate for posts
       if (type === 'post' && data.publishDate) {

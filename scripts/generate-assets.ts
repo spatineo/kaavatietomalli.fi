@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from './frontmatter.js';
 import dotenv from 'dotenv';
 import { execSync } from 'child_process';
 import { PROJECT_CONFIG } from '../project.config.js';
@@ -87,7 +87,7 @@ export function loadAndParsePosts(postsDir: string, now: Date = new Date()): Pos
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(postsDir, file), 'utf-8');
     validateMarkdownVideoBlocks(path.join(postsDir, file), content);
-    const { data, content: textContent } = matter(content);
+    const { data, content: textContent } = parseFrontmatter(content);
     if (!data.title) {
       console.warn(`Warning: Post in "${file}" has missing or empty "title" metadata.`);
     }
@@ -129,7 +129,7 @@ export function loadAndParsePages(pagesDir: string): PageData[] {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(pagesDir, file), 'utf-8');
     validateMarkdownVideoBlocks(path.join(pagesDir, file), content);
-    const { data, content: textContent } = matter(content);
+    const { data, content: textContent } = parseFrontmatter(content);
     if (!data.title) {
       console.warn(`Warning: Page in "${file}" has missing or empty "title" metadata.`);
     }
@@ -156,7 +156,7 @@ export function loadAndParseAuthors(authorsDir: string): AuthorData[] {
   const allAuthors: AuthorData[] = authorFiles.map(file => {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(authorsDir, file), 'utf-8');
-    const { data, content: textContent } = matter(content);
+    const { data, content: textContent } = parseFrontmatter(content);
     return {
       slug,
       name: data.name || '',
@@ -853,55 +853,64 @@ export function generateBuildVersion(publicDir: string): void {
   console.log(`Generated build version: ${buildVersion}`);
 }
 
-export async function generateAssets() {
-  const t = getTranslations('fi');
-  const historyMap = getGitHistoryOfContent();
-  const postsDir = path.join(CONTENT_DIR, 'posts');
-  const pagesDir = path.join(CONTENT_DIR, 'pages');
-  const authorsDir = path.join(CONTENT_DIR, 'authors');
+export interface LoadedContent {
+  posts: PostData[];
+  pages: PageData[];
+  authors: AuthorData[];
+}
 
-  const now = new Date();
+export function loadAllContent(
+  postsDir: string,
+  pagesDir: string,
+  authorsDir: string,
+  now: Date = new Date()
+): LoadedContent {
   const posts = loadAndParsePosts(postsDir, now);
   const pages = loadAndParsePages(pagesDir);
   const authors = loadAndParseAuthors(authorsDir);
+  return { posts, pages, authors };
+}
 
-  // Generate JSON index files (Metadata only)
-  const CONTENT_OUT_DIR = path.join(PUBLIC_DIR, 'content');
-  const IMAGES_OUT_DIR = path.join(PUBLIC_DIR, 'images');
-  [CONTENT_OUT_DIR, IMAGES_OUT_DIR].forEach(dir => {
+export function ensureOutputDirectories(contentOutDir: string, imagesOutDir: string): void {
+  [contentOutDir, imagesOutDir].forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
   });
+}
 
-  // Generate Tag Index
-  const tagIndex = generateTagIndex(posts, pages);
-
+export function writeMetadataIndexes(
+  posts: PostData[],
+  pages: PageData[],
+  contentOutDir: string,
+  tagIndex: any
+): void {
   fs.writeFileSync(
-    path.join(CONTENT_OUT_DIR, 'tags.json'),
+    path.join(contentOutDir, 'tags.json'),
     JSON.stringify(tagIndex, null, 2),
     'utf-8'
   );
 
   fs.writeFileSync(
-    path.join(CONTENT_OUT_DIR, 'posts.json'), 
-    JSON.stringify(posts.map(({ content, ...rest}) => rest), null, 2),
+    path.join(contentOutDir, 'posts.json'), 
+    JSON.stringify(posts.map(({ content, ...rest }) => rest), null, 2),
     'utf-8'
   );
+  
   fs.writeFileSync(
-    path.join(CONTENT_OUT_DIR, 'pages.json'), 
-    JSON.stringify(pages.map(({ content, ...rest}) => rest), null, 2),
+    path.join(contentOutDir, 'pages.json'), 
+    JSON.stringify(pages.map(({ content, ...rest }) => rest), null, 2),
     'utf-8'
   );
+}
 
-  copyContentConfig(CONTENT_DIR, CONTENT_OUT_DIR);
-
-  // Generate individual content files
-  const dataAccess = new LocalFileDataModelAccess();
-  await generateIndividualContentFiles(posts, pages, authors, CONTENT_OUT_DIR, dataAccess);
-
-  console.log('Generated JSON index and individual JSON and Markdown files');
-
+export function runGenerators(
+  posts: PostData[],
+  pages: PageData[],
+  authors: AuthorData[],
+  historyMap: Record<string, any>,
+  t: any
+): void {
   generateSitemaps(posts, pages, PUBLIC_DIR, CONFIG.baseUrl);
 
   generateRobotsTxt(PUBLIC_DIR, CONFIG.baseUrl);
@@ -915,9 +924,37 @@ export async function generateAssets() {
 
   generate404Html(PUBLIC_DIR, t);
 
+  const IMAGES_OUT_DIR = path.join(PUBLIC_DIR, 'images');
   copyImages(RESOURCES_DIR, CONTENT_DIR, IMAGES_OUT_DIR);
 
   generateBuildVersion(PUBLIC_DIR);
+}
+
+export async function generateAssets() {
+  const t = getTranslations('fi');
+  const historyMap = getGitHistoryOfContent();
+  const postsDir = path.join(CONTENT_DIR, 'posts');
+  const pagesDir = path.join(CONTENT_DIR, 'pages');
+  const authorsDir = path.join(CONTENT_DIR, 'authors');
+
+  const now = new Date();
+  const { posts, pages, authors } = loadAllContent(postsDir, pagesDir, authorsDir, now);
+
+  const CONTENT_OUT_DIR = path.join(PUBLIC_DIR, 'content');
+  const IMAGES_OUT_DIR = path.join(PUBLIC_DIR, 'images');
+  ensureOutputDirectories(CONTENT_OUT_DIR, IMAGES_OUT_DIR);
+
+  const tagIndex = generateTagIndex(posts, pages);
+  writeMetadataIndexes(posts, pages, CONTENT_OUT_DIR, tagIndex);
+
+  copyContentConfig(CONTENT_DIR, CONTENT_OUT_DIR);
+
+  const dataAccess = new LocalFileDataModelAccess();
+  await generateIndividualContentFiles(posts, pages, authors, CONTENT_OUT_DIR, dataAccess);
+
+  console.log('Generated JSON index and individual JSON and Markdown files');
+
+  runGenerators(posts, pages, authors, historyMap, t);
 }
 
 function copyFolderRecursiveSync(source: string, target: string) {
