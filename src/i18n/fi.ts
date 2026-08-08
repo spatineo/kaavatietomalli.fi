@@ -67,7 +67,7 @@ export const fi: Translations = {
     expand: 'Laajenna kaavio',
     zoomIn: 'Lähennä',
     zoomOut: 'Loitonna',
-    reset: 'Palauta',
+    zoomToFit: 'Mahduta',
     close: 'Sulje',
     viewInfo: 'Liikuta ja zoomaa tutkiaksesi kaaviota',
     renderError: 'Mermaid-kaavion piirto epäonnistui',
