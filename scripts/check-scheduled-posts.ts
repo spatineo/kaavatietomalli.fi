@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import matter from 'gray-matter';
+import { parseFrontmatter } from './frontmatter.js';
 import { getFilesRecursive } from './content-utils.js';
 import { PROJECT_CONFIG } from '../project.config.js';
 
@@ -52,7 +52,7 @@ export async function checkScheduledPosts() {
   for (const file of postFiles) {
     const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
     const content = fs.readFileSync(path.join(postsDir, file), 'utf-8');
-    const { data } = matter(content);
+    const { data } = parseFrontmatter(content);
     
     if (data.publishDate) {
       const pDate = new Date(data.publishDate);
