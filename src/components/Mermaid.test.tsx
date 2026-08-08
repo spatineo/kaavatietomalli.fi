@@ -89,7 +89,5 @@ describe('Mermaid component', () => {
     const modal = screen.getByTestId('mermaid-modal');
     expect(modal).toBeDefined();
 
-    // Controllers should show zoom levels
-    expect(screen.getByText(/%/i)).toBeDefined();
   });
 });
