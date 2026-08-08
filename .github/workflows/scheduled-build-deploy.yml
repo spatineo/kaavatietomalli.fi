@@ -18,6 +18,12 @@ jobs:
   check-and-rebuild:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "date=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
+        shell: bash
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
         with:
@@ -35,9 +41,17 @@ jobs:
       - name: Validate Markdown content
         run: npm run validate-content
 
-      - name: Download Giscus stats
-        run: npm run fetch-giscus-stats
+      - name: Cache Giscus stats
+        id: cache-giscus-stats
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: public/content/giscus-stats.json
+          key: giscus-stats-${{ steps.get-date.outputs.date }}
 
+      - name: Download Giscus stats
+        if: steps.cache-giscus-stats.outputs.cache-hit != 'true'
+        run: npm run fetch-giscus-stats
+      
       - name: Check for newly publishable scheduled posts and Giscus stats changes
         id: check
         run: npx tsx scripts/check-scheduled-posts.ts
@@ -47,10 +61,10 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: public/data/suomi.fi
-          key: suomi-data-${{ hashFiles('**/*.json') }}
+          key: suomi-data-${{ steps.get-date.outputs.date }}
           restore-keys: suomi-data-
 
-      - name: Fetch datamodels and codelists
+      - name: Fetch datamodels and codelists, detect actual data changes
         id: fetch-data
         run: npm run fetch-data
 

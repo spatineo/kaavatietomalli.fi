@@ -22,6 +22,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "date=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
+        shell: bash
+
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
         with:
@@ -101,8 +107,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: public/data/suomi.fi
-          key: suomi-data-${{ hashFiles('**/*.json') }}
-          restore-keys: suomi-data-
+          key: suomi-data-${{ steps.get-date.outputs.date }}
 
       - name: Fetch datamodels and codelists
         if: steps.cache-data.outputs.cache-hit != 'true'
@@ -113,8 +118,7 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: public/content/giscus-stats.json
-          key: giscus-stats-${{ hashFiles('public/content/giscus-stats.json') }}
-          restore-keys: giscus-stats-
+          key: giscus-stats-${{ steps.get-date.outputs.date }}
 
       - name: Download Giscus stats
         if: steps.cache-giscus-stats.outputs.cache-hit != 'true'

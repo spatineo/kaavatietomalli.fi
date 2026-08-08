@@ -123,7 +123,7 @@ export function transformCodelistData(
   metaData: any,
   codesData: any,
   uri: string,
-  fetchTimestamp?: string
+  fetchTimestamp: string
 ) {
   let codelistLabels: LocalizedText = { unknown: uri.split('/').pop() || 'UnknownCodelist' };
   if (metaData && metaData.prefLabel) {
@@ -190,7 +190,7 @@ export function transformCodelistData(
     modified: metaData?.modified || null,
     statusModified: metaData?.statusModified || null,
     status: metaData?.status || null,
-    originSyncTime: fetchTimestamp || new Date().toISOString(),
+    originSyncTime: fetchTimestamp,
     allVersions: metaData?.allVersions || [],
     codes: sortedCodes
   } as Codelist;
