@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url';
 import { isContentEqual } from './content-utils';
 import { Codelist, CodeItem, LocalizedText  } from '@/src/lib/data-model-types';
 import { CONFIG } from '../src/config';
-import { formatDate } from 'date-fns';
 
 export interface CodelistItem {
   name: string;
