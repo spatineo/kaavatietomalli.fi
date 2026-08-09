@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, ZoomIn, ZoomOut, Maximize, Expand } from 'lucide-react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
-import { unobserveMutations } from 'happy-dom/lib/PropertySymbol';
 
 // Lazy load mermaid library
 let mermaidInstance: any = null;
