@@ -264,7 +264,7 @@ Kaavatietomallin aiemmissa suunnitteluversioissa Kaava-asian ja kaavasuunnitelma
 
 Ryhti-järjestelmään tallentamisen selkeyttämiseksi Kaavatietomalliin halutiin rakenne, jossa kunta tai maakunta tuo erikseen Ryhtiin hankkeen perustiedot (Kaava-asia ja ensimmäinen vaihe) ja myöhemmin erillisinä kokonaisuuksinaan yhden vaiheen kokonaisen kaavasuunnitelman uusine, aiemmista suunitelman vaiheista erillisine kaavakohteineen ja -määräyksineen. Tässä siis luovuttiin myös mahdollisuudesta kaavakohde- ja kaavamääräyskohtaisen muutoshistorian kuvaamiseen: Vaikka jokin kaavakohde ja siihen kohdistuvat kaavamääräykset olisivat täysin identtisiä esimerkiksi kaavaehdotusvaiheessa ja lopullisessa hyväksyssä kaavassa, ne kuvataan tietomallissa erillisinä, eri vaiheisiin liittyviä kopiotietoina, joden välillä ei ole tietomallissa mitään yhteyttä. Tämä toki helpottaa kaavan teknistä tiedonhallintaa siinä mielessä, että kukin kaavan vaiheen mukainen kaavasuunnitelma sisältää täydelliset tiedot kaikista sen kaavakohteista ja -määräyksistä ilman tarvetta viitata muuttumattomien tietojen osalta aiemmassa vaiheessa tallennettuihin versioihin suunnitelmaan kuuluvista kaavakohde- ja kaavamääräystiedoista.
 
-Nykyisen, Ryhti-järjestelmään toteutetun Kaavatietomallin mukaiset kaava-asian, sen vaiheiden ja päätösten attirubuutit ja luokkien keskinäiset suhteet on esitetty alla olevassa UML-luokkakaaviossa:
+Ryhti-järjestelmään toteutetun Kaavatietomallin mukaiset kaava-asian, sen vaiheiden ja päätösten attirubuutit ja luokkien keskinäiset suhteet on esitetty alla olevassa UML-luokkakaaviossa:
 
 ```data-model-snippet
     title: Kaava-asia, Kaava-asian vaihe ja Kaava-asian päätös
@@ -272,13 +272,14 @@ Nykyisen, Ryhti-järjestelmään toteutetun Kaavatietomallin mukaiset kaava-asia
     classes:
         - "https://iri.suomi.fi/model/rytj-kaava/Kaava-asia"
         - "https://iri.suomi.fi/model/rytj-kaava/Kaava-asianVaihe"
-        - "https://iri.suomi.fi/model/rytj-kaava/Kaava-asianPaatos"   
+        - "https://iri.suomi.fi/model/rytj-kaava/Kaava-asianPaatos"
 ```
 
 Kaaviossa on selkeyden vuoksi esitetty kokonaisuudessaan vain nämä kolme luokkaa ja niiden attribuuteissa käytetyt koodistot (stereotyyppi *codelist*). Näiden kolmen luokan assosiaaatiot muihin tietomallin luokkiin on myös esitetty, mutta näiden liittyvien luokkien yksityiskohtia ei. 
 
 ### Kaavasuunnitelma, kaavakohteet ja kaavamääräykset
 
+Kaavan varsinainen alueidenkäyttöä ja rakentamista ohjaava sisältö kuvataan Kaavatietomallissa Kaava-luokan ja siihen liittyvien Kaavakohde-, Kaavamääräys-luokkien avulla. 
 
 ```data-model-snippet
     title: Kaava, Yleismääräysryhmä, Kaavakohde, Kaavamääräysryhmä, Kaavamääräys, Kaavamääräyksen lisätieto ja Kaavasuositus 
@@ -304,4 +305,17 @@ Kaaviossa on selkeyden vuoksi esitetty kokonaisuudessaan vain nämä kolme luokk
         - "https://iri.suomi.fi/model/rytj-kaava/Korkeuspiste"
         - "https://iri.suomi.fi/model/rytj-kaava/Koodiarvo"
         - "https://iri.suomi.fi/model/rytj-kaava/Tekstiarvo"
+```
+
+### Kaavan ja sen osien kumoaminen
+
+```data-model-snippet
+    title: Kaavan kumoamistieto ja sen käyttö Kaava- ja Kaava-asian päätös -luokista
+    modelId: rytj-kaava-1.0.5
+    classes:
+        - "https://iri.suomi.fi/model/rytj-kaava/Kaava-asianPaatos"
+        - "https://iri.suomi.fi/model/rytj-kaava/Kaava"
+        - "https://iri.suomi.fi/model/rytj-kaava/KaavanKumoamistieto"
+        - "https://iri.suomi.fi/model/rytj-kaava/KaavakohteenKumoamistieto"
+        - "https://iri.suomi.fi/model/rytj-kaava/KumottavanRyhmanKohdistus"
 ```
