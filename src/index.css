@@ -47,6 +47,17 @@
     padding-right: 0.8em;
   }
 
+  .toc-item.toc-level-2 {
+    padding-left: 1em;
+  }
+
+  .toc-item.toc-level-3 {
+    padding-left: 2em;
+  }
+
+  .toc-item.toc-level-4 {
+    padding-left: 3em;
+  }
    
 }
 
@@ -92,6 +103,7 @@
 .markdown-body h1 { @apply text-5xl font-extrabold mb-8 mt-16 text-white; }
 .markdown-body h2 { @apply text-3xl font-bold mb-6 mt-12 border-b border-white/10 pb-2 text-white; }
 .markdown-body h3 { @apply text-xl font-bold mb-4 mt-8 text-slate-100; }
+.markdown-body h4 { @apply text-lg font-bold mb-3 mt-6 text-slate-100; }
 .markdown-body p { @apply mb-6 text-lg text-slate-300; }
 .markdown-body .mermaid p { @apply m-0 text-base; font-size: 16px !important; line-height: normal !important; }
 .markdown-body .mermaid div { line-height: normal !important; }

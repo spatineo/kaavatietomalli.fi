@@ -38,17 +38,6 @@ describe('TableOfContents Component', () => {
     expect(screen.getByText('Syvä otsikko')).toBeDefined();
     expect(screen.getByText('Alaotsikko 2')).toBeDefined();
 
-    // Check padding / indent style on some headings to confirm nesting indentation
-    const paaotsikkoBtn = screen.getByText('Pääotsikko');
-    const alaotsikkoBtn = screen.getByText('Alaotsikko 1');
-    const syvaOtsikkoBtn = screen.getByText('Syvä otsikko');
-
-    // Level 1: (1-1)*12 = 0px
-    expect(paaotsikkoBtn.style.paddingLeft).toBe('0px');
-    // Level 2: (2-1)*12 = 12px
-    expect(alaotsikkoBtn.style.paddingLeft).toBe('12px');
-    // Level 3: (3-1)*12 = 24px
-    expect(syvaOtsikkoBtn.style.paddingLeft).toBe('24px');
   });
 
   it('handles heading click and triggers smooth scroll and hash updates', async () => {

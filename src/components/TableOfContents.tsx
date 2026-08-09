@@ -74,16 +74,11 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
               <nav className="flex flex-col gap-1">
                 {headings.map((h, i) => {
-                  const indentStyle = {
-                    paddingLeft: `${Math.max(0, (h.level - 1) * 12)}px`,
-                  };
-
                   return (
                     <button
                       key={i}
                       onClick={() => handleHeadingClick(h.id)}
-                      className={`toc-item w-full text-left py-1.5 px-2 hover:bg-white/5 hover:text-brand-accent rounded-lg transition-all text-sm leading-tight text-slate-300 font-medium cursor-pointer`}
-                      style={indentStyle}
+                      className={`toc-item toc-level-${h.level} w-full text-left py-1.5 hover:bg-white/5 hover:text-brand-accent rounded-lg transition-all text-sm leading-tight text-slate-300 font-medium cursor-pointer`}
                     >
                       <span className="heading-number">{h.prefix ? `${h.prefix} ` : ''}</span><span className="heading-content">{h.text}</span>
                     </button>
