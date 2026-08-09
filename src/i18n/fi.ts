@@ -69,7 +69,6 @@ export const fi: Translations = {
     zoomOut: 'Loitonna',
     zoomToFit: 'Mahduta',
     close: 'Sulje',
-    viewInfo: 'Liikuta ja zoomaa tutkiaksesi kaaviota',
     renderError: 'Mermaid-kaavion piirto epäonnistui',
   },
   post: {
