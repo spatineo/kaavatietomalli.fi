@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, ZoomIn, ZoomOut, Maximize, Expand } from 'lucide-react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
+import { unobserveMutations } from 'happy-dom/lib/PropertySymbol';
 
 // Lazy load mermaid library
 let mermaidInstance: any = null;
@@ -425,26 +426,50 @@ export function Mermaid({ chart }: MermaidProps) {
     }
   }, [chart]);
 
+  const extractSvgDimensions = (svgEl: SVGElement | null): { width: number; height: number } => {
+    if (!svgEl) return { width: 0, height: 0 };
+    
+    const viewBox = svgEl.getAttribute('viewBox');
+    let width = 0;
+    let height = 0;
+    
+    if (viewBox) {
+      const parts = viewBox.trim().split(/\s+/).map(Number);
+      if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
+        width = parts[2];
+        height = parts[3];
+      }
+    }
+    
+    if (width === 0 || height === 0) {
+      const widthAttr = parseFloat(svgEl.getAttribute('width') || '0');
+      const heightAttr = parseFloat(svgEl.getAttribute('height') || '0');
+      if (widthAttr > 0 && heightAttr > 0) {
+        width = widthAttr;
+        height = heightAttr;
+      } else {
+        try {
+          const bbox = (svgEl as any).getBBox();
+          if (bbox.width > 0 && bbox.height > 0) {
+            width = bbox.width;
+            height = bbox.height;
+          }
+        } catch (e) {
+          // Ignore
+        }
+      }
+    }
+    
+    return { width, height };
+  };
+
   const getNaturalSize = (svgStr: string) => {
     if (!svgStr) return { width: 0, height: 0 };
     try {
       const parser = new DOMParser();
       const doc = parser.parseFromString(svgStr, 'image/svg+xml');
       const svg = doc.querySelector('svg');
-      if (!svg) return { width: 0, height: 0 };
-
-      const viewBox = svg.getAttribute('viewBox');
-      if (viewBox) {
-        const parts = viewBox.trim().split(/\s+/).map(Number);
-        if (parts.length === 4) {
-          return { width: parts[2], height: parts[3] };
-        }
-      }
-      
-      return {
-        width: parseFloat(svg.getAttribute('width') || '0'),
-        height: parseFloat(svg.getAttribute('height') || '0')
-      };
+      return extractSvgDimensions(svg);
     } catch (e) {
       console.error('Error parsing SVG size:', e);
     }
@@ -771,36 +796,7 @@ export function Mermaid({ chart }: MermaidProps) {
       // Dynamically measure the SVG element inside the modal container
       const svgEl = el.querySelector('svg');
       if (svgEl) {
-        const viewBox = svgEl.getAttribute('viewBox');
-        let width = 0;
-        let height = 0;
-        
-        if (viewBox) {
-          const parts = viewBox.trim().split(/\s+/).map(Number);
-          if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
-            width = parts[2];
-            height = parts[3];
-          }
-        }
-        
-        if (width === 0 || height === 0) {
-          const widthAttr = parseFloat(svgEl.getAttribute('width') || '0');
-          const heightAttr = parseFloat(svgEl.getAttribute('height') || '0');
-          if (widthAttr > 0 && heightAttr > 0) {
-            width = widthAttr;
-            height = heightAttr;
-          } else {
-            try {
-              const bbox = svgEl.getBBox();
-              if (bbox.width > 0 && bbox.height > 0) {
-                width = bbox.width;
-                height = bbox.height;
-              }
-            } catch (e) {
-              // Ignore
-            }
-          }
-        }
+        const { width, height } = extractSvgDimensions(svgEl);
 
         if (width > 0 && height > 0 && (width !== naturalSize.width || height !== naturalSize.height)) {
           const size = { width, height };
