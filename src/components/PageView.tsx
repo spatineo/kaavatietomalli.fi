@@ -5,7 +5,7 @@ import { ContentFooter } from './ContentFooter';
 import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
-import { useHeadings, getUniqueHeadings, HeadingRegistryProvider } from './MarkdownHeading';
+import { useHeadings, getUniqueHeadings, HeadingRegistryProvider, assignHeadingPrefixes } from './MarkdownHeading';
 import { TableOfContents } from './TableOfContents';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
 
@@ -19,7 +19,8 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
   const t = getTranslations(CONFIG.language as Language);
   const headings = useHeadings(page.content);
   const combinedHeadings = useMemo(() => {
-    return getUniqueHeadings(page.title, headings);
+    const raw = getUniqueHeadings(page.title, headings);
+    return assignHeadingPrefixes(raw, headings.length > 2);
   }, [page.title, headings]);
   const titleId = combinedHeadings[0].id;
 

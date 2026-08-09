@@ -59,7 +59,7 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
               exit={{ opacity: 0, scale: 0.95, y: 10 }}
               transition={{ duration: 0.2 }}
               data-testid="toc-popup"
-              className="absolute left-0 mt-3 w-[720px] xl:w-[820px] max-w-[calc(100vw-8rem)] bg-black/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black z-40 max-h-[70vh] overflow-y-auto custom-scrollbar"
+              className="toc absolute left-0 mt-3 w-[720px] xl:w-[820px] max-w-[calc(100vw-8rem)] bg-black/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl shadow-black z-40 max-h-[70vh] overflow-y-auto custom-scrollbar"
             >
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                 <span className="text-xs font-black uppercase tracking-wider text-slate-400">{t.page.tableOfContents}</span>
@@ -74,18 +74,13 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
 
               <nav className="flex flex-col gap-1">
                 {headings.map((h, i) => {
-                  const indentStyle = {
-                    paddingLeft: `${Math.max(0, (h.level - 1) * 12)}px`,
-                  };
-
                   return (
                     <button
                       key={i}
                       onClick={() => handleHeadingClick(h.id)}
-                      className={`w-full text-left py-1.5 px-2 hover:bg-white/5 hover:text-brand-accent rounded-lg transition-all text-sm leading-tight text-slate-300 font-medium cursor-pointer`}
-                      style={indentStyle}
+                      className={`toc-item toc-level-${h.level} w-full text-left py-1.5 hover:bg-white/5 hover:text-brand-accent rounded-lg transition-all text-sm leading-tight text-slate-300 font-medium cursor-pointer`}
                     >
-                      {h.text}
+                      <span className="heading-number">{h.prefix ? `${h.prefix} ` : ''}</span><span className="heading-content">{h.text}</span>
                     </button>
                   );
                 })}
