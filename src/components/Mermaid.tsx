@@ -1042,6 +1042,9 @@ export function Mermaid({ chart }: MermaidProps) {
           >
             <div className="absolute top-6 right-6 flex items-center gap-4 z-[110]">
               <div className="flex items-center bg-white/10 backdrop-blur-md border border-white/10 rounded-full p-1 px-3 shadow-2xl gap-1">
+                <span className="text-xs text-white/95 font-bold tracking-wider px-2 select-none border-r border-white/10 pr-3 font-mono">
+                  {Math.round(zoom * 100)}%
+                </span>
                 <button 
                   onClick={handleZoomOut}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
@@ -1069,7 +1072,7 @@ export function Mermaid({ chart }: MermaidProps) {
 
               <button 
                 onClick={toggleModal}
-                className="bg-white/10 border border-white/10 text-white p-3 rounded-full hover:bg-white/20 transition-colors shadow-2xl active:scale-95 group/close"
+                className="bg-white/10 border border-white/10 text-white p-3 backdrop-blur-md rounded-full hover:bg-white/20 transition-colors shadow-2xl active:scale-95 group/close"
                 aria-label={t.mermaid.close}
               >
                 <X size={20} className="group-hover/close:rotate-90 transition-transform duration-300" />
