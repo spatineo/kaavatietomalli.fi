@@ -33,6 +33,7 @@ export function slugify(text: string): string {
 
 export const HeadingRegistryContext = createContext<{
   registerHeading: (level: number, text: string) => string;
+  getPrefixById: (id: string) => string | undefined;
 } | null>(null);
 
 export function HeadingRegistryProvider({ children, uniqueHeadings }: { children: React.ReactNode; uniqueHeadings: HeaderItem[] }) {
@@ -68,8 +69,13 @@ export function HeadingRegistryProvider({ children, uniqueHeadings }: { children
     return currentCount > 0 ? `${fallbackId}-${currentCount}` : fallbackId;
   };
 
+  const getPrefixById = (id: string): string | undefined => {
+    const heading = uniqueHeadings.find(h => h.id === id);
+    return heading?.prefix;
+  };
+
   return (
-    <HeadingRegistryContext.Provider value={{ registerHeading }}>
+    <HeadingRegistryContext.Provider value={{ registerHeading, getPrefixById }}>
       {children}
     </HeadingRegistryContext.Provider>
   );
@@ -86,6 +92,13 @@ export function MarkdownHeading({ level, children }: HeadingProps) {
     }
     return slugify(text);
   }, [registry, level, text]);
+
+  const prefix = useMemo(() => {
+    if (registry && id) {
+      return registry.getPrefixById(id);
+    }
+    return undefined;
+  }, [registry, id]);
 
   const Tag = `h${level}` as 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
@@ -105,7 +118,7 @@ export function MarkdownHeading({ level, children }: HeadingProps) {
       >
         <Link size={16} />
       </a>
-      <span>{children}</span>
+      <span className="heading-number">{prefix ? `${prefix} ` : ''}</span><span className="heading-content">{children}</span>
     </Tag>
   );
 }
@@ -114,6 +127,7 @@ export interface HeaderItem {
   level: number;
   text: string;
   id: string;
+  prefix?: string;
 }
 
 export function getUniqueHeadings(title: string, headings: { level: number; text: string }[]): HeaderItem[] {
@@ -182,3 +196,43 @@ export function useHeadings(content: string): HeaderItem[] {
     });
   }, [content]);
 }
+
+export function assignHeadingPrefixes(combinedHeadings: HeaderItem[], shouldNumber: boolean): HeaderItem[] {
+  if (!shouldNumber) {
+    return combinedHeadings;
+  }
+
+  const levelCounters: Record<number, number> = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+
+  return combinedHeadings.map((h) => {
+    if (h.level < 2 || h.level > 6) {
+      return h;
+    }
+
+    // Reset all deeper levels
+    for (let i = h.level + 1; i <= 6; i++) {
+      levelCounters[i] = 0;
+    }
+
+    // Increment current level
+    levelCounters[h.level] = (levelCounters[h.level] || 0) + 1;
+
+    // Build prefix parts starting from level 2
+    const parts: number[] = [];
+    for (let i = 2; i <= h.level; i++) {
+      if (levelCounters[i] === 0) {
+        levelCounters[i] = 1;
+      }
+      parts.push(levelCounters[i]);
+    }
+
+    // Level 2 headings get trailing dot "1.", nested levels get standard joined format e.g., "1.1" or "1.1.1"
+    const prefix = parts.join('.');
+
+    return {
+      ...h,
+      prefix,
+    };
+  });
+}
+

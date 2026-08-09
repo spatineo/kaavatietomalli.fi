@@ -10,7 +10,7 @@ import { getTracker } from '../services/analytics';
 import { RelatedPosts } from './RelatedPosts';
 import { ContentFooter } from './ContentFooter';
 import { PostComments } from './PostComments';
-import { useHeadings, getUniqueHeadings, HeadingRegistryProvider } from './MarkdownHeading';
+import { useHeadings, getUniqueHeadings, HeadingRegistryProvider, assignHeadingPrefixes } from './MarkdownHeading';
 import { TableOfContents } from './TableOfContents';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
 
@@ -31,7 +31,8 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
   const [authorImg, setAuthorImg] = useState<string | null>(null);
   const headings = useHeadings(post.content);
   const combinedHeadings = useMemo(() => {
-    return getUniqueHeadings(post.title, headings);
+    const raw = getUniqueHeadings(post.title, headings);
+    return assignHeadingPrefixes(raw, headings.length > 2);
   }, [post.title, headings]);
   const titleId = combinedHeadings[0].id;
 

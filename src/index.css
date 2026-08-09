@@ -38,6 +38,16 @@
   :focus-visible {
     @apply outline-none ring-2 ring-brand-accent ring-offset-2 ring-offset-brand-bg;
   }
+
+  .heading-number {
+    padding-right: 0.5em;
+  }
+
+  h4 .heading-number {
+    padding-right: 0.8em;
+  }
+
+   
 }
 
 .skip-to-content {
