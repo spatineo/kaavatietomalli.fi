@@ -67,7 +67,6 @@ export interface Translations {
     zoomOut: string;
     zoomToFit: string;
     close: string;
-    viewInfo: string;
     renderError: string;
   };
   post: {

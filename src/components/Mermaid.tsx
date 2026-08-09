@@ -290,7 +290,7 @@ async function getMermaid() {
 }
 
 const ZOOM_STEPS = [0.05, 0.1, 0.15, 0.25, 0.35, 0.5, 0.65, 0.8, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0];
-const FULL_ZOOM = 0.92; // Use 92% of viewport
+const FULL_ZOOM_PADDING = 20; // px for each side
 
 function getZoomFractionalIndex(z: number): number {
   if (z <= ZOOM_STEPS[0]) return 0;
@@ -452,10 +452,21 @@ export function Mermaid({ chart }: MermaidProps) {
   };
 
   const calculateFitZoom = (size: { width: number, height: number }) => {
-    if (!size.width || !size.height) return 1;
-    const sizeRatio = size.width / size.height;
-    const viewportRatio = window.innerWidth / window.innerHeight;
-    return Math.min(FULL_ZOOM, FULL_ZOOM * (1 - ((viewportRatio - sizeRatio) / viewportRatio)));
+    // Prevent division by zero if the element has no layout dimensions
+    if (size.width === 0 || size.height === 0) {
+      return 1;
+    }
+
+    // Account for optional margin/padding around the viewport bounds
+    const availableWidth = Math.max(0, window.innerWidth - FULL_ZOOM_PADDING * 2);
+    const availableHeight = Math.max(0, window.innerHeight - FULL_ZOOM_PADDING * 2);
+
+    // Compute scale factors for both axes
+    let scaleX = availableWidth / size.width;
+    let scaleY = availableHeight / size.height;
+    
+    // The smaller scale factor ensures the element fits within BOTH bounds
+    return Math.min(scaleX, scaleY);
   };
 
   const toggleModal = () => {
@@ -752,8 +763,55 @@ export function Mermaid({ chart }: MermaidProps) {
 
   const setModalContainerRef = (el: HTMLDivElement | null) => {
     (containerRef as any).current = el;
-    if (el && bindFunctionsRef.current) {
-      bindFunctionsRef.current(el);
+    if (el) {
+      if (bindFunctionsRef.current) {
+        bindFunctionsRef.current(el);
+      }
+
+      // Dynamically measure the SVG element inside the modal container
+      const svgEl = el.querySelector('svg');
+      if (svgEl) {
+        const viewBox = svgEl.getAttribute('viewBox');
+        let width = 0;
+        let height = 0;
+        
+        if (viewBox) {
+          const parts = viewBox.trim().split(/\s+/).map(Number);
+          if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
+            width = parts[2];
+            height = parts[3];
+          }
+        }
+        
+        if (width === 0 || height === 0) {
+          const widthAttr = parseFloat(svgEl.getAttribute('width') || '0');
+          const heightAttr = parseFloat(svgEl.getAttribute('height') || '0');
+          if (widthAttr > 0 && heightAttr > 0) {
+            width = widthAttr;
+            height = heightAttr;
+          } else {
+            try {
+              const bbox = svgEl.getBBox();
+              if (bbox.width > 0 && bbox.height > 0) {
+                width = bbox.width;
+                height = bbox.height;
+              }
+            } catch (e) {
+              // Ignore
+            }
+          }
+        }
+
+        if (width > 0 && height > 0 && (width !== naturalSize.width || height !== naturalSize.height)) {
+          const size = { width, height };
+          setNaturalSize(size);
+          const fitZoom = calculateFitZoom(size);
+          setZoom(fitZoom);
+          setPosition({ x: 0, y: 0 });
+          zoomRef.current = fitZoom;
+          positionRef.current = { x: 0, y: 0 };
+        }
+      }
     }
   };
 
@@ -1090,12 +1148,13 @@ export function Mermaid({ chart }: MermaidProps) {
             >
               <div 
                 ref={setModalContainerRef}
-                className="mermaid select-none flex items-center justify-center"
+                className="mermaid modal-container select-none flex items-center justify-center shrink-0"
                 style={{ 
                   width: naturalSize.width ? `${naturalSize.width}px` : '100%',
                   height: naturalSize.height ? `${naturalSize.height}px` : '100%',
                   transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,
-                  transformOrigin: 'center center'
+                  transformOrigin: 'center center',
+                  flexShrink: 0
                 }}
                 dangerouslySetInnerHTML={{ __html: svgContent }}
               />

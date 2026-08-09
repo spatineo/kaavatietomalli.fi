@@ -137,6 +137,10 @@
   text-rendering: optimizeLegibility !important;
 }
 
+.mermaid.modal-container {
+  flex-shrink: 0 !important;
+}
+
 .mermaid text.classDiagramTitleText {
   font-size: 24pt !important;
   font-weight: bold !important;
