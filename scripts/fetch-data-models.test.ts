@@ -312,7 +312,7 @@ describe('fetch-data-models script', () => {
       expect(mockFetch).toHaveBeenCalledWith('https://test-api.suomi.fi/getModel?modelId=mock-model&fileType=JSON-LD&version=2.0.0',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
           }
         }
       );
