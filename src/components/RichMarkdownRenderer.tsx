@@ -66,11 +66,11 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
                         }
 
                         const params = new URLSearchParams(searchStr);
-                        const model = params.get('model');
-                        const post = params.get('post');
-                        const page = params.get('page');
-                        const author = params.get('author');
-                        const tag = params.get('tag');
+                        let model = params.get('model');
+                        let post = params.get('post');
+                        let page = params.get('page');
+                        let author = params.get('author');
+                        let tag = params.get('tag');
 
                         const queryParams: Record<string, string> = {};
                         params.forEach((v, k) => {
@@ -78,6 +78,33 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
                                 queryParams[k] = v;
                             }
                         });
+
+                        // If not defined in query parameters, try to parse from clean pathname
+                        if (!model && !post && !page && !author && !tag && pathname && pathname !== '/' && pathname !== CONFIG.basePath) {
+                            let relativePath = pathname;
+                            if (relativePath.startsWith(CONFIG.basePath)) {
+                                relativePath = relativePath.substring(CONFIG.basePath.length);
+                            }
+                            relativePath = relativePath.replace(/^\/+/, '').replace(/\/+$/, '');
+
+                            if (relativePath) {
+                                const parts = relativePath.split('/');
+                                const firstPart = parts[0];
+                                const secondPart = parts[1] ? decodeURIComponent(parts[1]) : null;
+
+                                if (firstPart === 'blog') {
+                                    post = secondPart;
+                                } else if (firstPart === 'author') {
+                                    author = secondPart;
+                                } else if (firstPart === 'tag') {
+                                    tag = secondPart;
+                                } else if (firstPart === 'data-model') {
+                                    model = secondPart;
+                                } else if (firstPart !== 'model') {
+                                    page = decodeURIComponent(firstPart);
+                                }
+                            }
+                        }
 
                         if (model) {
                             router.navigate({ type: 'model', slug: model, queryParams });
@@ -92,12 +119,7 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
                         } else if (pathname === '/' || pathname === CONFIG.basePath) {
                             router.onHome();
                         } else {
-                            const cleanPath = pathname.replace(/^\/+/, '');
-                            if (cleanPath) {
-                                router.navigate({ type: 'page', slug: cleanPath, queryParams });
-                            } else {
-                                router.onHome();
-                            }
+                            router.onHome();
                         }
                     }
                 };
