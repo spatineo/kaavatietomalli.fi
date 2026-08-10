@@ -29,12 +29,25 @@ export function useRouter() {
 
     if (relativePath) {
       const parts = relativePath.split('/');
-      const type = parts[0] as ViewType;
-      const slug = parts[1] ? decodeURIComponent(parts[1]) : null;
+      const firstPart = parts[0];
+      const secondPart = parts[1] ? decodeURIComponent(parts[1]) : null;
 
-      const validTypes: ViewType[] = ['post', 'page', 'author', 'tag', 'model'];
-      if (validTypes.includes(type)) {
-        return { type, slug };
+      if (firstPart === 'blog') {
+        return { type: 'post', slug: secondPart };
+      }
+      if (firstPart === 'author') {
+        return { type: 'author', slug: secondPart };
+      }
+      if (firstPart === 'tag') {
+        return { type: 'tag', slug: secondPart };
+      }
+      if (firstPart === 'data-model') {
+        return { type: 'model', slug: secondPart };
+      }
+
+      // Check if it's not reserved for data-model
+      if (firstPart !== 'data-model' && firstPart !== 'model') {
+        return { type: 'page', slug: decodeURIComponent(firstPart) };
       }
     }
 
@@ -72,7 +85,19 @@ export function useRouter() {
 
     let pathPart = '';
     if (view.type !== 'home' && view.slug) {
-      pathPart = `${view.type}/${encodeURIComponent(view.slug)}`;
+      if (view.type === 'page') {
+        pathPart = `${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'post') {
+        pathPart = `blog/${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'author') {
+        pathPart = `author/${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'tag') {
+        pathPart = `tag/${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'model') {
+        pathPart = `data-model/${encodeURIComponent(view.slug)}`;
+      } else {
+        pathPart = `${view.type}/${encodeURIComponent(view.slug)}`;
+      }
     }
 
     const params = new URLSearchParams();

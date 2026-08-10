@@ -29,7 +29,7 @@ describe('useRouter hook', () => {
   it('determines activeView accurately based on URL pathname', () => {
     vi.stubGlobal('location', {
       search: '',
-      pathname: '/post/digital-twin-spec',
+      pathname: '/blog/digital-twin-spec',
     });
 
     const { result } = renderHook(() => useRouter());
@@ -74,7 +74,7 @@ describe('useRouter hook', () => {
   it('sets pendingScroll to true and navigates to home when on non-home view', () => {
     vi.stubGlobal('location', {
       search: '',
-      pathname: '/post/digital-twin-spec',
+      pathname: '/blog/digital-twin-spec',
     });
     const { result } = renderHook(() => useRouter());
 
