@@ -1,0 +1,7 @@
+{
+  "app": "npx ts-node --project tsconfig.cdk.json bin/app.ts",
+  "watch": {
+    "include": ["bin/**/*", "cdk/**/*"],
+    "exclude": ["node_modules", "dist"]
+  }
+}

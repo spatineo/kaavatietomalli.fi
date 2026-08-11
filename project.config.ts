@@ -3,4 +3,5 @@ export const PROJECT_CONFIG = {
   repoName: 'kaavatietomalli.fi',
   defaultBaseUrl: 'https://kaavatietomalli.fi',
   defaultBasePath: '/',
+  domainName: 'kaavatietomalli.fi'
 };

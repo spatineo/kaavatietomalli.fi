@@ -74,18 +74,61 @@ jobs:
         env:
           VITE_BASE_PATH: /
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }}
-      
-      - name: Setup Pages
-        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d #v6.0.0
 
-      - name: Upload artifact
-        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 #v5.0.0
+      # AWS CloudFront Deployment:
+      ############################
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:
-          path: './dist'
+          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.DEPLOYER_ROLE }}
+          aws-region: eu-north-1
 
-      - name: Deploy to GitHub Pages
-        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
-        id: deployment
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 #v5.0.0
+      - name: Deploy CDK Infrastructure
+        env:
+          AWS_PRIMARY_ACCOUNT_ID: ${{ vars.AWS_PRIMARY_ACCOUNT_ID }}
+          AWS_PROJECT_ACCOUNT_ID: ${{ vars.AWS_PROJECT_ACCOUNT_ID }}
+          ROUTE53_HOSTED_ZONE_ID: ${{ vars.ROUTE53_HOSTED_ZONE_ID }}
+          CROSS_ACCOUNT_DNS_ROLE: ${{ vars.CROSS_ACCOUNT_DNS_ROLE }}
+          ACM_CERTIFICATE_ARN: ${{ vars.ACM_CERTIFICATE_ARN }}
+          DEPLOYER_ROLE: ${{ vars.DEPLOYER_ROLE }}
+        run: |
+          npx cdk deploy --app 'npx ts-node --project tsconfig.cdk.json bin/app.ts' \
+            --outputs-file cdk-outputs.json \
+            --require-approval never
+
+      - name: Set Resource Variables from CDK Outputs
+        run: |
+          BUCKET_NAME=$(jq -r '.ReactWebsiteProjectStack.S3BucketName' cdk-outputs.json)
+          DIST_ID=$(jq -r '.ReactWebsiteProjectStack.CloudFrontDistributionId' cdk-outputs.json)
+          
+          echo "S3_BUCKET=$BUCKET_NAME" >> $GITHUB_ENV
+          echo "DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+    
+
+      - name: Sync Site Output to S3
+        run: |
+          aws s3 sync dist/ s3://${{ env.S3_BUCKET }} --delete
+
+      - name: Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.DISTRIBUTION_ID }} \
+            --paths "/*"
+
+
+      # GitHub Pages Deployment:
+      ##########################
+#      - name: Setup Pages
+#        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
+#        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d #v6.0.0
+#
+#      - name: Upload artifact
+#        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
+#        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 #v5.0.0
+#        with:
+#          path: './dist'
+#
+#      - name: Deploy to GitHub Pages
+#        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
+#        id: deployment
+#        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 #v5.0.0

@@ -10,3 +10,12 @@ coverage/
 *.log
 .env*
 !.env.example
+*.js
+!jest.config.js
+*.pem
+
+# CDK output and state
+cdk.out/
+.cdk.staging/
+*.template.json
+
