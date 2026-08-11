@@ -40,13 +40,15 @@ new WebsiteStack(app, 'ReactWebsiteProjectStack', {
   // GitHub Repository Configuration for OIDC
   githubOrg: PROJECT_CONFIG.repoOwner,
   githubRepo: PROJECT_CONFIG.repoName,
+  githubOrgId: PROJECT_CONFIG.repoOwnerId,
+  githubRepoId: PROJECT_CONFIG.repoId,
 
   // Domain & Cross-Account DNS Configuration
   domainName: PROJECT_CONFIG.domainName,
   
   primaryAccountId: getEnvVar('AWS_PRIMARY_ACCOUNT_ID'),
   primaryHostedZoneId: getEnvVar('ROUTE53_HOSTED_ZONE_ID'),
-  primaryDnsRoleName: getEnvVar('CROSS_ACCOUNT_DNS_ROLE', 'ProjectAccountRootDnsRole'), // fallback
+  crossAccountDnsRoleName: getEnvVar('CROSS_ACCOUNT_DNS_ROLE', 'ProjectAccountRootDnsRole'), // fallback
   deployerRole: getEnvVar('DEPLOYER_ROLE','GitHubActionsWebsiteDeployer'), // fallback
   certificateArn: checkCertificateARN(getEnvVar('ACM_CERTIFICATE_ARN'), getEnvVar('AWS_PROJECT_ACCOUNT_ID'))
 });

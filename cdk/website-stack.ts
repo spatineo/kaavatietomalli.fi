@@ -9,7 +9,9 @@ import { Construct } from 'constructs';
 
 export interface WebsiteStackProps extends cdk.StackProps {
   githubOrg: string;
+  githubOrgId: string;
   githubRepo: string;
+  githubRepoId: string;
   domainName: string;
   primaryAccountId: string;
   primaryHostedZoneId: string;
@@ -196,7 +198,7 @@ export class WebsiteStack extends cdk.Stack {
             'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
           },
           StringLike: {
-            'token.actions.githubusercontent.com:sub': `repo:${props.githubOrg}/${props.githubRepo}:*`,
+            'token.actions.githubusercontent.com:sub': `repo:${props.githubOrg}@${props.githubOrgId}/${props.githubRepo}@${props.githubRepoId}:ref:refs/heads/main`,
           },
         },
         'sts:AssumeRoleWithWebIdentity'
