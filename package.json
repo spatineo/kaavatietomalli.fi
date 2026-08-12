@@ -23,8 +23,8 @@
     "test-local": "CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild; exit $status)",
     "test-local:run": "CONTENT_MODE=test npm run prebuild && (npm run test:run; status=$?; npm run prebuild; exit $status)",
     "test-local:e2e": "CONTENT_MODE=test npm run prebuild && (npm run test:e2e; status=$?; npm run prebuild; exit $status)",
-    "cdk:synth": "cdk synth --app 'npx ts-node --project tsconfig.cdk.json bin/app.ts'",
-    "cdk:deploy": "cdk deploy --app 'npx ts-node --project tsconfig.cdk.json bin/app.ts'"
+    "cdk:synth": "cdk synth --app 'node --env-file=.env ./node_modules/.bin/ts-node --project tsconfig.cdk.json bin/app.ts'",
+    "cdk:deploy": "cdk deploy --app 'node --env-file=.env ./node_modules/.bin/ts-node --project tsconfig.cdk.json bin/app.ts'"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",
@@ -51,7 +51,6 @@
     "react-syntax-highlighter": "^16.1.1",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "source-map-support": "^0.5.21",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
@@ -63,7 +62,6 @@
     "@types/node": "^22.20.1",
     "@types/proj4": "^2.5.6",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "@types/source-map-support": "^0.5.10",
     "autoprefixer": "^10.4.21",
     "aws-cdk": "^2.1135.1",
     "aws-cdk-lib": "^2.264.0",
