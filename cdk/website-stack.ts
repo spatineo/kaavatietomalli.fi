@@ -4,7 +4,7 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
-import * as cr from 'aws-cdk-lib/custom-resources';
+//import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
 
 export interface WebsiteStackProps extends cdk.StackProps {
@@ -13,9 +13,6 @@ export interface WebsiteStackProps extends cdk.StackProps {
   githubRepo: string;
   githubRepoId: string;
   domainName: string;
-  primaryAccountId: string;
-  primaryHostedZoneId: string;
-  crossAccountDnsRoleName: string;
   certificateArn: string;
   deployerRole: string;
 }
@@ -110,78 +107,7 @@ export class WebsiteStack extends cdk.Stack {
     });
 
     // =========================================================================
-    // 5. Cross-Account Route 53 A Alias Record via AwsCustomResource
-    // =========================================================================
-    const primaryDnsRoleArn = `arn:aws:iam::${props.primaryAccountId}:role/${props.crossAccountDnsRoleName}`;
-
-    // CloudFront's global canonical hosted zone ID (Always Z2FDTNDATAQYW2 for CloudFront distributions)
-    const cloudFrontGlobalHostedZoneId = 'Z2FDTNDATAQYW2';
-
-    new cr.AwsCustomResource(this, 'CrossAccountRoute53Record', {
-      onCreate: {
-        service: 'Route53',
-        action: 'changeResourceRecordSets',
-        parameters: {
-          HostedZoneId: props.primaryHostedZoneId,
-          ChangeBatch: {
-            Changes: [
-              {
-                Action: 'UPSERT',
-                ResourceRecordSet: {
-                  Name: props.domainName,
-                  Type: 'A',
-                  AliasTarget: {
-                    HostedZoneId: cloudFrontGlobalHostedZoneId,
-                    DNSName: distribution.distributionDomainName,
-                    EvaluateTargetHealth: false,
-                  },
-                },
-              },
-            ],
-          },
-        },
-        physicalResourceId: cr.PhysicalResourceId.of(`Route53Alias-${props.domainName}`),
-      },
-      onDelete: {
-        service: 'Route53',
-        action: 'changeResourceRecordSets',
-        parameters: {
-          HostedZoneId: props.primaryHostedZoneId,
-          ChangeBatch: {
-            Changes: [
-              {
-                Action: 'DELETE',
-                ResourceRecordSet: {
-                  Name: props.domainName,
-                  Type: 'A',
-                  AliasTarget: {
-                    HostedZoneId: cloudFrontGlobalHostedZoneId,
-                    DNSName: distribution.distributionDomainName,
-                    EvaluateTargetHealth: false,
-                  },
-                },
-              },
-            ],
-          },
-        },
-      },
-      policy: cr.AwsCustomResourcePolicy.fromStatements([
-        new iam.PolicyStatement({
-          actions: ['sts:AssumeRole'],
-          resources: [primaryDnsRoleArn],
-        }),
-      ]),
-      // Role assumed locally by the CustomResource Lambda handler
-      role: new iam.Role(this, 'CustomResourceExecutionRole', {
-        assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
-        managedPolicies: [
-          iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
-        ],
-      }),
-    });
-
-    // =========================================================================
-    // 6. GitHub Actions OIDC Deploy Role (Keyless Deployments)
+    // 5. GitHub Actions OIDC Deploy Role (Keyless Deployments)
     // =========================================================================
     const ghaProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
       this,
@@ -215,7 +141,7 @@ export class WebsiteStack extends cdk.Stack {
     );
 
     // =========================================================================
-    // 7. Stack Outputs
+    // 6. Stack Outputs
     // =========================================================================
     new cdk.CfnOutput(this, 'S3BucketName', {
       value: websiteBucket.bucketName,
