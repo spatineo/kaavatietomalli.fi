@@ -2,6 +2,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { WebsiteStack } from '../cdk/website-stack.ts';
 import { PROJECT_CONFIG } from '../project.config.ts';
+import { CertificateStack } from '@/cdk/certificate-stack.ts';
 
 /**
  * Utility function to validate required environment variables
@@ -17,33 +18,36 @@ function getEnvVar(name: string, fallback?: string): string {
   return value;
 }
 
-function checkCertificateARN(arn: string, accountId: string): string {
-  //Must always by issued in us-east-1 for CloudFront.
-  //Pattern to expect: arn:aws:acm:us-east-1:999999999999:certificate/abc12345-6789-0123-4567-89abcdef0123
-  const pattern = new RegExp(`^arn:aws:acm:us-east-1:${accountId}:certificate\/[a-z0-9-]*$`,"g");
-  if (!arn.match(pattern)) {
-    throw new Error("The certificate ARN " + arn + " does not look like it's issued for the us-east-1 region, or by the project AWS account (" + accountId + ")");
-  }
-  return arn;
-}
-
 const app = new cdk.App();
 
-new WebsiteStack(app, 'ReactWebsiteProjectStack', {
-  // Dynamically pulls target account and region from CLI environment
+// Certificate Stack in US East 1
+const certStack = new CertificateStack(app, 'WebsiteCertStack', {
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: 'us-east-1'
+  },
+  crossRegionReferences: true,
+  domainName: PROJECT_CONFIG.domainName
+});
+
+// Website Stack on EU North 1
+new WebsiteStack(app, 'WebsiteMainStack', {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION || 'eu-north-1',
   },
-  
+  crossRegionReferences: true,
+  certificate: certStack.certificate,
+  hostedZone: certStack.hostedZone,
+  domainName: PROJECT_CONFIG.domainName,
+
   // GitHub Repository Configuration for OIDC
   githubOrg: PROJECT_CONFIG.repoOwner,
   githubRepo: PROJECT_CONFIG.repoName,
   githubOrgId: PROJECT_CONFIG.repoOwnerId,
   githubRepoId: PROJECT_CONFIG.repoId,
+  
+  isProduction: !process.env.VITE_PRELAUNCH_PASSWORD,
 
-  // Domain & Cross-Account DNS Configuration
-  domainName: PROJECT_CONFIG.domainName,
   deployerRole: getEnvVar('DEPLOYER_ROLE','GitHubActionsWebsiteDeployer'), // fallback
-  certificateArn: checkCertificateARN(getEnvVar('ACM_CERTIFICATE_ARN'), getEnvVar('AWS_PROJECT_ACCOUNT_ID'))
 });

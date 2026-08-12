@@ -148,31 +148,39 @@ jobs:
           VITE_BASE_PATH: /
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }}
 
-      # AWS CloudFront Deployment:
-      ############################
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:
           role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.DEPLOYER_ROLE }}
           aws-region: eu-north-1
-
+      
       - name: Deploy CDK Infrastructure
         if: steps.filter.outputs.cdk == 'true'
         env:
           AWS_PROJECT_ACCOUNT_ID: ${{ vars.AWS_PROJECT_ACCOUNT_ID }}
-          ACM_CERTIFICATE_ARN: ${{ vars.ACM_CERTIFICATE_ARN }}
           DEPLOYER_ROLE: ${{ vars.DEPLOYER_ROLE }}
+          VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }} # For determining if we are in prod or pre-launch mode
+
         run: |
           npx cdk deploy --app 'npx ts-node --project tsconfig.cdk.json bin/app.ts' \
+            --outputs-file cdk-outputs.json \
             --require-approval never
 
+      - name: Set Resource Variables from CDK Outputs   
+        run: |
+          BUCKET_NAME=$(jq -r '.ReactWebsiteProjectStack.S3BucketName' cdk-outputs.json)
+          DIST_ID=$(jq -r '.ReactWebsiteProjectStack.CloudFrontDistributionId' cdk-outputs.json)
+          
+          echo "S3_BUCKET=$BUCKET_NAME" >> $GITHUB_ENV
+          echo "DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
+      
       - name: Sync Site Output to S3
         run: |
-          aws s3 sync dist/ s3://${{ vars.S3_SITE_BUCKET_NAME }} --delete \
+          aws s3 sync dist/ s3://${{ env.S3_BUCKET }} --delete \
             --cache-control "public, max-age=0, must-revalidate"
 
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --distribution-id ${{ env.DISTRIBUTION_ID }} \
             --paths "/*"

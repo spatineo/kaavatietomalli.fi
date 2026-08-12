@@ -4,8 +4,10 @@ import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
-//import * as cr from 'aws-cdk-lib/custom-resources';
 import { Construct } from 'constructs';
+import { ARecord, AaaaRecord, PublicHostedZone, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
+import * as route53 from 'aws-cdk-lib/aws-route53';
 
 export interface WebsiteStackProps extends cdk.StackProps {
   githubOrg: string;
@@ -13,15 +15,15 @@ export interface WebsiteStackProps extends cdk.StackProps {
   githubRepo: string;
   githubRepoId: string;
   domainName: string;
-  certificateArn: string;
   deployerRole: string;
+  certificate: acm.ICertificate;
+  hostedZone: route53.IHostedZone;
+  isProduction: boolean;
 }
 
 export class WebsiteStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WebsiteStackProps) {
     super(scope, id, props);
-
-    const isProduction = !process.env.VITE_PRELAUNCH_PASSWORD;
 
     // =========================================================================
     // 1. Dedicated CloudFront Access Logs Bucket
@@ -32,8 +34,8 @@ export class WebsiteStack extends cdk.Stack {
       enforceSSL: true,
       // Object ownership must be set to OBJECT_WRITER to allow standard CloudFront log delivery
       objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
-      removalPolicy: isProduction ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
-      autoDeleteObjects: !isProduction,
+      removalPolicy: props.isProduction ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: !props.isProduction,
       lifecycleRules: [
         {
           // Auto-expire logs after 90 days to control S3 storage costs
@@ -54,23 +56,14 @@ export class WebsiteStack extends cdk.Stack {
     });
 
     // =========================================================================
-    // 3. Import TLS Certificate
-    // =========================================================================
-    const certificate = acm.Certificate.fromCertificateArn(
-      this,
-      'ImportedCertificate',
-      props.certificateArn
-    );
-
-    // =========================================================================
-    // 4. CloudFront Distribution with OAC, Access Logging & SPA Error Pages
+    // 3. CloudFront Distribution with OAC, Access Logging & SPA Error Pages
     // =========================================================================
     const s3Origin = origins.S3BucketOrigin.withOriginAccessControl(websiteBucket);
 
     const distribution = new cloudfront.Distribution(this, 'WebsiteDistribution', {
       defaultRootObject: 'index.html',
       domainNames: [props.domainName],
-      certificate: certificate,
+      certificate: props.certificate,
 
       // Enable CloudFront Access Logging
       logBucket: logBucket,
@@ -105,6 +98,33 @@ export class WebsiteStack extends cdk.Stack {
       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
     });
+
+    // ====================================================================
+    // 4. Alias records for the hosted zone referring the Cloudfront distribution
+    // ====================================================================
+    
+    new ARecord(this, 'IPV4AliasRecord',{
+      zone: props.hostedZone,
+      target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
+    });
+
+    new AaaaRecord(this, 'IPv6AliasRecord',{
+      zone: props.hostedZone,
+      target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
+    });
+
+    // For extra safety: certificate creation allowed only by AWS 
+    new route53.CaaRecord(this, 'AmazonCaaRecord', {
+      zone: props.hostedZone,
+      values: [
+        {
+          flag: 0,
+          tag: route53.CaaTag.ISSUE,
+          value: 'amazon.com',
+        }
+      ],
+    });
+    
 
     // =========================================================================
     // 5. GitHub Actions OIDC Deploy Role (Keyless Deployments)
@@ -162,5 +182,6 @@ export class WebsiteStack extends cdk.Stack {
       value: githubRole.roleArn,
       description: 'Role ARN to paste into your GitHub Actions workflow file',
     });
+
   }
 }
