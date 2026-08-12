@@ -40,7 +40,7 @@ output = json
 
 [sso-session spatineo]
 sso_start_url = ${AWS_SSO_START_URL}
-sso_region = ${AWS_SSO_REGION:-eu-north-1}
+sso_region = ${AWS_SSO_REGION:-eu-west-1}
 EOF
 
 echo "✅ AWS config generated successfully."
