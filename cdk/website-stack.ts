@@ -33,7 +33,7 @@ export class WebsiteStack extends cdk.Stack {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       enforceSSL: true,
-      // Object ownership must be set to OBJECT_WRITER for CloudFront legacy log delivery
+      // Object ownership must be set to OBJECT_WRITER to allow standard CloudFront log delivery
       objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
       removalPolicy: isProduction ? cdk.RemovalPolicy.RETAIN : cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: !isProduction,
