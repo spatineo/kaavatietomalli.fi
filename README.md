@@ -889,4 +889,12 @@ npm run fetch-koodistot
 # Download and transform both data models and codelists (non-interactive workflow command; 
 # mainly meant to be executed automatically as part of GitHub CI/CD workflows and nightly rebuilds)
 npm run fetch-data
+
+# --- AWS CDK Infrastructure & Deployment Commands ---
+
+# Synthesize the CloudFormation template for the CloudFront + S3 website deployment stack
+npm run cdk:synth
+
+# Deploy the infrastructure stack directly to the target AWS project account (requires target environment variables)
+npm run cdk:deploy
 ```
