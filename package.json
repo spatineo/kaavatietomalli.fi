@@ -23,8 +23,8 @@
     "test-local": "CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild; exit $status)",
     "test-local:run": "CONTENT_MODE=test npm run prebuild && (npm run test:run; status=$?; npm run prebuild; exit $status)",
     "test-local:e2e": "CONTENT_MODE=test npm run prebuild && (npm run test:e2e; status=$?; npm run prebuild; exit $status)",
-    "cdk:synth": "cdk synth --app 'node --env-file=.env ./node_modules/.bin/ts-node --project tsconfig.cdk.json bin/app.ts'",
-    "cdk:deploy": "cdk deploy --app 'node --env-file=.env ./node_modules/.bin/ts-node --project tsconfig.cdk.json bin/app.ts'"
+    "cdk:synth": "cdk synth --app 'npx ts-node --project tsconfig.cdk.json -r dotenv/config bin/app.ts'",
+    "cdk:deploy": "cdk deploy --app 'npx ts-node --project tsconfig.cdk.json -r dotenv/config bin/app.ts'"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",

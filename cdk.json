@@ -1,5 +1,5 @@
 {
-  "app": "npx ts-node --project tsconfig.cdk.json bin/app.ts",
+  "app": "npx ts-node --project tsconfig.cdk.json -r dotenv/config bin/app.ts",
   "watch": {
     "include": ["bin/**/*", "cdk/**/*"],
     "exclude": ["node_modules", "dist"]
