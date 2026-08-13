@@ -21,7 +21,7 @@ function formatPartnerName(tag: string | undefined): string {
 export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
   const t = getTranslations(CONFIG.language as Language);
   return (
-    <section className="relative max-w-7xl ml-5 lg:ml-20 mr-auto py-12 px-6" aria-label={t.blog.timelineAria}>
+    <section className="relative max-w-7xl mx-auto py-12 px-6" aria-label={t.blog.timelineAria}>
       {/* Vertical Line */}
       <div className="absolute left-10 md:left-1/2 top-0 bottom-0 w-[2px] bg-white/10 -translate-x-1/2" aria-hidden="true" />
 
