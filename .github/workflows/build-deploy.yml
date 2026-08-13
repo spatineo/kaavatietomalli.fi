@@ -162,8 +162,9 @@ jobs:
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }} # For determining if we are in prod or pre-launch mode
           GIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }} # For auto-tagging the CDK stacks
 
+        # Deploy both the cert and the website stacks:
         run: |
-          npx cdk deploy --app 'npx ts-node --project tsconfig.cdk.json bin/app.ts' \
+          npx cdk deploy --all \ 
             --outputs-file cdk-outputs.json \
             --require-approval never
 
