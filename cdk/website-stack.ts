@@ -13,9 +13,7 @@ import * as athena from 'aws-cdk-lib/aws-athena';
 
 export interface WebsiteStackProps extends cdk.StackProps {
   githubOrg: string;
-  githubOrgId: string;
   githubRepo: string;
-  githubRepoId: string;
   domainName: string;
   deployerRole: string;
   certificate: acm.ICertificate;
@@ -370,7 +368,7 @@ export class WebsiteStack extends cdk.Stack {
             'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
           },
           StringLike: {
-            'token.actions.githubusercontent.com:sub': `repo:${props.githubOrg}@${props.githubOrgId}/${props.githubRepo}@${props.githubRepoId}:*`,
+            'token.actions.githubusercontent.com:sub': `repo:${props.githubOrg}/${props.githubRepo}:*`,
           },
         },
         'sts:AssumeRoleWithWebIdentity'
