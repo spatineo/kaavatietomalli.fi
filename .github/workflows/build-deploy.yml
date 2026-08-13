@@ -192,8 +192,8 @@ jobs:
             --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
             --output text)
 
-          echo "bucket_name=${BUCKET_NAME}" >> $GITHUB_ENV
-          echo "distribution_id=${DISTRIBUTION_ID}" >> $GITHUB_ENV
+          echo "BUCKET_NAME=${BUCKET_NAME}" >> $GITHUB_ENV
+          echo "DISTRIBUTION_ID=${DISTRIBUTION_ID}" >> $GITHUB_ENV
 
       - name: Sync Site Output to S3
         run: |
