@@ -370,7 +370,7 @@ export class WebsiteStack extends cdk.Stack {
             'token.actions.githubusercontent.com:aud': 'sts.amazonaws.com',
           },
           StringLike: {
-            'token.actions.githubusercontent.com:sub': `repo:${props.githubOrg}@${props.githubOrgId}/${props.githubRepo}@${props.githubRepoId}:ref:refs/heads/main`,
+            'token.actions.githubusercontent.com:sub': `repo:${props.githubOrg}@${props.githubOrgId}/${props.githubRepo}@${props.githubRepoId}:*`,
           },
         },
         'sts:AssumeRoleWithWebIdentity'
