@@ -254,7 +254,7 @@ export class WebsiteStack extends cdk.Stack {
             status,
             COUNT(*) AS total_requests,
             COUNT(DISTINCT request_ip) AS unique_ips
-        FROM cdn_analytics.cloudfront_logs
+        FROM website_access_logs_db.cloudfront_logs
         WHERE uri LIKE '%llms.txt%'
           OR uri LIKE '%sitemap%.xml'
           OR uri LIKE '%rss%.xml'
@@ -291,7 +291,7 @@ export class WebsiteStack extends cdk.Stack {
             status,
             COUNT(*) as request_count,
             MAX(concat(cast(date as varchar), ' ', time)) as last_seen_utc
-        FROM cdn_analytics.cloudfront_logs
+        FROM website_access_logs_db.cloudfront_logs
         WHERE user_agent LIKE '%Bot%'
           OR user_agent LIKE '%Crawler%'
           OR user_agent LIKE '%Spider%'
@@ -318,7 +318,7 @@ export class WebsiteStack extends cdk.Stack {
               SUM(CASE WHEN uri LIKE '%sitemap%.xml' THEN 1 ELSE 0 END) AS sitemap_hits,
               SUM(CASE WHEN uri LIKE '%rss%.xml' THEN 1 ELSE 0 END) AS rss_hits,
               SUM(CASE WHEN uri LIKE '%.md' THEN 1 ELSE 0 END) AS markdown_hits
-          FROM cdn_analytics.cloudfront_logs
+          FROM website_access_logs_db.cloudfront_logs
           WHERE date >= CURRENT_DATE - INTERVAL '30' DAY
           GROUP BY date
           ORDER BY date DESC;
@@ -339,7 +339,7 @@ export class WebsiteStack extends cdk.Stack {
             uri,
             status,
             COUNT(*) as fetch_count
-        FROM cdn_analytics.cloudfront_logs
+        FROM website_access_logs_db.cloudfront_logs
         WHERE (uri LIKE '%.md' OR uri LIKE '%llms.txt')
           AND user_agent NOT LIKE '%GPTBot%'
           AND user_agent NOT LIKE '%ClaudeBot%'
