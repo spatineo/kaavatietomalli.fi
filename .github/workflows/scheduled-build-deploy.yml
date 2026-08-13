@@ -79,22 +79,21 @@ jobs:
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.DEPLOYER_ROLE }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }}-${{ vars.DEPLOYER_ROLE || 'GitHubActionsWebsiteDeployer' }}
           aws-region: eu-north-1
 
       - name: Fetch Infrastructure Resource IDs
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
         id: describe-stack
         run: |
-          STACK_NAME="WebsiteMainStack"
 
           BUCKET_NAME=$(aws cloudformation describe-stacks \
-            --stack-name $STACK_NAME \
+            --stack-name ${{ vars.WEBSITE_STACK_NAME  || 'KaavatietomalliWebsiteMainStack'}} \
             --query "Stacks[0].Outputs[?OutputKey=='S3BucketName'].OutputValue" \
             --output text)
 
           DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
-            --stack-name $STACK_NAME \
+            --stack-name ${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }} \
             --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
             --output text)
 

@@ -151,7 +151,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/KaavatietomalliWebsiteMainStack-${{ vars.DEPLOYER_ROLE }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }}-${{ vars.DEPLOYER_ROLE || ''}}
           aws-region: eu-north-1
       
       - name: Deploy CDK Infrastructure
@@ -161,6 +161,8 @@ jobs:
           DEPLOYER_ROLE: ${{ vars.DEPLOYER_ROLE }}
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }} # For determining if we are in prod or pre-launch mode
           GIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }} # For auto-tagging the CDK stacks
+          CERTIFICATE_STACK_NAME: ${{ vars. CERTIFICATE_STACK_NAME }}
+          WEBSITE_STACK_NAME: ${{ vars.WEBSITE_STACK_NAME }}
 
         # Deploy both the cert and the website stacks:
         run: |
@@ -171,8 +173,8 @@ jobs:
       - name: Set Resource Variables (from cdk deploy outputs) 
         if: steps.filter.outputs.infra == 'true'
         run: |
-          BUCKET_NAME=$(jq -r '.ReactWebsiteProjectStack.S3BucketName' cdk-outputs.json)
-          DIST_ID=$(jq -r '.ReactWebsiteProjectStack.CloudFrontDistributionId' cdk-outputs.json)
+          BUCKET_NAME=$(jq -r '.${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }}.S3BucketName' cdk-outputs.json)
+          DIST_ID=$(jq -r '.${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }}.CloudFrontDistributionId' cdk-outputs.json)
           
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
           echo "DISTRIBUTION_ID=$DIST_ID" >> $GITHUB_ENV
@@ -180,15 +182,14 @@ jobs:
       - name: Set Resource Variables (from existing stack)
         if: steps.filter.outputs.infra != 'true'
         run: |
-          STACK_NAME="KaavatietomalliWebsiteMainStack"
 
           BUCKET_NAME=$(aws cloudformation describe-stacks \
-            --stack-name $STACK_NAME \
+            --stack-name ${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }} \
             --query "Stacks[0].Outputs[?OutputKey=='S3BucketName'].OutputValue" \
             --output text)
 
           DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
-            --stack-name $STACK_NAME \
+            --stack-name ${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }} \
             --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
             --output text)
 
