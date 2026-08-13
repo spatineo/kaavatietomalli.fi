@@ -151,7 +151,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.DEPLOYER_ROLE }}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/KaavatietomalliWebsiteMainStack-${{ vars.DEPLOYER_ROLE }}
           aws-region: eu-north-1
       
       - name: Deploy CDK Infrastructure
