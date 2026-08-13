@@ -793,7 +793,6 @@ CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild
 
 ### 7. AWS CDK Stack & S3/CloudFront Deployment
 
-<<<<<<< HEAD
 The platform's cloud deployment architecture is fully defined as Infrastructure-as-Code (IaC) using the **AWS Cloud Development Kit (CDK)** in TypeScript. The infrastructure is designed to run on a highly secure, serverless, and production-ready static hosting structure powered by **Amazon S3** and **Amazon CloudFront**.
 
 The CDK configurations are organized across:
@@ -861,48 +860,18 @@ To enforce secure, credential-free continuous integration:
 - Grants the actions workflow limited permissions to sync build files to the S3 content bucket and trigger targeted CloudFront cache invalidations without storing long-lived, sensitive AWS access keys in the GitHub repository.
 
 #### E. Required CDK Deployment Environment Variables
-=======
-The platform's cloud deployment architecture is fully defined as infrastructure-as-code (IaC) using the **AWS Cloud Development Kit (CDK)** in TypeScript. The deployment on a robust, production-ready static hosting structure powered by **Amazon S3** and **Amazon CloudFront**.
-
-The CDK application configurations are organized within `/bin/app.ts`, `/cdk/website-stack.ts`, `cdk.json`, and `tsconfig.cdk.json`.
-
-#### A. Architecture Overview
-
-The deployed infrastructure comprises the following primary components:
-1. **S3 Access Logs Bucket**: A secure, private S3 bucket dedicated to storing CloudFront access log files. Configured with a 90-day auto-expiry lifecycle rule to prevent runaway storage costs, and standard `OBJECT_WRITER` ownership settings required for CloudFront log deliveries.
-2. **Private S3 Website Bucket**: Hosts the production static website build files. All public access is fully blocked, forcing all client traffic to go through the CDN.
-3. **CloudFront Distribution**: High-performance, low-latency content delivery network (CDN) acting as the single public entry point for the site:
-   - **Origin Access Control (OAC)**: Authenticates traffic securely between S3 and CloudFront, preventing direct S3 URL bypassing.
-   - **Client-Side Routing Support**: SPA-friendly error configurations automatically redirect `404` and `403` HTTP status codes back to `/index.html` with a `200` response, allowing the React frontend router to resolve routes seamlessly.
-   - **Aggressive Caching**: Serves standard assets with optimized CDN caching, and applies a specialized high-performance cache behavior for fingerprinted static contents (under `/assets/*`) to maximize performance.
-4. **GitHub Actions OIDC Deploy Role**: An IAM Role implementing OpenID Connect (OIDC) federation with GitHub Actions. It allows secure, keyless deployments from the main branch's CI/CD pipeline, authorizing file uploads to the S3 bucket and triggering CloudFront invalidations without storing long-lived AWS secrets.
-
-#### B. Multi-Account Route 53 DNS Configuration (Role-Based Access)
-
-To map the custom domain (`kaavatietomalli.fi`) securely while maintaining a clean separation of concerns, the deployment uses a secure cross-account Route 53 pattern:
-- **DNS Hosting**: The primary domain's Route 53 Hosted Zone resides in a **primary/root AWS account**.
-- **Website Hosting**: The website S3 buckets, CloudFront distribution, and deployment roles are provisioned in a separate, dedicated **project-specific AWS account**.
-- **Lambda Custom Resource**: During deployment, the CDK stack provisions an AWS Lambda-backed custom resource (`CrossAccountRoute53Record`). This Lambda securely assumes a predefined IAM Role (`CROSS_ACCOUNT_DNS_ROLE`, defaulting to `ProjectAccountRootDnsRole`) located in the **primary account** to UPSERT or DELETE Route 53 `A` Alias records directing domain traffic to the project's CloudFront distribution.
-- **Security Paradigm**: This setup grants the project account *limited, role-based access* exclusively to update resource record sets for the specific site domain name, upholding strict least-privilege practices and keeping other domains/records in the primary account fully isolated.
-
-#### C. SSL/TLS Certificate Pre-existence Requirement
-
-To enable secure HTTPS delivery for the custom domain, an SSL/TLS Certificate matching the domain name must be provisioned ahead of deployment:
-* **Pre-existence**: The SSL certificate **must already exist** in the target AWS project account.
-* **Region Constraint**: Because CloudFront is a global CDN service, the custom certificate **must always be issued or imported in the `us-east-1` (US East - N. Virginia) region**, regardless of whether the rest of your resources are deployed in another default region (such as `eu-north-1`).
-* **CDK Integration**: The CDK stack imports the pre-existing certificate via its ARN using the `ACM_CERTIFICATE_ARN` parameter and binds it directly to the CloudFront distribution.
-
-#### D. Required CDK Deployment Environment Variables
->>>>>>> main
 
 Executing AWS CDK CLI operations (such as `npm run cdk:synth` or `npm run cdk:deploy`) locally or within GitHub workflows requires the following environment variables to be configured:
 
 | Environment Variable | Description | Example / Default |
 | :--- | :--- | :--- |
 | `AWS_PROJECT_ACCOUNT_ID` | The ID of the AWS account hosting the website and DNS infrastructure. | `123456789012` |
-| `DEPLOYER_ROLE` | *Optional.* The custom deployment IAM Role name created in the project account for OIDC federation. | Default: `GitHubActionsWebsiteDeployer` |
+| `WEBSITE_STACK_NAME` | Determines the CDK stack name for the website stack | 'KaavatietomalliWebsiteMainStack' |
+| `CERTIFICATE_STACK_NAME` | If configured, determined the CDK stack name for the certificate stack deployed in region `us-east-1` | 'KaavatietomalliWebsiteCertStack' |
+| `DEPLOYER_ROLE` | The custom deployment IAM Role name created in the project account for OIDC federation. | 'GitHubActionsWebsiteDeployer' |
 | `GIT_TAG` | *Optional.* Dynamic git version tag to mark deployments. | Default: Automatically resolved via `git describe` |
 | `VITE_PRELAUNCH_PASSWORD` | *Optional.* If configured, flags stack resources for dev/preview (e.g. enabling automatic bucket destruction). | Default: Off (Production configuration) |
+
 
 ---
 
