@@ -793,48 +793,82 @@ CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild
 
 ### 7. AWS CDK Stack & S3/CloudFront Deployment
 
-The platform's cloud deployment architecture is fully defined as infrastructure-as-code (IaC) using the **AWS Cloud Development Kit (CDK)** in TypeScript. The deployment on a robust, production-ready static hosting structure powered by **Amazon S3** and **Amazon CloudFront**.
+The platform's cloud deployment architecture is fully defined as Infrastructure-as-Code (IaC) using the **AWS Cloud Development Kit (CDK)** in TypeScript. The infrastructure is designed to run on a highly secure, serverless, and production-ready static hosting structure powered by **Amazon S3** and **Amazon CloudFront**.
 
-The CDK application configurations are organized within `/bin/app.ts`, `/cdk/website-stack.ts`, `cdk.json`, and `tsconfig.cdk.json`.
+The CDK configurations are organized across:
+* `/bin/app.ts`: Application entry point orchestrating the multi-stack setup.
+* `/cdk/certificate-stack.ts`: Handles DNS hosting and regional SSL/TLS certificates.
+* `/cdk/website-stack.ts`: Provisions S3 buckets, CloudFront CDN, IAM deployment roles, and Athena analytics.
+* `cdk.json` & `tsconfig.cdk.json`: CDK CLI configuration and compiler settings.
 
-#### A. Architecture Overview
+#### A. Multi-Stack Architectural Design
 
-The deployed infrastructure comprises the following primary components:
-1. **S3 Access Logs Bucket**: A secure, private S3 bucket dedicated to storing CloudFront access log files. Configured with a 90-day auto-expiry lifecycle rule to prevent runaway storage costs, and standard `OBJECT_WRITER` ownership settings required for CloudFront log deliveries.
-2. **Private S3 Website Bucket**: Hosts the production static website build files. All public access is fully blocked, forcing all client traffic to go through the CDN.
-3. **CloudFront Distribution**: High-performance, low-latency content delivery network (CDN) acting as the single public entry point for the site:
-   - **Origin Access Control (OAC)**: Authenticates traffic securely between S3 and CloudFront, preventing direct S3 URL bypassing.
-   - **Client-Side Routing Support**: SPA-friendly error configurations automatically redirect `404` and `403` HTTP status codes back to `/index.html` with a `200` response, allowing the React frontend router to resolve routes seamlessly.
-   - **Aggressive Caching**: Serves standard assets with optimized CDN caching, and applies a specialized high-performance cache behavior for fingerprinted static contents (under `/assets/*`) to maximize performance.
-4. **GitHub Actions OIDC Deploy Role**: An IAM Role implementing OpenID Connect (OIDC) federation with GitHub Actions. It allows secure, keyless deployments from the main branch's CI/CD pipeline, authorizing file uploads to the S3 bucket and triggering CloudFront invalidations without storing long-lived AWS secrets.
+To support custom domain names on a global content delivery network (CDN) while observing AWS's regional policies, the infrastructure is split into two distinct, coupled stacks:
 
-#### B. Multi-Account Route 53 DNS Configuration (Role-Based Access)
+1. **Certificate Stack (`KaavatietomalliWebsiteCertStack`)**:
+   - **Region Constraint**: Deployed in `us-east-1` (US East - N. Virginia). Amazon CloudFront requires custom domain SSL/TLS certificates to reside exclusively in `us-east-1`.
+   - **Route 53 Public Hosted Zone**: Automatically creates the public hosted zone for `kaavatietomalli.fi` within the project's AWS account.
+   - **SSL/TLS ACM Certificate**: Requests a fully validated public certificate for the domain. Validation is performed automatically via DNS validation records added directly within the same hosted zone.
+   - **Automated Domain Name Server (NS) Registry Sync**: Features a Lambda-backed custom resource (`UpdateDomainNameServers`) that calls the Route 53 Registrar API to automatically update the registered domain's nameservers at the registry level to match the newly generated hosted zone nameservers, eliminating manual registrar updating.
 
-To map the custom domain (`kaavatietomalli.fi`) securely while maintaining a clean separation of concerns, the deployment uses a secure cross-account Route 53 pattern:
-- **DNS Hosting**: The primary domain's Route 53 Hosted Zone resides in a **primary/root AWS account**.
-- **Website Hosting**: The website S3 buckets, CloudFront distribution, and deployment roles are provisioned in a separate, dedicated **project-specific AWS account**.
-- **Lambda Custom Resource**: During deployment, the CDK stack provisions an AWS Lambda-backed custom resource (`CrossAccountRoute53Record`). This Lambda securely assumes a predefined IAM Role (`CROSS_ACCOUNT_DNS_ROLE`, defaulting to `ProjectAccountRootDnsRole`) located in the **primary account** to UPSERT or DELETE Route 53 `A` Alias records directing domain traffic to the project's CloudFront distribution.
-- **Security Paradigm**: This setup grants the project account *limited, role-based access* exclusively to update resource record sets for the specific site domain name, upholding strict least-privilege practices and keeping other domains/records in the primary account fully isolated.
+2. **Website Stack (`KaavatietomalliWebsiteMainStack`)**:
+   - **Region**: Deployed in the project's primary default region (e.g., `eu-north-1`).
+   - **Cross-Region References**: Leverages CDK cross-region referencing to automatically pass the validated ACM certificate ARN and public hosted zone object from the certificate stack in `us-east-1` down to the website distribution stack in the primary region.
+   - **Dependency Chain**: The website stack maintains an explicit stack dependency on the certificate stack, ensuring certificates and DNS profiles are fully registered and validated before content distribution mechanisms are built.
 
-#### C. SSL/TLS Certificate Pre-existence Requirement
+#### B. Core Website Hosting Components
 
-To enable secure HTTPS delivery for the custom domain, an SSL/TLS Certificate matching the domain name must be provisioned ahead of deployment:
-* **Pre-existence**: The SSL certificate **must already exist** in the target AWS project account.
-* **Region Constraint**: Because CloudFront is a global CDN service, the custom certificate **must always be issued or imported in the `us-east-1` (US East - N. Virginia) region**, regardless of whether the rest of your resources are deployed in another default region (such as `eu-north-1`).
-* **CDK Integration**: The CDK stack imports the pre-existing certificate via its ARN using the `ACM_CERTIFICATE_ARN` parameter and binds it directly to the CloudFront distribution.
+The website distribution stack provisions the following standard components:
 
-#### D. Required CDK Deployment Environment Variables
+1. **CloudFront S3 Access Logs Bucket**:
+   - A private, secure S3 bucket for storing raw CDN delivery logs.
+   - **Object Ownership (`BUCKET_OWNER_PREFERRED`)**: This is a modern, highly secure S3 configuration. Standard CloudFront log delivery requires the use of S3 Access Control Lists (ACLs). Configuring the bucket with `BUCKET_OWNER_PREFERRED` ensures that the website owner account automatically retains full ownership of all logs written by the CloudFront service, facilitating seamless log parsing without legacy ACL ownership conflicts.
+   - **Retention & Cost Controls**: Implements a 365-day lifecycle policy. Raw logs automatically transition to Glacier storage after 30 days and are deleted after 365 days to prevent runaway storage fees.
+2. **Private Website Content Bucket**:
+   - A private S3 bucket hosting compiled React static files.
+   - Strict `BlockPublicAccess.BLOCK_ALL` and default `S3_MANAGED` encryption are enforced. Public users cannot access website objects via raw S3 endpoint URLs.
+3. **CloudFront CDN Distribution**:
+   - Acts as the single, high-performance edge entry point for all website traffic.
+   - **Origin Access Control (OAC)**: Enforces authenticated, secure handshakes between CloudFront and S3, ensuring S3 objects are only served through authorized CDN requests.
+   - **Single-Page Application (SPA) Routing**: SPA-friendly error behaviors intercept standard `404` and `403` HTTP status codes, rewriting them to a `200` success response targeting `/index.html` with a custom `0` second TTL. This passes routing control down to the client-side React Router to resolve pages seamlessly.
+   - **High-Performance Caching**: Configured with `CACHING_OPTIMIZED` behaviors for overall content and aggressive edge caching rules specifically tuned for fingerprinted assets under `/assets/*` to maximize edge hit ratios.
+4. **Route 53 DNS Alias Records**:
+   - Automatically maps `kaavatietomalli.fi` using IPv4 (`A`) and IPv6 (`AAAA`) alias records pointing to the CloudFront distribution.
+   - Registers a standard DNS CAA Record restricting SSL/TLS validation exclusively to `amazon.com` for maximum domain security.
+
+#### C. Built-in Athena Access Log Analytics
+
+To enable deep, privacy-respecting website traffic analysis without bloating the client bundle with third-party tracking scripts, the Website Stack sets up a serverless analytics warehouse using **Amazon Athena** and **AWS Glue**:
+
+1. **Athena Query Result S3 Bucket**: A private scratchpad bucket for Athena query outputs, configured with an automated 7-day expiration lifecycle policy to prune old query caches.
+2. **Glue Catalog Database & Table**:
+   - Registers `website_access_logs_db` in the Glue Data Catalog.
+   - Provisions an external metadata table `cloudfront_logs` pointing to the logs bucket's S3 location. The table schema maps standard CloudFront tab-separated raw log headers onto queryable columns (including timestamp, requester IP, request method, request URI, response status, user-agent, and response latency).
+3. **Dedicated Workgroup (`WebsiteAnalyticsWorkgroup`)**: Enforces query output delivery paths and includes a strict cost safeguard capping maximum data scanned per query at **10 GB** to prevent runaway billing.
+4. **Pre-configured Named Queries**: Saves standard, highly optimized analytical queries directly in the AWS Athena console for instant, one-click insights:
+   - **Top 20 Most Requested Pages**: Evaluates visitor activity over the last 7 days.
+   - **Total Activity on AI & Machine-Readable Endpoints**: Tallies hits on machine-readable endpoints (`llms.txt`, `sitemap.xml`, `rss.xml`, `.md` files) to measure structured indexing volume.
+   - **Identify Specific AI Harvesters & Search Crawlers**: Filters traffic against known bot signatures (such as OpenAI's GPTBot, Anthropic's ClaudeBot, Bytespider, and Google-Extended) to map harvester footprints and check compliance with robots policies.
+   - **Track llms.txt vs. sitemap.xml Fetch Frequency**: Renders a 30-day chronological log comparing how frequently AI indexers fetch developer markdown resources compared to standard search engine sitemaps.
+   - **Detect Unverified or Masked AI Scrapers**: Pinpoints requests targeting raw markdown content or `llms.txt` using non-standard browsers, helping identify anonymous scraper pools.
+
+#### D. GitHub Actions OIDC Deploy Role (Keyless Deployments)
+
+To enforce secure, credential-free continuous integration:
+- Provisions an IAM Role federating trust via an **OpenID Connect (OIDC)** provider linked to GitHub Actions.
+- Uses conditional rules to restrict role assumption exclusively to the repository owner and ID (`spatineo`) running on the `main` branch.
+- Grants the actions workflow limited permissions to sync build files to the S3 content bucket and trigger targeted CloudFront cache invalidations without storing long-lived, sensitive AWS access keys in the GitHub repository.
+
+#### E. Required CDK Deployment Environment Variables
 
 Executing AWS CDK CLI operations (such as `npm run cdk:synth` or `npm run cdk:deploy`) locally or within GitHub workflows requires the following environment variables to be configured:
 
 | Environment Variable | Description | Example / Default |
 | :--- | :--- | :--- |
-| `AWS_PROJECT_ACCOUNT_ID` | The ID of the target AWS project account hosting the website infrastructure. | `123456789012` |
-| `AWS_PRIMARY_ACCOUNT_ID` | The ID of the primary/root AWS account hosting the Route 53 domain registrations. | `987654321098` |
-| `ROUTE53_HOSTED_ZONE_ID` | The Route 53 Hosted Zone ID associated with the primary domain name in the primary account. | `Z1029384756A` |
-| `ACM_CERTIFICATE_ARN` | The ARN of the pre-existing SSL certificate issued in `us-east-1` inside the project account. | `arn:aws:acm:us-east-1:123456789012:certificate/abc-123` |
-| `CROSS_ACCOUNT_DNS_ROLE` | *Optional.* The IAM Role name to assume in the primary account for upserting DNS alias records. | Default: `ProjectAccountRootDnsRole` |
+| `AWS_PROJECT_ACCOUNT_ID` | The ID of the AWS account hosting the website and DNS infrastructure. | `123456789012` |
 | `DEPLOYER_ROLE` | *Optional.* The custom deployment IAM Role name created in the project account for OIDC federation. | Default: `GitHubActionsWebsiteDeployer` |
+| `GIT_TAG` | *Optional.* Dynamic git version tag to mark deployments. | Default: Automatically resolved via `git describe` |
+| `VITE_PRELAUNCH_PASSWORD` | *Optional.* If configured, flags stack resources for dev/preview (e.g. enabling automatic bucket destruction). | Default: Off (Production configuration) |
 
 ---
 
@@ -892,9 +926,12 @@ npm run fetch-data
 
 # --- AWS CDK Infrastructure & Deployment Commands ---
 
-# Synthesize the CloudFormation template for the CloudFront + S3 website deployment stack
+# Synthesize the CloudFormation templates for the multi-stack website infrastructure
 npm run cdk:synth
 
-# Deploy the infrastructure stack directly to the target AWS project account (requires target environment variables)
+# Deploy the infrastructure stacks (both CertificateStack and WebsiteStack) to the target AWS account
 npm run cdk:deploy
+
+# Tear down all provisioned AWS CDK infrastructure stacks and resources
+npm run cdk:destroy
 ```
