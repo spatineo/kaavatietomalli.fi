@@ -180,7 +180,7 @@ jobs:
       - name: Set Resource Variables (from existing stack)
         if: steps.filter.outputs.infra != 'true'
         run: |
-          STACK_NAME="WebsiteMainStack"
+          STACK_NAME="KaavatietomalliWebsiteMainStack"
 
           BUCKET_NAME=$(aws cloudformation describe-stacks \
             --stack-name $STACK_NAME \
