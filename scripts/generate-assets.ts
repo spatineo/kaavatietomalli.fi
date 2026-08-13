@@ -720,117 +720,6 @@ ${rssItemsXml}  </channel>
   console.log('Generated feed.xml (RSS 2.0)');
 }
 
-export function generate404Html(publicDir: string, t: any): void {
-  const pageNotFoundTitle = `${t.notFound.title} - Kaavatietomalli`;
-  const notFoundHtml = `<!DOCTYPE html>
-<html lang="fi">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${escapeXml(pageNotFoundTitle)}</title>
-  <style>
-    body {
-      background-color: #0b0f19;
-      color: #94a3b8;
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      padding: 24px;
-      box-sizing: border-box;
-    }
-    .container {
-      text-align: center;
-      max-width: 480px;
-    }
-    h1 {
-      color: #f8fafc;
-      font-size: 2.25rem;
-      font-weight: 800;
-      line-height: 1.25;
-      margin-bottom: 16px;
-    }
-    p {
-      font-size: 1rem;
-      line-height: 1.6;
-      margin-bottom: 24px;
-    }
-    .spinner {
-      display: inline-block;
-      width: 32px;
-      height: 32px;
-      border: 3px solid rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-      border-top-color: #38bdf8;
-      animation: spin 1s ease-in-out infinite;
-      margin-bottom: 16px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-  <script type="text/javascript">
-    (function() {
-      // Extract the current URL path
-      var path = window.location.pathname;
-      var search = window.location.search;
-      var hash = window.location.hash;
-      
-      // Dynamic repository path detection (e.g. /kaavatietomalli.fi/)
-      var repoName = '${REPO_NAME}';
-      var repoPath = '/' + repoName;
-      var isRepoPath = path.indexOf(repoPath) === 0;
-      
-      // Extract the clean relative path relative to the app base
-      var cleanPath = path;
-      if (isRepoPath) {
-        cleanPath = path.substring(repoPath.length);
-      }
-      
-      // Strip leading slash
-      if (cleanPath.charAt(0) === '/') {
-        cleanPath = cleanPath.substring(1);
-      }
-      // Strip trailing slash
-      if (cleanPath.charAt(cleanPath.length - 1) === '/') {
-        cleanPath = cleanPath.substring(0, cleanPath.length - 1);
-      }
-      
-      // Only perform redirect if there is an actual path, otherwise send to home
-      var redirectPath = cleanPath ? cleanPath : '';
-      
-      // Construct redirection URL
-      var basePart = window.location.origin + (isRepoPath ? repoPath + '/' : '/');
-      var destination = basePart + '?post=' + encodeURIComponent(redirectPath);
-      
-      // Append any existing hash or additional queries if they exist
-      if (hash) {
-        destination += hash;
-      }
-      
-      // Redirect the user
-      window.location.replace(destination);
-    })();
-  </script>
-</head>
-<body>
-  <div class="container">
-    <div class="spinner"></div>
-    <h1>${escapeXml(t.notFound.redirecting)}</h1>
-    <p>${escapeXml(t.notFound.redirectingDescription)}</p>
-    <p style="font-size: 0.85rem; color: #64748b;">
-      <a href="/" style="color: #38bdf8; text-decoration: none;">${escapeXml(t.notFound.redirectingClickHere)}</a>
-    </p>
-  </div>
-</body>
-</html>`;
-
-  fs.writeFileSync(path.join(publicDir, '404.html'), notFoundHtml, 'utf-8');
-  console.log('Generated 404.html');
-}
-
 export function copyImages(resourcesDir: string, contentDir: string, imagesOutDir: string): void {
   const srcImagesDir = path.join(resourcesDir, 'images');
   if (fs.existsSync(srcImagesDir)) {
@@ -924,8 +813,6 @@ export function runGenerators(
   generateLlmsFiles(posts, pages, PUBLIC_DIR, CONFIG.baseUrl, t);
 
   generateRssFeed(posts, historyMap, useTestContent, PUBLIC_DIR, CONFIG.baseUrl, t);
-
-  generate404Html(PUBLIC_DIR, t);
 
   const IMAGES_OUT_DIR = path.join(PUBLIC_DIR, 'images');
   copyImages(RESOURCES_DIR, CONTENT_DIR, IMAGES_OUT_DIR);
