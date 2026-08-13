@@ -92,7 +92,7 @@ export function HomeView({
     >
       {/* Hero Section */}
       <section className="bg-brand-bg pt-8 pb-12 md:pt-32 md:pb-32">
-        <div className="max-w-7xl ml-5 lg:ml-20 mr-auto  px-6">
+        <div className="max-w-7xl mx-auto  px-6">
           <div className="flex flex-col gap-6 md:gap-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -163,8 +163,8 @@ export function HomeView({
         }}
       />
 
-      <div id="journal-section" className="py-20 lg:py-40">
-        <div className="max-w-7xl ml-5 lg:ml-20 mr-auto px-10 mb-32">
+      <section id="journal-section" className="py-20 lg:py-40">
+        <div className="max-w-7xl mx-auto px-10 mb-32">
           <div className="flex flex-wrap items-center gap-6 mb-12">
             <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
               {t.blog.sectionSubtitle}
@@ -246,10 +246,10 @@ export function HomeView({
             </button>
           </div>
         )}
-        <div className="max-w-4xl ml-5 lg:ml-20 mr-auto px-6 md:px-10 mt-40">
+        <div className="max-w-4xl mr-auto px-6 md:px-10 mt-40">
           <ContentFooter onBack={onBlog} />
         </div>
-      </div>
+      </section>
     </motion.div>
   );
 }

@@ -119,7 +119,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
 
   return (
     <section className="text-white py-32 overflow-hidden border-b border-white/5">
-      <div className="max-w-7xl ml-5 lg:ml-20 mr-auto px-6 mb-12">
+      <div className="max-w-7xl mx-auto px-6 mb-12">
         <div className="flex flex-col">
           <div className="flex items-center gap-6 mb-8 uppercase">
             <HistoryIcon size={20} className="text-brand-accent" aria-hidden="true" />
@@ -135,7 +135,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
         </div>
       </div>
 
-      <div className="relative max-w-7xl ml-5 lg:ml-20 px-6">
+      <div className="relative px-6">
         <div 
           ref={scrollContainerRef}
           className="flex gap-8 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10 snap-x snap-mandatory" 
@@ -198,7 +198,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       </div>
 
       {/* Modern carousel control widget: progress line indicator & chevron buttons by proximity */}
-      <div className="max-w-7xl ml-5 lg:ml-20 mr-auto px-6 mt-8 flex items-center justify-between gap-8">
+      <div className="mx-auto px-6 mt-8 flex items-center justify-between gap-8">
         {/* Progress Line */}
         <div className="flex-grow h-[2px] bg-white/10 rounded-full overflow-hidden">
           <div 
