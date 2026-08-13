@@ -5,7 +5,8 @@
 
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRouter } from './useRouter';
+import { useRouter, RouterProvider, useAppRouter } from './useRouter';
+import React from 'react';
 
 describe('useRouter hook', () => {
   beforeEach(() => {
@@ -19,13 +20,23 @@ describe('useRouter hook', () => {
     });
   });
 
-  it('determines the initial view as home when there are no query params', () => {
+  it('determines the initial view as home when there are no path segments or query params', () => {
     const { result } = renderHook(() => useRouter());
 
     expect(result.current.activeView).toEqual({ type: 'home', slug: null });
   });
 
-  it('determines activeView accurately based on URL search parameters', () => {
+  it('determines activeView accurately based on URL pathname', () => {
+    vi.stubGlobal('location', {
+      search: '',
+      pathname: '/blog/digital-twin-spec',
+    });
+
+    const { result } = renderHook(() => useRouter());
+    expect(result.current.activeView).toEqual({ type: 'post', slug: 'digital-twin-spec' });
+  });
+
+  it('determines activeView based on URL search parameters fallback if pathname is root', () => {
     vi.stubGlobal('location', {
       search: '?post=digital-twin-spec',
       pathname: '/',
@@ -35,23 +46,23 @@ describe('useRouter hook', () => {
     expect(result.current.activeView).toEqual({ type: 'post', slug: 'digital-twin-spec' });
   });
 
-  it('updates state via navigation and acts on location.pushState', () => {
+  it('updates state via navigation and acts on location.pushState with path-based structure', () => {
     const { result } = renderHook(() => useRouter());
 
     act(() => {
       result.current.navigate({ type: 'page', slug: ' Tietomalli' });
     });
 
-    // Verify it updates activeView accordingly
+    // Verify it updates activeView accordingly and generates a correct pathname URL
     expect(result.current.activeView).toEqual({ type: 'page', slug: ' Tietomalli' });
     expect(window.history.pushState).toHaveBeenCalled();
   });
 
-  it('handles popstate triggers dynamically', () => {
+  it('handles popstate triggers dynamically with path-based structure', () => {
     const { result } = renderHook(() => useRouter());
 
-    // Stub search string to mock browser update prior to popstate dispatch
-    (window.location as any).search = '?tag=data-exchange';
+    // Stub pathname to mock browser update prior to popstate dispatch
+    (window.location as any).pathname = '/tag/data-exchange';
 
     act(() => {
       window.dispatchEvent(new Event('popstate'));
@@ -62,8 +73,8 @@ describe('useRouter hook', () => {
 
   it('sets pendingScroll to true and navigates to home when on non-home view', () => {
     vi.stubGlobal('location', {
-      search: '?post=digital-twin-spec',
-      pathname: '/',
+      search: '',
+      pathname: '/blog/digital-twin-spec',
     });
     const { result } = renderHook(() => useRouter());
 
@@ -101,4 +112,13 @@ describe('useRouter hook', () => {
     getElementSpy.mockRestore();
     vi.useRealTimers();
   });
+
+  it('correctly provides router via RouterProvider and useAppRouter', () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <RouterProvider>{children}</RouterProvider>
+    );
+    const { result } = renderHook(() => useAppRouter(), { wrapper });
+    expect(result.current.activeView).toEqual({ type: 'home', slug: null });
+  });
 });
+

@@ -199,7 +199,7 @@ describe('fetch-codelists script', () => {
         'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
           }
         }
       );
@@ -208,7 +208,7 @@ describe('fetch-codelists script', () => {
         'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/codes/',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
           }
         }
       );
@@ -218,7 +218,7 @@ describe('fetch-codelists script', () => {
         'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
           }
         }
       );
@@ -227,7 +227,7 @@ describe('fetch-codelists script', () => {
         'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/codes/',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)",
+            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
           }
         }
       );

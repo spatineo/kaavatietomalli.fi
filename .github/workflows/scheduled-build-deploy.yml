@@ -74,18 +74,42 @@ jobs:
         env:
           VITE_BASE_PATH: /
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }}
-      
-      - name: Setup Pages
-        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
-        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d #v6.0.0
 
-      - name: Upload artifact
+      - name: Configure AWS Credentials (OIDC)
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 #v5.0.0
+        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:
-          path: './dist'
+          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.DEPLOYER_ROLE }}
+          aws-region: eu-north-1
 
-      - name: Deploy to GitHub Pages
+      - name: Fetch Infrastructure Resource IDs
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
-        id: deployment
-        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 #v5.0.0
+        id: describe-stack
+        run: |
+          STACK_NAME="WebsiteMainStack"
+
+          BUCKET_NAME=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query "Stacks[0].Outputs[?OutputKey=='S3BucketName'].OutputValue" \
+            --output text)
+
+          DISTRIBUTION_ID=$(aws cloudformation describe-stacks \
+            --stack-name $STACK_NAME \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
+            --output text)
+
+          echo "bucket_name=${BUCKET_NAME}" >> $GITHUB_OUTPUT
+          echo "distribution_id=${DISTRIBUTION_ID}" >> $GITHUB_OUTPUT
+
+      - name: Sync Site Output to S3
+        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
+        run: |
+          aws s3 sync dist/ s3://${{ steps.describe-stack.outputs.bucket_name }} --delete \
+            --cache-control "public, max-age=0, must-revalidate"
+
+      - name: Invalidate CloudFront Cache
+        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.describe-stack.outputs.distribution_id }} \
+            --paths "/*"

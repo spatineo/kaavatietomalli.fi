@@ -38,7 +38,7 @@ export const CONFIG = {
   },
   remoteFetchOptions: {
     headers: {
-      'User-Agent': 'Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/?page=palaute)',
+      'User-Agent': 'Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)',
     }
   }
 };

@@ -24,6 +24,7 @@ A highly polished, serverless headless CMS website built with React, Vite, and T
    - [Unit & Integration Testing (Vitest + RTL)](#3-unit--integration-testing-vitest--rtl)
    - [End-to-End Testing (Playwright)](#5-end-to-end-testing-playwright)
    - [Test Content & Local-Test Variants](#6-test-content--local-test-variants)
+   - [AWS CDK Stack & S3/CloudFront Deployment](#7-aws-cdk-stack--s3cloudfront-deployment)
 6. [Contribution Guidelines](#contribution-guidelines)
 7. [Development & Build Commands](#development--build-commands)
 
@@ -674,7 +675,7 @@ The test suite and deployment pipelines are fully wired into our software develo
 
 - **Main CI/CD Pipeline (`build-deploy.yml`)**:
   - Automatically runs unit, integration, and hook tests via `npm run test:run` on pull requests targeting the `main` branch, ensuring all checks pass before integration. Direct pushing to `main` is strictly forbidden by branch protection rules.
-  - Automatically builds and deploys to GitHub Pages on every pull request merged to `main`.
+  - Automatically builds and deploys the site on every pull request merged to `main`.
   - End-to-End browser tests are executed in actual headless profiles with `npm run test:e2e`. Playwright browsers are dynamically installed during the CI flow with `npx playwright install --with-deps`, and testing reports are uploaded as GitHub build artifacts under `playwright-report` with a 30-day retention window.
 
 - **Scheduled Rebuild & Deploy (`scheduled-rebuild.yml`)**:
@@ -790,6 +791,53 @@ CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild
 
 ---
 
+### 7. AWS CDK Stack & S3/CloudFront Deployment
+
+The platform's cloud deployment architecture is fully defined as infrastructure-as-code (IaC) using the **AWS Cloud Development Kit (CDK)** in TypeScript. The deployment on a robust, production-ready static hosting structure powered by **Amazon S3** and **Amazon CloudFront**.
+
+The CDK application configurations are organized within `/bin/app.ts`, `/cdk/website-stack.ts`, `cdk.json`, and `tsconfig.cdk.json`.
+
+#### A. Architecture Overview
+
+The deployed infrastructure comprises the following primary components:
+1. **S3 Access Logs Bucket**: A secure, private S3 bucket dedicated to storing CloudFront access log files. Configured with a 90-day auto-expiry lifecycle rule to prevent runaway storage costs, and standard `OBJECT_WRITER` ownership settings required for CloudFront log deliveries.
+2. **Private S3 Website Bucket**: Hosts the production static website build files. All public access is fully blocked, forcing all client traffic to go through the CDN.
+3. **CloudFront Distribution**: High-performance, low-latency content delivery network (CDN) acting as the single public entry point for the site:
+   - **Origin Access Control (OAC)**: Authenticates traffic securely between S3 and CloudFront, preventing direct S3 URL bypassing.
+   - **Client-Side Routing Support**: SPA-friendly error configurations automatically redirect `404` and `403` HTTP status codes back to `/index.html` with a `200` response, allowing the React frontend router to resolve routes seamlessly.
+   - **Aggressive Caching**: Serves standard assets with optimized CDN caching, and applies a specialized high-performance cache behavior for fingerprinted static contents (under `/assets/*`) to maximize performance.
+4. **GitHub Actions OIDC Deploy Role**: An IAM Role implementing OpenID Connect (OIDC) federation with GitHub Actions. It allows secure, keyless deployments from the main branch's CI/CD pipeline, authorizing file uploads to the S3 bucket and triggering CloudFront invalidations without storing long-lived AWS secrets.
+
+#### B. Multi-Account Route 53 DNS Configuration (Role-Based Access)
+
+To map the custom domain (`kaavatietomalli.fi`) securely while maintaining a clean separation of concerns, the deployment uses a secure cross-account Route 53 pattern:
+- **DNS Hosting**: The primary domain's Route 53 Hosted Zone resides in a **primary/root AWS account**.
+- **Website Hosting**: The website S3 buckets, CloudFront distribution, and deployment roles are provisioned in a separate, dedicated **project-specific AWS account**.
+- **Lambda Custom Resource**: During deployment, the CDK stack provisions an AWS Lambda-backed custom resource (`CrossAccountRoute53Record`). This Lambda securely assumes a predefined IAM Role (`CROSS_ACCOUNT_DNS_ROLE`, defaulting to `ProjectAccountRootDnsRole`) located in the **primary account** to UPSERT or DELETE Route 53 `A` Alias records directing domain traffic to the project's CloudFront distribution.
+- **Security Paradigm**: This setup grants the project account *limited, role-based access* exclusively to update resource record sets for the specific site domain name, upholding strict least-privilege practices and keeping other domains/records in the primary account fully isolated.
+
+#### C. SSL/TLS Certificate Pre-existence Requirement
+
+To enable secure HTTPS delivery for the custom domain, an SSL/TLS Certificate matching the domain name must be provisioned ahead of deployment:
+* **Pre-existence**: The SSL certificate **must already exist** in the target AWS project account.
+* **Region Constraint**: Because CloudFront is a global CDN service, the custom certificate **must always be issued or imported in the `us-east-1` (US East - N. Virginia) region**, regardless of whether the rest of your resources are deployed in another default region (such as `eu-north-1`).
+* **CDK Integration**: The CDK stack imports the pre-existing certificate via its ARN using the `ACM_CERTIFICATE_ARN` parameter and binds it directly to the CloudFront distribution.
+
+#### D. Required CDK Deployment Environment Variables
+
+Executing AWS CDK CLI operations (such as `npm run cdk:synth` or `npm run cdk:deploy`) locally or within GitHub workflows requires the following environment variables to be configured:
+
+| Environment Variable | Description | Example / Default |
+| :--- | :--- | :--- |
+| `AWS_PROJECT_ACCOUNT_ID` | The ID of the target AWS project account hosting the website infrastructure. | `123456789012` |
+| `AWS_PRIMARY_ACCOUNT_ID` | The ID of the primary/root AWS account hosting the Route 53 domain registrations. | `987654321098` |
+| `ROUTE53_HOSTED_ZONE_ID` | The Route 53 Hosted Zone ID associated with the primary domain name in the primary account. | `Z1029384756A` |
+| `ACM_CERTIFICATE_ARN` | The ARN of the pre-existing SSL certificate issued in `us-east-1` inside the project account. | `arn:aws:acm:us-east-1:123456789012:certificate/abc-123` |
+| `CROSS_ACCOUNT_DNS_ROLE` | *Optional.* The IAM Role name to assume in the primary account for upserting DNS alias records. | Default: `ProjectAccountRootDnsRole` |
+| `DEPLOYER_ROLE` | *Optional.* The custom deployment IAM Role name created in the project account for OIDC federation. | Default: `GitHubActionsWebsiteDeployer` |
+
+---
+
 ## Contribution Guidelines
 
 To maintain code quality, ensure site stability, and verify all automated checks pass, **direct pushing to the `main` branch is strictly forbidden by branch protection rules**. All contributions must follow our collaborative pull-request workflow:
@@ -841,4 +889,12 @@ npm run fetch-koodistot
 # Download and transform both data models and codelists (non-interactive workflow command; 
 # mainly meant to be executed automatically as part of GitHub CI/CD workflows and nightly rebuilds)
 npm run fetch-data
+
+# --- AWS CDK Infrastructure & Deployment Commands ---
+
+# Synthesize the CloudFormation template for the CloudFront + S3 website deployment stack
+npm run cdk:synth
+
+# Deploy the infrastructure stack directly to the target AWS project account (requires target environment variables)
+npm run cdk:deploy
 ```

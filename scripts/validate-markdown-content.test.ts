@@ -4,7 +4,8 @@ import fs from 'fs';
 import {
   validateMarkdownVideoBlocks,
   validateDataModelSnippetBlock,
-  validateInstanceBlock
+  validateInstanceBlock,
+  validatePageSlugAndFolders
 } from './content-utils.js';
 
 describe('validate-markdown-content tests', () => {
@@ -152,6 +153,33 @@ instance alice : User {
 \`\`\`
       `;
       expect(() => validateMarkdownVideoBlocks('test-file.md', badInstanceMarkdown)).toThrow('was not closed with a matching "}"');
+    });
+  });
+
+  describe('validatePageSlugAndFolders', () => {
+    it('should validate a normal page relative path successfully', () => {
+      expect(() => validatePageSlugAndFolders('normal-page.md')).not.toThrow();
+      expect(() => validatePageSlugAndFolders('nested/folder/normal-page.md')).not.toThrow();
+    });
+
+    it('should throw an error if the generated page slug is a reserved word', () => {
+      expect(() => validatePageSlugAndFolders('tag.md')).toThrow('is reserved and cannot be used');
+      expect(() => validatePageSlugAndFolders('blog.md')).toThrow('is reserved and cannot be used');
+      expect(() => validatePageSlugAndFolders('author.md')).toThrow('is reserved and cannot be used');
+      expect(() => validatePageSlugAndFolders('data-model.md')).toThrow('is reserved and cannot be used');
+      expect(() => validatePageSlugAndFolders('model.md')).toThrow('is reserved and cannot be used');
+    });
+
+    it('should throw an error if a sub-folder name of the page is a reserved word', () => {
+      expect(() => validatePageSlugAndFolders('tag/about.md')).toThrow('Page sub-folder name "tag" is reserved and cannot be used');
+      expect(() => validatePageSlugAndFolders('blog/some-page.md')).toThrow('Page sub-folder name "blog" is reserved and cannot be used');
+      expect(() => validatePageSlugAndFolders('author/info.md')).toThrow('Page sub-folder name "author" is reserved and cannot be used');
+      expect(() => validatePageSlugAndFolders('data-model/extra.md')).toThrow('Page sub-folder name "data-model" is reserved and cannot be used');
+      expect(() => validatePageSlugAndFolders('model/intro.md')).toThrow('Page sub-folder name "model" is reserved and cannot be used');
+    });
+
+    it('should throw an error for paths like data/model.md which combine to a reserved slug', () => {
+      expect(() => validatePageSlugAndFolders('data/model.md')).toThrow('Page slug "data-model" is reserved and cannot be used');
     });
   });
 

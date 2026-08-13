@@ -3,7 +3,8 @@ import path from 'path';
 import { parseFrontmatter } from './frontmatter.js';
 import {
   getFilesRecursive,
-  validateMarkdownVideoBlocks
+  validateMarkdownVideoBlocks,
+  validatePageSlugAndFolders
 } from './content-utils.js';
 
 const useTestContent = process.env.CONTENT_MODE === 'test' || process.env.CONTENT_MODE === 'dev/test' || process.env.CONTENT_MODE === 'dev';
@@ -125,6 +126,9 @@ if (fs.existsSync(pagesDir)) {
 
     // Video, Data-Model-Snippet and Instance Blocks
     checkSafe(() => validateMarkdownVideoBlocks(fullPath, rawContent), file);
+
+    // Page slug and folders validation (reserved routing safety check)
+    checkSafe(() => validatePageSlugAndFolders(file), file);
 
     // Front matter parsing
     let parsed: any;

@@ -430,6 +430,25 @@ export function validateMarkdownVideoBlocks(filePath: string, fileContent: strin
 }
 
 /**
+ * Validates that page slug and sub-folder names do not use reserved routing keywords.
+ */
+export function validatePageSlugAndFolders(file: string): void {
+  const RESERVED_WORDS = ['tag', 'blog', 'author', 'data-model', 'model'];
+  const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
+  if (RESERVED_WORDS.includes(slug.toLowerCase())) {
+    throw new Error(`Page slug "${slug}" is reserved and cannot be used.`);
+  }
+
+  const dirName = path.dirname(file);
+  const folders = dirName === '.' ? [] : dirName.split(/[\\/]/);
+  for (const folder of folders) {
+    if (RESERVED_WORDS.includes(folder.toLowerCase())) {
+      throw new Error(`Page sub-folder name "${folder}" is reserved and cannot be used.`);
+    }
+  }
+}
+
+/**
  * Compares two JSON objects ignoring originSyncTime in root or metadata.
  */
 export function isContentEqual(a: any, b: any): boolean {

@@ -7,6 +7,6 @@ Kaavatietomalli.fi:n toimituskunta vastaa sivuston sisällön suunnittelusta ja 
 
 ## Kaavatietomalli.fi:n toimituskunta 2026
 
-- [Ilkka Rinne](./?author=ilkka-rinne), Spatineo Oy, päätoimittaja
+- [Ilkka Rinne](/author/ilkka-rinne), Spatineo Oy, päätoimittaja
 
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, createContext, useContext, ReactNode, createElement } from 'react';
 import { CONFIG } from '../config';
 
 export type ViewType = 'home' | 'post' | 'page' | 'author' | 'tag' | 'model';
@@ -9,6 +9,10 @@ export interface ActiveView {
 }
 
 export function useRouter() {
+  const [pathname, setPathname] = useState(() => 
+    typeof window !== 'undefined' ? window.location.pathname : '/'
+  );
+
   const [searchString, setSearchString] = useState(() => 
     typeof window !== 'undefined' ? window.location.search : ''
   );
@@ -16,6 +20,38 @@ export function useRouter() {
   const [pendingScroll, setPendingScroll] = useState(false);
 
   const activeView = useMemo<ActiveView>(() => {
+    // 1. Path-based parsing
+    let relativePath = pathname;
+    if (relativePath.startsWith(CONFIG.basePath)) {
+      relativePath = relativePath.substring(CONFIG.basePath.length);
+    }
+    relativePath = relativePath.replace(/^\/+/, '').replace(/\/+$/, '');
+
+    if (relativePath) {
+      const parts = relativePath.split('/');
+      const firstPart = parts[0];
+      const secondPart = parts[1] ? decodeURIComponent(parts[1]) : null;
+
+      if (firstPart === 'blog') {
+        return { type: 'post', slug: secondPart };
+      }
+      if (firstPart === 'author') {
+        return { type: 'author', slug: secondPart };
+      }
+      if (firstPart === 'tag') {
+        return { type: 'tag', slug: secondPart };
+      }
+      if (firstPart === 'data-model') {
+        return { type: 'model', slug: secondPart };
+      }
+
+      // Check if it's not reserved for data-model
+      if (firstPart !== 'data-model' && firstPart !== 'model') {
+        return { type: 'page', slug: decodeURIComponent(firstPart) };
+      }
+    }
+
+    // 2. Fallback query-parameter parsing
     const params = new URLSearchParams(searchString);
     const model = params.get('model');
     const post = params.get('post');
@@ -29,13 +65,14 @@ export function useRouter() {
     if (author) return { type: 'author', slug: author };
     if (tag) return { type: 'tag', slug: tag };
     return { type: 'home', slug: null };
-  }, [searchString]);
+  }, [pathname, searchString]);
 
   // Unified popstate listener
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const handlePopState = () => {
+      setPathname(window.location.pathname);
       setSearchString(window.location.search);
     };
 
@@ -46,10 +83,24 @@ export function useRouter() {
   const navigate = useCallback((view: { type: string; slug: string | null; queryParams?: Record<string, string | null> }) => {
     if (typeof window === 'undefined') return;
 
-    const params = new URLSearchParams();
+    let pathPart = '';
     if (view.type !== 'home' && view.slug) {
-      params.set(view.type, view.slug);
+      if (view.type === 'page') {
+        pathPart = `${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'post') {
+        pathPart = `blog/${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'author') {
+        pathPart = `author/${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'tag') {
+        pathPart = `tag/${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'model') {
+        pathPart = `data-model/${encodeURIComponent(view.slug)}`;
+      } else {
+        pathPart = `${view.type}/${encodeURIComponent(view.slug)}`;
+      }
     }
+
+    const params = new URLSearchParams();
     if (view.queryParams) {
       Object.entries(view.queryParams).forEach(([k, v]) => {
         if (v !== null && v !== undefined && v !== '') {
@@ -57,15 +108,18 @@ export function useRouter() {
         }
       });
     }
-    
-    const searchPart = params.toString() ? `?${params.toString()}` : '';
-    const finalPath = CONFIG.basePath + searchPart;
+
+    const base = CONFIG.basePath.endsWith('/') ? CONFIG.basePath : `${CONFIG.basePath}/`;
+    const newPathname = pathPart ? `${base}${pathPart}` : CONFIG.basePath;
+    const newSearchString = params.toString() ? `?${params.toString()}` : '';
+    const finalPath = newPathname + newSearchString;
 
     const currentUrl = window.location.pathname + window.location.search;
     if (currentUrl !== finalPath) {
       window.history.pushState(null, '', finalPath);
     }
-    setSearchString(searchPart);
+    setPathname(newPathname);
+    setSearchString(newSearchString);
   }, []);
 
   const onHome = useCallback(() => {
@@ -102,3 +156,22 @@ export function useRouter() {
     scrollToBlog,
   };
 }
+
+export type RouterContextType = ReturnType<typeof useRouter>;
+
+export const RouterContext = createContext<RouterContextType | null>(null);
+
+export function RouterProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  return createElement(RouterContext.Provider, { value: router }, children);
+}
+
+export function useAppRouter() {
+  const context = useContext(RouterContext);
+  if (!context) {
+    throw new Error('useAppRouter must be used within a RouterProvider');
+  }
+  return context;
+}
+
+

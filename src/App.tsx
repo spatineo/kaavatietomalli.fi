@@ -19,13 +19,21 @@ import { CONFIG } from './config';
 import { getTranslations, Language } from './i18n';
 import { PasswordGate } from './components/PasswordGate';
 import { VersionMismatchPrompt } from './components/VersionMismatchPrompt';
-import { useRouter } from './hooks/useRouter';
+import { RouterProvider, useAppRouter } from './hooks/useRouter';
 import { useMetadataSync } from './hooks/useMetadataSync';
 import { useContentLoader } from './hooks/useContentLoader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { FetchDataModelAccess } from './lib/fetch-data-model-access';
 
 export default function App() {
+  return (
+    <RouterProvider>
+      <AppContent />
+    </RouterProvider>
+  );
+}
+
+function AppContent() {
   const t = getTranslations(CONFIG.language as Language);
   const dataModelAccess = new FetchDataModelAccess();
 
@@ -41,7 +49,7 @@ export default function App() {
     onHome,
     scrollToBlog,
     searchString,
-  } = useRouter();
+  } = useAppRouter();
 
   const [selectedThemeTag, setSelectedThemeTag] = useState<string | null>(null);
   const [visibleJournalCount, setVisibleJournalCount] = useState(10);

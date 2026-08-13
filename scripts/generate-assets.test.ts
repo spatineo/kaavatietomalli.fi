@@ -8,6 +8,10 @@ import {
   loadAndParseAuthors,
   generateTagIndex,
   generateRobotsTxt,
+  loadAllContent,
+  ensureOutputDirectories,
+  writeMetadataIndexes,
+  runGenerators,
 } from './generate-assets';
 import { escapeXml, parseVideoConfig, validateVideoBlock, validateMarkdownVideoBlocks } from './content-utils';
 import { CONFIG } from '../src/config';
@@ -362,9 +366,9 @@ Partner description.`,
 
       // Rule Check 5: XML Sitemap matches the active posts and pages
       expect(writtenFiles['sitemap-base.xml']).toBeDefined();
-      expect(writtenFiles['sitemap-base.xml']).toContain('?post=valid-active-post');
-      expect(writtenFiles['sitemap-base.xml']).not.toContain('?post=future-post');
-      expect(writtenFiles['sitemap-base.xml']).toContain('?page=info-page');
+      expect(writtenFiles['sitemap-base.xml']).toContain('/blog/valid-active-post');
+      expect(writtenFiles['sitemap-base.xml']).not.toContain('/blog/future-post');
+      expect(writtenFiles['sitemap-base.xml']).toContain('/info-page');
 
       // Verify the main sitemap.xml is a sitemapindex linking to sitemap-base.xml
       expect(writtenFiles['sitemap.xml']).toBeDefined();
@@ -491,7 +495,7 @@ Partner description.`,
       // 2. Verify sitemap.xml is empty of urls and has deny comments
       expect(writtenFiles['sitemap.xml']).toBeDefined();
       expect(writtenFiles['sitemap.xml']).toContain('PRE-LAUNCH STATE: Search engines and AI crawlers are denied access');
-      expect(writtenFiles['sitemap.xml']).not.toContain('?post=valid-active-post');
+      expect(writtenFiles['sitemap.xml']).not.toContain('/blog/valid-active-post');
 
       // 3. Verify index.html robots meta is updated to noindex, nofollow
       expect(writtenFiles['index.html']).toBeDefined();
@@ -649,10 +653,10 @@ Active author bio.`,
         expect(tagsOutput['docs'].pages).not.toContain('draft-page');
       }
 
-      expect(writtenFiles['sitemap-base.xml']).toContain('?post=active-post');
-      expect(writtenFiles['sitemap-base.xml']).not.toContain('?post=draft-post');
-      expect(writtenFiles['sitemap-base.xml']).toContain('?page=active-page');
-      expect(writtenFiles['sitemap-base.xml']).not.toContain('?page=draft-page');
+      expect(writtenFiles['sitemap-base.xml']).toContain('/blog/active-post');
+      expect(writtenFiles['sitemap-base.xml']).not.toContain('/blog/draft-post');
+      expect(writtenFiles['sitemap-base.xml']).toContain('/active-page');
+      expect(writtenFiles['sitemap-base.xml']).not.toContain('/draft-page');
 
       expect(writtenFiles['sitemap.xml']).toContain('<sitemapindex');
       expect(writtenFiles['sitemap.xml']).toContain('sitemap-base.xml');
@@ -815,6 +819,74 @@ describe('Modular Sub-pipelines', () => {
         );
       } finally {
         CONFIG.prelaunch = originalPrelaunch;
+        writeSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('loadAllContent', () => {
+    it('should load posts, pages, and authors', () => {
+      const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+      const readdirSpy = vi.spyOn(fs, 'readdirSync').mockReturnValue([]);
+      const statSpy = vi.spyOn(fs, 'statSync').mockReturnValue({ isDirectory: () => false } as any);
+
+      try {
+        const content = loadAllContent('posts', 'pages', 'authors');
+        expect(content).toBeDefined();
+        expect(content.posts).toEqual([]);
+        expect(content.pages).toEqual([]);
+        expect(content.authors).toEqual([]);
+      } finally {
+        existsSpy.mockRestore();
+        readdirSpy.mockRestore();
+        statSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('ensureOutputDirectories', () => {
+    it('should create directories if they do not exist', () => {
+      const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValue(false);
+      const mkdirSpy = vi.spyOn(fs, 'mkdirSync').mockImplementation(() => undefined);
+
+      try {
+        ensureOutputDirectories('out1', 'out2');
+        expect(mkdirSpy).toHaveBeenCalledWith('out1', { recursive: true });
+        expect(mkdirSpy).toHaveBeenCalledWith('out2', { recursive: true });
+      } finally {
+        existsSpy.mockRestore();
+        mkdirSpy.mockRestore();
+      }
+    });
+  });
+
+  describe('writeMetadataIndexes', () => {
+    it('should write json metadata indexes correctly', () => {
+      const writeSpy = vi.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+      try {
+        const mockPosts = [{ slug: 'p1', content: 'c1' }] as any;
+        const mockPages = [{ slug: 'g1', content: 'cg1' }] as any;
+        const mockTagIndex = { tag1: { posts: ['p1'], pages: ['g1'] } };
+
+        writeMetadataIndexes(mockPosts, mockPages, 'out', mockTagIndex);
+
+        expect(writeSpy).toHaveBeenCalledWith(
+          expect.stringContaining('tags.json'),
+          expect.stringContaining('tag1'),
+          'utf-8'
+        );
+        expect(writeSpy).toHaveBeenCalledWith(
+          expect.stringContaining('posts.json'),
+          expect.stringContaining('p1'),
+          'utf-8'
+        );
+        expect(writeSpy).toHaveBeenCalledWith(
+          expect.stringContaining('pages.json'),
+          expect.stringContaining('g1'),
+          'utf-8'
+        );
+      } finally {
         writeSpy.mockRestore();
       }
     });

@@ -216,11 +216,14 @@ export async function generateIndividualContentFiles(
   contentOutDir: string,
   dataAccess: LocalFileDataModelAccess
 ): Promise<void> {
-  const POSTS_OUT_DIR = path.join(contentOutDir, 'posts');
-  const PAGES_OUT_DIR = path.join(contentOutDir, 'pages');
-  const AUTHORS_OUT_DIR = path.join(contentOutDir, 'authors');
+  const POST_JSON_OUT_DIR = path.join(contentOutDir, 'posts');
+  const PAGE_JSON_OUT_DIR = path.join(contentOutDir, 'pages');
+  const AUTHOR_JSON_OUT_DIR = path.join(contentOutDir, 'authors');
+  const POST_ALT_OUT_DIR = path.join(contentOutDir, '..', 'blog');
+  const AUTHOR_ALT_OUT_DIR = path.join(contentOutDir, '..', 'author');
+  const PAGE_ALT_OUT_DIR = path.join(contentOutDir, '..');
 
-  [POSTS_OUT_DIR, PAGES_OUT_DIR, AUTHORS_OUT_DIR].forEach(dir => {
+  [POST_JSON_OUT_DIR, PAGE_JSON_OUT_DIR, AUTHOR_JSON_OUT_DIR, POST_ALT_OUT_DIR, AUTHOR_ALT_OUT_DIR].forEach(dir => {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   });
 
@@ -228,7 +231,7 @@ export async function generateIndividualContentFiles(
     if (post.content && post.content.includes('```data-model-snippet')) {
       post.content = await convertDataModelDiagramsToMermaid(post.content, dataAccess);
     }
-    const outPath = path.join(POSTS_OUT_DIR, `${post.slug}.json`);
+    const outPath = path.join(POST_JSON_OUT_DIR, `${post.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
@@ -236,7 +239,7 @@ export async function generateIndividualContentFiles(
       'utf-8'
     );
 
-    const markdownOutPath = path.join(POSTS_OUT_DIR, `${post.slug}.md`);
+    const markdownOutPath = path.join(POST_ALT_OUT_DIR, `${post.slug}.md`);
     let markdownContent = '# ' + post.title + '\n\n';
     markdownContent += post.content;
     fs.writeFileSync(
@@ -250,7 +253,7 @@ export async function generateIndividualContentFiles(
     if (page.content && page.content.includes('```data-model-snippet')) {
       page.content = await convertDataModelDiagramsToMermaid(page.content, dataAccess);
     }
-    const outPath = path.join(PAGES_OUT_DIR, `${page.slug}.json`);
+    const outPath = path.join(PAGE_JSON_OUT_DIR, `${page.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
@@ -258,7 +261,7 @@ export async function generateIndividualContentFiles(
       'utf-8'
     );
 
-    const markdownOutPath = path.join(PAGES_OUT_DIR, `${page.slug}.md`);
+    const markdownOutPath = path.join(PAGE_ALT_OUT_DIR, `${page.slug}.md`);
     let markdownContent = '# ' + page.title + '\n\n';
     markdownContent += page.content;
     fs.writeFileSync(
@@ -269,7 +272,7 @@ export async function generateIndividualContentFiles(
   }
 
   authors.forEach(author => {
-    const outPath = path.join(AUTHORS_OUT_DIR, `${author.slug}.json`);
+    const outPath = path.join(AUTHOR_JSON_OUT_DIR, `${author.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
@@ -277,7 +280,7 @@ export async function generateIndividualContentFiles(
       'utf-8'
     );
 
-    const markdownOutPath = path.join(AUTHORS_OUT_DIR, `${author.slug}.md`);
+    const markdownOutPath = path.join(AUTHOR_ALT_OUT_DIR, `${author.slug}.md`);
     let markdownContent = '# ' + author.title + '\n\n';
     markdownContent += author.content;
     fs.writeFileSync(
@@ -314,11 +317,11 @@ export function generateSitemaps(
     <priority>1.0</priority>
   </url>
 ${pages.map(page => `  <url>
-    <loc>${baseUrl}/?page=${page.slug}</loc>
+    <loc>${baseUrl}/${page.slug}</loc>
     <priority>0.8</priority>
   </url>`).join('\n')}
 ${posts.map(post => `  <url>
-    <loc>${baseUrl}/?post=${post.slug}</loc>
+    <loc>${baseUrl}/blog/${post.slug}</loc>
     <lastmod>${post.date ? new Date(post.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
     <priority>0.6</priority>
   </url>`).join('\n')}
@@ -448,15 +451,15 @@ ${posts.map(post => `  <url>
             const modelSitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>${baseUrl}/?model=${modelName}&amp;version=${modelVersion}</loc>
+    <loc>${baseUrl}/data-model/${modelName}?version=${modelVersion}</loc>
     <priority>0.7</priority>
   </url>
 ${classesList.map(cls => `  <url>
-    <loc>${baseUrl}/?model=${modelName}&amp;version=${modelVersion}&amp;class=${cls}</loc>
+    <loc>${baseUrl}/data-model/${modelName}?version=${modelVersion}&amp;class=${cls}</loc>
     <priority>0.6</priority>
   </url>`).join('\n')}
 ${codelistsList.map(code => `  <url>
-    <loc>${baseUrl}/?model=${modelName}&amp;version=${modelVersion}&amp;codelist=${code}</loc>
+    <loc>${baseUrl}/data-model/${modelName}?version=${modelVersion}&amp;codelist=${code}</loc>
     <priority>0.5</priority>
   </url>`).join('\n')}
 </urlset>`;
@@ -546,7 +549,7 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
   llmsTxt += `## ${t.llms.articlesFeatured}\n`;
   const featuredPosts = posts.slice(0, 5);
   featuredPosts.forEach(post => {
-    let line = `- [${post.title}](${baseUrl}/?post=${post.slug}) - [Raw Markdown](${CONFIG.baseUrl}/content/posts/${post.slug}.md)`;
+    let line = `- [${post.title}](${baseUrl}/blog/${post.slug}) - [Raw Markdown](${baseUrl}/blog/${post.slug}.md)`;
     if (post.promotional) {
       line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.partner || ''}]`;
     }
@@ -556,7 +559,7 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
   
   llmsTxt += `## ${t.llms.pages}\n`;
   pages.forEach(page => {
-    llmsTxt += `- [${page.title}](${baseUrl}/?page=${page.slug}) - [Raw Markdown](${CONFIG.baseUrl}/content/pages/${page.file})\n`;
+    llmsTxt += `- [${page.title}](${baseUrl}/${page.slug}) - [Raw Markdown](${baseUrl}/${page.slug}.md)\n`;
   });
   llmsTxt += `\n`;
   
@@ -577,7 +580,7 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
   
   llmsFullTxt += `## ${t.llms.articles}\n`;
   posts.forEach(post => {
-    let line = `- [${post.title}](${baseUrl}/?post=${post.slug}) - [Raw Markdown](${CONFIG.baseUrl}/content/posts/${post.file})`;
+    let line = `- [${post.title}](${baseUrl}/blog/${post.slug}) - [Raw Markdown](${baseUrl}/blog/${post.slug}.md)`;
     if (post.promotional) {
       line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.partner || ''}]`;
     }
@@ -587,7 +590,7 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
   
   llmsFullTxt += `## ${t.llms.pages}\n`;
   pages.forEach(page => {
-    llmsFullTxt += `- [${page.title}](${baseUrl}/?page=${page.slug}) - [Raw Markdown](${CONFIG.baseUrl}/content/pages/${page.file})\n`;
+    llmsFullTxt += `- [${page.title}](${baseUrl}/${page.slug}) - [Raw Markdown](${baseUrl}/${page.slug}.md)\n`;
   });
 
   fs.writeFileSync(path.join(publicDir, 'llms-full.txt'), llmsFullTxt, 'utf-8');
@@ -648,7 +651,7 @@ export function generateRssFeed(
 
   let rssItemsXml = '';
   latestPostsForFeed.forEach(({ post, createdDate, updatedDate, lastCommitMessage, lastCommitHash }) => {
-    const postUrl = `${baseUrl}/?post=${post.slug}`;
+    const postUrl = `${baseUrl}/blog/${post.slug}`;
     const pubDateRfc822 = new Date(updatedDate).toUTCString();
 
     let displayTitle = post.title;

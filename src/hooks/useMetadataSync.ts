@@ -184,19 +184,24 @@ export function useMetadataSync({
     document.title = title;
 
     // Generate accurate path for canonical & og:url
-    let currentPath = activeView.type === 'home' ? '' : `?${activeView.type}=${activeView.slug}`;
-    if (activeView.type === 'model' && activeView.slug) {
-      const version = params.get('version');
-      const cls = params.get('class');
-      const codelist = params.get('codelist');
-      const lang = params.get('lang');
+    let currentPath = '';
+    if (activeView.type !== 'home' && activeView.slug) {
+      currentPath = `${activeView.type}/${encodeURIComponent(activeView.slug)}`;
+      if (activeView.type === 'model') {
+        const version = params.get('version');
+        const cls = params.get('class');
+        const codelist = params.get('codelist');
+        const lang = params.get('lang');
 
-      const parts = [`model=${activeView.slug}`];
-      if (version) parts.push(`version=${version}`);
-      if (cls) parts.push(`class=${cls}`);
-      if (codelist) parts.push(`codelist=${codelist}`);
-      if (lang) parts.push(`lang=${lang}`);
-      currentPath = `?${parts.join('&')}`;
+        const parts = [];
+        if (version) parts.push(`version=${version}`);
+        if (cls) parts.push(`class=${cls}`);
+        if (codelist) parts.push(`codelist=${codelist}`);
+        if (lang) parts.push(`lang=${lang}`);
+        if (parts.length > 0) {
+          currentPath += `?${parts.join('&')}`;
+        }
+      }
     }
     const canonicalUrl = `${CONFIG.baseUrl}${CONFIG.basePath}${currentPath}`;
 
@@ -214,15 +219,15 @@ export function useMetadataSync({
       } else if (contentNotFound) {
         getTracker().trackPageView(`${CONFIG.basePath}404`, `404: Not Found`);
       } else if (activeView.type === 'tag' && activeView.slug) {
-        getTracker().trackPageView(`${CONFIG.basePath}?tag=${activeView.slug}`, `#${activeView.slug} | Kaavatietomalli.fi`, [activeView.slug]);
+        getTracker().trackPageView(`${CONFIG.basePath}tag/${encodeURIComponent(activeView.slug)}`, `#${activeView.slug} | Kaavatietomalli.fi`, [activeView.slug]);
       } else if (activeView.type === 'post' && currentPost) {
         getTracker().trackPostView(currentPost.slug, currentPost.title, currentPost.tags, currentPost.partner);
-        getTracker().trackPageView(`${CONFIG.basePath}?post=${currentPost.slug}`, currentPost.title, currentPost.tags, currentPost.partner);
+        getTracker().trackPageView(`${CONFIG.basePath}post/${encodeURIComponent(currentPost.slug)}`, currentPost.title, currentPost.tags, currentPost.partner);
       } else if (activeView.type === 'page' && currentPage) {
-        getTracker().trackPageView(`${CONFIG.basePath}?page=${currentPage.slug}`, currentPage.title, undefined, currentPage.partner);
+        getTracker().trackPageView(`${CONFIG.basePath}page/${encodeURIComponent(currentPage.slug)}`, currentPage.title, undefined, currentPage.partner);
       } else if (activeView.type === 'author' && currentAuthor) {
         getTracker().trackAuthorView(currentAuthor.slug, currentAuthor.name);
-        getTracker().trackPageView(`${CONFIG.basePath}?author=${currentAuthor.slug}`, currentAuthor.name);
+        getTracker().trackPageView(`${CONFIG.basePath}author/${encodeURIComponent(currentAuthor.slug)}`, currentAuthor.name);
       } else if (activeView.type === 'model' && activeView.slug) {
         getTracker().trackPageView(`${CONFIG.basePath}${currentPath}`, title);
       }
