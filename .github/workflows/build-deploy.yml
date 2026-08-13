@@ -160,6 +160,7 @@ jobs:
           AWS_PROJECT_ACCOUNT_ID: ${{ vars.AWS_PROJECT_ACCOUNT_ID }}
           DEPLOYER_ROLE: ${{ vars.DEPLOYER_ROLE }}
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }} # For determining if we are in prod or pre-launch mode
+          GIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }} # For auto-tagging the CDK stacks
 
         run: |
           npx cdk deploy --app 'npx ts-node --project tsconfig.cdk.json bin/app.ts' \
