@@ -148,6 +148,16 @@ jobs:
           VITE_BASE_PATH: /
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }}
 
+      - name: Debug OIDC Token Claims 
+        run: |
+          # 1. Fetch the raw OIDC token issued by GitHub
+          TOKEN_JSON=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sts.amazonaws.com")
+          
+          # 2. Extract JWT and decode the base64 Payload (2nd part of JWT)
+          ID_TOKEN=$(echo "$TOKEN_JSON" | jq -r .value)
+          echo "$ID_TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq .
+
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:
