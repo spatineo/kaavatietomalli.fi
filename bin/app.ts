@@ -73,8 +73,6 @@ const siteStack = new WebsiteStack(app, 'KaavatietomalliWebsiteMainStack', {
   // GitHub Repository Configuration for OIDC
   githubOrg: PROJECT_CONFIG.repoOwner,
   githubRepo: PROJECT_CONFIG.repoName,
-  githubOrgId: PROJECT_CONFIG.repoOwnerId,
-  githubRepoId: PROJECT_CONFIG.repoId,
   
   isProduction: !process.env.VITE_PRELAUNCH_PASSWORD,
 
