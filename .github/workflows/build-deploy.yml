@@ -158,6 +158,10 @@ jobs:
           ID_TOKEN=$(echo "$TOKEN_JSON" | jq -r .value)
           echo "$ID_TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq .
 
+      - name: Print Debug Parameters
+        run: |
+          echo "Target Role ARN: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/KaavatietomalliWebsiteMainStack-${{ vars.DEPLOYER_ROLE }}"
+
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:

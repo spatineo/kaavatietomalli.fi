@@ -353,12 +353,12 @@ export class WebsiteStack extends cdk.Stack {
     // ==========================================================
     // GitHub Actions OIDC Deploy Role (Keyless Deployments)
     // ==========================================================
-    const ghaProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
-      this,
-      'GitHubOIDCProvider',
-      `arn:aws:iam::${this.account}:oidc-provider/token.actions.githubusercontent.com`
-    );
 
+    const ghaProvider = new iam.OpenIdConnectProvider(this, 'GitHubOIDCProvider', {
+      url: 'https://token.actions.githubusercontent.com',
+      clientIds: ['sts.amazonaws.com'],
+    });
+    
     const githubRole = new iam.Role(this, props.deployerRole, {
       roleName: `${this.stackName}-${props.deployerRole}`,
       assumedBy: new iam.FederatedPrincipal(
