@@ -45,8 +45,8 @@ const app = new cdk.App();
 const version = getGitVersion();
 console.log(`🏷️ Deploying stack version: ${version}`);
 
-const certStackName = getEnvVar('CERTIFICATE_STACK_NAME','KaavatietomalliWebsiteCertStack');
-const siteStackName = getEnvVar('WEBSITE_STACK_NAME', 'KaavatietomalliWebsiteMainStack');
+const certStackName = getEnvVar('CERTIFICATE_STACK_NAME');
+const siteStackName = getEnvVar('WEBSITE_STACK_NAME');
 
 // Certificate Stack in US East 1
 const certStack = new CertificateStack(app, certStackName, {
@@ -79,7 +79,7 @@ const siteStack = new WebsiteStack(app, siteStackName, {
   
   isProduction: !process.env.VITE_PRELAUNCH_PASSWORD,
 
-  deployerRole: getEnvVar('DEPLOYER_ROLE','GitHubActionsWebsiteDeployer'), // fallback
+  deployerRole: getEnvVar('DEPLOYER_ROLE'),
 });
 
 cdk.Tags.of(siteStack).add('GitVersion', version);

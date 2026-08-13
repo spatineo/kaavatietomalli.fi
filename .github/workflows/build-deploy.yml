@@ -151,18 +151,18 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c #v6.2.3
         with:
-          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }}-${{ vars.DEPLOYER_ROLE || ''}}
+          role-to-assume: arn:aws:iam::${{ vars.AWS_PROJECT_ACCOUNT_ID }}:role/${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }}-${{ vars.DEPLOYER_ROLE || 'GitHubActionsWebsiteDeployer'}}
           aws-region: eu-north-1
       
       - name: Deploy CDK Infrastructure
         if: steps.filter.outputs.infra == 'true'
         env:
           AWS_PROJECT_ACCOUNT_ID: ${{ vars.AWS_PROJECT_ACCOUNT_ID }}
-          DEPLOYER_ROLE: ${{ vars.DEPLOYER_ROLE }}
+          DEPLOYER_ROLE: ${{ vars.DEPLOYER_ROLE || 'GitHubActionsWebsiteDeployer' }}
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }} # For determining if we are in prod or pre-launch mode
           GIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }} # For auto-tagging the CDK stacks
-          CERTIFICATE_STACK_NAME: ${{ vars. CERTIFICATE_STACK_NAME }}
-          WEBSITE_STACK_NAME: ${{ vars.WEBSITE_STACK_NAME }}
+          CERTIFICATE_STACK_NAME: ${{ vars. CERTIFICATE_STACK_NAME || 'KaavatietomalliWebsiteCertStack' }}
+          WEBSITE_STACK_NAME: ${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }}
 
         # Deploy both the cert and the website stacks:
         run: |

@@ -866,9 +866,9 @@ Executing AWS CDK CLI operations (such as `npm run cdk:synth` or `npm run cdk:de
 | Environment Variable | Description | Example / Default |
 | :--- | :--- | :--- |
 | `AWS_PROJECT_ACCOUNT_ID` | The ID of the AWS account hosting the website and DNS infrastructure. | `123456789012` |
-| `WEBSITE_STACK_NAME` | *Optional.* Determines the CDK stack name for the website stack | Default: 'KaavatietomalliWebsiteMainStack' |
-| `CERTIFICATE_STACK_NAME` | *Optional.* If configured, determined the CDK stack name for the certificate stack deployed in region `us-east-1` | Default: 'KaavatietomalliWebsiteCertStack' |
-| `DEPLOYER_ROLE` | *Optional.* The custom deployment IAM Role name created in the project account for OIDC federation. | Default: 'GitHubActionsWebsiteDeployer' |
+| `WEBSITE_STACK_NAME` | Determines the CDK stack name for the website stack | 'KaavatietomalliWebsiteMainStack' |
+| `CERTIFICATE_STACK_NAME` | If configured, determined the CDK stack name for the certificate stack deployed in region `us-east-1` | 'KaavatietomalliWebsiteCertStack' |
+| `DEPLOYER_ROLE` | The custom deployment IAM Role name created in the project account for OIDC federation. | 'GitHubActionsWebsiteDeployer' |
 | `GIT_TAG` | *Optional.* Dynamic git version tag to mark deployments. | Default: Automatically resolved via `git describe` |
 | `VITE_PRELAUNCH_PASSWORD` | *Optional.* If configured, flags stack resources for dev/preview (e.g. enabling automatic bucket destruction). | Default: Off (Production configuration) |
 
