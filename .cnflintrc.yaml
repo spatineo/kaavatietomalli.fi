@@ -1,0 +1,3 @@
+ignore_checks:
+  - E3002 # Unrecognized intrinsic function or type mismatch
+  - E3012 # Property type mismatch for CloudFormation spec

@@ -2,7 +2,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { WebsiteStack } from '../cdk/website-stack.ts';
 import { PROJECT_CONFIG } from '../project.config.ts';
-import { CertificateStack } from '@/cdk/certificate-stack.ts';
+import { CertificateStack } from '../cdk/certificate-stack.ts';
 import { execSync } from 'child_process';
 
 /**
@@ -48,7 +48,7 @@ console.log(`🏷️ Deploying stack version: ${version}`);
 // Certificate Stack in US East 1
 const certStack = new CertificateStack(app, 'KaavatietomalliWebsiteCertStack', {
   env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
+    account: process.env.AWS_PROJECT_ACCOUNT_ID || process.env.CDK_DEFAULT_ACCOUNT,
     region: 'us-east-1'
   },
   crossRegionReferences: true,
@@ -62,7 +62,7 @@ cdk.Tags.of(certStack).add('DeployedBy', 'CDK');
 // Website Stack on EU North 1
 const siteStack = new WebsiteStack(app, 'KaavatietomalliWebsiteMainStack', {
   env: {
-    account: process.env.CDK_DEFAULT_ACCOUNT,
+    account: process.env.AWS_PROJECT_ACCOUNT_ID || process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION || 'eu-north-1',
   },
   crossRegionReferences: true,
@@ -82,4 +82,7 @@ const siteStack = new WebsiteStack(app, 'KaavatietomalliWebsiteMainStack', {
 });
 
 cdk.Tags.of(siteStack).add('GitVersion', version);
-cdk.Tags.of(siteStack).add('DeployedBy', 'CDK'); 
+cdk.Tags.of(siteStack).add('DeployedBy', 'CDK');
+
+
+siteStack.addStackDependency(certStack);

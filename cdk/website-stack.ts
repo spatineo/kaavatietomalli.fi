@@ -226,7 +226,7 @@ export class WebsiteStack extends cdk.Stack {
 
     // Pre-configured saved Athena console queries:
 
-    new athena.CfnNamedQuery(this, 'TopRequestedPagesQuery', {
+    const topRequestedPagesQuery = new athena.CfnNamedQuery(this, 'TopRequestedPagesQuery', {
       database: 'website_access_logs_db',
       workGroup: workgroup.name,
       name: 'Top 20 Most Requested Pages',
@@ -240,8 +240,10 @@ export class WebsiteStack extends cdk.Stack {
         LIMIT 20;
       `
     });
+    topRequestedPagesQuery.addResourceDependency(workgroup);
+    topRequestedPagesQuery.addResourceDependency(cloudfrontLogsTable);
 
-    new athena.CfnNamedQuery(this, 'AIMachineReadableEndpointTotalActivityQuery', {
+    const aIMachineReadableEndpointTotalActivityQuery = new athena.CfnNamedQuery(this, 'AIMachineReadableEndpointTotalActivityQuery', {
       database: 'website_access_logs_db',
       workGroup: workgroup.name,
       name: 'Total Activity on AI & Machine-Readable Endpoints',
@@ -261,8 +263,10 @@ export class WebsiteStack extends cdk.Stack {
         ORDER BY total_requests DESC;
       `
     });
+    aIMachineReadableEndpointTotalActivityQuery.addResourceDependency(workgroup);
+    aIMachineReadableEndpointTotalActivityQuery.addResourceDependency(cloudfrontLogsTable);
 
-    new athena.CfnNamedQuery(this, 'SpecificAIHarvestersSearchCrawlersQuery' , {
+    const specificAIHarvestersSearchCrawlersQuery = new athena.CfnNamedQuery(this, 'SpecificAIHarvestersSearchCrawlersQuery' , {
       database: 'website_access_logs_db',
       workGroup: workgroup.name,
       name: 'Identify Specific AI Harvesters & Search Crawlers',
@@ -299,8 +303,10 @@ export class WebsiteStack extends cdk.Stack {
         ORDER BY request_count DESC;
       `
     });
+    specificAIHarvestersSearchCrawlersQuery.addResourceDependency(workgroup);
+    specificAIHarvestersSearchCrawlersQuery.addResourceDependency(cloudfrontLogsTable);
 
-    new athena.CfnNamedQuery(this ,'TrackLLMSTxtVsSitemapXmlFetchFrequencyQuery', {
+    const trackLLMSTxtVsSitemapXmlFetchFrequencyQuery = new athena.CfnNamedQuery(this ,'TrackLLMSTxtVsSitemapXmlFetchFrequencyQuery', {
       database: 'website_access_logs_db',
       workGroup: workgroup.name,
       name: 'Track llms.txt vs. sitemap.xml Fetch Frequency',
@@ -318,8 +324,10 @@ export class WebsiteStack extends cdk.Stack {
           ORDER BY date DESC;
       `
     });
+    trackLLMSTxtVsSitemapXmlFetchFrequencyQuery.addResourceDependency(workgroup);
+    trackLLMSTxtVsSitemapXmlFetchFrequencyQuery.addResourceDependency(cloudfrontLogsTable);
 
-    new athena.CfnNamedQuery(this, 'DetectUnverifiedOrMaskedAIScrapers', {
+    const detectUnverifiedOrMaskedAIScrapers = new athena.CfnNamedQuery(this, 'DetectUnverifiedOrMaskedAIScrapers', {
       database: 'website_access_logs_db',
       workGroup: workgroup.name,
       name: 'Detect Unverified / Masked AI Scrapers',
@@ -340,6 +348,8 @@ export class WebsiteStack extends cdk.Stack {
         ORDER BY fetch_count DESC;
       `
     });
+    detectUnverifiedOrMaskedAIScrapers.addResourceDependency(workgroup);
+    detectUnverifiedOrMaskedAIScrapers.addResourceDependency(cloudfrontLogsTable);
 
 
     // ==========================================================
