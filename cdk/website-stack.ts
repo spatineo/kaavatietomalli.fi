@@ -65,6 +65,29 @@ export class WebsiteStack extends cdk.Stack {
     });
 
 
+    // Function to prevent SPA fallback redirects for API/content paths
+    const contentErrorResponseFn = new cloudfront.Function(this, 'ContentErrorResponseFunction', {
+      code: cloudfront.FunctionCode.fromInline(`
+        function handler(event) {
+          var response = event.response;
+          
+          // If S3 returns 404 or 403 (OAC permissions error on non-existent object)
+          if (response.statusCode === 404 || response.statusCode === 403) {
+            return {
+              statusCode: 404,
+              statusDescription: 'Not Found',
+              headers: {
+                'content-type': { value: 'application/json' }
+              },
+              body: JSON.stringify({ error: 'Resource not found' })
+            };
+          }
+          
+          return response;
+        }
+      `),
+    });
+
     // CloudFront Distribution with OAC, Access Logging & SPA Error Pages
     const s3Origin = origins.S3BucketOrigin.withOriginAccessControl(websiteBucket);
 
@@ -97,6 +120,19 @@ export class WebsiteStack extends cdk.Stack {
           ttl: cdk.Duration.seconds(0),
         },
       ],
+      additionalBehaviors: {
+        '/content/*': {
+          origin: s3Origin,
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          // Intercept response before CloudFront applies distribution-level errorResponses
+          functionAssociations: [
+            {
+              function: contentErrorResponseFn,
+              eventType: cloudfront.FunctionEventType.VIEWER_RESPONSE,
+            },
+          ],
+        },
+      },
     });
 
     distribution.addBehavior('/assets/*', s3Origin, {
@@ -160,7 +196,7 @@ export class WebsiteStack extends cdk.Stack {
           'skip.header.line.count': '2', // Skip CloudFront log header rows
         },
         storageDescriptor: {
-          location: `s3://${logBucket.bucketName}/cloudfront/`,
+          location: `s3://${logBucket.bucketName}/raw-logs/`,
           inputFormat: 'org.apache.hadoop.mapred.TextInputFormat',
           outputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',
           serdeInfo: {
