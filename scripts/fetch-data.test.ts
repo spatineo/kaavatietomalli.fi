@@ -14,12 +14,12 @@ describe('isContentEqual', () => {
   it('returns true if objects are identical except root originSyncTime', () => {
     const objA = {
       id: 'test',
-      names: { fi: 'Testi' },
+      name: { fi: 'Testi' },
       originSyncTime: '2026-07-28T00:00:00.000Z'
     };
     const objB = {
       id: 'test',
-      names: { fi: 'Testi' },
+      name: { fi: 'Testi' },
       originSyncTime: '2026-07-28T12:00:00.000Z'
     };
     expect(isContentEqual(objA, objB)).toBe(true);

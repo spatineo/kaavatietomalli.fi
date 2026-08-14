@@ -46,7 +46,7 @@ export interface DataModelConfig {
 
 export interface TietomalliIndexItem {
   id: string;
-  names?: LocalizedText;
+  name?: LocalizedText;
   version: string;
   status?: string;
   lastModified?: string;
@@ -550,7 +550,7 @@ export async function fetchAndTransformDataModels(
 
         indexItems.push({
           id: modelOutput.id,
-          names: modelOutput.metadata?.name,
+          name: modelOutput.metadata?.name,
           version: modelOutput.version,
           status: modelOutput.metadata?.status || '',
           lastModified: modelOutput.metadata?.lastModified || '',

@@ -135,7 +135,7 @@ export function useMetadataSync({
         const targetVersion = matchedVersion ? matchedVersion.version : versions[0].version;
         const versionItem = versions.find(v => v.version === targetVersion);
 
-        const modelLabel = versionItem ? getLocalized(versionItem.names, langParam) : modelName;
+        const modelLabel = versionItem ? getLocalized(versionItem.name, langParam) : modelName;
         
         const classParam = params.get('class');
         const codelistParam = params.get('codelist');
@@ -155,10 +155,10 @@ export function useMetadataSync({
           }
         } else if (codelistParam) {
           const codelistItem = allCodelists.find(c => {
-            const techName = c.uri.split('/').pop()?.split(':').pop() || '';
+            const techName = c.uri.split('/').pop() || '';
             return techName === codelistParam;
           });
-          const codelistLabel = codelistItem ? getLocalized(codelistItem.names, langParam) : codelistParam;
+          const codelistLabel = codelistItem ? getLocalized(codelistItem.name, langParam) : codelistParam;
 
           title = `${codelistLabel} | Koodisto | Kaavatietomalli.fi`;
           description = `Koodiston ${codelistLabel} kuvaus ja koodiarvot.`;
