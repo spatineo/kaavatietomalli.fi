@@ -196,10 +196,20 @@ jobs:
           echo "BUCKET_NAME=${BUCKET_NAME}" >> $GITHUB_ENV
           echo "DISTRIBUTION_ID=${DISTRIBUTION_ID}" >> $GITHUB_ENV
 
-      - name: Sync Site Output to S3
+      - name: Sync Site Assets to S3
         run: |
-          aws s3 sync dist/ s3://${{ env.BUCKET_NAME }} --delete \
-            --cache-control "public, max-age=0, must-revalidate"
+          aws s3 sync dist/ s3://${{ env.BUCKET_NAME }} \
+            --delete \
+            --size-only \
+            --cache-control "public, max-age=31536000, immutable" \
+            --include "assets/*"
+      
+      - name: Sync Site Content to S3    
+        run: |
+          aws s3 sync dist/ s3://${{ env.BUCKET_NAME }} \
+            --delete \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --exclude "assets/*"
 
       - name: Invalidate CloudFront Cache
         run: |

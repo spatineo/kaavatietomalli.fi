@@ -99,12 +99,23 @@ jobs:
 
           echo "bucket_name=${BUCKET_NAME}" >> $GITHUB_OUTPUT
           echo "distribution_id=${DISTRIBUTION_ID}" >> $GITHUB_OUTPUT
-
-      - name: Sync Site Output to S3
+      
+      - name: Sync Site Assets to S3
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
         run: |
-          aws s3 sync dist/ s3://${{ steps.describe-stack.outputs.bucket_name }} --delete \
-            --cache-control "public, max-age=0, must-revalidate"
+          aws s3 sync dist/ s3://${{ env.BUCKET_NAME }} \
+            --delete \
+            --size-only \
+            --cache-control "public, max-age=31536000, immutable" \
+            --include "assets/*"
+      
+      - name: Sync Site Content to S3    
+        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
+        run: |
+          aws s3 sync dist/ s3://${{ env.BUCKET_NAME }} \
+            --delete \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --exclude "assets/*"
 
       - name: Invalidate CloudFront Cache
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
