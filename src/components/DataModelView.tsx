@@ -439,7 +439,7 @@ lang: ${dataLang}`;
               <div className="">
                   <span className="text-sm text-slate-500 font-semibold">{t.dataModel.originSyncTimeLabel}</span>{' '}
                   <span className="font-semibold text-slate-200">
-                  {new Date(metadata.originSyncTime).toLocaleString(dataLang)}
+                  {new Date(metadata.originSyncTime).toLocaleDateString(dataLang)}
                   </span>
               </div>
             )}
@@ -554,6 +554,7 @@ lang: ${dataLang}`;
 
       {/* Selector and Active Info Panels */}
       <div className="flex flex-col gap-8">
+        <div id="data-model-info-panel" className="scroll-mt-24 bg-black/20 border border-white/5 rounded-3xl animate-fade-in">
         {/* 2. The class or codelist selector */}
         <ClassCodelistSelector
           classes={modelData?.classes || []}
@@ -566,7 +567,6 @@ lang: ${dataLang}`;
           selectedVersion={selectedVersion}
         />
         
-        <div id="data-model-info-panel" className="scroll-mt-24">
         {/* 3. The class info panel */}
         {selectedElement?.type === 'class' && selectedClassObj && (
           <ClassInfoPanel

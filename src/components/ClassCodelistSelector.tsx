@@ -136,11 +136,11 @@ export function ClassCodelistSelector({
   };
 
   return (
-    <div className="bg-black/30 border border-white/5 rounded-3xl p-6 flex flex-col gap-4">
+    <div className="p-6 flex flex-col gap-4">
       <div>
-        <h3 className="text-base font-bold text-white flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
           {t.dataModel.browseClassesAndCodelists}
-        </h3>
+        </h2>
         <p className="text-xs text-slate-400 mt-1">
           {t.dataModel.selectClassOrCodelistHelp}
         </p>

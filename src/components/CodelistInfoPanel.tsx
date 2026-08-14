@@ -96,14 +96,14 @@ export function CodelistInfoPanel({
   }
 
   return (
-    <div className="bg-black/20 border border-white/5 rounded-3xl p-8 md:p-10 flex flex-col gap-8 animate-fade-in">
+    <div className="p-8 md:p-10 flex flex-col gap-8">
       {/* Codelist Header */}
       <div className="flex flex-col gap-4 border-b border-white/5 pb-6">
         <div className="flex items-center gap-2">
           <span className="text-[10px] uppercase font-bold tracking-widest text-brand-accent bg-brand-accent/10 px-2.5 py-0.5 rounded">{t.dataModel.codelistLabel}</span>
-          <h2 className="text-2xl font-bold text-white">
+          <h3 className="text-xl font-bold text-white">
             {getLocalized(codelistDetail.name) || codelistDetail.technicalName}
-          </h2>
+          </h3>
           <div className="flex-grow"></div>
           {codelistDetail.status !== 'VALID' && (
             <div className="font-bold text-sm text-white bg-red-950 px-1.5 py-0.5 rounded"> {getStatusLabel(codelistDetail.status)}</div>

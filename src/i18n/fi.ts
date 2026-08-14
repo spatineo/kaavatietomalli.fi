@@ -222,7 +222,7 @@ export const fi: Translations = {
     originSyncTimeLabel: 'Noudettu Yhteentoimivuusalustalta:',
     showDocumentation: 'Näytä dokumentaatio',
     hideDocumentation: 'Piilota dokumentaatio',
-    filterCodesPlaceholder: 'Suodata koodeja koodiarvon tai nimen perusteella...',
+    filterCodesPlaceholder: 'Suodata koodeja',
     statusValid: 'Voimassa',
     statusDraft: 'Luonnos',
     statusSuperceded: 'Korvattu',
