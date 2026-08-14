@@ -61,7 +61,7 @@ describe('ClassInfoPanel component', () => {
       />
     );
 
-    expect(screen.getByRole('heading', { level: 2, name: 'Kaava' })).toBeDefined();
+    expect(screen.getByRole('heading', { level: 3, name: 'Kaava' })).toBeDefined();
     expect(screen.getByText('Yleiskaavan kuvaus')).toBeDefined();
     expect(screen.getByText('http://uri.suomi.fi/model/rytj-kaava/Kaava')).toBeDefined();
   });
