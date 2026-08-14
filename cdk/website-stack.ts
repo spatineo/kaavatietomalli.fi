@@ -387,8 +387,12 @@ export class WebsiteStack extends cdk.Stack {
     websiteBucket.grantReadWrite(githubRole);
     distribution.grantCreateInvalidation(githubRole);
 
-    githubRole.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess')
+    githubRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['sts:AssumeRole', 'sts:TagSession'],
+        resources: [`arn:aws:iam::${this.account}:role/cdk-*`],
+      })
     );
 
     // Stack Outputs

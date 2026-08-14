@@ -45,6 +45,12 @@ const app = new cdk.App();
 const version = getGitVersion();
 console.log(`🏷️ Deploying stack version: ${version}`);
 
+const gitRepo = `https://github.com/${PROJECT_CONFIG.repoOwner}/${PROJECT_CONFIG.repoName}`;
+
+cdk.Tags.of(app).add('GitRepo', gitRepo);
+cdk.Tags.of(app).add('GitVersion', version);
+cdk.Tags.of(app).add('DeployedBy', 'CDK'); 
+
 const certStackName = getEnvVar('CERTIFICATE_STACK_NAME');
 const siteStackName = getEnvVar('WEBSITE_STACK_NAME');
 
@@ -58,9 +64,6 @@ const certStack = new CertificateStack(app, certStackName, {
   domainName: PROJECT_CONFIG.domainName
 });
 
-
-cdk.Tags.of(certStack).add('GitVersion', version);
-cdk.Tags.of(certStack).add('DeployedBy', 'CDK'); 
 
 // Website Stack on EU North 1
 const siteStack = new WebsiteStack(app, siteStackName, {
@@ -81,9 +84,5 @@ const siteStack = new WebsiteStack(app, siteStackName, {
 
   deployerRole: getEnvVar('DEPLOYER_ROLE'),
 });
-
-cdk.Tags.of(siteStack).add('GitVersion', version);
-cdk.Tags.of(siteStack).add('DeployedBy', 'CDK');
-
 
 siteStack.addStackDependency(certStack);
