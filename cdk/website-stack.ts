@@ -387,11 +387,23 @@ export class WebsiteStack extends cdk.Stack {
     websiteBucket.grantReadWrite(githubRole);
     distribution.grantCreateInvalidation(githubRole);
 
+    // Required by the GitHub action to run the cdk deploy task. The TagSession is for the cross-region resources:
     githubRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: ['sts:AssumeRole', 'sts:TagSession'],
         resources: [`arn:aws:iam::${this.account}:role/cdk-*`],
+      })
+    );
+
+    // Required by the GitHub action to dynamically retrieve the bucket name and the distribution id from the stack description:
+    githubRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ['cloudformation:DescribeStacks'],
+        resources: [
+          `arn:aws:cloudformation:${this.region}:${this.account}:stack/${this.stackName}/*`,
+        ],
       })
     );
 
