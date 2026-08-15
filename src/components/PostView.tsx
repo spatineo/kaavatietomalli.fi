@@ -109,7 +109,7 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="max-w-6xl mx-auto pt-4 pb-24 px-6 relative"
+      className="max-w-5xl mx-auto pt-4 pb-24 px-6 lg:pl-40 lg:pr-6 relative"
     >
       <HeadingRegistryProvider uniqueHeadings={combinedHeadings}>
       <div className="flex flex-col gap-3 mb-10" role="navigation" aria-label={t.post.ariaLabel}>

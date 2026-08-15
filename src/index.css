@@ -41,6 +41,7 @@
 
   .heading-number {
     padding-right: 0.5em;
+    white-space: nowrap;
   }
 
   h4 .heading-number {
@@ -350,7 +351,7 @@ code *,
 .geojson-map-viewer .font-mono,
 .geojson-map-viewer .font-mono *,
 [class*="language-"] * {
-  font-family: var(--font-mono), "JetBrains Mono", monospace !important;
+  font-family: var(--font-mono), "JetBrains Mono", monospace;
 }
 
 /* Prevent markdown image styles from leaking into Leaflet map tiles and markers */
