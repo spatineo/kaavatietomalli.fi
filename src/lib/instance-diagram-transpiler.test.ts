@@ -19,7 +19,7 @@ describe('Instance Transpiler', () => {
     expect(output).toContain('---');
     expect(output).toContain('layout: elk');
     expect(output).toContain('flowchart LR');
-    expect(output).toContain('alice["<b>alice : User</b><hr/>id = 101<br/>role = &quot;ADMIN&quot;"]');
+    expect(output).toContain('alice["<b>alice : User</b><hr/><span>id = 101</span><br/><span>role = &quot;ADMIN&quot;</span><br/>"]');
   });
 
   it('correctly transpiles single direction relationships', () => {
@@ -35,7 +35,7 @@ describe('Instance Transpiler', () => {
       alice <-> acc99 : owner | account
     `;
     const output = transpileInstanceToMermaid(input);
-    expect(output).toContain('alice <-->|"<small><b>:owner</b></small> &nbsp; ◄───► &nbsp; <small><b>:account</b></small>"| acc99');
+    expect(output).toContain('alice <-->|"<span class="edgeLabel">:owner&nbsp;◄───►&nbsp;:account</span>"| acc99');
   });
 
   it('correctly transpiles undirected links with dual roles', () => {
@@ -43,6 +43,6 @@ describe('Instance Transpiler', () => {
       alice --- acc99 : owner | account
     `;
     const output = transpileInstanceToMermaid(input);
-    expect(output).toContain('alice ---|"<small><b>:owner</b></small> &nbsp; ───────────────── &nbsp; <small><b>:account</b></small>"| acc99');
+    expect(output).toContain('alice ---|"<span class="edgeLabel">:owner&nbsp;─────────────────&nbsp;:account</span>"| acc99');
   });
 });
