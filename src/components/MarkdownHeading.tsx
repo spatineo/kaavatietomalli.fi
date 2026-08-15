@@ -118,7 +118,7 @@ export function MarkdownHeading({ level, children }: HeadingProps) {
       >
         <Link size={16} />
       </a>
-      <span className="heading-number">{prefix ? `${prefix} ` : ''}</span><span className="heading-content">{children}</span>
+      <span className="heading-number">{prefix ? `${prefix}` : ''}</span><span className="heading-content">{children}</span>
     </Tag>
   );
 }
