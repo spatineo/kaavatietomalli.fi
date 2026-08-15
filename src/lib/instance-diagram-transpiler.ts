@@ -25,11 +25,16 @@ export function transpileInstanceToMermaid(code: string): string {
 
   const flushObject = () => {
     if (!currentId || !currentClass) return;
-    const attrHtml = currentAttrs.length > 0 ? `<hr/>${currentAttrs.join('<br/>')}` : '';
-    mermaidLines.push(`  ${currentId}["<b>${currentId} : ${currentClass}</b>${attrHtml}"]`);
+    let instanceContent = `${currentId}["<b>${currentId} : ${currentClass}</b><hr/>`
+    
+    for (const attr of currentAttrs){
+      instanceContent += `<span>${attr}</span><br/>`;
+    }
+    instanceContent += '"]';
     currentId = null;
     currentClass = null;
     currentAttrs = [];
+    mermaidLines.push(instanceContent);
   };
 
   for (const rawLine of lines) {
@@ -72,7 +77,7 @@ export function transpileInstanceToMermaid(code: string): string {
         const [leftRole, rightRole] = label.split('|').map(r => r.trim());
         let arrow = rawArrow.includes('<') ? '<-->' : '---';
         let delimiter = rawArrow.includes('<') ? '◄───►' : '─────────────────';
-        const formattedLabel = `<small><b>:${leftRole}</b></small> &nbsp; ${delimiter} &nbsp; <small><b>:${rightRole}</b></small>`;
+        const formattedLabel = `<span class="edgeLabel">:${leftRole}&nbsp;${delimiter}&nbsp;:${rightRole}</span>`;
         mermaidLines.push(`  ${source} ${arrow}|"${formattedLabel}"| ${target}`);
       } else if (label) {
         let arrow = rawArrow.includes('.') ? '-.->' : '-->';
