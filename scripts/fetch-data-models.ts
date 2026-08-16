@@ -488,6 +488,32 @@ export function transformJsonLdToModel(
     });
   }
 
+  // Detect bi-directional associations
+  outputJson.classes.forEach((classA) => {
+    if (!classA.associations) return;
+    classA.associations.forEach((assocA) => {
+      const targetClassIdA = assocA.targetClassId;
+      if (!targetClassIdA) return;
+
+      // Skip self-associations
+      if (matchesId(classA.id, targetClassIdA)) return;
+
+      // Find target class (classB)
+      const classB = outputJson.classes.find((c) => matchesId(c.id, targetClassIdA));
+      if (!classB || !classB.associations) return;
+
+      // Find any association in classB that points back to classA
+      const assocB = classB.associations.find((ab) => ab.targetClassId && matchesId(ab.targetClassId, classA.id));
+      if (assocB) {
+        assocA.oppositeDirection = {
+          id: assocB.id,
+          name: assocB.name,
+          cardinality: assocB.cardinality
+        };
+      }
+    });
+  });
+
   return outputJson;
 }
 

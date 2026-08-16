@@ -22,6 +22,11 @@ export interface Association {
   targetClassName?: LocalizedText;
   cardinality?: string;
   description?: LocalizedText;
+  oppositeDirection?: {
+    id: string;
+    name?: LocalizedText;
+    cardinality?: string;
+  };
 }
 
 export interface ClassModel {
