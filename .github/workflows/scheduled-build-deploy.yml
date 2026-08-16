@@ -68,6 +68,12 @@ jobs:
         id: fetch-data
         run: npm run fetch-data
 
+      - name: Save data model and codelists to cache if changed
+        if: steps.fetch-data.outputs.data_changed == 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          key: ${{ steps.cache-data.outputs.cache-primary-key }}
+      
       - name: Build
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
         run: npm run build
