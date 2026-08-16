@@ -120,16 +120,25 @@ jobs:
       - name: Validate Markdown content
         run: npm run validate-content
  
-      - name: Cache datamodels and codelists
-        id: cache-data
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      - name: Restore cached datamodels and codelists
+        id: restore-data
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: public/data/suomi.fi
           key: suomi-data-${{ steps.get-date.outputs.date }}
+          restore-keys: suomi-data-
 
       - name: Fetch datamodels and codelists
-        if: steps.cache-data.outputs.cache-hit != 'true'
+        id: fetch-data
+        if: steps.restore-data.outputs.cache-hit != 'true'
         run: npm run fetch-data
+
+      - name: Save data model and codelists to cache if changed
+        if: steps.fetch-data.outputs.data_changed == 'true'
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: public/data/suomi.fi
+          key: ${{ steps.restore-data.outputs.cache-primary-key }}
 
       - name: Cache Giscus stats
         id: cache-giscus-stats
