@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X } from 'lucide-react';
+import { TableOfContents as TableOfContentsIcon, X } from 'lucide-react';
 import { HeaderItem } from './MarkdownHeading';
 import { scrollToAnchor } from '../lib/utils';
 import { CONFIG } from '../config';
@@ -44,10 +44,11 @@ export function TableOfContents({ headings }: TableOfContentsProps) {
           onClick={() => setIsOpen(!isOpen)}
           aria-expanded={isOpen}
           aria-label={t.page.tableOfContents}
+          title={t.page.tableOfContents}
           data-testid="toc-trigger"
           className="p-2.5 bg-brand-muted hover:bg-white/10 text-slate-400 hover:text-brand-accent rounded-xl border border-white/10 transition-all shadow-xl flex items-center justify-center focus-visible:ring-2 focus-visible:ring-brand-accent cursor-pointer"
         >
-          {isOpen ? <X size={20} /> : <Menu size={20} />}
+          {isOpen ? <X size={20} /> : <TableOfContentsIcon size={20} />}
         </button>
 
         {/* Popup Menu */}
