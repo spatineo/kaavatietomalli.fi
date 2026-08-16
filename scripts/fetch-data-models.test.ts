@@ -259,6 +259,118 @@ describe('fetch-data-models script', () => {
       expect(classA?.codelists).toEqual(['http://uri.suomi.fi/codelist/test']);
       expect(classB?.codelists).toEqual([]);
     });
+
+    it('detects bi-directional associations and populates oppositeDirection object', () => {
+      const jsonldContent = {
+        '@graph': [
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/',
+            '@type': 'owl:Ontology',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Bi-di Testimalli' }],
+            'owl:versionInfo': '1.0.0'
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/ClassA',
+            '@type': 'sh:NodeShape',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Luokka A' }],
+            'sh:targetClass': [{ '@id': 'https://iri.suomi.fi/model/test-model/TargetA' }],
+            'sh:property': [
+              { '@id': 'https://iri.suomi.fi/model/test-model/assocAtoB' }
+            ]
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/ClassB',
+            '@type': 'sh:NodeShape',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Luokka B' }],
+            'sh:targetClass': [{ '@id': 'https://iri.suomi.fi/model/test-model/TargetB' }],
+            'sh:property': [
+              { '@id': 'https://iri.suomi.fi/model/test-model/assocBtoA' }
+            ]
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/assocAtoB',
+            '@type': 'owl:ObjectProperty',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Assoc A to B' }],
+            'sh:minCount': 0,
+            'sh:maxCount': '*',
+            'sh:class': { '@id': 'https://iri.suomi.fi/model/test-model/TargetB' }
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/assocBtoA',
+            '@type': 'owl:ObjectProperty',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Assoc B to A' }],
+            'sh:minCount': 1,
+            'sh:maxCount': 1,
+            'sh:class': { '@id': 'https://iri.suomi.fi/model/test-model/TargetA' }
+          }
+        ]
+      };
+
+      const result = transformJsonLdToModel(jsonldContent, 'test-model', '1.0.0', '2026-07-28T10:00:00.000Z');
+
+      const classA = result.classes.find((c: any) => c.id.endsWith('ClassA'));
+      const classB = result.classes.find((c: any) => c.id.endsWith('ClassB'));
+
+      expect(classA).toBeDefined();
+      expect(classB).toBeDefined();
+
+      const assocAtoB = classA?.associations?.find((a) => a.id.endsWith('assocAtoB'));
+      const assocBtoA = classB?.associations?.find((a) => a.id.endsWith('assocBtoA'));
+
+      expect(assocAtoB).toBeDefined();
+      expect(assocBtoA).toBeDefined();
+
+      expect(assocAtoB?.oppositeDirection).toEqual({
+        id: 'https://iri.suomi.fi/model/test-model/assocBtoA',
+        name: { fi: 'Assoc B to A' },
+        cardinality: '[1..1]'
+      });
+
+      expect(assocBtoA?.oppositeDirection).toEqual({
+        id: 'https://iri.suomi.fi/model/test-model/assocAtoB',
+        name: { fi: 'Assoc A to B' },
+        cardinality: '[0..*]'
+      });
+    });
+
+    it('does not create oppositeDirection objects for self-associations', () => {
+      const jsonldContent = {
+        '@graph': [
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/',
+            '@type': 'owl:Ontology',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Self-assoc Testimalli' }],
+            'owl:versionInfo': '1.0.0'
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/ClassA',
+            '@type': 'sh:NodeShape',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Luokka A' }],
+            'sh:targetClass': [{ '@id': 'https://iri.suomi.fi/model/test-model/TargetA' }],
+            'sh:property': [
+              { '@id': 'https://iri.suomi.fi/model/test-model/selfAssoc' }
+            ]
+          },
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/selfAssoc',
+            '@type': 'owl:ObjectProperty',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Self Association' }],
+            'sh:minCount': 0,
+            'sh:maxCount': '*',
+            'sh:class': { '@id': 'https://iri.suomi.fi/model/test-model/TargetA' }
+          }
+        ]
+      };
+
+      const result = transformJsonLdToModel(jsonldContent, 'test-model', '1.0.0', '2026-07-28T10:00:00.000Z');
+
+      const classA = result.classes.find((c: any) => c.id.endsWith('ClassA'));
+      expect(classA).toBeDefined();
+
+      const selfAssoc = classA?.associations?.find((a) => a.id.endsWith('selfAssoc'));
+      expect(selfAssoc).toBeDefined();
+      expect(selfAssoc?.oppositeDirection).toBeUndefined();
+    });
   });
 
   describe('fetchAndTransformDataModels', () => {

@@ -121,6 +121,7 @@ export async function transpileDataModelSnippetToMermaid(
   const plainBoxTechNames = new Set<string>();
   const classBlocks: string[] = [];
   const relationLines: string[] = [];
+  const drawnAssociations = new Set<string>();
 
   for (const cls of includedClassObjs) {
     const classTechName = cls.technicalName || deriveTechNameFromId(cls.id);
@@ -236,18 +237,54 @@ export async function transpileDataModelSnippetToMermaid(
         continue;
       }
 
+      if (assoc.id && drawnAssociations.has(assoc.id)) {
+        continue;
+      }
+
       const targetClassObj = modelClasses.find(
         (c: ClassModel) => c.id === assoc.targetClassId
       );
       const targetTechName = targetClassObj?.technicalName || deriveTechNameFromId(assoc.targetClassId);
 
-      let cardStr = assoc.cardinality || '0..*';
-      cardStr = cardStr.replace(/^\[|\]$/g, '');
+      const isSelfAssociation = cls.id === assoc.targetClassId || classTechName === targetTechName;
 
-      const assocLocalizedName =
-        assoc.name?.[lang] || assoc.name?.fi || assoc.name?.sv || assoc.name?.en || '';
+      if (assoc.oppositeDirection && !isSelfAssociation) {
+        // Bi-directional association
+        let cardA = assoc.oppositeDirection.cardinality || '0..*';
+        cardA = cardA.replace(/^\[|\]$/g, '');
+        let cardB = assoc.cardinality || '0..*';
+        cardB = cardB.replace(/^\[|\]$/g, '');
 
-      relationLines.push(`    ${classTechName} --> "${cardStr}" ${targetTechName} : ${assocLocalizedName}`);
+        const labelA = assoc.name?.[lang] || assoc.name?.fi || assoc.name?.sv || assoc.name?.en || '';
+        const labelB = assoc.oppositeDirection.name?.[lang] || assoc.oppositeDirection.name?.fi || assoc.oppositeDirection.name?.sv || assoc.oppositeDirection.name?.en || '';
+        let label = '';
+        if (labelA && labelB) {
+          label = labelA === labelB ? labelA : `${labelA} / ${labelB}`;
+        } else {
+          label = labelA || labelB || '';
+        }
+
+        relationLines.push(`    ${classTechName} "${cardA}" <--> "${cardB}" ${targetTechName} : ${label}`);
+        if (assoc.id) {
+          drawnAssociations.add(assoc.id);
+        }
+        if (assoc.oppositeDirection.id) {
+          drawnAssociations.add(assoc.oppositeDirection.id);
+        }
+      } else {
+        // Uni-directional association
+        let cardStr = assoc.cardinality || '0..*';
+        cardStr = cardStr.replace(/^\[|\]$/g, '');
+
+        const assocLocalizedName =
+          assoc.name?.[lang] || assoc.name?.fi || assoc.name?.sv || assoc.name?.en || '';
+
+        relationLines.push(`    ${classTechName} --> "${cardStr}" ${targetTechName} : ${assocLocalizedName}`);
+        if (assoc.id) {
+          drawnAssociations.add(assoc.id);
+        }
+      }
+
       if (!includedTechNames.has(targetTechName) && !referencedCodelists.has(targetTechName)) {
         plainBoxTechNames.add(targetTechName);
       }

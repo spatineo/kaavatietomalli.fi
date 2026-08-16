@@ -345,4 +345,127 @@ classes: ["ClassB"]
     expect(result).toContain('ClassB ..> first_code : «use»');
     expect(result).toContain('ClassB ..> second_code : «use»');
   });
+
+  it('detects bi-directional associations from oppositeDirection property and generates bidirectional mermaid links', async () => {
+    const mockAccess: DataModelAccess = {
+      async getDataModel() {
+        return {
+          id: 'bidi-model',
+          version: '1.0.0',
+          metadata: { id: 'bidi-model', version: '1.0.0', name: { fi: 'Test' } },
+          classes: [
+            {
+              id: 'test:1.0/ClassA',
+              technicalName: 'ClassA',
+              name: { fi: 'Luokka A' },
+              associations: [
+                {
+                  id: 'test:1.0/assocAtoB',
+                  name: { fi: 'Assoc A to B' },
+                  targetClassId: 'test:1.0/ClassB',
+                  cardinality: '[0..*]',
+                  oppositeDirection: {
+                    id: 'test:1.0/assocBtoA',
+                    name: { fi: 'Assoc B to A' },
+                    cardinality: '[1..1]'
+                  }
+                }
+              ]
+            },
+            {
+              id: 'test:1.0/ClassB',
+              technicalName: 'ClassB',
+              name: { fi: 'Luokka B' },
+              associations: [
+                {
+                  id: 'test:1.0/assocBtoA',
+                  name: { fi: 'Assoc B to A' },
+                  targetClassId: 'test:1.0/ClassA',
+                  cardinality: '[1..1]',
+                  oppositeDirection: {
+                    id: 'test:1.0/assocAtoB',
+                    name: { fi: 'Assoc A to B' },
+                    cardinality: '[0..*]'
+                  }
+                }
+              ]
+            }
+          ]
+        };
+      },
+      async getCodelist() {
+        return null;
+      }
+    };
+
+    const snippet = `
+modelId: bidi-model
+classes: ["ClassA", "ClassB"]
+`;
+
+    const result = await transpileDataModelSnippetToMermaid(snippet, mockAccess);
+
+    // Verify it generated the bi-directional link
+    expect(result).toContain('ClassA "1..1" <--> "0..*" ClassB : Assoc A to B / Assoc B to A');
+    
+    // Verify it did NOT duplicate the relation
+    const lines = result.split('\n');
+    const bidiLines = lines.filter(line => line.includes('<-->'));
+    expect(bidiLines).toHaveLength(1);
+  });
+
+  it('renders self-associations as unidirectional links even with oppositeDirection, and shows multiple distinct self-associations', async () => {
+    const mockAccess: DataModelAccess = {
+      async getDataModel() {
+        return {
+          id: 'self-model',
+          version: '1.0.0',
+          metadata: { id: 'self-model', version: '1.0.0', name: { fi: 'Test' } },
+          classes: [
+            {
+              id: 'test:1.0/ClassA',
+              technicalName: 'ClassA',
+              name: { fi: 'Luokka A' },
+              associations: [
+                {
+                  id: 'test:1.0/selfAssoc1',
+                  name: { fi: 'Itseviittaus 1' },
+                  targetClassId: 'test:1.0/ClassA',
+                  cardinality: '[0..*]',
+                  oppositeDirection: {
+                    id: 'test:1.0/selfAssoc1',
+                    name: { fi: 'Itseviittaus 1' },
+                    cardinality: '[0..*]'
+                  }
+                },
+                {
+                  id: 'test:1.0/selfAssoc2',
+                  name: { fi: 'Itseviittaus 2' },
+                  targetClassId: 'test:1.0/ClassA',
+                  cardinality: '[1..1]'
+                }
+              ]
+            }
+          ]
+        };
+      },
+      async getCodelist() {
+        return null;
+      }
+    };
+
+    const snippet = `
+modelId: self-model
+classes: ["ClassA"]
+`;
+
+    const result = await transpileDataModelSnippetToMermaid(snippet, mockAccess);
+
+    // Verify they are unidirectional and not bidirectional
+    expect(result).not.toContain('<-->');
+    
+    // Verify each self-association shows up as a separate unidirectional link
+    expect(result).toContain('ClassA --> "0..*" ClassA : Itseviittaus 1');
+    expect(result).toContain('ClassA --> "1..1" ClassA : Itseviittaus 2');
+  });
 });
