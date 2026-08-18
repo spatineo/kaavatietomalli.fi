@@ -139,15 +139,17 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
             
             if (!ignore) {
               if (taggedPosts.length > 0 || pageSlugs.length > 0) {
-                setTagPosts(taggedPosts);
-                setActiveTagSlug(activeView.slug);
+                let fetchedPage: PageData | null = null;
                 if (pageSlugs.length > 0) {
-                  const firstPage = await getPageBySlug(pageSlugs[0]);
-                  if (!ignore) {
-                    setTagPage(firstPage);
-                  }
+                  fetchedPage = await getPageBySlug(pageSlugs[0]);
                 }
-                window.scrollTo(0, 0);
+                
+                if (!ignore) {
+                  setTagPosts(taggedPosts);
+                  setTagPage(fetchedPage);
+                  setActiveTagSlug(activeView.slug);
+                  window.scrollTo(0, 0);
+                }
               } else {
                 setContentNotFound(true);
               }
