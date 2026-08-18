@@ -324,7 +324,7 @@ export function Footer() {
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">{t.common.contact}</span>
-                <span className="text-sm font-semibold text-slate-200">kaavatietomalli@spatineo.com</span>
+                <span className="text-sm font-semibold text-slate-200">toimitus-kaavatietomalli@kaavatietomalli.fi</span>
               </div>
               <div className="-translate-y-[10px] -translate-x-[30px] lg:-translate-x-0">
                 <SpatineoLogo width={250} height={70} className="footer-logo" />
