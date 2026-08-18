@@ -14,10 +14,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  validate:
+  preconditions:
     runs-on: ubuntu-latest
+    outputs:
+      playwright-version: ${{ steps.playwright-version.outputs.version }}
+      code-changed: ${{ steps.change-flag.outputs.code_changed }}
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
         with:
           fetch-depth: 0
@@ -30,6 +33,24 @@ jobs:
             code:
               - '!content/**'
       
+      - name: Save code change flag
+        id: change-flag
+        run: echo "code_changed=${{ steps.filter.outputs.code }}" >> $GITHUB_OUTPUT
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('./package.json').devDependencies['@playwright/test'] || require('./package.json').dependencies['@playwright/test'])" | sed 's/[^0-9.]//g')" >> $GITHUB_OUTPUT
+
+  run-tests:
+    needs: preconditions
+    runs-on: ubuntu-latest
+    if: needs.preconditions.outputs.code-changed == 'true'
+    container:
+      image: mcr.microsoft.com/playwright:v${{ needs.preconditions.outputs.playwright-version }}-jammy
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+
       - name: Set up Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e #v6.4.0
         with:
@@ -39,48 +60,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Get Playwright version
-        id: playwright-version
-        if: steps.filter.outputs.code == 'true'
-        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> $GITHUB_OUTPUT
-
-      - name: Cache Playwright Browsers
-        id: cache-playwright
-        if: steps.filter.outputs.code == 'true'
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-browsers-${{ steps.playwright-version.outputs.version }}
-
-      - name: Install Playwright Chromium Browser & OS Dependencies
-        if: steps.filter.outputs.code == 'true' && steps.cache-playwright.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps
-
-      - name: Install Playwright OS Dependencies Only
-        if: steps.filter.outputs.code == 'true' && steps.cache-playwright.outputs.cache-hit == 'true'
-        run: npx playwright install-deps
-
       - name: Generate assets and search index (test-content mode)
-        if: steps.filter.outputs.code == 'true'
         run: npm run prebuild
         env:
           CONTENT_MODE: test
 
       - name: Run unit tests
-        if: steps.filter.outputs.code == 'true'
         run: npm run test:run
         env:
           CONTENT_MODE: test
 
       - name: Run Playwright tests
-        if: steps.filter.outputs.code == 'true'
         run: npm run test:e2e
         env:
           CONTENT_MODE: test
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        if: steps.filter.outputs.code == 'true' && !cancelled()
+        if: '!cancelled()'
         with:
           name: playwright-report
           path: |
@@ -88,15 +85,31 @@ jobs:
             test-results/
           retention-days: 30
 
+  validate:
+    needs: [preconditions, run-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e #v6.4.0
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Validate Markdown content
         run: npm run validate-content
 
       - name: Prebuild
-        if: steps.filter.outputs.code != 'true'
+        if: needs.preconditions.outputs.code-changed == 'true'
         run: npm run prebuild
         
       - name: Build
-        if: steps.filter.outputs.code == 'true'
+        if: needs.preconditions.outputs.code-changed == 'true'
         run: npm run build
         env:
           VITE_BASE_PATH: /
