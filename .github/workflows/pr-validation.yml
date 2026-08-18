@@ -35,7 +35,7 @@ jobs:
       
       - name: Save code change flag
         id: change-flag
-        run: echo "code_changed=${{ steps.filter.outputs.code }}"
+        run: echo "code_changed=${{ steps.filter.outputs.code }}" >> $GITHUB_OUTPUT
 
       - name: Get Playwright version
         id: playwright-version
@@ -44,7 +44,7 @@ jobs:
   run-tests:
     needs: preconditions
     runs-on: ubuntu-latest
-    if: ${{ needs.preconditions.outputs.code-changed }} == 'true'
+    if: needs.preconditions.outputs.code-changed == 'true'
     container:
       image: mcr.microsoft.com/playwright:v${{ needs.preconditions.outputs.playwright-version }}-jammy
     steps:
@@ -105,11 +105,11 @@ jobs:
         run: npm run validate-content
 
       - name: Prebuild
-        if: ${{ needs.preconditions.outputs.code-changed }} == 'true'
+        if: needs.preconditions.outputs.code-changed == 'true'
         run: npm run prebuild
         
       - name: Build
-        if: ${{ needs.preconditions.outputs.code-changed }} == 'true'
+        if: needs.preconditions.outputs.code-changed == 'true'
         run: npm run build
         env:
           VITE_BASE_PATH: /
