@@ -7,7 +7,6 @@
       "subitems": [
         { "label": "Lait ja asetukset", "type": "page", "slug": "lainsaadanto" },
         { "label": "Kaavatietomalli", "type": "page", "slug": "kaavatietomalli-yalusta" },
-        { "label": "Kaavatietomallin soveltamisohjeet", "type": "page", "slug": "soveltamisohjeet" },
         { "label": "Ryhti-järjestelmä", "type": "page", "slug": "ryhti-jarjestelma" },
         { "label": "Kaavatieto kuntajärjestelmissä", "type": "page", "slug": "kuntajarjestelmat" },
         { "label": "Kansainväliset standardit", "type": "page", "slug": "kv-standardit" }
@@ -27,7 +26,9 @@
       "subitems": [
         { "label": "Tietomallisparraukset ja koulutukset", "type": "tag", "slug": "sparraus" },
         { "label": "Markkinaselvitykset", "type": "tag", "slug": "markkinaselvitys" },
-        { "label": "Kumppani: Spatineo Oy", "type": "page", "slug": "spatineo" }
+        { "label": "Spatineo Oy", "type": "page", "slug": "spatineo" },
+        { "label": "Kumppaniksi?", "type": "page", "slug": "kumppaniksi"} 
+
       ]
     },
     { 
@@ -42,11 +43,9 @@
     }
   ],
   "themes": [
-    { "id": "lainsaadanto", "label": "Lainsäädäntö", "tag": "lainsäädäntö" },
+    { "id": "lainsaadanto", "label": "Lainsäädäntö", "tag": "lainsaadanto" },
     { "id": "tietomallit", "label": "Tietomallit", "tag": "tietomallit" },
-    { "id": "kehitysideat", "label": "Kehitysideat", "tag": "kehitysideat" },
-    { "id": "yhteiskehittaminen", "label": "Yhteiskehittäminen", "tag": "yhteiskehittaminen" },
-    { "id": "uusi-ajattelu", "label": "Uusi ajattelutapa", "tag": "uusi-ajattelu" },
+    { "id": "kehitysidea", "label": "Kehitysideat", "tag": "kehitysidea" },
     { "id": "kokemukset", "label": "Kokemukset", "tag": "kokemukset" }
   ]
 }

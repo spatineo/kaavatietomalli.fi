@@ -8,6 +8,7 @@ import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { getTracker } from '../services/analytics';
 import { ContentFooter } from './ContentFooter';
+import { CallToAction } from './CodeBlock';
 
 interface AuthorViewProps {
   author: AuthorData;
@@ -149,18 +150,13 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
             <ReactMarkdown urlTransform={(url) => resolveImageUrl(url)}>{author.content}</ReactMarkdown>
           </div>
           {"Spatineo Oy" == author.company && (
-          <div className="mt-20 p-10 rounded-3xl bg-white/5 border border-white/10">
-            <h4 className="text-lg font-bold text-white mb-4">{t.author.cooperationTitle}</h4>
-            <p className="text-slate-400 mb-8">
-              {t.author.cooperationText}
-            </p>
-            <button 
-              onClick={() => getTracker().trackCTA(t.author.contactUs, undefined, `author:${author.slug}`)}
-              className="bg-brand-accent text-brand-primary px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity"
-            >
-              {t.author.contactUs}
-            </button>
-          </div>
+            <CallToAction
+              url="mailto:myynti@spatineo.com"
+              buttonText={t.author.contactUs}
+              title={t.author.cooperationTitle}
+              description={t.author.cooperationText}
+              partner={author.company}
+              />
           )}
         </section>
       </div>

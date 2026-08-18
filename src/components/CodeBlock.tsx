@@ -1,11 +1,13 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 import { ErrorBoundary } from './ErrorBoundary';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowRight } from 'lucide-react';
 import { transpileInstanceToMermaid } from '../lib/instance-diagram-transpiler';
 import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-generator';
 import { FetchDataModelAccess } from '../lib/fetch-data-model-access';
+import { useAppRouter } from '../hooks/useRouter';
+import { getTracker } from '../services/analytics';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
@@ -61,6 +63,108 @@ function parseVideoProperties(content: string): Record<string, any> {
     config[key] = value;
   }
   return config;
+}
+
+function parseCtaBlock(code: string): {
+  url: string;
+  buttonText: string;
+  title: string;
+  description?: string;
+  partner?: string;
+} {
+  const config = parseVideoProperties(code);
+  
+  // Find case-insensitive or synonymous keys
+  const keys = Object.keys(config);
+  
+  const findVal = (possibleKeys: string[]) => {
+    const foundKey = keys.find(k => possibleKeys.includes(k.toLowerCase()));
+    return foundKey ? String(config[foundKey]).trim() : undefined;
+  };
+  const url = findVal(['url', 'redirecturl', 'link', 'href', 'redirect']);
+  const buttonText = findVal(['buttontext', 'label', 'button_text', 'text', 'btntext', 'nappiteksti', 'painiketeksti']);
+  if (!url || !buttonText) {
+    throw new Error("Properties 'url' and 'buttonText' are required for a CTA block");
+  }
+  return {
+    url: url,
+    buttonText: buttonText,
+    title: findVal(['title', 'heading', 'otsikko']),
+    description: findVal(['description', 'desc', 'kuvaus', 'textcontent']),
+    partner: findVal(['partner', 'kumppani'])
+  };
+}
+
+
+interface CTAProps {
+  url: string,
+  buttonText: string,
+  title?: string,
+  description?:string,
+  partner?: string
+}
+
+export function CallToAction({
+  url,
+  buttonText,
+  title,
+  description,
+  partner
+}:CTAProps) {
+  const { activeView } = useAppRouter();
+
+  // Determine context string based on the active view type and slug
+  const context = activeView.type !== 'home' && activeView.slug ? `${activeView.type}:${activeView.slug}` : undefined;
+
+  const handleCtaClick = () => {
+    getTracker().trackCTA(buttonText, url, context, partner);
+  };
+
+  return (
+    <div className="cta-block my-10 p-8 md:p-10 rounded-3xl bg-gradient-to-br from-brand-muted to-[#17171a] border border-white/10 shadow-2xl relative overflow-hidden text-left max-w-xl" data-testid="cta-block">
+      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+      
+      {title && (
+        <h4 className="text-xl md:text-2xl font-black text-white mb-4 mt-0 tracking-tight leading-tight" data-testid="cta-title">
+          {title}
+        </h4>
+      )}
+      
+      {description && (
+        <p className="cta-content text-slate-300 mb-8 text-sm md:text-base leading-relaxed font-sans font-normal max-w-xl" data-testid="cta-description">
+          {description}
+        </p>
+      )}
+      
+      
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleCtaClick}
+        className="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-accent text-brand-primary rounded-xl font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity shadow-lg shadow-brand-accent/5 leading-none"
+        data-testid="cta-button"
+      >
+        {buttonText}
+        <ArrowRight size={12} className="stroke-[2.5]" />
+      </a>
+    </div>
+  );
+}
+
+export function CallToActionBlock({ code }: { code: string }) {
+  try {
+    const properties = parseCtaBlock(code);
+    return CallToAction(properties);
+  } catch(error) {
+    return (
+      <div className="my-6 p-6 rounded-2xl border border-amber-500/20 bg-amber-950/10 text-left">
+        <p className="text-xs text-amber-400">
+          Virheellinen Call-to-Action -lohko: 'url' ja 'buttonText' ovat pakollisia kenttiä.
+        </p>
+      </div>
+    );
+  }
 }
 
 function BlockFallback({ language, code }: { language: string; code: string }) {
@@ -127,7 +231,7 @@ export function CodeBlock({
   ...props
 }: CodeBlockProps) {
   const t = getTranslations(CONFIG.language as Language);
-  const match = /language-(\w+)/.exec(className || '');
+  const match = /language-([a-zA-Z0-9_-]+)/.exec(className || '');
   const language = match ? match[1] : '';
   const codeContent = String(children || '').replace(/\n$/, '');
 
@@ -181,6 +285,14 @@ export function CodeBlock({
         >
           <Mermaid chart={chartData} />
         </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
+  if (language === 'call-to-action' || language === 'cta') {
+    return (
+      <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
+        <CallToActionBlock code={codeContent} />
       </ErrorBoundary>
     );
   }
