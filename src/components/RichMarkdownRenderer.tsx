@@ -133,7 +133,7 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
             pre({ node, children, ...props }: any) {
             const codeEl = children && (children as any).props;
             const className = codeEl?.className || '';
-            const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo)/.test(className);
+            const isInteractive = /language-(geojson|jsonfg|mermaid|youtube|vimeo|data-model-snippet|call-to-action|cta)/.test(className);
             
             if (isInteractive) {
                 return <>{children}</>;
