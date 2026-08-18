@@ -1,6 +1,5 @@
 ---
 title: "Tietoa sivustosta"
-tags:
 ---
 
 # Mikä on Kaavatietomalli.fi?

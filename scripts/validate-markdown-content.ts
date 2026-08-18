@@ -119,6 +119,8 @@ if (fs.existsSync(postsDir)) {
 if (fs.existsSync(pagesDir)) {
   const pageFiles = getFilesRecursive(pagesDir);
   console.log(`Found ${pageFiles.length} pages to validate.`);
+  const tagPages: { [tag:string]: string} = {};
+
   for (const file of pageFiles) {
     const fullPath = path.join(pagesDir, file);
     const rawContent = fs.readFileSync(fullPath, 'utf-8');
@@ -147,6 +149,17 @@ if (fs.existsSync(pagesDir)) {
       assert(typeof data.title === 'string' && data.title.trim().length > 0, 'Metadata "title" must be a non-empty string', file);
     }
 
+    // Tage page uniqueness validation
+    if (data.tags !== undefined) {
+      const slug = file.replace(/[\\/]/g, '-').replace('.md', '');
+      for (const tag of data.tags) {
+        if (tagPages[tag]) {
+          errors.push(`Page ${slug} trying to claim status of the tag page for tag '${tag}', already claimed by page ${tagPages[tag]}`);
+        } else {
+          tagPages[tag] = slug;
+        }
+      }
+    }
     // Content body validation
     assert(typeof content === 'string', 'Content body must be a string', file);
   }

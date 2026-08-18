@@ -1,6 +1,5 @@
 ---
 title: "Toimituskunta"
-tags:
 ---
 
 Kaavatietomalli.fi:n toimituskunta vastaa sivuston sisällön suunnittelusta ja toimittamisesta. Toimituskunta koostuu Suomen rakennetun ympäristön digitalisaatiota eri näkökulmista tarkastelevista asiantuntijoista.
