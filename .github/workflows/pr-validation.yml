@@ -86,7 +86,7 @@ jobs:
           retention-days: 30
 
   validate:
-    needs: [preconditions, run-tests]
+    needs: preconditions
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
