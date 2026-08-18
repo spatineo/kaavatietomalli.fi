@@ -4,6 +4,11 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    watch: {
+      ignored: ['**/src/version.ts']
+    }
+  },
   test: {
     globals: true,
     environment: 'happy-dom',
@@ -13,4 +18,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, '.'),
     },
   },
+
 });
