@@ -35,7 +35,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
 
   // Unified content loading effect
   useEffect(() => {
-    let ignore = false;
+    let isStale = false;
     setContentNotFound(false);
  
     // Immediate cleanup of "other" detail states to avoid stale renders during transitions
@@ -81,7 +81,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
         if (currentPost?.slug !== activeView.slug) {
           try {
             const post = await getPostBySlug(activeView.slug);
-            if (!ignore) {
+            if (!isStale) {
               if (post) {
                 setCurrentPost(post);
                 window.scrollTo(0, 0);
@@ -91,14 +91,14 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
             }
           } catch (err) {
             console.error('[ContentLoader] post load failed:', err);
-            if (!ignore) setContentNotFound(true);
+            if (!isStale) setContentNotFound(true);
           }
         }
       } else if (activeView.type === 'page' && activeView.slug) {
         if (currentPage?.slug !== activeView.slug) {
           try {
             const page = await getPageBySlug(activeView.slug);
-            if (!ignore) {
+            if (!isStale) {
               if (page) {
                 setCurrentPage(page);
                 window.scrollTo(0, 0);
@@ -108,14 +108,14 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
             }
           } catch (err) {
             console.error('[ContentLoader] page load failed:', err);
-            if (!ignore) setContentNotFound(true);
+            if (!isStale) setContentNotFound(true);
           }
         }
       } else if (activeView.type === 'author' && activeView.slug) {
         if (currentAuthor?.slug !== activeView.slug) {
           try {
             const author = await getAuthorBySlug(activeView.slug);
-            if (!ignore) {
+            if (!isStale) {
               if (author) {
                 setCurrentAuthor(author);
                 window.scrollTo(0, 0);
@@ -125,7 +125,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
             }
           } catch (err) {
             console.error('[ContentLoader] author load failed:', err);
-            if (!ignore) setContentNotFound(true);
+            if (!isStale) setContentNotFound(true);
           }
         }
       } else if (activeView.type === 'tag' && activeView.slug) {
@@ -137,24 +137,26 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
               getTagPageSlugs(activeView.slug)
             ]);
             
-            if (!ignore) {
+            if (!isStale) {
               if (taggedPosts.length > 0 || pageSlugs.length > 0) {
-                setTagPosts(taggedPosts);
-                setActiveTagSlug(activeView.slug);
+                let fetchedPage: PageData | null = null;
                 if (pageSlugs.length > 0) {
-                  const firstPage = await getPageBySlug(pageSlugs[0]);
-                  if (!ignore) {
-                    setTagPage(firstPage);
-                  }
+                  fetchedPage = await getPageBySlug(pageSlugs[0]);
                 }
-                window.scrollTo(0, 0);
+                
+                if (!isStale) {
+                  setTagPosts(taggedPosts);
+                  setTagPage(fetchedPage);
+                  setActiveTagSlug(activeView.slug);
+                  window.scrollTo(0, 0);
+                }
               } else {
                 setContentNotFound(true);
               }
             }
           } catch (err) {
             console.error('[ContentLoader] tag items load failed:', err);
-            if (!ignore) setContentNotFound(true);
+            if (!isStale) setContentNotFound(true);
           }
         }
       } else if (activeView.type === 'model' && activeView.slug) {
@@ -166,7 +168,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
             }
             const models = await res.json();
             const exists = Array.isArray(models) && models.some((m: any) => m.path.startsWith(`${activeView.slug}-`));
-            if (!ignore) {
+            if (!isStale) {
               if (exists) {
                 setVerifiedModelSlug(activeView.slug);
                 window.scrollTo(0, 0);
@@ -176,7 +178,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
             }
           } catch (err) {
             console.error('[ContentLoader] model check failed:', err);
-            if (!ignore) {
+            if (!isStale) {
               setContentNotFound(true);
             }
           }
@@ -186,7 +188,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
  
     loadData();
     return () => { 
-      ignore = true; 
+      isStale = true; 
     };
   }, [activeView.type, activeView.slug, posts.length, verifiedModelSlug]);
 
