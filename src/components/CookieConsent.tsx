@@ -14,7 +14,6 @@ export function CookieConsent() {
 
   useEffect(() => {
     const handleOpenConsent = () => {
-      console.log('[DEBUG] open_cookie_consent event received');
       const current = getConsent();
       if (current) {
         setAnalyticsEnabled(current.analytics);
