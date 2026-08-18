@@ -5,7 +5,7 @@ import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import { Construct } from 'constructs';
-import { ARecord, AaaaRecord, RecordTarget } from 'aws-cdk-lib/aws-route53';
+import { ARecord, AaaaRecord, RecordTarget, TxtRecord, MxRecord, CaaRecord } from 'aws-cdk-lib/aws-route53';
 import { CloudFrontTarget } from 'aws-cdk-lib/aws-route53-targets';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as glue from 'aws-cdk-lib/aws-glue';
@@ -123,8 +123,37 @@ export class WebsiteStack extends cdk.Stack {
       target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
     });
 
+    new TxtRecord(this,'GMailVerificationAndSPFRecord',{
+      zone: props.hostedZone,
+      values:[
+        "google-site-verification=6yENEbHZiRLShueV0Jri4Fm9vBakNltACNaor0pwZmY",
+        "v=spf1 include:_spf.google.com ~all"
+      ],
+      ttl: cdk.Duration.minutes(5)  
+    });
+
+    new MxRecord(this, 'GMailMXRecord', {
+      zone: props.hostedZone,
+      values: [
+        {
+          "priority": 1,
+          "hostName": "SMTP.GOOGLE.COM"
+        }
+      ],
+      ttl: cdk.Duration.minutes(5)
+    });
+
+    new TxtRecord(this, 'DKIMRecord', {
+      zone: props.hostedZone,
+      recordName: "google._domainkey",
+      values: [
+        "v=DKIM1;k=rsa;p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiy8MPNRwH8/YqQ4ZRtTnvHzI5EWfMZReu92sOMXhkcW8camrydjkD+5y0wAqyMc0HsglO8Qherxw/7TEXVcGRB50bjOxCXxYVpHTE4bZJquhUrkJAY5a3VFbTcxLbkaBWZ4RMBMOhyf3ggFjjAaHP1QPFzt11/qZ2b1rLuXO1qgNBGSz4s8lI/B/JE4uHYC6hWmPgmOmI3cOAiuKNkJwIixdK/UFRGRLqI8H71BhqWCLVEjtnlc46KPdRuCUzM6wrn+ZPgUmTW+6NseB2nE0mdPSNbtajlf0yVks2kiB+3W8fvCnopjY+H3M7WXTSduws1taxxBeeygEX/sz+f7gYQIDAQAB"
+      ],
+      ttl: cdk.Duration.minutes(5) 
+    });
+
     // For extra safety: certificate creation allowed only by AWS 
-    new route53.CaaRecord(this, 'AmazonCaaRecord', {
+    new CaaRecord(this, 'AmazonCaaRecord', {
       zone: props.hostedZone,
       values: [
         {
