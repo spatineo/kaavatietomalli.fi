@@ -247,7 +247,7 @@ export function useMetadataSync({
     updateMeta('meta[property="twitter:url"]', canonicalUrl);
 
     // Image updates
-    let imageUrl = `${CONFIG.baseUrl}/og-image.jpg`;
+    let imageUrl = `${CONFIG.baseUrl}/images/og-image.png`;
     if (activeView.type === 'post' && currentPost?.coverImage) {
       imageUrl = resolveImageUrl(currentPost.coverImage);
     } else if (activeView.type === 'author' && currentAuthor?.image) {
