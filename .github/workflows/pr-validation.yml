@@ -109,7 +109,4 @@ jobs:
 
       - name: Build
         if: needs.preconditions.outputs.code-changed == 'true'
-        run: npm run build
-        env:
-          VITE_BASE_PATH: /
-          VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }}
+        run: npm run ci:validate

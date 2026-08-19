@@ -94,6 +94,10 @@ jobs:
         if: needs.preconditions.outputs.code-changed == 'true' && !cancelled()
         run: npm ci
 
+      - name: Lint the code
+        if: needs.preconditions.outputs.code-changed == 'true' && !cancelled()
+        run: npm run lint
+      
       - name: Generate assets and search index (test-content mode)
         if: needs.preconditions.outputs.code-changed == 'true' && !cancelled()
         run: npm run prepare:test
