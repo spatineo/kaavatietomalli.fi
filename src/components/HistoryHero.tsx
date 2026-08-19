@@ -136,6 +136,36 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       </div>
 
       <div className="relative px-6">
+        {/* Left Fade Gradient & Narrow Scroll Button */}
+        <div className={`absolute left-0 top-0 bottom-12 w-24 z-20 bg-gradient-to-r from-brand-bg via-brand-bg/60 to-transparent pointer-events-none transition-opacity duration-300 ${canScrollLeft ? 'opacity-100' : 'opacity-0'}`} />
+        <button
+          onClick={() => handleScroll('left')}
+          disabled={!canScrollLeft}
+          className={`absolute left-2 top-[calc(50%-24px)] -translate-y-1/2 w-10 h-28 z-30 flex items-center justify-center rounded-xl bg-black/50 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent transition-all shadow-2xl focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:outline-none ${
+            canScrollLeft 
+              ? 'opacity-100 pointer-events-auto cursor-pointer' 
+              : 'opacity-0 pointer-events-none'
+          }`}
+          aria-label={t.post.previous}
+        >
+          <ChevronLeft size={20} />
+        </button>
+
+        {/* Right Fade Gradient & Narrow Scroll Button */}
+        <div className={`absolute right-0 top-0 bottom-12 w-24 z-20 bg-gradient-to-l from-brand-bg via-brand-bg/60 to-transparent pointer-events-none transition-opacity duration-300 ${canScrollRight ? 'opacity-100' : 'opacity-0'}`} />
+        <button
+          onClick={() => handleScroll('right')}
+          disabled={!canScrollRight}
+          className={`absolute right-2 top-[calc(50%-24px)] -translate-y-1/2 w-10 h-28 z-30 flex items-center justify-center rounded-xl bg-black/50 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent transition-all shadow-2xl focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:outline-none ${
+            canScrollRight 
+              ? 'opacity-100 pointer-events-auto cursor-pointer' 
+              : 'opacity-0 pointer-events-none'
+          }`}
+          aria-label={t.post.next}
+        >
+          <ChevronRight size={20} />
+        </button>
+
         <div 
           ref={scrollContainerRef}
           className="flex gap-8 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10 snap-x snap-mandatory" 
@@ -197,42 +227,14 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
         </div>
       </div>
 
-      {/* Modern carousel control widget: progress line indicator & chevron buttons by proximity */}
-      <div className="mx-auto px-6 mt-8 flex items-center justify-between gap-8">
+      {/* Modern carousel control widget: progress line indicator */}
+      <div className="max-w-7xl mx-auto px-6 mt-8">
         {/* Progress Line */}
-        <div className="flex-grow h-[2px] bg-white/10 rounded-full overflow-hidden">
+        <div className="h-[2px] bg-white/10 rounded-full overflow-hidden">
           <div 
             className="h-full bg-brand-accent transition-all duration-300 ease-out rounded-full"
             style={{ width: `${scrollProgress}%` }}
           />
-        </div>
-
-        {/* Carousel Navigation Buttons */}
-        <div className="flex items-center gap-3 flex-shrink-0">
-          <button
-            onClick={() => handleScroll('left')}
-            disabled={!canScrollLeft}
-            className={`p-3 rounded-full border transition-all duration-300 ${
-              canScrollLeft 
-                ? 'border-white/20 text-white hover:bg-white/10 hover:border-brand-accent cursor-pointer' 
-                : 'border-white/5 text-white/20 cursor-not-allowed'
-            }`}
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={18} />
-          </button>
-          <button
-            onClick={() => handleScroll('right')}
-            disabled={!canScrollRight}
-            className={`p-3 rounded-full border transition-all duration-300 ${
-              canScrollRight 
-                ? 'border-white/20 text-white hover:bg-white/10 hover:border-brand-accent cursor-pointer' 
-                : 'border-white/5 text-white/20 cursor-not-allowed'
-            }`}
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={18} />
-          </button>
         </div>
       </div>
     </section>
