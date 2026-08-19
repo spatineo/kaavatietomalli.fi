@@ -1,0 +1,114 @@
+{
+  "remote": {
+    "api": "local-test",
+    "name": "Local Test Tietomallit"
+  },
+  "models": [
+    {
+      "id": "https://iri.suomi.fi/model/rytj-kaava",
+      "versions": ["1.0.5", "1.0.4"],
+      "overrides": [
+        {
+          "version": "1.0.5",
+          "classes": [
+            {
+              "id": "https://iri.suomi.fi/model/rytj-kaava/Kaavamaarays",
+              "attributes": [
+                {
+                  "id": "https://iri.suomi.fi/model/rytj-kaava/kaavamaarayslaji",
+                  "codelist": [
+                    "http://uri.suomi.fi/codelist/rytj/RY_Kaavamaarayslaji"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "https://iri.suomi.fi/model/rytj-kaava/Kaava",
+              "attributes": [
+                {
+                  "id": "https://iri.suomi.fi/model/rytj-kaava/yleiskaavanOikeusvaikutus",
+                  "codelist": [
+                    "http://uri.suomi.fi/codelist/rytj/oikeusvaik_YK"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "https://iri.suomi.fi/model/rytj-kaava/kaavakohteenkumoamistieto",
+              "attributes": [
+                {
+                  "id": "https://iri.suomi.fi/model/rytj-kaava/kumottavankaavakohteentunnus1",
+                  "type": "anyURI",
+                  "cardinality": "1..1"
+                }
+              ],
+              "associations": [
+                {
+                  "id": "https://iri.suomi.fi/model/rytj-kaava/voimassaolevageometria-1",
+                  "targetClassId": "https://iri.suomi.fi/model/rytj-kaava/Sijainti",
+                  "targetClassName": {
+                    "en": "Location",
+                    "sv": "Placering",
+                    "fi": "Sijainti"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "version": "1.0.4",
+          "classes": [
+            {
+              "id": "https://iri.suomi.fi/model/rytj-kaava/Kaavamaarays",
+              "attributes": [
+                {
+                  "id": "https://iri.suomi.fi/model/rytj-kaava/kaavamaarayslaji",
+                  "codelist": [
+                    "http://uri.suomi.fi/codelist/rytj/RY_Kaavamaarayslaji"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "https://iri.suomi.fi/model/rytj-kaava/Kaava",
+              "attributes": [
+                {
+                  "id": "https://iri.suomi.fi/model/rytj-kaava/yleiskaavanOikeusvaikutus",
+                  "codelist": [
+                    "http://uri.suomi.fi/codelist/rytj/oikeusvaik_YK"
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "https://iri.suomi.fi/model/rytj-kaava/kaavakohteenkumoamistieto",
+              "attributes": [
+                {
+                  "id": "https://iri.suomi.fi/model/rytj-kaava/kumottavankaavakohteentunnus1",
+                  "type": "anyURI",
+                  "cardinality": "1..1"
+                }
+              ],
+              "associations": [
+                {
+                  "id": "https://iri.suomi.fi/model/rytj-kaava/voimassaolevageometria-1",
+                  "targetClassId": "https://iri.suomi.fi/model/rytj-kaava/Sijainti",
+                  "targetClassName": {
+                    "en": "Location",
+                    "sv": "Placering",
+                    "fi": "Sijainti"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "https://iri.suomi.fi/model/ryhti-tont",
+      "versions": ["1.0.7"]
+    }
+  ]
+}

@@ -94,7 +94,9 @@ let prefixMap: Record<string, string> = {
 };
 
 try {
-  const prefixMapPath = path.join(process.cwd(), 'data-index', 'prefixes.json');
+  const prefixMapPath = process.env.CONTENT_MODE === 'test'
+    ? path.join(process.cwd(), 'test-data-index', 'prefixes.json')
+    : path.join(process.cwd(), 'data-index', 'prefixes.json');
   if (fs.existsSync(prefixMapPath)) {
     const rawPrefixes = fs.readFileSync(prefixMapPath, 'utf-8');
     prefixMap = JSON.parse(rawPrefixes);
@@ -524,12 +526,17 @@ export async function fetchAndTransformDataModels(
   outputBaseDir?: string,
   delayMs: number = 500
 ): Promise<{ totalProcessed: number; changedCount: number }> {
+  const isTestMode = process.env.CONTENT_MODE === 'test';
   const resolvedConfigPath =
     configPath ||
-    path.join(process.cwd(), 'data-index', 'suomi.fi', 'tietomallit', 'index.json');
+    (isTestMode
+      ? path.join(process.cwd(), 'test-data-index', 'suomi.fi', 'tietomallit', 'index.json')
+      : path.join(process.cwd(), 'data-index', 'suomi.fi', 'tietomallit', 'index.json'));
   const resolvedOutputDir =
     outputBaseDir ||
-    path.join(process.cwd(), 'public', 'data', 'suomi.fi', 'tietomallit');
+    (isTestMode
+      ? path.join(process.cwd(), 'test-public', 'data', 'suomi.fi', 'tietomallit')
+      : path.join(process.cwd(), 'public', 'data', 'suomi.fi', 'tietomallit'));
 
   if (!fs.existsSync(resolvedConfigPath)) {
     console.warn(`Configuration file not found at ${resolvedConfigPath}`);
@@ -552,7 +559,7 @@ export async function fetchAndTransformDataModels(
 
   for (const model of config.models) {
     for (const version of model.versions) {
-      if (requestCount > 0 && delayMs > 0) {
+      if (!isTestMode && requestCount > 0 && delayMs > 0) {
         await sleep(delayMs);
       }
       requestCount++;
@@ -562,13 +569,24 @@ export async function fetchAndTransformDataModels(
         const fetchTimestamp = new Date().toISOString();
         const jsonldUrl = `${baseUrl}?modelId=${getModelShortName(model.id)}&fileType=JSON-LD&version=${version}`;
 
-        console.log(`Fetching data model: ${model.id} (v${version}) from ${jsonldUrl}...`);
-        const jsonResponse = await fetch(jsonldUrl, CONFIG.remoteFetchOptions);
-        if (!jsonResponse.ok) {
-          throw new Error(`HTTP ${jsonResponse.status}: ${jsonResponse.statusText}`);
+        let jsonContent: any;
+        if (isTestMode) {
+          const modelName = getModelShortName(model.id);
+          const localFilePath = path.join(process.cwd(), 'test-data', 'model', `${modelName}-v${version}.jsonld`);
+          console.log(`[TEST MODE] Reading local data model file from: ${localFilePath}`);
+          if (!fs.existsSync(localFilePath)) {
+            throw new Error(`Local file not found at ${localFilePath}`);
+          }
+          const raw = fs.readFileSync(localFilePath, 'utf-8');
+          jsonContent = JSON.parse(raw);
+        } else {
+          console.log(`Fetching data model: ${model.id} (v${version}) from ${jsonldUrl}...`);
+          const jsonResponse = await fetch(jsonldUrl, CONFIG.remoteFetchOptions);
+          if (!jsonResponse.ok) {
+            throw new Error(`HTTP ${jsonResponse.status}: ${jsonResponse.statusText}`);
+          }
+          jsonContent = await jsonResponse.json();
         }
-
-        const jsonContent = await jsonResponse.json();
         const modelOutput = transformJsonLdToModel(jsonContent, model.id, version, fetchTimestamp, model.overrides);
 
         const outputFilename = `${getModelShortName(model.id)}-${version}.json`;

@@ -688,12 +688,12 @@ The test suite and deployment pipelines are fully wired into our software develo
 
 Playwright tests run in actual Chromium/WebKit environments to assert layout correctness, responsive adaptations, and raw routing triggers.
 
-**Note**: Due to relying on specific [test content](#test-content--local-test-variants), the normal `npm run test:e2e` run will fail unless preceeded by `npm run prebuild` with `CONTENT_MODE=test` enviroment variable set. For CI builds this is taken care of in the GitHub Actions workflow. For running the e2e tests locally, use `npm run test-local:e2e` instead.
+**Note**: All test configurations are completely self-contained. The `npm run test`, `npm run test:run`, and `npm run test:e2e` commands automatically trigger the `npm run prepare:test` setup pipeline which cleans the environments and prebuilds all test assets cleanly into the isolated `test-public` directory, so you do not need to run separate preparation commands manually beforehand.
 
 #### A. Running E2E Tests & DevContainer Environment Setup
-- **Local Execution**: To execute the E2E tests, ensure your local development server is running in another shell (`npm run dev`), then execute the command:
+- **Local Execution**: To execute the E2E tests, make sure you run the self-contained command:
   ```bash
-  npm run test-local:e2e
+  npm run test:e2e
   ```
 - **DevContainer / Docker Environment Troubleshooting**:
   If running the tests inside your VS Code DevContainer or a Docker-based virtual terminal and encountering missing browser modules or missing dynamic library binaries (e.g. `chrome-linux/headless_shell` or `libnspr4`), run the following sequences:
@@ -705,7 +705,7 @@ Playwright tests run in actual Chromium/WebKit environments to assert layout cor
   npx playwright install
   
   # Step 3: Run the end-to-end tests
-  npm run test-local:e2e
+  npm run test:e2e
   ```
   Our DevContainer's configuration is fully optimized to automate this sequence during its container spin-up process.
 
@@ -762,32 +762,91 @@ When writing, executing, and updating E2E tests, mind the following behaviors cr
 
 ---
 
-### 6. Test Content & Local-Test Variants
+### 6. Sandboxed Test Data & Test Content Directory Structures
 
-To prevent test flakiness due to dynamic changes in the main CMS content (such as scheduled future posts, custom layout shifts, or draft changes), the testing harness relies on a secondary predictable sandboxed dataset and automated shell-trapping routines.
+To support comprehensive tests while completely protecting production data and content folders, the testing harness enforces strict **directory isolation** using sandboxed folders. This ensures that mock files are processed, compiled, and served without ever touching or modifying your production CMS `public/` assets.
 
-#### A. The Test Content Directory
-The `/test-content/` directory mirrors the exact directory structure of the main `/content/` directory but is populated with static, stable mock pages, mock posts, and configurations.
+#### A. Directory Architecture for Testing
 
-* **Triggering**: Setting the environment variable `CONTENT_MODE=test` forces the CMS ingestion engine (`scripts/generate-assets.ts`, `scripts/generate-search-index.ts`) to read, compile, and output static files from `/test-content/` instead of `/content/`.
-* **Testing Resilience**: All test suites (Vitest unit tests, route hook assertions, and Playwright E2E browser checks) run in this test-content sandboxed mode. This guarantees assertions match exactly against stable, well-defined metadata and static assets.
+The project uses three dedicated testing directories alongside the stable `/test-content/` folder:
 
-#### B. Local-Test Script Variants
-When running tests locally, executing them in test-content mode manually requires copying/building assets and remembering to rebuild live content afterward. To automate this and ensure your local development container doesn't get left in a "test state," the project provides the following `local-test` shell wrappers:
+1. **`/test-content/` (CMS Markdown Sandbox)**:
+   - Contains a stable, predictable, and unchanging set of mock pages, blog posts, and author biographies.
+   - When running in `CONTENT_MODE=test`, the static asset engines compile indexes and post pages using `/test-content/` instead of `/content/`.
 
-* `npm run test-local`: Runs Vitest in interactive watch mode against `test-content` assets.
-* `npm run test-local:run`: Runs a single-pass Vitest test suite against `test-content` assets.
-* `npm run test-local:e2e`: Runs Playwright E2E integration tests against `test-content` assets.
+2. **`/test-data/` (Data Specifications Sandbox)**:
+   - Holds static, local mock source files used to simulate Suomi.fi data model schemas and reference codelists.
+   - Includes:
+     - `/test-data/model/`: Mock JSON-LD schema files (e.g., `rytj-kaava-v1.0.5.jsonld`) representing test data models.
+     - `/test-data/codelist/`: Mock JSON codelist registry trees containing categories, metadata, and allowed enumeration codes.
 
-##### The Subshell Status Trap Mechanism:
-These scripts execute a robust build-and-cleanup sequence:
+3. **`/test-data-index/` (Registry Mapping Sandbox)**:
+   - Contains sandboxed mapping directories mirroring the structure of `/data-index/` (e.g., `/test-data-index/suomi.fi/tietomallit/index.json` and `/test-data-index/suomi.fi/koodistot/index.json`).
+   - Declares exactly which mock source files in `/test-data/` should be resolved, processed, and transformed under test mode.
+
+4. **`/test-public/` (Vite Environment Isolation)**:
+   - **Crucial Separation Rule**: When `CONTENT_MODE=test`, our Vite configuration dynamically overrides Vite’s standard `publicDir` option from `'public'` to `'test-public'`.
+   - All generated mock JSON files, sitemaps, RSS feeds, and full-text search indexes are outputted inside `/test-public/` during `prepare:test`.
+   - The test server then mounts `/test-public` as its root. This isolates the runtime completely, guaranteeing that production indexes and images in `/public` are never overwritten or affected during test execution.
+
+#### B. Guidance on Adding New Test Data
+
+If you need to introduce new test data models or codelist values for unit or integration assertions, follow these steps:
+
+##### 1. Adding a Mock Data Model
+1. Place your mock data model's raw JSON-LD schema inside `/test-data/model/` (e.g., `/test-data/model/my-mock-model-v1.0.0.jsonld`).
+2. Register your new model version inside `/test-data-index/suomi.fi/tietomallit/index.json`. Add a model entry pointing to the local file:
+   ```json
+   {
+     "id": "my-mock-model",
+     "versions": [
+       {
+         "version": "1.0.0",
+         "apiUri": "https://tietomallit.suomi.fi/api/getModelAsFile?modelId=my-mock-model&fileType=JSON-LD&version=1.0.0",
+         "localFile": "test-data/model/my-mock-model-v1.0.0.jsonld",
+         "prefix": "https://iri.suomi.fi/model/my-mock-model/"
+       }
+     ]
+   }
+   ```
+
+##### 2. Adding a Mock Codelist
+1. Create a structured folder for your codelist category inside `/test-data/codelist/coderegistries/<registry>/codeschemes/<codelist-id>/`.
+2. Place the codelist metadata file as `index.json` inside that folder, and place its enumerated codes inside a `codes/index.json` subfolder.
+3. Register your new codelist inside `/test-data-index/suomi.fi/koodistot/index.json` under the appropriate registry section.
+
+##### 3. Processing and Verifying
+Simply run:
 ```bash
-CONTENT_MODE=test npm run prebuild && (npm run test; status=$?; npm run prebuild; exit $status)
+npm run test:run
 ```
-1. **Prebuild Test Assets**: Compiles and registers index databases and post indexes strictly using files under `/test-content/`.
-2. **Execute Tests**: Runs the targeted test suites in a subshell, capturing the exit code (`status=$?`).
-3. **Rebuild Production Assets (Cleanup)**: Regardless of whether the tests succeed or fail, the script intercepts the subshell teardown and triggers a standard `npm run prebuild` (using the default `/content/` directory). This restores your local environment to the correct development preview state automatically.
-4. **Exit with Captured Status**: Gracefully propagates the test suite's original return code to guarantee correct integration checks and CI/CD alignment.
+This automatically triggers the self-contained `prepare:test` workflow, which will:
+1. Clean previous compiled outputs under `test-public/`.
+2. Extract, transform, and normalize your new local mock files from `/test-data/` into `/test-public/data/`.
+3. Recompile the test full-text search indices (`test-public/search-index-*.json`) to include your new mock classes or codes.
+4. Run all unit and integration test assertions.
+
+#### C. Running and Developing Tests
+
+We provide fully integrated commands in `package.json` that handle execution cleanly without manual folder setup:
+
+* **Interactive Development Testing**:
+  ```bash
+  npm run test
+  ```
+  Launches Vitest in interactive watch mode. This command automatically builds test assets on-demand and serves the sandbox environment safely, preserving your normal local developer experience.
+
+* **Single-Pass CI Testing**:
+  ```bash
+  npm run test:run
+  ```
+  Performs a complete clean, data transformation, and test run in a single pass. Ideal for pull-requests and verification checks.
+
+* **E2E Integration Testing**:
+  ```bash
+  npm run test:e2e
+  ```
+  Prebuilds the isolated test environment and boots the Playwright test runner cleanly in a single, self-contained pipeline.
 
 ---
 
@@ -880,7 +939,7 @@ Executing AWS CDK CLI operations (such as `npm run cdk:synth` or `npm run cdk:de
 To maintain code quality, ensure site stability, and verify all automated checks pass, **direct pushing to the `main` branch is strictly forbidden by branch protection rules**. All contributions must follow our collaborative pull-request workflow:
 
 1. **Create a Topic Branch**: Create a dedicated feature or bugfix branch from `main` (for example, `feature/your-feature-name` or `fix/issue-id`).
-2. **Commit with Quality Checks**: Verify your changes compile cleanly with `npm run lint` and all unit, integration, and end-to-end tests pass locally via `npm run test-local:run` and `npm run test-local:e2e` respectively.
+2. **Commit with Quality Checks**: Verify your changes compile cleanly with `npm run lint` and all unit, integration, and end-to-end tests pass locally via `npm run test:run` and `npm run test:e2e` respectively.
 3. **Open a Pull Request**: Submit an elegant, structured Pull Request targeting the `main` branch.
 4. **Mandatory Review & Checks**:
    - Every Pull Request triggers the automated test suites via GitHub Actions.
@@ -909,11 +968,14 @@ npm run lint
 # Compile and package application fully for deployment
 npm run build
 
-# Run unit and integration tests locally against stable test-content assets with auto-cleanup
-npm run test-local:run
+# Run unit and integration tests interactively in watch mode (auto-prepares sandboxed environment)
+npm run test
 
-# Run Playwright E2E integration tests locally against stable test-content assets with auto-cleanup
-npm run test-local:e2e
+# Run unit and integration tests in a single-pass (auto-prepares sandboxed environment)
+npm run test:run
+
+# Run Playwright E2E integration tests in a single-pass (auto-prepares sandboxed environment)
+npm run test:e2e
 
 # --- Suomi.fi Content Synchronization Commands ---
 
@@ -929,7 +991,6 @@ npm run fetch-data
 
 # --- AWS CDK Infrastructure & Deployment Commands ---
 
-<<<<<<< HEAD
 # Synthesize the CloudFormation templates for the multi-stack website infrastructure
 npm run cdk:synth
 
@@ -938,11 +999,4 @@ npm run cdk:deploy
 
 # Tear down all provisioned AWS CDK infrastructure stacks and resources
 npm run cdk:destroy
-=======
-# Synthesize the CloudFormation template for the CloudFront + S3 website deployment stack
-npm run cdk:synth
-
-# Deploy the infrastructure stack directly to the target AWS project account (requires target environment variables)
-npm run cdk:deploy
->>>>>>> main
 ```

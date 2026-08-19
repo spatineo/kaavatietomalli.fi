@@ -18,7 +18,8 @@ export class LocalFileDataModelAccess implements DataModelAccess {
     }
 
     const { name, version } = parseModelId(modelId);
-    const dataModelsDir = path.join(this.baseDir, 'public', 'data', 'suomi.fi', 'tietomallit');
+    const publicFolder = process.env.CONTENT_MODE === 'test' ? 'test-public' : 'public';
+    const dataModelsDir = path.join(this.baseDir, publicFolder, 'data', 'suomi.fi', 'tietomallit');
 
     let targetFile = '';
     if (version) {
@@ -59,7 +60,8 @@ export class LocalFileDataModelAccess implements DataModelAccess {
       return this.codelistCache.get(codelistUriOrId);
     }
 
-    const codelistsDir = path.join(this.baseDir, 'public', 'data', 'suomi.fi', 'koodistot');
+    const publicFolder = process.env.CONTENT_MODE === 'test' ? 'test-public' : 'public';
+    const codelistsDir = path.join(this.baseDir, publicFolder, 'data', 'suomi.fi', 'koodistot');
     if (!fs.existsSync(codelistsDir)) {
       return null;
     }

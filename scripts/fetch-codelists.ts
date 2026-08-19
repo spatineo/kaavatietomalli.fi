@@ -203,12 +203,17 @@ export async function fetchAndTransformCodelists(
   outputBaseDir?: string,
   delayMs: number = 500
 ): Promise<{ totalProcessed: number; changedCount: number }> {
+  const isTestMode = process.env.CONTENT_MODE === 'test';
   const resolvedConfigPath =
     configPath ||
-    path.join(process.cwd(), 'data-index', 'suomi.fi', 'koodistot', 'index.json');
+    (isTestMode
+      ? path.join(process.cwd(), 'test-data-index', 'suomi.fi', 'koodistot', 'index.json')
+      : path.join(process.cwd(), 'data-index', 'suomi.fi', 'koodistot', 'index.json'));
   const resolvedOutputDir =
     outputBaseDir ||
-    path.join(process.cwd(), 'public', 'data', 'suomi.fi', 'koodistot');
+    (isTestMode
+      ? path.join(process.cwd(), 'test-public', 'data', 'suomi.fi', 'koodistot')
+      : path.join(process.cwd(), 'public', 'data', 'suomi.fi', 'koodistot'));
 
   if (!fs.existsSync(resolvedConfigPath)) {
     console.warn(`Configuration file not found at ${resolvedConfigPath}`);
@@ -244,7 +249,7 @@ export async function fetchAndTransformCodelists(
     for (const codelist of registry.codelists || []) {
       if (!codelist.name || codelist.name.trim() === '') continue;
 
-      if (requestCount > 0 && delayMs > 0) {
+      if (!isTestMode && requestCount > 0 && delayMs > 0) {
         await sleep(delayMs);
       }
       requestCount++;
@@ -258,19 +263,36 @@ export async function fetchAndTransformCodelists(
         const metaApiUrl = `${apiBase}coderegistries/${registry.name}/codeschemes/${codelist.name}/`;
         const codesApiUrl = `${apiBase}coderegistries/${registry.name}/codeschemes/${codelist.name}/codes/`;
 
-        console.log(`Fetching codelist: ${registry.name}/${codelist.name}...`);
+        let metaData: any;
+        let codesData: any;
 
-        const [metaRes, codesRes] = await Promise.all([
-          fetch(metaApiUrl, CONFIG.remoteFetchOptions),
-          fetch(codesApiUrl, CONFIG.remoteFetchOptions)
-        ]);
+        if (isTestMode) {
+          const localMetaPath = path.join(process.cwd(), 'test-data', 'codelist', 'coderegistries', registry.name, 'codeschemes', codelist.name, 'index.json');
+          const localCodesPath = path.join(process.cwd(), 'test-data', 'codelist', 'coderegistries', registry.name, 'codeschemes', codelist.name, 'codes', 'index.json');
+          
+          console.log(`[TEST MODE] Reading local codelist files from: ${localMetaPath} and ${localCodesPath}`);
+          if (!fs.existsSync(localMetaPath)) {
+            throw new Error(`Local file not found at ${localMetaPath}`);
+          }
+          if (!fs.existsSync(localCodesPath)) {
+            throw new Error(`Local file not found at ${localCodesPath}`);
+          }
+          metaData = JSON.parse(fs.readFileSync(localMetaPath, 'utf-8'));
+          codesData = JSON.parse(fs.readFileSync(localCodesPath, 'utf-8'));
+        } else {
+          console.log(`Fetching codelist: ${registry.name}/${codelist.name}...`);
+          const [metaRes, codesRes] = await Promise.all([
+            fetch(metaApiUrl, CONFIG.remoteFetchOptions),
+            fetch(codesApiUrl, CONFIG.remoteFetchOptions)
+          ]);
 
-        if (!metaRes.ok || !codesRes.ok) {
-          throw new Error(`HTTP meta:${metaRes.status}, codes:${codesRes.status}`);
+          if (!metaRes.ok || !codesRes.ok) {
+            throw new Error(`HTTP meta:${metaRes.status}, codes:${codesRes.status}`);
+          }
+
+          metaData = await metaRes.json();
+          codesData = await codesRes.json();
         }
-
-        const metaData = await metaRes.json();
-        const codesData = await codesRes.json();
 
         const transformed: Codelist = transformCodelistData(metaData, codesData, uri, fetchTimestamp);
 

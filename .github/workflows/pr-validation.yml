@@ -64,9 +64,7 @@ jobs:
 
       - name: Generate assets and search index (test-content mode)
         if: needs.preconditions.outputs.code-changed == 'true'
-        run: npm run prebuild
-        env:
-          CONTENT_MODE: test
+        run: npm run prepare:test
 
       - name: Run unit tests
         if: needs.preconditions.outputs.code-changed == 'true'
@@ -109,13 +107,6 @@ jobs:
       - name: Validate Markdown content
         run: npm run validate-content
 
-      - name: Prebuild
-        if: needs.preconditions.outputs.code-changed == 'true'
-        run: npm run prebuild
-        
       - name: Build
         if: needs.preconditions.outputs.code-changed == 'true'
-        run: npm run build
-        env:
-          VITE_BASE_PATH: /
-          VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }}
+        run: npm run ci:validate

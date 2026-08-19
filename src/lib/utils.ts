@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { CONFIG } from '../config';
-import { BUILD_VERSION } from '../version';
+import { getBuildVersion } from './blog';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -50,8 +50,9 @@ export async function checkBackendVersion(): Promise<boolean> {
     return true;
   }
   const sVer = await fetchServerVersion();
-  if (sVer && sVer !== BUILD_VERSION) {
-    console.warn(`Version mismatch detected! Client: ${BUILD_VERSION}, Server: ${sVer}`);
+  const buildVersion = await getBuildVersion();
+  if (sVer && sVer !== buildVersion) {
+    console.warn(`Version mismatch detected! Client: ${buildVersion}, Server: ${sVer}`);
     return false;
   }
   return true;

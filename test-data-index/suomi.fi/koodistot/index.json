@@ -1,0 +1,25 @@
+{
+  "remote": {
+    "api": "local-test",
+    "name": "Local Test Koodistot"
+  },
+  "registries": [
+    {
+      "name": "rytj",
+      "codelists": [
+        {
+          "name": "RY_Kaavamaarayslaji"
+        },
+        {
+          "name": "RY_Kaavamaarayksen_Lisatiedonlaji"
+        },
+        {
+          "name": "oikeusvaik_YK"
+        },
+        {
+          "name": "RY_AsiakirjanLaji_YKAK"
+        }
+      ]
+    }
+  ]
+}
