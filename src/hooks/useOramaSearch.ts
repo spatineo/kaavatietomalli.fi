@@ -3,7 +3,7 @@ import { create, search, load, components, type AnyOrama } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
 import { stemmer as svStemmer } from '@orama/stemmers/swedish';
 import { stemmer as enStemmer } from '@orama/stemmers/english';
-import { BUILD_VERSION } from '../version';
+import { getBuildVersion } from '../lib/blog';
 
 export interface SearchResult {
   id: string;
@@ -51,9 +51,10 @@ export function useOramaSearch() {
         return tokenizer;
       };
 
+      const version = await getBuildVersion();
       const loadedDbs = await Promise.all(
         languages.map(async (lang) => {
-          const targetUrl = `${baseUrl}search-index-${lang}.json?v=${BUILD_VERSION}`;
+          const targetUrl = `${baseUrl}search-index-${lang}.json?v=${version}`;
           const response = await fetch(targetUrl);
           if (!response.ok) {
             throw new Error(`Failed to fetch search index for ${lang}: ${response.statusText} (${targetUrl})`);

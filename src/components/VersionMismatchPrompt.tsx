@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { BUILD_VERSION } from '../version';
+import { getBuildVersion } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { fetchServerVersion } from '../lib/utils';
@@ -14,7 +14,8 @@ export function VersionMismatchPrompt() {
 
   const performCheck = async () => {
     const sVer = await fetchServerVersion();
-    if (sVer && sVer !== BUILD_VERSION) {
+    const buildVersion = await getBuildVersion();
+    if (sVer && sVer !== buildVersion) {
       setDetectedVersion(sVer);
       setHasMismatch(true);
     }

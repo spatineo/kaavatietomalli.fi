@@ -5,10 +5,9 @@ import SpatineoLogo from './SpatineoLogo';
 import KaavatietomalliLogo from './KaavatietomalliLogo';
 import { SearchWidget } from './SearchWidget';
 import { CONFIG } from '../config';
-import { getContentConfig, ContentConfig, NavItem } from '../lib/blog';
+import { getContentConfig, ContentConfig, NavItem, getBuildVersion } from '../lib/blog';
 import { getTranslations, Language } from '../i18n';
 import { getTracker } from '../services/analytics';
-import { BUILD_VERSION } from '../version';
 
 interface HeaderProps {
   onNavigatePage: (slug: string | null) => void;
@@ -300,10 +299,15 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
 
 export function Footer() {
   const t = getTranslations(CONFIG.language as Language);
+  const [version, setVersion] = useState<string>('');
+
+  useEffect(() => {
+    getBuildVersion().then(setVersion);
+  }, []);
 
   const buildYear = (() => {
     try {
-      const versionNum = Number(BUILD_VERSION);
+      const versionNum = Number(version);
       if (versionNum && versionNum > 0) {
         const year = new Date(versionNum).getFullYear();
         if (!isNaN(year) && year > 1970) return year.toString();
@@ -332,7 +336,7 @@ export function Footer() {
             </div>
           </div>
           <div className="border-t border-white/5 pt-2 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-600 font-mono">
-            <span>Versio: {BUILD_VERSION}</span>
+            <span>Versio: {version}</span>
           </div>
         </div>
       </div>

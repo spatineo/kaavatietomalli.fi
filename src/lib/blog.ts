@@ -66,11 +66,35 @@ export interface NavItem {
 }
 
 import { CONFIG } from '../config';
-import { BUILD_VERSION } from '../version';
 
 export interface ContentConfig {
   nav: NavItem[];
   themes: ThemeItem[];
+}
+
+let fetchedVersion: string | null = null;
+let versionPromise: Promise<string> | null = null;
+
+export async function getBuildVersion(): Promise<string> {
+  if (fetchedVersion) {
+    return fetchedVersion;
+  }
+  if (versionPromise) {
+    return versionPromise;
+  }
+  versionPromise = (async () => {
+    try {
+      const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/version.json`, true);
+      fetchedVersion = data?.version || '1';
+      return fetchedVersion;
+    } catch (error) {
+      console.error('Failed to load version.json, using fallback:', error);
+      return '1';
+    } finally {
+      versionPromise = null;
+    }
+  })();
+  return versionPromise;
 }
 
 let cachedContentConfig: ContentConfig | null = null;
@@ -102,8 +126,14 @@ export interface TagIndex {
 // Keep track of pending loads to avoid duplicate requests for simultaneous needs
 const pendingLoads = new Map<string, Promise<any>>();
 
-async function fetchJSON(url: string): Promise<any> {
-  const cacheBustUrl = `${url}?v=${BUILD_VERSION}`;
+async function fetchJSON(url: string, bypassVersionCacheBust = false): Promise<any> {
+  let cacheBustUrl = url;
+  if (bypassVersionCacheBust) {
+    cacheBustUrl = `${url}?cb=${Date.now()}`;
+  } else {
+    const version = await getBuildVersion();
+    cacheBustUrl = `${url}?v=${version}`;
+  }
 
   if (pendingLoads.has(cacheBustUrl)) {
     return pendingLoads.get(cacheBustUrl);

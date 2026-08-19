@@ -7,7 +7,13 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
 import { useOramaSearch } from './useOramaSearch';
 import { create, load, search } from '@orama/orama';
-import { BUILD_VERSION } from '../version';
+
+const BUILD_VERSION = '1787141584399';
+
+// Mock getBuildVersion from blog library
+vi.mock('../lib/blog', () => ({
+  getBuildVersion: vi.fn().mockResolvedValue('1787141584399'),
+}));
 
 // Configure self-contained mocks to prevent hoisting initialization issues
 vi.mock('@orama/orama', () => {
