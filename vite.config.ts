@@ -10,7 +10,7 @@ export default defineConfig(({mode}) => {
   return {
     base: basePath,
     plugins: [react(), tailwindcss()],
-    publicDir: 'public',
+    publicDir: process.env.CONTENT_MODE === 'test' ? 'test-public' : 'public',
     optimizeDeps: {
       include: ['mermaid', '@orama/orama'],
     },

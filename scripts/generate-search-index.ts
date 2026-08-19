@@ -12,7 +12,9 @@ const useTestContent = process.env.CONTENT_MODE === 'test' || process.env.CONTEN
 const CONTENT_DIR = useTestContent
   ? path.join(process.cwd(), 'test-content')
   : path.join(process.cwd(), 'content');
-const PUBLIC_DIR = path.join(process.cwd(), 'public');
+const PUBLIC_DIR = process.env.CONTENT_MODE === 'test'
+  ? path.join(process.cwd(), 'test-public')
+  : path.join(process.cwd(), 'public');
 
 function compareVersions(v1: string, v2: string): number {
   const parts1 = v1.split('.').map(Number);

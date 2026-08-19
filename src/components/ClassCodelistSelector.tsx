@@ -160,6 +160,7 @@ export function ClassCodelistSelector({
           <input
             ref={inputRef}
             type="text"
+            data-testid="class-codelist-input"
             className="w-full bg-black/50 border border-white/10 hover:border-brand-accent/50 focus:border-brand-accent rounded-xl pl-11 pr-10 py-3 text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-brand-accent transition-all cursor-text font-semibold"
             placeholder={selectedLabel || t.dataModel.browseClassesAndCodelists}
             value={isOpen ? searchQuery : selectedLabel}

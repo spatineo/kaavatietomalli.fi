@@ -419,7 +419,13 @@ describe('fetch-data-models script', () => {
         json: async () => mockJsonLd
       });
 
-      await fetchAndTransformDataModels('/data-index/suomi.fi/tietomallit/index.json', '/public/data/suomi.fi/tietomallit', 0);
+      const prevMode = process.env.CONTENT_MODE;
+      process.env.CONTENT_MODE = 'production';
+      try {
+        await fetchAndTransformDataModels('/data-index/suomi.fi/tietomallit/index.json', '/public/data/suomi.fi/tietomallit', 0);
+      } finally {
+        process.env.CONTENT_MODE = prevMode;
+      }
 
       expect(mockFetch).toHaveBeenCalledWith('https://test-api.suomi.fi/getModel?modelId=mock-model&fileType=JSON-LD&version=2.0.0',
         {

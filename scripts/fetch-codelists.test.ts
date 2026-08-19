@@ -192,7 +192,13 @@ describe('fetch-codelists script', () => {
       mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockMetaData });
       mockFetch.mockResolvedValueOnce({ ok: true, json: async () => mockCodesData });
 
-      await fetchAndTransformCodelists('/data-index/suomi.fi/koodistot/index.json', '/public/data/suomi.fi/koodistot', 0);
+      const prevMode = process.env.CONTENT_MODE;
+      process.env.CONTENT_MODE = 'production';
+      try {
+        await fetchAndTransformCodelists('/data-index/suomi.fi/koodistot/index.json', '/public/data/suomi.fi/koodistot', 0);
+      } finally {
+        process.env.CONTENT_MODE = prevMode;
+      }
 
       expect(mockFetch).toHaveBeenNthCalledWith(
         1,

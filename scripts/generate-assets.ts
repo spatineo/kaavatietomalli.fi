@@ -20,7 +20,9 @@ const REPO_NAME = PROJECT_CONFIG.repoName;
 const CONTENT_DIR = useTestContent
   ? path.join(process.cwd(), 'test-content')
   : path.join(process.cwd(), 'content');
-const PUBLIC_DIR = path.join(process.cwd(), 'public');
+const PUBLIC_DIR = process.env.CONTENT_MODE === 'test'
+  ? path.join(process.cwd(), 'test-public')
+  : path.join(process.cwd(), 'public');
 const RESOURCES_DIR = path.join(process.cwd(), 'src', 'resources');
 
 if (!fs.existsSync(PUBLIC_DIR)) {
