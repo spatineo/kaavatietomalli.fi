@@ -117,7 +117,7 @@ jobs:
         if: steps.changed-files.outputs.any_changed == 'true'
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        run: npm run ci:validate
+        run: npm run check-markdown-language
       
       - name: Build
         if: needs.preconditions.outputs.code-changed == 'true'

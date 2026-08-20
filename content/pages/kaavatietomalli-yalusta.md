@@ -330,6 +330,8 @@ Kaavatietomallin rakenne mahdollistaa minkä tahansa arvotyypin käyttämisen Ka
 
 ### Kaavan ja sen osien kumoaminen
 
+TODO
+
 ```data-model-snippet
     title: Kaavan kumoamistieto ja sen käyttö Kaava- ja Kaava-asian päätös -luokista
     modelId: rytj-kaava-1.0.5
