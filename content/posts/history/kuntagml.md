@@ -1,7 +1,7 @@
 ---
 title: "KuntaGML ja paikkatietopohjainen asemakaava"
-date: "2007-01-01"
-dateLabel: "2007-09"
+date: "2006-01-01"
+dateLabel: "2006-09"
 author: "Ilkka Rinne"
 authorSlug: "ilkka-rinne"
 excerpt: "KuntaGML kehitetään"
