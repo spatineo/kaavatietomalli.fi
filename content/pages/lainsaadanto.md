@@ -2,7 +2,7 @@
 title: "Tietomallimuotoista kaavatietoa koskevat lait ja asetukset"
 ---
 
-Tietomallimuotoisen kaavatiedon tuottamista ja sen kokoamista kansalliseen alueidenkäytän tietovarantoon Ryhti-järjestelmässä ohjataan seuraavien lakien ja asetusten avulla:
+Tietomallimuotoisen kaavatiedon tuottamista ja sen kokoamista kansalliseen alueidenkäytön tietovarantoon Ryhti-järjestelmässä ohjataan seuraavien lakien ja asetusten avulla:
 
 * [Alueidenkäyttölaki (132/1999)](https://www.finlex.fi/fi/lainsaadanto/1999/132) (entinen Maankäyttö- ja rakentamislaki, MRL)
 * [Laki rakennetun ympäristön tietojärjestelmästä (ns. RYTJ-laki, 431/2023)](https://www.finlex.fi/fi/lainsaadanto/2023/431)
@@ -55,7 +55,7 @@ Sekä alueidenkäyttölaissa että Ryhti-laissa annetaan ympäristöministeriöl
 >
 > Ympäristöministeriön asetuksella voidaan antaa tarkempia säännöksiä yhteentoimivasta tietomallimuodosta, kaavakohteiden ja -määräysten vakiomuotoisesta esitystavasta sekä 3 momentissa tarkoitetulla erillisellä päätöksellä muutettujen tietojen viemisestä kaavaan.
 
-Alueidenkäyttölaissa ja Katja-asetuksessa ei määrätä tietomallimuotoisen kaavatiedon tuottamisen tai sen tiedonsiirtomuotojen yksityiskohdista. Alueidenkäyttölaissa käytetään termiä "valtakunnallisesti yhteentoimiva tietomallimuoto" kuvaamatta tarkemmmin minkälainen mainittu on ja viittaamatta mihinkään tietyyn tietomallimäärittelyyn. Tämä on epäilemättä tarkoituksellista, sillä teknisen tietomallin kuvaaminen lain tasolla olisi sen väistämättömien kehittämistarpeiden vuoksi turhan jäykkää. 
+Alueidenkäyttölaissa ja Katja-asetuksessa ei määrätä tietomallimuotoisen kaavatiedon tuottamisen tai sen tiedonsiirtomuotojen yksityiskohdista. Alueidenkäyttölaissa käytetään termiä "valtakunnallisesti yhteentoimiva tietomallimuoto" kuvaamatta tarkemmin minkälainen mainittu on ja viittaamatta mihinkään tiettyyn tietomallimäärittelyyn. Tämä on epäilemättä tarkoituksellista, sillä teknisen tietomallin kuvaaminen lain tasolla olisi sen väistämättömien kehittämistarpeiden vuoksi turhan jäykkää. 
 
 Lain teksti jättää melko paljon tulkinnanvaraa sille, mikä tulevaisuudessa katsotaan valtakunnallisesti yhteentoimivaksi tietomallimuodoksi, ehkä enemmänkin kuin mikä on ollut lainsäätäjän tarkoitus. Käytännössä lain tulkinta on, että valtakunnallisesti yhteentoimivalla tietomallimuodolla tarkoitetaan Digi- ja väestöviraston [Yhteentoimivuusalustalla](https://dvv.fi/yhteentoimivuusalusta) kuvattua [Kaavatietomallia](/kaavatietomalli-yalusta) ja sen käyttämiä koodistoja, joita ympäristöministeriö ylläpitää ja julkaisee. Tämä tietomalli kuvaa kuitenkin vain tiedon loogisen rakenteen, ei tietojärjestelmien teknisen yhteentoimivuuden kannalta tarpeellista loogisen tason tietomallin toteutusta teknisinä rajanpintakuvauksina tai tiedonsiirtomuotoina ja -formaatteina.
 
@@ -74,8 +74,7 @@ Suomen ympäristökeskus (Syke), kunnat ja maakuntien liitot määrätään alue
 > 5 §
 > 
 > Rakennetun ympäristön tietojärjestelmään toimitettavat alueidenkäyttöä koskevat tiedot
-Kunnan ja maakunnan liiton on toimitettava viivytyksettä rakennetun ympäristön tietojärjestelmään valtakunnallisesti yhteentoimivassa ja koneluettavassa muodossa maankäyttö- ja rakennuslaissa 
-(132/1999) tarkoitetut seuraavat tiedot:
+Kunnan ja maakunnan liiton on toimitettava viivytyksettä rakennetun ympäristön tietojärjestelmään valtakunnallisesti yhteentoimivassa ja koneluettavassa muodossa maankäyttö- ja rakennuslaissa (132/1999) tarkoitetut seuraavat tiedot:
 >
 >1) tieto kaavan vireille tulosta ja suunnittelualueen rajaus;
 >2) kaavan osallistumis- ja arviointisuunnitelma;

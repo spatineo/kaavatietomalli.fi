@@ -107,6 +107,18 @@ jobs:
       - name: Validate Markdown content
         run: npm run validate-content
 
+      - name: Get Changed Markdown Files
+        id: changed-files
+        uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
+        with:
+          files: content/**/*.md
+
+      - name: Run Voikko Validation
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: npm run check-markdown-language
+      
       - name: Build
         if: needs.preconditions.outputs.code-changed == 'true'
         run: npm run ci:validate
