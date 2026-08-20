@@ -384,6 +384,36 @@ alice -> ord1 : places
 
 ---
 
+#### F. Semantic Callout Blocks (Admonitions)
+You can highlight key points, guidelines, warnings, or tips using stylized callout blockquotes. These blocks feature distinct background colors, thick left accent borders, and matching vector icons.
+
+##### Supported Types
+The CMS supports four primary callout types:
+* **Note** (renders with a Blue theme and a dynamic localized header, *Huomautus*)
+* **Warning** (renders with a Red theme and a dynamic localized header, *Varoitus*)
+* **Tip** (renders with an Emerald theme and a dynamic localized header, *Tärkeää*)
+* **Info** (renders with a Cyan theme and a dynamic localized header, *Huomaa*)
+
+##### Syntax
+Use the standard blockquote marker `>` followed by the tag indicator inside brackets. An optional exclamation mark (e.g., `[!NOTE]`) is supported:
+
+```markdown
+> [!NOTE]
+> Tämä on tärkeä huomautus lukijalle.
+```
+
+##### Custom Callout Titles
+You can override the default localized title with a custom, user-provided title text by adding a double colon (`::`) separator after the type name:
+
+```markdown
+> [Note::Historiallinen huomio]
+> Kehityksen alkuvaiheessa arveltiin, että tämän tasoinen tuki on riittävä.
+```
+
+The rendering engine automatically extracts the custom title, strips the annotation from the body text, and keeps the styling matches perfectly.
+
+---
+
 ### 6. Testing & Validating Your Content
 
 To prevent common errors (such as missing required metadata fields or broken embedded video parameters) from breaking the website, you can run an automated validator locally:

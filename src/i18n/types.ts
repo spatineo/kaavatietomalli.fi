@@ -230,4 +230,10 @@ export interface Translations {
     statusIncomplete: string;
     statusHidden: string;
   };
+  callouts: {
+    note: string;
+    warning: string;
+    tip: string;
+    info: string;
+  };
 }
