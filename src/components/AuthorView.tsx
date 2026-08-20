@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Linkedin, Twitter, Github, Globe, Mail } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownRenderer } from './RichMarkdownRenderer';
 import { AuthorData } from '../lib/blog';
 import { resolveImageUrl } from '../lib/utils';
 import { CONFIG } from '../config';
@@ -147,7 +147,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
           </header>
 
           <div className="markdown-body">
-            <ReactMarkdown urlTransform={(url) => resolveImageUrl(url)}>{author.content}</ReactMarkdown>
+            <MarkdownRenderer markdownContent={author.content} slug={author.slug} />
           </div>
           {"Spatineo Oy" == author.company && (
             <CallToAction

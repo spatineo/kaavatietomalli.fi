@@ -232,4 +232,10 @@ export const fi: Translations = {
     statusIncomplete: 'Keskeneräinen',
     statusHidden: 'Piilotettu'
   },
+  callouts: {
+    note: 'Huomautus',
+    warning: 'Varoitus',
+    tip: 'Tärkeää',
+    info: 'Huomaa',
+  },
 };

@@ -120,6 +120,59 @@
   @apply mt-2 mb-0 pl-6;
 }
 .markdown-body blockquote { @apply border-l-4 border-brand-accent pl-8 italic mb-10 text-xl text-slate-400 bg-white/5 py-6; }
+
+/* Callout styling */
+.markdown-body blockquote.callout-block {
+  @apply pl-6 py-5 pr-6 mb-8 border-l-4 rounded-r-2xl not-italic text-slate-300 bg-white/5 flex flex-col gap-2;
+  font-family: var(--font-sans) !important;
+}
+
+.markdown-body blockquote.callout-block p {
+  @apply text-base text-slate-300 leading-relaxed mt-6 font-normal;
+  font-family: var(--font-sans) !important;
+}
+
+.markdown-body blockquote.callout-block ul,
+.markdown-body blockquote.callout-block ol {
+  @apply mb-0;
+}
+
+.markdown-body blockquote.callout-block li {
+  @apply text-base;
+}
+
+.markdown-body .callout-header {
+  @apply flex items-center gap-2.5 font-bold text-sm tracking-wider uppercase mb-1 select-none;
+}
+
+/* Callout variants */
+.markdown-body blockquote.callout-note {
+  @apply border-blue-500 bg-blue-500/5;
+}
+.markdown-body blockquote.callout-note .callout-header {
+  @apply text-blue-400;
+}
+
+.markdown-body blockquote.callout-warning {
+  @apply border-red-500 bg-red-500/5;
+}
+.markdown-body blockquote.callout-warning .callout-header {
+  @apply text-red-400;
+}
+
+.markdown-body blockquote.callout-tip {
+  @apply border-emerald-500 bg-emerald-500/5;
+}
+.markdown-body blockquote.callout-tip .callout-header {
+  @apply text-emerald-400;
+}
+
+.markdown-body blockquote.callout-info {
+  @apply border-cyan-500 bg-cyan-500/5;
+}
+.markdown-body blockquote.callout-info .callout-header {
+  @apply text-cyan-400;
+}
 .markdown-body code { @apply font-mono bg-white/5 px-1.5 py-0.5 rounded text-sm text-brand-accent; }
 .markdown-body pre { @apply bg-black text-white p-8 mb-10 rounded-xl overflow-x-auto font-mono text-sm shadow-xl border border-white/5; }
 .markdown-body img { @apply rounded-2xl shadow-2xl my-12 mx-auto block; }
