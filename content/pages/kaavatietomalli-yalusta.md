@@ -328,6 +328,277 @@ Kaavamääräys-luokka kuvaa yksittäisen kaavamääräyksen: sen lajin, mahdoll
 
 Kaavatietomallin rakenne mahdollistaa minkä tahansa arvotyypin käyttämisen Kaavamääräys- ja Kaavamääräyksen lisätieto -luokkien arvona. Käytännössä mahdolliset arvot on sidottu kaavamääräyksen laji - ja Kaavamääräyksen lisätiedon laji -koodistojen koodeihin. Varsinaisen kaavatietomallin soveltamisprofiili-dokumentin puutteessa mahdollisten arvojen tyypit on kuvattu Yhteentoimivuusalustan Koodistot-palvelussa kunkin koodiarvon kuvaustekstissä. Arvoja voi kullakin määräyksellä tai lisätiedolla olla nolla tai yksi kappaletta.
 
+#### Esimerkkejä rakenteisten kaavamääräysten muodostamisesta
+
+> [Note]
+> Alla olevat esimerkit ovat loogisen tietomallin objektikaavioita. Nämä eivät vastaa suoraan esimerkiksi Ryhti-järjestelmän JSON-rakenteita. Erityisesti Sijainti-luokan mallinnus ei ole paikkatieto standardien (ISO 19107) mukainen. Esimerkeissä on noudatettu Yhteentoimivuusalustan luokkamallin rakenteita. Koodistoviittauksista on kaavion selkeyssyistä jätetty pois alkuosa `http://uri.suomi.fi/codelist/`.
+
+```instance
+instanceDiagram
+title: Käyttötarkoitusalueen osoittamien (Asuinkerrostalojen alue), kaksi eri aluetta
+
+instance kk1 : Kaavakohde {
+    Kaavakohteen avain = "7c032045-1eca-4fe8-a1db-3288fd73c5fc"
+    Elinkaaren tila = "rytj/aavaelinkaari/code/13"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+    Maanalaisuus = "rytj/RY_MaanalaisuudenLaji/code/02"
+}
+
+instance kk2 : Kaavakohde {
+    Kaavakohteen avain = "af1c34c5-d7ef-4d01-95f7-e98e6f9a5e80"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+    Maanalaisuus = "rytj/RY_MaanalaisuudenLaji/code/02"
+}
+
+instance km1 : Kaavamääräys {
+    Kaavamääräyksen avain = "40d2ac01-8b3f-4a6b-b4ac-f7b7689c7039"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Kaavamääräyslaji = "rytj/RY_Kaavamaarayslaji/code/asuinkerrostaloalue"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+}
+
+instance kmr1 : Kaavamääräysryhmä {
+    Kaavamääräysryhmän avain = "06ee004b-030a-4f57-b1ce-d83fc8d25488"
+    Kaavamääräyksen otsikko = "Asuinkerrostalojen alue"
+    Kirjaintunnus = "AK"
+}
+
+instance lt1: Kaavamääräyksen lisätieto {
+    Kaavamääräyksen lisätiedon laji = "rytj/RY_Kaavamaarayksen_Lisatiedonlaji/code/paakayttotarkoitus"
+}
+
+instance sij1 : Sijainti {
+    ETRS89-koordinaattijärjestelmä = "rakrek/ETRS89/code/EPSG3067"
+    Geometriatyyppi = "Polygoni"
+    Koordinaattipisteet = ["385650.0", ..., "6671850.0"]
+}
+
+instance sij2 : Sijainti {
+    ETRS89-koordinaattijärjestelmä = "rakrek/ETRS89/code/EPSG3067"
+    Geometriatyyppi = "Polygoni"
+    Koordinaattipisteet = ["3856450.0", ..., "6671850.0"]
+}
+
+kmr1 -> km1: Kaavamääräys
+kmr1 <-> kk1: Kaavamääräysryhmä | Kaavakohde
+kmr1 <-> kk2: Kaavamääräysryhmä | Kaavakohde
+km1 -> lt1: Kaavamääräyksen lisätieto
+kk1 -> sij1: Sijainti
+kk2 -> sij2: Sijainti
+```
+
+
+```instance
+instanceDiagram
+title: Rakennusoikeuden ja kerrosluvun osoittaminen rakennusalalle (kerroneliömetreinä)
+
+instance kk1 : Kaavakohde {
+    Kaavakohteen avain = "7c032045-1eca-4fe8-a1db-3288fd73c5fc"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+    Maanalaisuus = "rytj/RY_MaanalaisuudenLaji/code/02"
+}
+
+instance km1 : Kaavamääräys {
+    Kaavamääräyksen avain = "40d2ac01-8b3f-4a6b-b4ac-f7b7689c7039"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Kaavamääräyslaji = "rytj/RY_Kaavamaarayslaji/code/rakennusala"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+}
+
+instance km2 : Kaavamääräys {
+    Kaavamääräyksen avain = "895050fd-2666-4e2c-9bd4-b976a98b1577"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Kaavamääräyslaji = "rytj/RY_Kaavamaarayslaji/code/sallittuKerrosala"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+}
+
+instance km3 : Kaavamääräys {
+    Kaavamääräyksen avain = "5adcd622-ab60-43cc-8d50-da498e1297ef"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Kaavamääräyslaji = "rytj/RY_Kaavamaarayslaji/code/maanpaallinenKerroslukuArvovali"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+}
+
+instance km4 : Kaavamääräys {
+    Kaavamääräyksen avain = "5adcd622-ab60-43cc-8d50-da498e1297ef"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Kaavamääräyslaji = "rytj/RY_Kaavamaarayslaji/code/ullakonSallittuOsuusKerrosalasta"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+}
+
+instance na1 : Numeerinen arvo {
+    Numero = 200
+    Mittayksikkö = "k-m2"
+}
+
+instance na2 : Numeerinen arvo {
+    Numero = 0.33
+    Mittayksikkö = "%"
+}
+
+instance nav1 : Numeerinen arvoväli {
+    Minimiarvo = 2
+    Maksimiarvo = 3
+}
+
+instance kmr1 : Kaavamääräysryhmä {
+    Kaavamääräysryhmän avain = "06ee004b-030a-4f57-b1ce-d83fc8d25488"
+    Kaavamääräyksen otsikko = "Rakennusala"
+}
+
+instance kmr2: Kaavamääräysryhmä {
+    Kaavamääräysryhmän avain = "a6c393c7-dcc0-43f5-9246-c8eac3cd24d1"
+    Kaavamääräyksen otsikko = "Roomalaisin numeroin ilmaistu arvoväli osoittaa rakennusten, rakennuksen tai sen osan kerrosluvun vähimmäis- ja enimmäismäärän"
+}
+
+instance kmr3 : Kaavamääräysryhmä {
+    Kaavamääräysryhmän avain = "b6beb621-b307-413b-ab65-9a9364716ee4"
+    Kaavamääräyksen otsikko = "Murtoluku roomalaisen numeron jäljessä osoittaa, kuinka suuren osan rakennuksen suurimman kerroksen alasta ullakon tasolla saa käyttää kerrosalaan laskettavaksi tilaksi"
+}
+
+instance kmr4 : Kaavamääräysryhmä {
+    Kaavamääräysryhmän avain = "dd2a5a21-9ac0-494a-a84a-4e1b6b3e9382"
+    Kaavamääräyksen otsikko = " Rakennusoikeus kerrosalaneliömetreinä"
+}
+
+instance sij1 : Sijainti {
+    ETRS89-koordinaattijärjestelmä = "rakrek/ETRS89/code/EPSG3067"
+    Geometriatyyppi = "Polygoni"
+    Koordinaattipisteet = ["385650.0", ..., "6671850.0"]
+}
+
+kmr1 -> km1: Kaavamääräys
+kmr2 -> km2: Kaavamääräys
+kmr3 -> km3: Kaavamääräys
+kmr4 -> km4: Kaavamääräys
+kmr1 <-> kk1: Kaavamääräysryhmä | Kaavakohde
+kmr2 <-> kk1: Kaavamääräysryhmä | Kaavakohde
+kmr3 <-> kk1: Kaavamääräysryhmä | Kaavakohde
+kmr4 <-> kk1: Kaavamääräysryhmä | Kaavakohde
+km2 -> na1: Ominaisuuden arvo
+km3 -> nav1: Ominaisuuden arvo
+km4 -> na2: Ominaisuuden arvo
+kk1 -> sij1: Sijainti
+```
+
+
+```instance
+instanceDiagram
+title: Yhdistetty jalankulku- ja pyöräilyalue
+
+instance kk1 : Kaavakohde {
+    Kaavakohteen avain = "7c032045-1eca-4fe8-a1db-3288fd73c5fc"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+    Maanalaisuus = "rytj/RY_MaanalaisuudenLaji/code/02"
+}
+
+instance km1 : Kaavamääräys {
+    Kaavamääräyksen avain = "40d2ac01-8b3f-4a6b-b4ac-f7b7689c7039"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Kaavamääräyslaji = "rytj/RY_Kaavamaarayslaji/code/jalankulkualue"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+}
+
+instance km2 : Kaavamääräys {
+    Kaavamääräyksen avain = "895050fd-2666-4e2c-9bd4-b976a98b1577"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Kaavamääräyslaji = "rytj/RY_Kaavamaarayslaji/code/pyorailyalue"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+}
+
+instance kmr1 : Kaavamääräysryhmä {
+    Kaavamääräysryhmän avain = "06ee004b-030a-4f57-b1ce-d83fc8d25488"
+    Kaavamääräyksen otsikko = "Yleiselle jalankululle ja pyöräilylle varattu alueen osa"
+}
+
+instance lt1: Kaavamääräyksen lisätieto {
+    Kaavamääräyksen lisätiedon laji = "rytj/RY_Kaavamaarayksen_Lisatiedonlaji/code/osaAlue"
+}
+
+instance lt2: Kaavamääräyksen lisätieto {
+    Kaavamääräyksen lisätiedon laji = "rytj/RY_Kaavamaarayksen_Lisatiedonlaji/code/osaAlue"
+}
+
+instance lt3: Kaavamääräyksen lisätieto {
+    Kaavamääräyksen lisätiedon laji = "rytj/RY_Kaavamaarayksen_Lisatiedonlaji/code/varattuYleiseenKayttoon"
+}
+
+instance lt4: Kaavamääräyksen lisätieto {
+    Kaavamääräyksen lisätiedon laji = "rytj/RY_Kaavamaarayksen_Lisatiedonlaji/code/varattuYleiseenKayttoon"
+}
+
+instance sij1 : Sijainti {
+    ETRS89-koordinaattijärjestelmä = "rakrek/ETRS89/code/EPSG3067"
+    Geometriatyyppi = "Polygoni"
+    Koordinaattipisteet = ["385650.0", ..., "6671850.0"]
+}
+
+kmr1 -> km1: Kaavamääräys
+kmr1 -> km2: Kaavamääräys
+kmr1 <-> kk1: Kaavamääräysryhmä | Kaavakohde
+kk1 -> sij1: Sijainti
+km1 -> lt1: Kaavamääräyksen lisätieto
+km1 -> lt3: Kaavamääräyksen lisätieto
+km2 -> lt2: Kaavamääräyksen lisätieto
+km2 -> lt4: Kaavamääräyksen lisätieto
+```
+
+```instance
+instanceDiagram
+title: Tuulivoimatuotantoon tarkoitettu energiatuotannon alue
+
+instance kk1 : Kaavakohde {
+    Kaavakohteen avain = "7c032045-1eca-4fe8-a1db-3288fd73c5fc"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+    Maanalaisuus = "rytj/RY_MaanalaisuudenLaji/code/02"
+}
+
+instance kmr1 : Kaavamääräysryhmä {
+    Kaavamääräysryhmän avain = "06ee004b-030a-4f57-b1ce-d83fc8d25488"
+    Kaavamääräyksen otsikko = "Tuulivoimatuotantoon tarkoitettu energiatuotannon alue"
+}
+
+instance km1 : Kaavamääräys {
+    Kaavamääräyksen avain = "40d2ac01-8b3f-4a6b-b4ac-f7b7689c7039"
+    Elinkaaren tila = "rytj/kaavaelinkaari/code/13"
+    Kaavamääräyslaji = "rytj/RY_Kaavamaarayslaji/code/energiahuollonAlue"
+    Voimassaolon alkamisajankohta = "2026-08-21"
+}
+
+instance lt1: Kaavamääräyksen lisätieto {
+    Kaavamääräyksen lisätiedon laji = "rytj/RY_Kaavamaarayksen_Lisatiedonlaji/code/paakayttotarkoitus"
+}
+
+
+instance lt2: Kaavamääräyksen lisätieto {
+    Kaavamääräyksen lisätiedon laji = "rytj/RY_Kaavamaarayksen_Lisatiedonlaji/code/kayttotarkoituskohdistus"
+}
+
+instance ka1 : Koodiarvo {
+    Arvo = "rytj/RY_Kaavamaarayslaji/code/tuulivoimalaAlue"
+    Koodistotunnus = "Kaavamääräyslaji"
+    Otsikko = "Tuulivoimala-alue"
+}
+
+
+instance sij1 : Sijainti {
+    ETRS89-koordinaattijärjestelmä = "rakrek/ETRS89/code/EPSG3067"
+    Geometriatyyppi = "Polygoni"
+    Koordinaattipisteet = ["385650.0", ..., "6671850.0"]
+}
+
+kmr1 -> km1: Kaavamääräys
+kmr1 <-> kk1: Kaavamääräysryhmä | Kaavakohde
+kk1 -> sij1: Sijainti
+km1 -> lt1: Kaavamääräyksen lisätieto
+km1 -> lt2: Kaavamääräyksen lisätieto
+lt2 -> ka1: Ominaisuuden arvo
+```
+
 ### Kaavan ja sen osien kumoaminen
 
 ```data-model-snippet

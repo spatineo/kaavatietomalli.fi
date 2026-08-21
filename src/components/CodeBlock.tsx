@@ -273,6 +273,7 @@ export function CodeBlock({
   if (language === 'mermaid' || language === 'instance' || language === 'mermaid-instance') {
     const isCustomInstance = language === 'instance' || language === 'mermaid-instance';
     const chartData = isCustomInstance ? transpileInstanceToMermaid(codeContent) : codeContent;
+    
     const fallbackHeightClass = placeholderHeight === 'h-48' ? 'h-48' : placeholderHeight === 'h-56' ? 'h-56' : 'h-64';
     return (
       <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
