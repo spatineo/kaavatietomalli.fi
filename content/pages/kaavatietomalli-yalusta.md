@@ -13,7 +13,7 @@ Tässä artikkelissa käydään läpi kaavatietomallin keskeisimmät peruskäsit
 
 ### Mikä on Kaavatietomalli?
 
-Suomen valtakunnallisesti yhteentoimiva Kaavatietomalli määrittelee rakenteen ja säännöt sille, miten kaavatiedot – kuten kaavan alueelliset rajaukset, kaavamääräykset ja kaavaselostukset – kuvataan digitaalisesti.
+Suomen valtakunnallisesti yhteentoimiva Kaavatietomalli määrittelee rakenteen ja säännöt sille, miten kaavatiedot, kuten kaavan alueelliset rajaukset, kaavamääräykset ja kaavaselostukset, kuvataan digitaalisesti.
 
 * **Standardoitu rakenne:** Tietomalli varmistaa, että kaikkien kunnissa ja maakunnissa laadittavien kaavojen tiedot noudattavat yhtenäistä rakennetta.
 * **Koodistopohjaisuus:** Merkinnät ja määräykset nojaavat valtakunnallisiin koodistoihin, mikä poistaa tulkinnanvaraisuutta ja yhdenmukaistaa termistöä.
@@ -326,11 +326,9 @@ Kaavamääräys-luokka kuvaa yksittäisen kaavamääräyksen: sen lajin, mahdoll
         - "https://iri.suomi.fi/model/rytj-kaava/Tekstiarvo"
 ```
 
-Kaavatietomallin rakenne mahdollistaa minkä tahansa arvotyypin käyttämisen Kaavamääräys- ja Kaavamääräyksen lisätieto -luokkien arvona. Käytännössä mahdolliset arvot on sidottu kaavamääräyksen laji - ja Kaavamääräyksen lisätiedon laji -koodistojen koodeihin. Varsinaisen kaavatietomallin soveltamisprofiili-dokumentin puutteessa mahdollisten arvojen tyyppit on kuvattu Yhteentoimivuusalustan Koodistot-palvelussa kunkin koodiarvon kuvaustekstissä. Arvoja voi kullakin määräyksellä tai lisätiedolla olla nolla tai yksi kappaletta.
+Kaavatietomallin rakenne mahdollistaa minkä tahansa arvotyypin käyttämisen Kaavamääräys- ja Kaavamääräyksen lisätieto -luokkien arvona. Käytännössä mahdolliset arvot on sidottu kaavamääräyksen laji - ja Kaavamääräyksen lisätiedon laji -koodistojen koodeihin. Varsinaisen kaavatietomallin soveltamisprofiili-dokumentin puutteessa mahdollisten arvojen tyypit on kuvattu Yhteentoimivuusalustan Koodistot-palvelussa kunkin koodiarvon kuvaustekstissä. Arvoja voi kullakin määräyksellä tai lisätiedolla olla nolla tai yksi kappaletta.
 
 ### Kaavan ja sen osien kumoaminen
-
-TODO
 
 ```data-model-snippet
     title: Kaavan kumoamistieto ja sen käyttö Kaava- ja Kaava-asian päätös -luokista

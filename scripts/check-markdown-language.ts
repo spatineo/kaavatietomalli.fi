@@ -7,6 +7,8 @@ interface Issue {
   line: number;
   message: string;
   type: "spelling" | "grammar";
+  col?: number;
+  endColumn?: number;
 }
 
 /**
@@ -28,23 +30,149 @@ function loadIgnoreList(): Set<string> {
 }
 
 /**
- * Cleans a line of Markdown by masking code, URLs, and formatting markers
- * with spaces to preserve character indices for error reporting.
+ * Cleans a line of Markdown by replacing code, links, tags, URLs, etc.
+ * with SPACES of the EXACT SAME LENGTH to preserve character offsets (1:1 column mapping).
  */
-function sanitizeMarkdownLine(line: string): string {
-  return (
-    line
-      // Strip inline code blocks (`code`)
-      .replace(/`[^`]+`/g, (m) => " ".repeat(m.length))
-      // Strip markdown links [label](url) -> keep label, mask URL
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, (_, label) => label)
-      // Strip bare URLs
-      .replace(/https?:\/\/\S+/g, (m) => " ".repeat(m.length))
-      // Strip HTML tags
-      .replace(/<[^>]+>/g, (m) => " ".repeat(m.length))
-      // Strip Markdown header markers, blockquotes, and list indicators
-      .replace(/^(\s*#{1,6}|\s*[*+-]|\s*\d+\.)\s+/, (m) => " ".repeat(m.length))
-  );
+export function sanitizeMarkdownLine(line: string): string {
+  let cleaned = line;
+
+  // 1. Strip HTML comments: <!-- ... --> (preserve length)
+  cleaned = cleaned.replace(/<!--.*?-->/g, (m) => " ".repeat(m.length));
+
+  // 2. Strip HTML tags: e.g. <br/> (preserve length)
+  cleaned = cleaned.replace(/<[^>]+>/g, (m) => " ".repeat(m.length));
+
+  // 3. Strip inline code blocks: `code` (preserve length)
+  cleaned = cleaned.replace(/`[^`]+`/g, (m) => " ".repeat(m.length));
+
+  // 4. Strip markdown image tags: ![alt](url) (preserve length)
+  cleaned = cleaned.replace(/!\[[^\]]*\]\([^)]+\)/g, (m) => " ".repeat(m.length));
+
+  // 5. Strip markdown links: [label](url) -> keep label, mask brackets and url with spaces of identical length
+  cleaned = cleaned.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+    const suffixLength = match.length - 1 - label.length;
+    return " " + label + " ".repeat(suffixLength);
+  });
+
+  // 6. Strip bare URLs (preserve length)
+  cleaned = cleaned.replace(/https?:\/\/\S+/g, (m) => " ".repeat(m.length));
+
+  // 7. Strip callout headers/tags like [!NOTE] or [Note::Historiallinen huomio] or [HUOMAA] (preserve length)
+  cleaned = cleaned.replace(/\[!?([A-Za-zÄÖÅa-zäöå_-]+)(?:::(.+?))?\]/g, (match, type, title) => {
+    if (title) {
+      // Keep title, replace prefix and suffix with spaces of identical length
+      const prefixLength = match.indexOf(title);
+      const suffixLength = match.length - prefixLength - title.length;
+      return " ".repeat(prefixLength) + title + " ".repeat(suffixLength);
+    } else {
+      return " ".repeat(match.length);
+    }
+  });
+
+  // 8. Strip emphasis markers: **, *, __, _ (preserve length)
+  cleaned = cleaned.replace(/([\*_]{1,3})([^\*_\n]+)([\*_]{1,3})/g, (match, p1, p2, p3) => {
+    return " ".repeat(p1.length) + p2 + " ".repeat(p3.length);
+  });
+  cleaned = cleaned.replace(/[\*_]/g, " ");
+
+  // 9. Strip blockquote characters at the start of the line: e.g. `> ` (preserve length)
+  cleaned = cleaned.replace(/^\s*>\s*/, (m) => " ".repeat(m.length));
+
+  // 10. Strip Markdown headers, lists, or number indicators at the start of the line:
+  // e.g. `# `, `## `, `* `, `- `, `+ `, `1. ` (preserve length)
+  cleaned = cleaned.replace(/^(\s*#{1,6}|\s*[*+-]|\s*\d+\.)\s+/, (m) => " ".repeat(m.length));
+
+  return cleaned;
+}
+
+export interface GrammarMapping {
+  grammarText: string;
+  indexMap: number[];
+}
+
+/**
+ * Collapses whitespace for Voikko grammar checker, returning a clean sentence
+ * along with a source mapping array to trace indices back to the original line.
+ */
+export function buildGrammarMapping(preservedLine: string): GrammarMapping {
+  let grammarText = "";
+  const indexMap: number[] = [];
+  
+  let lastWasSpace = true; // start with true to trim leading spaces
+  
+  for (let i = 0; i < preservedLine.length; i++) {
+    const char = preservedLine[i];
+    const isSpace = /\s/.test(char);
+    
+    if (isSpace) {
+      if (!lastWasSpace) {
+        grammarText += " ";
+        indexMap.push(i);
+        lastWasSpace = true;
+      }
+    } else {
+      // If it's a punctuation mark, and the last added char was a space,
+      // we remove the space to avoid "Ylimääräinen väli välimerkin edessä".
+      if (/[:,;\.!\?]/.test(char) && lastWasSpace && grammarText.length > 0) {
+        if (grammarText[grammarText.length - 1] === " ") {
+          grammarText = grammarText.slice(0, -1);
+          indexMap.pop();
+        }
+      }
+      grammarText += char;
+      indexMap.push(i);
+      lastWasSpace = false;
+    }
+  }
+  
+  // Trim trailing spaces
+  while (grammarText.endsWith(" ")) {
+    grammarText = grammarText.slice(0, -1);
+    indexMap.pop();
+  }
+  
+  return { grammarText, indexMap };
+}
+
+/**
+ * Checks if grammar checking should be skipped for a given original line.
+ * Skipped lines include headings/titles (starts with #), list items, table rows,
+ * and callout header blocks.
+ */
+export function isGrammarCheckSkipped(rawLine: string): boolean {
+  const trimmed = rawLine.trim();
+
+  // 1. Skip if empty
+  if (!trimmed) {
+    return true;
+  }
+
+  // 2. Skip standard Markdown ATX headings (starts with #)
+  if (/^\s*#{1,6}(?:\s+|$)/.test(trimmed)) {
+    return true;
+  }
+
+  // 3. Skip list items (starts with *, -, +, or a number followed by a dot, and a space)
+  if (/^\s*([*+-]|\d+\.)\s/.test(trimmed)) {
+    return true;
+  }
+
+  // 4. Skip table rows (starts with |)
+  if (trimmed.startsWith("|")) {
+    return true;
+  }
+
+  // 5. Skip callout header lines (e.g. `> [!NOTE]` or `> [Note::Historiallinen huomio]`)
+  if (/^\s*>\s*\[!?([A-Za-zÄÖÅa-zäöå_-]+)(?:::(.+?))?\]\s*$/.test(trimmed)) {
+    return true;
+  }
+
+  // 6. Skip lines that are purely code, HTML tags, or URLs
+  if (/^<[^>]+>$/.test(trimmed) || /^https?:\/\/\S+$/.test(trimmed)) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -56,7 +184,6 @@ function getTargetDirectory(): string {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
 
-    // Matches --dir=/path/to/docs or --dir /path/to/docs
     if (arg.startsWith('--dir=')) {
       return path.resolve(arg.split('=')[1]);
     }
@@ -65,7 +192,6 @@ function getTargetDirectory(): string {
     }
   }
 
-  // Fallback to current working directory
   return process.cwd();
 }
 
@@ -77,27 +203,22 @@ async function validate() {
   const rawEnvFiles = process.env.ALL_CHANGED_FILES;
 
   if (rawEnvFiles) {
-    // 1. CI mode: Process files from environment variable
     filesToProcess = rawEnvFiles
       .split(/\s+/)
       .map((f) => f.trim())
       .filter((f) => f.endsWith('.md') || f.endsWith('.mdx'));
   } else {
-    // Filter out options/flags from positional CLI arguments
     const cliPositionalArgs = process.argv
       .slice(2)
       .filter((arg, idx, arr) => {
         if (arg.startsWith('-')) return false;
-        // Skip argument value if preceding arg was -d or --dir
         if (idx > 0 && (arr[idx - 1] === '--dir' || arr[idx - 1] === '-d')) return false;
         return true;
       });
 
     if (cliPositionalArgs.length > 0) {
-      // 2. Specific files passed directly via arguments
       filesToProcess = cliPositionalArgs;
     } else {
-      // 3. Scan specified root directory recursively
       const targetDir = getTargetDirectory();
       console.log(`Scanning root directory: ${targetDir}`);
       filesToProcess = findMarkdownFilesLocally(targetDir);
@@ -151,48 +272,76 @@ async function validate() {
       // ==========================================
       // 1. Voikko Grammar Analysis (Sentence Level)
       // ==========================================
-      /*
-      const grammarErrors = voikko.grammarErrors(cleanLine);
-      for (const gErr of grammarErrors) {
-        const description =
-          gErr.shortDescription || `Grammar issue (Code ${gErr.code})`;
+      if (!isGrammarCheckSkipped(rawLine)) {
+        const { grammarText, indexMap } = buildGrammarMapping(cleanLine);
+        
+        if (grammarText.trim()) {
+          const grammarErrors = voikko.grammarErrors(grammarText);
+          for (const gErr of grammarErrors) {
+            const description =
+              gErr.shortDescription || `Grammar issue (Code ${gErr.code})`;
 
-        issues.push({
-          file: filePath,
-          line: lineNum,
-          message: `[Grammar] ${description}`,
-          type: "grammar",
-        });
+            const startIdxInClean = gErr.startPos;
+            const endIdxInClean = gErr.startPos + gErr.errorLen - 1;
+
+            const startPosOriginal = indexMap[startIdxInClean];
+            const endPosOriginal = indexMap[endIdxInClean];
+
+            if (startPosOriginal !== undefined && endPosOriginal !== undefined) {
+              issues.push({
+                file: filePath,
+                line: lineNum,
+                message: `[Grammar] ${description}`,
+                type: "grammar",
+                col: startPosOriginal + 1,
+                endColumn: endPosOriginal + 1
+              });
+            } else {
+              issues.push({
+                file: filePath,
+                line: lineNum,
+                message: `[Grammar] ${description}`,
+                type: "grammar",
+              });
+            }
+          }
+        }
       }
-      */
 
       // ==========================================
       // 2. Voikko Spell Checking (Word Level)
       // ==========================================
-      // 1. Normalize line to NFC so 'ä' and 'ö' are single composite characters
       const normalizedLine = cleanLine.normalize('NFC');
+      const wordRegex = /[\p{L}\-]+/gu;
+      let match;
 
-      // 2. Extract words using Unicode Letter property \p{L} with unicode flag 'u'
-      // This correctly groups letters including ä, ö, å, Ä, Ö, Å and hyphens
-      const words = normalizedLine.match(/[\p{L}\-]+/gu) || [];
+      while ((match = wordRegex.exec(normalizedLine)) !== null) {
+        const word = match[0];
+        const startPos = match.index;
+        const endPos = startPos + word.length;
 
-      for (let word of words) {
-        // Strip leading/trailing hyphens from words (e.g. "-sana" -> "sana")
-        word = word.replace(/^-+|-+$/g, '');
+        const leadingHyphens = word.match(/^-*/)?.[0].length || 0;
+        const trailingHyphens = word.match(/-*$/)?.[0].length || 0;
 
-        // Skip empty strings, short tokens (<= 2 chars), or ALL-CAPS acronyms (e.g., API, PR)
-        if (word.length <= 2 || word === word.toUpperCase()) {
+        const trimmedWord = word.replace(/^-+|-+$/g, '');
+        if (!trimmedWord) continue;
+
+        const wordStartPos = startPos + leadingHyphens;
+        const wordEndPos = endPos - trailingHyphens;
+
+        // Skip empty strings, short tokens (<= 2 chars), or ALL-CAPS acronyms
+        if (trimmedWord.length <= 2 || trimmedWord === trimmedWord.toUpperCase()) {
           continue;
         }
 
         // Skip words in custom ignore list
-        if (ignoreList.has(word.toLowerCase())) {
+        if (ignoreList.has(trimmedWord.toLowerCase())) {
           continue;
         }
 
         // Perform Voikko spellcheck
-        if (!voikko.spell(word)) {
-          const suggestions = voikko.suggest(word);
+        if (!voikko.spell(trimmedWord)) {
+          const suggestions = voikko.suggest(trimmedWord);
           const suggestionText =
             suggestions.length > 0
               ? ` (Did you mean: ${suggestions.slice(0, 3).join(', ')})`
@@ -201,8 +350,10 @@ async function validate() {
           issues.push({
             file: filePath,
             line: lineNum,
-            message: `[Spelling] Unknown word "${word}"${suggestionText}`,
+            message: `[Spelling] Unknown word "${trimmedWord}"${suggestionText}`,
             type: 'spelling',
+            col: wordStartPos + 1,
+            endColumn: wordEndPos
           });
         }
       }
@@ -218,20 +369,17 @@ async function validate() {
     console.log(`\nFound ${issues.length} potential issue(s):\n`);
 
     for (const issue of issues) {
-      // Formats line as a GitHub Actions PR warning annotation
+      const colAttr = issue.col !== undefined ? `,col=${issue.col}` : '';
+      const endColAttr = issue.endColumn !== undefined ? `,endColumn=${issue.endColumn}` : '';
       console.log(
-        `::warning file=${issue.file},line=${issue.line}::${issue.message}`,
+        `::warning file=${issue.file},line=${issue.line}${colAttr}${endColAttr}::${issue.message}`,
       );
     }
   }
 
-  // Always exit with 0 to ensure non-blocking PR status
   process.exit(0);
 }
 
-/**
- * Recursively finds all Markdown files in a directory, ignoring node_modules and .git
- */
 function findMarkdownFilesLocally(dir: string): string[] {
   let results: string[] = [];
   const list = fs.readdirSync(dir);
