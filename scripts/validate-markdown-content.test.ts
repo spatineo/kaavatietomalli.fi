@@ -80,6 +80,18 @@ alice -> bob : friends
       expect(() => validateInstanceBlock(inlineInstance, 'test.md', 1)).not.toThrow();
     });
 
+    it('should validate blocks containing optional title declarations with colon or equals sign', () => {
+      const titledInstance = `
+title: Awesome Diagram
+instanceDiagram
+title = Another Title Syntax
+instance alice : User {
+  id = 1
+}
+      `;
+      expect(() => validateInstanceBlock(titledInstance, 'test.md', 1)).not.toThrow();
+    });
+
     it('should throw if an attribute is declared outside an object block', () => {
       const badAttr = `
 id = 101

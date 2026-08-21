@@ -45,4 +45,31 @@ describe('Instance Transpiler', () => {
     const output = transpileInstanceToMermaid(input);
     expect(output).toContain('alice ---|"<span class="edgeLabel">:owner&nbsp;─────────────────&nbsp;:account</span>"| acc99');
   });
+
+  it('correctly transpiles Scandinavian characters and spaces in class names, instance IDs, attribute names/types, and associations', () => {
+    const input = `
+      instanceDiagram
+      instance pää_rakennus : Rakennuksen osa {
+        rakennuksen nimi = "Päätalo"
+        korkeus : luku = 15.5
+      }
+      pää_rakennus -> ala_rakennus : sisältää | osa
+    `;
+    const output = transpileInstanceToMermaid(input);
+    expect(output).toContain('pää_rakennus["<b>pää_rakennus : Rakennuksen osa</b><hr/><span>rakennuksen nimi = &quot;Päätalo&quot;</span><br/><span>korkeus : luku = 15.5</span><br/>"]');
+    expect(output).toContain('pää_rakennus -->|"sisältää | osa"| ala_rakennus');
+  });
+
+  it('correctly includes optional title lines in the transpiled Mermaid frontmatter', () => {
+    const input = `
+      title: Example Instance Diagram Title
+      instanceDiagram
+      instance obj : Class {
+        attr = 1
+      }
+    `;
+    const output = transpileInstanceToMermaid(input);
+    expect(output).toContain('title: Example Instance Diagram Title');
+    expect(output).toContain('obj["<b>obj : Class</b><hr/><span>attr = 1</span><br/>"]');
+  });
 });

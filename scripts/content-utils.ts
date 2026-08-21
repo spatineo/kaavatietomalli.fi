@@ -326,9 +326,10 @@ export function validateDataModelSnippetBlock(content: string, filePath: string,
 export function validateInstanceBlock(content: string, filePath: string, startLine: number): void {
   const lines = content.split(/\r?\n/);
   
-  const objectDeclRegex = /^(?:object|instance)\s+([a-zA-Z0-9_]+)\s*:\s*([a-zA-Z0-9_]+)(?:\s*\{)?$/;
-  const attrRegex = /^\s*([a-zA-Z0-9_]+)\s*=\s*(.+)$/;
-  const relationRegex = /^([a-zA-Z0-9_]+)\s*(<-{1,3}>|-{2,3}|-{1,2}>|\.->)\s*([a-zA-Z0-9_]+)(?:\s*:\s*(.+))?$/;
+  const objectDeclRegex = /^(?:object|instance)\s+([a-zA-Z0-9_äöåÄÖÅ]+)\s*:\s*([^\{\r\n]+?)(?:\s*\{)?$/;
+  const relationRegex = /^([a-zA-Z0-9_äöåÄÖÅ]+)\s*(<-{1,3}>|-{2,3}|-{1,2}>|\.->)\s*([a-zA-Z0-9_äöåÄÖÅ]+)(?:\s*:\s*(.+))?$/;
+  const attrRegex = /^\s*([a-zA-Z0-9_äöåÄÖÅ\s:-]+?)\s*=\s*(.+)$/;
+  const titleRegex = /^\s*title\s*[:=]\s*(.+)$/i;
 
   let currentId: string | null = null;
   let hasBrace = false;
@@ -338,7 +339,7 @@ export function validateInstanceBlock(content: string, filePath: string, startLi
     const line = rawLine.trim();
     const currentFileLine = startLine + i;
 
-    if (!line || line.startsWith('%%') || line === 'instanceDiagram') {
+    if (!line || line.startsWith('%%') || line === 'instanceDiagram' || titleRegex.test(line)) {
       continue;
     }
 
@@ -347,7 +348,7 @@ export function validateInstanceBlock(content: string, filePath: string, startLi
       if (currentId && hasBrace) {
         throw new Error(`In file ${filePath} near line ${currentFileLine}: Object/instance declaration cannot be nested or started before closing the previous block.`);
       }
-      if (rawLine.endsWith('{')) {
+      if (line.endsWith('{')) {
         currentId = objMatch[1];
         hasBrace = true;
       } else {
@@ -366,18 +367,18 @@ export function validateInstanceBlock(content: string, filePath: string, startLi
       continue;
     }
 
-    const attrMatch = line.match(attrRegex);
-    if (attrMatch) {
-      if (!currentId) {
-        throw new Error(`In file ${filePath} near line ${currentFileLine}: Attribute assignment "${line}" must be inside an object/instance block.`);
-      }
-      continue;
-    }
-
     const relMatch = line.match(relationRegex);
     if (relMatch) {
       if (currentId && hasBrace) {
         throw new Error(`In file ${filePath} near line ${currentFileLine}: Relationship definition "${line}" cannot be inside an object/instance body block.`);
+      }
+      continue;
+    }
+
+    const attrMatch = line.match(attrRegex);
+    if (attrMatch) {
+      if (!currentId) {
+        throw new Error(`In file ${filePath} near line ${currentFileLine}: Attribute assignment "${line}" must be inside an object/instance block.`);
       }
       continue;
     }

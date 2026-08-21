@@ -7,17 +7,33 @@
  */
 export function transpileInstanceToMermaid(code: string): string {
   const lines = code.split('\n');
+  const titleRegex = /^\s*title\s*[:=]\s*(.+)$/i;
+
+  let title: string | null = null;
+  for (const rawLine of lines) {
+    const titleMatch = rawLine.match(titleRegex);
+    if (titleMatch) {
+      title = titleMatch[1].trim().replace(/^['"]|['"]$/g, '');
+      break;
+    }
+  }
+
   const mermaidLines: string[] = [
     '---',
+  ];
+  if (title) {
+    mermaidLines.push(`title: ${title}`);
+  }
+  mermaidLines.push(
     'config:',
     '  layout: elk',
     '---',
     'flowchart LR'
-  ];
+  );
 
-  const objectDeclRegex = /^(?:object|instance)\s+([a-zA-Z0-9_]+)\s*:\s*([a-zA-Z0-9_]+)(?:\s*\{)?$/;
-  const attrRegex = /^\s*([a-zA-Z0-9_]+)\s*=\s*(.+)$/;
-  const relationRegex = /^([a-zA-Z0-9_]+)\s*(<-{1,3}>|-{2,3}|-{1,2}>|\.->)\s*([a-zA-Z0-9_]+)(?:\s*:\s*(.+))?$/;
+  const objectDeclRegex = /^(?:object|instance)\s+([a-zA-Z0-9_äöåÄÖÅ]+)\s*:\s*([^\{\r\n]+?)(?:\s*\{)?$/;
+  const attrRegex = /^\s*([a-zA-Z0-9_äöåÄÖÅ\s:-]+?)\s*=\s*(.+)$/;
+  const relationRegex = /^([a-zA-Z0-9_äöåÄÖÅ]+)\s*(<-{1,3}>|-{2,3}|-{1,2}>|\.->)\s*([a-zA-Z0-9_äöåÄÖÅ]+)(?:\s*:\s*(.+))?$/;
 
   let currentId: string | null = null;
   let currentClass: string | null = null;
@@ -39,7 +55,7 @@ export function transpileInstanceToMermaid(code: string): string {
 
   for (const rawLine of lines) {
     const line = rawLine.trim();
-    if (!line || line.startsWith('%%') || line === 'instanceDiagram') {
+    if (!line || line.startsWith('%%') || line === 'instanceDiagram' || titleRegex.test(line)) {
       continue;
     }
 
@@ -47,7 +63,7 @@ export function transpileInstanceToMermaid(code: string): string {
     if (objMatch) {
       if (currentId) flushObject();
       currentId = objMatch[1];
-      currentClass = objMatch[2];
+      currentClass = objMatch[2].trim();
       if (!line.endsWith('{')) flushObject();
       continue;
     }
@@ -60,7 +76,7 @@ export function transpileInstanceToMermaid(code: string): string {
     if (currentId) {
       const attrMatch = line.match(attrRegex);
       if (attrMatch) {
-        const key = attrMatch[1];
+        const key = attrMatch[1].trim();
         const val = attrMatch[2].replace(/"/g, '&quot;'); 
         currentAttrs.push(`${key} = ${val}`);
       }

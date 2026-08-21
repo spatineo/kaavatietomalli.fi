@@ -38,30 +38,38 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
 
   // Scroll to hash on load or post content update
   useEffect(() => {
-    const handleHashChange = () => {
+    const scrollToHash = (behavior: 'smooth' | 'instant') => {
       if (window.location.hash) {
         const hash = decodeURIComponent(window.location.hash.substring(1));
         if (hash) {
           const element = document.getElementById(hash);
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+            element.scrollIntoView({ behavior });
           }
         }
       }
     };
 
+    const handleHashChange = () => scrollToHash('smooth');
+    const handleMermaidRender = () => scrollToHash('instant');
+
     window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('mermaid-render-complete', handleMermaidRender);
     
     // Initial check with tiny timeout to let markdown render
     if (window.location.hash) {
-      const timer = setTimeout(handleHashChange, 350);
+      const timer = setTimeout(() => scrollToHash('smooth'), 350);
       return () => {
         window.removeEventListener('hashchange', handleHashChange);
+        window.removeEventListener('mermaid-render-complete', handleMermaidRender);
         clearTimeout(timer);
       };
     }
 
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('mermaid-render-complete', handleMermaidRender);
+    };
   }, [post.content]);
 
   useEffect(() => {
