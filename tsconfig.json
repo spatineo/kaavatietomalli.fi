@@ -18,9 +18,14 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@yongsk0066/voikko": ["./node_modules/@yongsk0066/voikko/dist/index.d.mts"]
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "include": [
+    "src",
+    "scripts/**/*"
+  ]
 }
