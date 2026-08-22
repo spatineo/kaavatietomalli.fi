@@ -25,38 +25,53 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
   const titleId = combinedHeadings[0].id;
 
   // Scroll to hash on load or page content update
+  
   useEffect(() => {
-    const scrollToHash = (behavior: 'smooth' | 'instant') => {
+    let debounceTimer: number | null = null;
+
+    const scrollToHash = (smooth: boolean = true) => {
       if (window.location.hash) {
         const hash = decodeURIComponent(window.location.hash.substring(1));
         if (hash) {
           const element = document.getElementById(hash);
           if (element) {
-            element.scrollIntoView({ behavior });
+            if (smooth) {
+              element.scrollIntoView({ behavior: 'smooth'});
+            } else {
+              element.scrollIntoView({ behavior: 'instant'});
+            }
           }
         }
       }
     };
 
-    const handleHashChange = () => scrollToHash('smooth');
-    const handleMermaidRender = () => scrollToHash('instant');
+    const triggerScrollDebounced = (delay = 300, smooth: boolean = true) => {
+      if (debounceTimer) {
+        window.clearTimeout(debounceTimer);
+      }
+      debounceTimer = window.setTimeout(() => {
+        scrollToHash(smooth);
+      }, delay);
+    };
+
+    // Listen to hashchange and mermaid renders with unified debounce
+    const handleHashChange = () => triggerScrollDebounced(300, true);
+    const handleMermaidRender = () => triggerScrollDebounced(300, false);
 
     window.addEventListener('hashchange', handleHashChange);
     window.addEventListener('mermaid-render-complete', handleMermaidRender);
     
-    // Initial check with tiny timeout to let markdown render
+    // Initial scroll trigger on mount/content change
     if (window.location.hash) {
-      const timer = setTimeout(() => scrollToHash('smooth'), 350);
-      return () => {
-        window.removeEventListener('hashchange', handleHashChange);
-        window.removeEventListener('mermaid-render-complete', handleMermaidRender);
-        clearTimeout(timer);
-      };
+      triggerScrollDebounced(300, true);
     }
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('mermaid-render-complete', handleMermaidRender);
+      if (debounceTimer) {
+        window.clearTimeout(debounceTimer);
+      }
     };
   }, [page.content]);
 

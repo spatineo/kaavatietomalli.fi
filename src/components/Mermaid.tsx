@@ -48,7 +48,7 @@ async function getMermaid() {
       themeCSS: `
         /* Chart title font for pie and gantt diagrams */
         .gantt .titleText, .titleText, .pieTitleText, text.titleText, .pie-title {
-          font-size: 20px !important;
+          font-size: 20px; !important;
           fill: #FFFFFF !important;
           font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           font-weight: bold !important;
@@ -82,7 +82,7 @@ async function getMermaid() {
           font-size: 11px !important;
           fill: #A0AEC0 !important;
         }
-        
+
         /* Add some vertical safety margins around the gantt container to ensure bottom padding */
         svg.gantt, svg[id^="gantt"], svg:has(.taskText), svg:has(.sectionText) {
           padding-top: 10px !important;
@@ -407,6 +407,7 @@ export function Mermaid({ chart }: MermaidProps) {
               }
             }
             setIsLoading(false);
+            window.dispatchEvent(new CustomEvent('mermaid-render-complete'));
           } finally {
             if (tempDiv.parentNode === document.body) {
               document.body.removeChild(tempDiv);
