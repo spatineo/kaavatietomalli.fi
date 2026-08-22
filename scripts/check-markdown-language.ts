@@ -30,6 +30,47 @@ function loadIgnoreList(): Set<string> {
 }
 
 /**
+ * Uses Voikko's morphological analyzer to check if an inflected word
+ * or compound word derives from a base form in the ignore list.
+ */
+function isIgnoredByVoikko(word: string, ignoreList: Set<string>, voikko: Voikko): boolean {
+  const lowerWord = word.toLowerCase();
+
+  // 1. Direct exact match in ignore list
+  if (ignoreList.has(lowerWord)) {
+    return true;
+  }
+
+  // 2. Morphological Analysis (Lemma & Compound Stems)
+  try {
+    const analyses = voikko.analyze(word);
+    if (analyses && analyses.length > 0) {
+      for (const analysis of analyses) {
+        // Match baseform (e.g. "kaava" matches "kaavattomilleen")
+        if (analysis.BASEFORM && ignoreList.has(analysis.BASEFORM.toLowerCase())) {
+          return true;
+        }
+
+        // Match individual stems in compound words
+        if (analysis.WORDBASES) {
+          const parts = analysis.WORDBASES.match(/\+([a-zåäö]+)/gi);
+          if (parts) {
+            const stems = parts.map((p: string) => p.replace("+", "").toLowerCase());
+            if (stems.some((stem: string) => ignoreList.has(stem))) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // Gracefully handle any analysis errors and fall back to false
+  }
+
+  return false;
+}
+
+/**
  * Cleans a line of Markdown by replacing code, links, tags, URLs, etc.
  * with SPACES of the EXACT SAME LENGTH to preserve character offsets (1:1 column mapping).
  */
@@ -60,7 +101,6 @@ export function sanitizeMarkdownLine(line: string): string {
   // 7. Strip callout headers/tags like [!NOTE] or [Note::Historiallinen huomio] or [HUOMAA] (preserve length)
   cleaned = cleaned.replace(/\[!?([A-Za-zÄÖÅa-zäöå_-]+)(?:::(.+?))?\]/g, (match, type, title) => {
     if (title) {
-      // Keep title, replace prefix and suffix with spaces of identical length
       const prefixLength = match.indexOf(title);
       const suffixLength = match.length - prefixLength - title.length;
       return " ".repeat(prefixLength) + title + " ".repeat(suffixLength);
@@ -79,7 +119,6 @@ export function sanitizeMarkdownLine(line: string): string {
   cleaned = cleaned.replace(/^\s*>\s*/, (m) => " ".repeat(m.length));
 
   // 10. Strip Markdown headers, lists, or number indicators at the start of the line:
-  // e.g. `# `, `## `, `* `, `- `, `+ `, `1. ` (preserve length)
   cleaned = cleaned.replace(/^(\s*#{1,6}|\s*[*+-]|\s*\d+\.)\s+/, (m) => " ".repeat(m.length));
 
   return cleaned;
@@ -98,7 +137,7 @@ export function buildGrammarMapping(preservedLine: string): GrammarMapping {
   let grammarText = "";
   const indexMap: number[] = [];
   
-  let lastWasSpace = true; // start with true to trim leading spaces
+  let lastWasSpace = true;
   
   for (let i = 0; i < preservedLine.length; i++) {
     const char = preservedLine[i];
@@ -111,8 +150,6 @@ export function buildGrammarMapping(preservedLine: string): GrammarMapping {
         lastWasSpace = true;
       }
     } else {
-      // If it's a punctuation mark, and the last added char was a space,
-      // we remove the space to avoid "Ylimääräinen väli välimerkin edessä".
       if (/[:,;\.!\?]/.test(char) && lastWasSpace && grammarText.length > 0) {
         if (grammarText[grammarText.length - 1] === " ") {
           grammarText = grammarText.slice(0, -1);
@@ -125,7 +162,6 @@ export function buildGrammarMapping(preservedLine: string): GrammarMapping {
     }
   }
   
-  // Trim trailing spaces
   while (grammarText.endsWith(" ")) {
     grammarText = grammarText.slice(0, -1);
     indexMap.pop();
@@ -136,33 +172,26 @@ export function buildGrammarMapping(preservedLine: string): GrammarMapping {
 
 /**
  * Checks if grammar checking should be skipped for a given original line.
- * Skipped lines include headings/titles (starts with #), list items, table rows,
- * and callout header blocks.
  */
 export function isGrammarCheckSkipped(rawLine: string): boolean {
   const trimmed = rawLine.trim();
 
-  // 1. Skip if empty
   if (!trimmed) {
     return true;
   }
 
-  // 2. Skip standard Markdown ATX headings (starts with #)
   if (/^\s*#{1,6}(?:\s+|$)/.test(trimmed)) {
     return true;
   }
 
-  // 3. Skip list items (starts with *, -, +, or a number followed by a dot, and a space)
   if (/^\s*([*+-]|\d+\.)\s/.test(trimmed)) {
     return true;
   }
 
-  // 4. Skip table rows (starts with |)
   if (trimmed.startsWith("|")) {
     return true;
   }
 
-  // 5. Skip callout header lines (e.g. `> [!NOTE]` or `> [Note::Historiallinen huomio]`)
   if (/^\s*>\s*\[!?([A-Za-zÄÖÅa-zäöå_-]+)(?:::(.+?))?\]\s*$/.test(trimmed)) {
     return true;
   }
@@ -196,7 +225,7 @@ function getTargetDirectory(): string {
 }
 
 async function validate() {
-  const voikko = await Voikko.init();
+  const voikko: Voikko = await Voikko.init();
   const ignoreList = loadIgnoreList();
 
   let filesToProcess: string[] = [];
@@ -247,7 +276,6 @@ async function validate() {
       const lineNum = index + 1;
       const trimmedLine = rawLine.trim();
 
-      // Skip YAML Frontmatter
       if (index === 0 && trimmedLine === "---") {
         inFrontmatter = true;
         return;
@@ -259,7 +287,6 @@ async function validate() {
         return;
       }
 
-      // Skip Fenced Code Blocks (```)
       if (trimmedLine.startsWith("```")) {
         inCodeBlock = !inCodeBlock;
         return;
@@ -279,7 +306,7 @@ async function validate() {
           const grammarErrors = voikko.grammarErrors(grammarText);
           for (const gErr of grammarErrors) {
             const description =
-              gErr.shortDescription || `Grammar issue (Code ${gErr.code})`;
+              gErr.shortDescription || `Grammar issue (Code ${gErr.errorCode})`;
 
             const startIdxInClean = gErr.startPos;
             const endIdxInClean = gErr.startPos + gErr.errorLen - 1;
@@ -329,17 +356,15 @@ async function validate() {
         const wordStartPos = startPos + leadingHyphens;
         const wordEndPos = endPos - trailingHyphens;
 
-        // Skip empty strings, short tokens (<= 2 chars), or ALL-CAPS acronyms
         if (trimmedWord.length <= 2 || trimmedWord === trimmedWord.toUpperCase()) {
           continue;
         }
 
-        // Skip words in custom ignore list
-        if (ignoreList.has(trimmedWord.toLowerCase())) {
+        // Morphological Ignore Check: Matches exact word, inflections, or compound roots
+        if (isIgnoredByVoikko(trimmedWord, ignoreList, voikko)) {
           continue;
         }
 
-        // Perform Voikko spellcheck
         if (!voikko.spell(trimmedWord)) {
           const suggestions = voikko.suggest(trimmedWord);
           const suggestionText =
@@ -360,9 +385,6 @@ async function validate() {
     });
   }
 
-  // ==========================================
-  // 3. Reporting Results
-  // ==========================================
   if (issues.length === 0) {
     console.log("✅ No Finnish language issues found.");
   } else {
