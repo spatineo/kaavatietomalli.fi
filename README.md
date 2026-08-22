@@ -1,6 +1,6 @@
 # Kaavatietomalli.fi
 
-A highly polished, serverless headless CMS website built with React, Vite, and Tailwind CSS. The platform serves as a modern landing page, blog, and documentation archive for Finland's unified spatial planning data model (*kaavatietomalli*).
+A serverless headless CMS website built with React, Vite, and Tailwind CSS. The platform serves as a modern landing page, blog, and documentation archive for Finland's unified spatial planning data model (*Kaavatietomalli*).
 
 ---
 
@@ -65,13 +65,13 @@ The platform operates as a **git-backed serverless developer CMS**. It requires 
    - `scripts/generate-search-index.ts`: Builds or registers a full-text client searchable schema into the Orama package.
    - `scripts/fetch-giscus-stats.ts`: Crawls discussions and retrieves comment indicators ahead of runtime presentation.
 3. **Pre-Rendered On-Demand Access**: The React SPA parses and queries these local static files and compiled search databases sequentially on-demand using native lightweight HTTP `fetch` requests as users browse views.
-4. **External API Content Synchronization (Suomi.fi)**: To showcase official data models and codelists, the platform downloads official specifications directly from the Finnish Interoperability Platform (*yhteentoimivuusalusta.suomi.fi*). These are fetched via external APIs, transformed and normalized into static JSON arrays, and stored locally within `/public/data/suomi.fi/`. This guarantees high performance and high availability, letting diagrams and codelists render instantly on the client without live API runtime dependencies.
+4. **External API Content Synchronization (Suomi.fi)**: To showcase official data models and codelists, the platform downloads official specifications directly from the Finnish Interoperability Platform [Yhteentoimivuusalusta](https://dvv.fi/yhteentoimivuusalusta). These are fetched via external APIs, transformed and normalized into static JSON arrays, and stored locally within `/public/data/suomi.fi/`. This guarantees high performance and high availability, letting diagrams and codelists render instantly on the client without live API runtime dependencies.
 
 ---
 
 ## Data Model Browser
 
-The website features an interactive **Data Model Browser** designed to make Finland's unified spatial planning data specifications (*kaavatietomalli*) accessible, queryable, and understandable to planners, developers, and public authorities.
+The website features an interactive **Data Model Browser** designed to make Finland's unified spatial planning data specifications (*Kaavatietomalli*) accessible, queryable, and understandable to planners, developers, and public authorities.
 
 ### Purpose and Core Functionality
 Implemented by the `DataModelView` component, the Data Model Browser provides a rich, single-page application interface to navigate complex geographic data structures:
@@ -111,8 +111,8 @@ To ensure the website remains the single source of truth without manual editing,
 ```
 
 1. **Extraction Scripts**: The developer tooling provides two dedicated node-based synchronization scripts:
-   - `scripts/fetch-tietomallit.ts`: Downloads raw schemas via the Suomi.fi data model API (`getModelAsFile`), maps RDF properties, extracts attribute-level structures, and generates class diagram definitions.
-   - `scripts/fetch-koodistot.ts`: Queries the Suomi.fi code registry, extracts valid enumeration codes, names, and descriptions, and normalizes them into structured static arrays.
+   - `scripts/fetch-data-models.ts`: Downloads raw schemas via the Suomi.fi data model API (`getModelAsFile`), maps RDF properties, extracts attribute-level structures, and generates class diagram definitions.
+   - `scripts/fetch-codelists.ts`: Queries the Suomi.fi code registry, extracts valid enumeration codes, names, and descriptions, and normalizes them into structured static arrays.
 2. **Transform and Normalize**: The ingestion scripts parse official Suomi.fi REST payloads, translate empty fields using automated fallback rules, and map complex URI properties onto a clean, standardized JSON format.
 3. **Continuous Nightly Sync**: As part of the nightly scheduled pipeline, the site runs the automated `npm run fetch-data` check. If any updates are detected on the Suomi.fi platform, the workflow automatically commits the updated JSON copies, builds the React bundle, and redeploys the site. This guarantees high availability and resilience—the browser never depends on a live external API connection to render specifications.
 
@@ -266,7 +266,7 @@ graph TD
 ---
 
 #### C. Interactive Spatial Maps (`geojson` & `jsonfg`)
-Because spatial planning data (*kaavatietomalli*) is geographical, the website includes an interactive Leaflet map viewer. You can embed spatial geometries directly in your Markdown using either standard **GeoJSON** or **JSON-FG** (the modern OGC standard with improved Coordinate Reference System support):
+Because spatial planning data (*Kaavatietomalli*) is geographical, the website includes an interactive Leaflet map viewer. You can embed spatial geometries directly in your Markdown using either standard **GeoJSON** or **JSON-FG** (the modern OGC standard with improved Coordinate Reference System support):
 
 ##### GeoJSON Example:
 ```markdown
@@ -375,8 +375,9 @@ alice -> ord1 : places
 ```
 
 * **Features and Syntax Guidelines**:
-  - **Start Marker**: Include `instanceDiagram` as the first line of the code content.
-  - **Object/Instance Declarations**: Declare instances using `instance name : ClassName { ... }` or `object name : ClassName { ... }` with inner `key = value` attributes.
+  - **Optional Diagram Title**: You can declare a chart title at the top of the block using `title: Your Custom Title` or `title = Your Custom Title`. The title is transpiled into Mermaid's native, built-in YAML frontmatter config title blocks, rendering correctly inside the Mermaid graphic element itself.
+  - **Start Marker**: Include `instanceDiagram` as the first line of the code content (or directly after an optional `title` line).
+  - **Object/Instance Declarations**: Declare instances using `instance name : ClassName { ... }` or `object name : ClassName { ... }` with inner `key = value` attributes. Supports Scandinavian characters and custom attribute type formatting.
   - **Relationships**:
     - Directed links: `alice -> ord1 : label` (transpiles to standard Arrow connections).
     - Bidirectional links with dual roles: `alice <-> acc99 : owner | account` (displays a double-ended arrow decorated with distinct left and right role text).
@@ -432,7 +433,7 @@ The content validation suite checks that the `id` is present, valid, and that al
 
 ### 7. Automated Nightly Publishing Pipeline
 
-The website incorporates a fully automated **Nightly Scheduled Rebuild & Deploy** GitHub workflow (`scheduled-rebuild.yml`):
+The website incorporates a fully automated **Nightly Scheduled Rebuild & Deploy** GitHub workflow (`scheduled-build-deploy.yml`):
 
 * **When it runs**: Every night at midnight UTC (`0 0 * * *`) and on-demand via GitHub's manual launch interface.
 * **What it does**:
@@ -708,7 +709,7 @@ The test suite and deployment pipelines are fully wired into our software develo
   - Automatically builds and deploys the site on every pull request merged to `main`.
   - End-to-End browser tests are executed in actual headless profiles with `npm run test:e2e`. Playwright browsers are dynamically installed during the CI flow with `npx playwright install --with-deps`, and testing reports are uploaded as GitHub build artifacts under `playwright-report` with a 30-day retention window.
 
-- **Scheduled Rebuild & Deploy (`scheduled-rebuild.yml`)**:
+- **Scheduled Rebuild & Deploy (`scheduled-build-deploy.yml`)**:
   - Runs nightly via a schedule cron (`0 0 * * *`) and on-demand via `workflow_dispatch`.
   - **Rebuild Decision Engine & Resilient Skip Logic**: Invokes a specialized checker script (`scripts/check-scheduled-posts.ts`) to decide if a redeployment is necessary. It compares local markdown dates against currently deployed assets, triggering a full rebuild and deploy only if a scheduled post's publish date has passed or Giscus statistics have updated. For a detailed user-facing overview of this mechanism, see the [Automated Nightly Publishing Pipeline](#7-automated-nightly-publishing-pipeline) section.
 
@@ -829,14 +830,7 @@ If you need to introduce new test data models or codelist values for unit or int
    ```json
    {
      "id": "my-mock-model",
-     "versions": [
-       {
-         "version": "1.0.0",
-         "apiUri": "https://tietomallit.suomi.fi/api/getModelAsFile?modelId=my-mock-model&fileType=JSON-LD&version=1.0.0",
-         "localFile": "test-data/model/my-mock-model-v1.0.0.jsonld",
-         "prefix": "https://iri.suomi.fi/model/my-mock-model/"
-       }
-     ]
+     "versions": ["1.0.0"]
    }
    ```
 
