@@ -82,7 +82,7 @@ async function getMermaid() {
           font-size: 11px !important;
           fill: #A0AEC0 !important;
         }
-        
+
         /* Add some vertical safety margins around the gantt container to ensure bottom padding */
         svg.gantt, svg[id^="gantt"], svg:has(.taskText), svg:has(.sectionText) {
           padding-top: 10px !important;
@@ -407,6 +407,7 @@ export function Mermaid({ chart }: MermaidProps) {
               }
             }
             setIsLoading(false);
+            window.dispatchEvent(new CustomEvent('mermaid-render-complete'));
           } finally {
             if (tempDiv.parentNode === document.body) {
               document.body.removeChild(tempDiv);
