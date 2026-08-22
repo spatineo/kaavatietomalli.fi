@@ -48,7 +48,7 @@ async function getMermaid() {
       themeCSS: `
         /* Chart title font for pie and gantt diagrams */
         .gantt .titleText, .titleText, .pieTitleText, text.titleText, .pie-title {
-          font-size: 20px; !important;
+          font-size: 20px !important;
           fill: #FFFFFF !important;
           font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           font-weight: bold !important;
