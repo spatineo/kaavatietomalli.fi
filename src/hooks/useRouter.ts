@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, createContext, useContext, ReactNode, createElement } from 'react';
 import { CONFIG } from '../config';
 
-export type ViewType = 'home' | 'post' | 'page' | 'author' | 'tag' | 'model';
+export type ViewType = 'home' | 'post' | 'page' | 'author' | 'tag' | 'model' | 'validate';
 
 export interface ActiveView {
   type: ViewType;
@@ -44,9 +44,12 @@ export function useRouter() {
       if (firstPart === 'data-model') {
         return { type: 'model', slug: secondPart };
       }
+      if (firstPart === 'validate') {
+        return { type: 'validate', slug: secondPart || 'ryhti-kaava' };
+      }
 
-      // Check if it's not reserved for data-model
-      if (firstPart !== 'data-model' && firstPart !== 'model') {
+      // Check if it's not reserved for data-model or validate
+      if (firstPart !== 'data-model' && firstPart !== 'model' && firstPart !== 'validate') {
         return { type: 'page', slug: decodeURIComponent(firstPart) };
       }
     }
@@ -58,12 +61,14 @@ export function useRouter() {
     const page = params.get('page');
     const author = params.get('author');
     const tag = params.get('tag');
+    const validate = params.get('validate');
 
     if (model) return { type: 'model', slug: model };
     if (post) return { type: 'post', slug: post };
     if (page) return { type: 'page', slug: page };
     if (author) return { type: 'author', slug: author };
     if (tag) return { type: 'tag', slug: tag };
+    if (validate) return { type: 'validate', slug: validate };
     return { type: 'home', slug: null };
   }, [pathname, searchString]);
 
@@ -95,6 +100,8 @@ export function useRouter() {
         pathPart = `tag/${encodeURIComponent(view.slug)}`;
       } else if (view.type === 'model') {
         pathPart = `data-model/${encodeURIComponent(view.slug)}`;
+      } else if (view.type === 'validate') {
+        pathPart = `validate/${encodeURIComponent(view.slug || 'ryhti')}`;
       } else {
         pathPart = `${view.type}/${encodeURIComponent(view.slug)}`;
       }
