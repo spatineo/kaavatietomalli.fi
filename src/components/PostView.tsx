@@ -38,8 +38,6 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
 
   // Scroll to hash on load or post content update
    useEffect(() => {
-    let debounceTimer: number | null = null;
-
     const scrollToHash = (smooth: boolean = true) => {
       if (window.location.hash) {
         const hash = decodeURIComponent(window.location.hash.substring(1));
@@ -56,32 +54,23 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
       }
     };
 
-    const triggerScrollDebounced = (delay = 300, smooth: boolean = true) => {
-      if (debounceTimer) {
-        window.clearTimeout(debounceTimer);
-      }
-      debounceTimer = window.setTimeout(() => {
-        scrollToHash(smooth);
-      }, delay);
-    };
-
-    // Listen to hashchange and mermaid renders with unified debounce
-    const handleHashChange = () => triggerScrollDebounced(300, true);
-    const handleMermaidRender = () => triggerScrollDebounced(300, false);
+    const handleHashChange = () => scrollToHash(true);
+    const handleMermaidRender = () => scrollToHash(false);
 
     window.addEventListener('hashchange', handleHashChange);
     window.addEventListener('mermaid-render-complete', handleMermaidRender);
     
     // Initial scroll trigger on mount/content change
+    let timer: number | null = null;
     if (window.location.hash) {
-      triggerScrollDebounced(300, true);
+      timer = window.setTimeout(() => scrollToHash(true), 100);
     }
 
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('mermaid-render-complete', handleMermaidRender);
-      if (debounceTimer) {
-        window.clearTimeout(debounceTimer);
+      if (timer) {
+        window.clearTimeout(timer);
       }
     };
   }, [post.content]);
