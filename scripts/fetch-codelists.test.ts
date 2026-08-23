@@ -8,6 +8,7 @@ import {
   sortCodelistCodes
 } from './fetch-codelists';
 import { Codelist } from '@/src/lib/data-model-types';
+import { CONFIG } from '../src/config';
 
 describe('fetch-codelists script', () => {
   describe('transformCodelistData', () => {
@@ -205,7 +206,7 @@ describe('fetch-codelists script', () => {
         'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
+            "User-Agent": CONFIG.remoteFetchOptions.headers['User-Agent'],
           }
         }
       );
@@ -214,7 +215,7 @@ describe('fetch-codelists script', () => {
         'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/testcode/codes/',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
+            "User-Agent": CONFIG.remoteFetchOptions.headers['User-Agent'],
           }
         }
       );
@@ -224,7 +225,7 @@ describe('fetch-codelists script', () => {
         'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
+            "User-Agent": CONFIG.remoteFetchOptions.headers['User-Agent'],
           }
         }
       );
@@ -233,7 +234,7 @@ describe('fetch-codelists script', () => {
         'https://test-api.suomi.fi/codelist-api/v1/coderegistries/testreg/codeschemes/secondcode/codes/',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
+            "User-Agent": CONFIG.remoteFetchOptions.headers['User-Agent'],
           }
         }
       );
