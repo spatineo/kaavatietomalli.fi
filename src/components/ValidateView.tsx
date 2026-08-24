@@ -678,14 +678,14 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                 onClick={() => setEnv('test')}
                 className={`py-1.5 px-2 rounded-lg transition-all ${env === 'test' ? 'bg-brand-accent text-black font-bold shadow' : 'text-slate-400 hover:text-white'}`}
               >
-                Testi
+                {strings.environmentTest}
               </button>
               <button
                 type="button"
                 onClick={() => setEnv('prod')}
                 className={`py-1.5 px-2 rounded-lg transition-all ${env === 'prod' ? 'bg-brand-accent text-black font-bold shadow' : 'text-slate-400 hover:text-white'}`}
               >
-                Tuotanto
+                {strings.environmentProduction}
               </button>
             </div>
           </div>
@@ -693,7 +693,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
           {/* API Key */}
           <div className="flex flex-col gap-2 md:col-span-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>{strings.apiKey} ({env === 'prod' ? 'Tuotanto' : 'Testi'})</span>
+              <span>{strings.apiKey} ({env === 'prod' ? strings.environmentProduction : strings.environmentTest})</span>
               <span className="text-[10px] text-brand-accent font-semibold lowercase">
                 * {strings.savedToBrowserMemory}
               </span>
