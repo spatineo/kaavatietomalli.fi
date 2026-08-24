@@ -1,7 +1,7 @@
 {
   "name": "kaavatietomalli-website",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.8.0",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
@@ -17,8 +17,8 @@
     "validate-content": "tsx scripts/validate-markdown-content.ts",
     "validate-content:test": "CONTENT_MODE=test tsx scripts/validate-markdown-content.ts",
     "check-codelists": "tsx scripts/list-missing-codelists.ts",
-    "prebuild": "tsx scripts/generate-assets.ts && tsx scripts/generate-search-index.ts",
-    "prebuild:test": "CONTENT_MODE=test tsx scripts/generate-assets.ts && CONTENT_MODE=test tsx scripts/generate-search-index.ts",
+    "prebuild": "tsx scripts/sync-git-version.ts && tsx scripts/generate-assets.ts && tsx scripts/generate-search-index.ts",
+    "prebuild:test": "tsx scripts/sync-git-version.ts && CONTENT_MODE=test tsx scripts/generate-assets.ts && CONTENT_MODE=test tsx scripts/generate-search-index.ts",
     "build": "vite build",
     "preview": "vite preview",
     "prepare:test": "npm run clean:test && npm run fetch-data:test && npm run prebuild:test",

@@ -12,6 +12,7 @@ import {
   getShTargetClass
 } from './fetch-data-models';
 import { Association, Attribute } from '@/src/lib/data-model-types';
+import { CONFIG } from '../src/config';
 
 describe('fetch-data-models script', () => {
   describe('expandUri and getShTargetClass', () => {
@@ -431,7 +432,7 @@ describe('fetch-data-models script', () => {
       expect(mockFetch).toHaveBeenCalledWith('https://test-api.suomi.fi/getModel?modelId=mock-model&fileType=JSON-LD&version=2.0.0',
         {
           "headers": {
-            "User-Agent": "Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)",
+            "User-Agent": CONFIG.remoteFetchOptions.headers['User-Agent'],
           }
         }
       );

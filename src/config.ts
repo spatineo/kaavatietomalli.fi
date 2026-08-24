@@ -3,7 +3,11 @@ import { PROJECT_CONFIG } from '../project.config';
 const env = (typeof import.meta !== 'undefined' && import.meta.env)
   || (typeof process !== 'undefined' ? process.env : {}) as Record<string, string | undefined>;
 
+// App version (automated via git tag)
+export const APP_VERSION = '0.8.0';
+
 export const CONFIG = {
+  appVersion: APP_VERSION,
   // Prelaunch status (active if VITE_PRELAUNCH_PASSWORD is set and non-empty)
   prelaunch: !!env.VITE_PRELAUNCH_PASSWORD,
   // Use VITE_BASE_URL if provided, else fall back to APP_URL or default
@@ -38,7 +42,7 @@ export const CONFIG = {
   },
   remoteFetchOptions: {
     headers: {
-      'User-Agent': 'Kaavatietomalli.fi/0.0.1 (https://kaavatietomalli.fi/page/palaute)',
+      'User-Agent': `Kaavatietomalli.fi/${APP_VERSION} (https://kaavatietomalli.fi/palaute)`,
     }
   }
 };
