@@ -443,6 +443,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
+          'User-Agent': CONFIG.remoteFetchOptions.headers['User-Agent'],
           'accept': 'application/json',
           'Content-Type': 'application/json',
           'Ocp-Apim-Subscription-Key': apiKey.trim()

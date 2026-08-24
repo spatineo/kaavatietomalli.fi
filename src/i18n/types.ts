@@ -304,5 +304,7 @@ export interface Translations {
     rootDeserializationFailure: string;
     showAllIssues: string;
     savedToBrowserMemory: string;
+    environmentTest: string;
+    environmentProduction: string;
   };
 }
