@@ -15,12 +15,13 @@ interface HeaderProps {
   onNavigatePost: (slug: string) => void;
   onNavigateAuthor: (slug: string) => void;
   onNavigateModel: (slug: string, queryParams?: Record<string, string | null>) => void;
+  onNavigateValidate?: (slug: string | null) => void;
   onHome: () => void;
   onBlog: () => void;
   onSearchNavigate: (type: string, slug: string) => void;
 }
 
-export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNavigateAuthor, onNavigateModel, onHome, onBlog, onSearchNavigate }: HeaderProps) {
+export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNavigateAuthor, onNavigateModel, onNavigateValidate, onHome, onBlog, onSearchNavigate }: HeaderProps) {
   const t = getTranslations(CONFIG.language as Language);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number | null>(null);
@@ -60,6 +61,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
       else if (item.type === 'page' && item.slug) handleNavClick(() => onNavigatePage(item.slug!));
       else if (item.type === 'tag' && item.slug) handleNavClick(() => onNavigateTag(item.slug!));
       else if (item.type === 'model' && item.slug) handleNavClick(() => onNavigateModel(item.slug!));
+      else if (item.type === 'validate' && onNavigateValidate) handleNavClick(() => onNavigateValidate(item.slug || null));
     }
   };
 
@@ -144,6 +146,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
                           else if (sub.type === 'page' && sub.slug) handleNavClick(() => onNavigatePage(sub.slug!));
                           else if (sub.type === 'tag' && sub.slug) handleNavClick(() => onNavigateTag(sub.slug!));
                           else if (sub.type === 'model' && sub.slug) handleNavClick(() => onNavigateModel(sub.slug!));
+                          else if (sub.type === 'validate' && onNavigateValidate) handleNavClick(() => onNavigateValidate(sub.slug || null));
                         }}
                         className="text-slate-400 hover:text-brand-accent transition-colors text-left text-base font-medium"
                       >
@@ -192,6 +195,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
                         else if (sub.type === 'page' && sub.slug) handleNavClick(() => onNavigatePage(sub.slug!));
                         else if (sub.type === 'tag' && sub.slug) handleNavClick(() => onNavigateTag(sub.slug!));
                         else if (sub.type === 'model' && sub.slug) handleNavClick(() => onNavigateModel(sub.slug!));
+                        else if (sub.type === 'validate' && onNavigateValidate) handleNavClick(() => onNavigateValidate(sub.slug || null));
                       }}
                       className="w-full px-6 py-2.5 text-left text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
                       role="menuitem"
