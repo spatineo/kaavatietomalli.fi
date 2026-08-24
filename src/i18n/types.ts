@@ -261,7 +261,6 @@ export interface Translations {
     copiedBtn: string;
     invalidJson: string;
     missingParams: string;
-    apiInfoTitle: string;
     apiInfoDesc: string;
     analyzingResponse: string;
     connectionOrServerError: string;

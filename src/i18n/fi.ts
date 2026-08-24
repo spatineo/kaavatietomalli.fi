@@ -241,7 +241,7 @@ export const fi: Translations = {
   validation: {
     subtitle: 'Ryhti-validointi: Kaavasuunnitelma',
     title: 'Kaavasuunnitelman validointityökalu',
-    apiInfoDesc: 'Tämä työkalu tarkistaa JSON-muotoisen kaavasuunnitelman Ryhti-järjestelmän avoimen validointirajapinnan avulla. Voit luoda tilin ja hakea oman API-avaimen maksutta Suomen ympäristökeskuksen API-kehittäjäportaalista osoitteesta https://api-test-developer.ymparisto.fi/ (testi) tai https://api-developer.ymparisto.fi/ (tuotanto).',
+    apiInfoDesc: 'Tämä työkalu tarkistaa JSON-muotoisen kaavasuunnitelman Ryhti-järjestelmän avoimen validointirajapinnan avulla. Validaattorin käyttömiseen tarvitset ilmaisen Syken kehittäjätilin ja henkilökohtaisen API-avaimen.',
     environment: 'Ryhti-ympäristö',
     apiKey: 'API-avain',
     apiKeyPlaceholder: 'Kopioi API-avaimesi tähän',
@@ -264,7 +264,6 @@ export const fi: Translations = {
     copiedBtn: 'Kopioitu!',
     invalidJson: 'Virheellinen JSON-muoto',
     missingParams: 'Täytä API-avain, hallintoalueen koodi ja varmista, että JSON-dokumentti on oikein muotoiltu.',
-    apiInfoTitle: 'Miten voin saada Syke Ryhti -tilausavaimen?',
     analyzingResponse: 'Analysoidaan...',
     connectionOrServerError: 'Yhteys- tai palvelinvirhe',
     auditSummary: 'Validoinnin yhteenveto',

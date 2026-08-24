@@ -655,8 +655,9 @@ export function ValidateView({ onBack }: ValidateViewProps) {
             {strings.subtitle}
           </span>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight mt-2">{strings.title}</h1>
-          <p className="text-slate-400 text-xs md:text-sm mt-2">
+          <p className="text-slate-400 text-sm md:text-base mt-2">
             {strings.apiInfoDesc}
+            &nbsp;{t.post.readMore} <a href="/ryhti-jarjestelma#avoin-kaavatiedon-validointirajapinta" className="text-brand-accent">Ryhti-järjestelmä / Avoin kaavatiedon validointirajapinta</a>
           </p>
         </div>
       </div>
