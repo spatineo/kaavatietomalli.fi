@@ -13,6 +13,7 @@ import { NotFoundView } from './components/NotFoundView';
 import { HomeView } from './components/HomeView';
 import { TagView } from './components/TagView';
 import { DataModelView } from './components/DataModelView';
+import { ValidateView } from './components/ValidateView';
 import { CookieConsent } from './components/CookieConsent';
 import { getAllPostMetadata, getAuthorBySlug, PostMetadata, AuthorData } from './lib/blog';
 import { CONFIG } from './config';
@@ -173,6 +174,7 @@ function AppContent() {
           onNavigatePost={(slug) => navigate({ type: 'post', slug })}
           onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
           onNavigateModel={(slug, queryParams) => navigate({ type: 'model', slug, queryParams })}
+          onNavigateValidate={(slug) => navigate({ type: 'validate', slug })}
           onHome={onHome} 
           onBlog={scrollToBlog} 
           onSearchNavigate={handleSearchNavigate}
@@ -313,6 +315,15 @@ function AppContent() {
                 navigate={navigate}
                 onHome={onHome}
               />
+            ) : activeView.type === 'validate' ? (
+              <motion.div
+                key={`validate-${activeView.slug || 'ryhti'}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ValidateView onBack={onHome} />
+              </motion.div>
             ) : (
               <HomeView
                 posts={posts}

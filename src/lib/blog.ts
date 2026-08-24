@@ -60,7 +60,7 @@ export interface ThemeItem {
 
 export interface NavItem {
   label?: string;
-  type: 'page' | 'tag' | 'blog' | 'menu' | 'model';
+  type: 'page' | 'tag' | 'blog' | 'menu' | 'model' | 'validate';
   slug?: string;
   subitems?: NavItem[];
 }
