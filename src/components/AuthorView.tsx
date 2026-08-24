@@ -6,7 +6,6 @@ import { AuthorData } from '../lib/blog';
 import { resolveImageUrl } from '../lib/utils';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
-import { getTracker } from '../services/analytics';
 import { ContentFooter } from './ContentFooter';
 import { CallToAction } from './CodeBlock';
 
