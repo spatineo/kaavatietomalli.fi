@@ -17,8 +17,8 @@
     "validate-content": "tsx scripts/validate-markdown-content.ts",
     "validate-content:test": "CONTENT_MODE=test tsx scripts/validate-markdown-content.ts",
     "check-codelists": "tsx scripts/list-missing-codelists.ts",
-    "prebuild": "tsx scripts/sync-git-version.ts && tsx scripts/generate-assets.ts && tsx scripts/generate-search-index.ts",
-    "prebuild:test": "tsx scripts/sync-git-version.ts && CONTENT_MODE=test tsx scripts/generate-assets.ts && CONTENT_MODE=test tsx scripts/generate-search-index.ts",
+    "prebuild": "tsx scripts/check-and-update-app-version.ts && tsx scripts/generate-assets.ts && tsx scripts/generate-search-index.ts",
+    "prebuild:test": "tsx scripts/check-and-update-app-version.ts && CONTENT_MODE=test tsx scripts/generate-assets.ts && CONTENT_MODE=test tsx scripts/generate-search-index.ts",
     "build": "vite build",
     "preview": "vite preview",
     "prepare:test": "npm run clean:test && npm run fetch-data:test && npm run prebuild:test",
@@ -30,7 +30,8 @@
     "cdk:deploy": "cdk deploy --all",
     "cdk:destroy": "cdk destroy --all",
     "ci:validate": "tsc --noEmit && vite build --outDir /tmp/vite-check && rm -rf /tmp/vite-check",
-    "check-markdown-language": "tsx scripts/check-markdown-language.ts --dir=content"
+    "check-markdown-language": "tsx scripts/check-markdown-language.ts --dir=content",
+    "update-app-version": "UPDATE_APP_VERSION=1 tsx scripts/check-and-update-app-version.ts"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",
