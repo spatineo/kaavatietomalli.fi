@@ -86,7 +86,7 @@ function updateAppVersion(version:string) {
       let configContent = fs.readFileSync(configPath, 'utf-8');
       configContent = configContent.replace(APP_VERSION_PATTERN, newAppVersionLine);
       fs.writeFileSync(configPath, configContent, 'utf-8');
-      console.log(`Successfully synced src/config.ts version to: ${version}`);
+      console.log(`Updated src/config.ts version to: ${version}`);
     } else {
       console.log(`src/config.ts version is already ${version}, not updating`);
     }
