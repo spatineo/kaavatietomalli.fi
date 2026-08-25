@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: "deploy"
@@ -16,6 +15,9 @@ concurrency:
 jobs:
   check-and-rebuild:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Get Date
         id: get-date

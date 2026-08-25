@@ -7,18 +7,6 @@ const packageJsonPath = path.join(process.cwd(), 'package.json');
 const configPath = path.join(process.cwd(), 'src', 'config.ts');
 const APP_VERSION_PATTERN = /export const APP_VERSION = '(?<version>[0-9\.]+)'/;
 
-function getLatestGitTag(): string | null {
-  try {
-    const tag = execSync('git describe --tags --abbrev=0', {
-      encoding: 'utf-8',
-      stdio: ['ignore', 'pipe', 'ignore']
-    }).trim();
-    return tag || null;
-  } catch {
-    return null;
-  }
-}
-
 function getPackageVersion():string {
   if (fs.existsSync(packageJsonPath)) {
     const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
@@ -45,9 +33,12 @@ function getConfigVersion(): string {
 
 function getGitTagVersion(): string {
   // Try to get version from latest git tag
-  const latestTag = getLatestGitTag();
-  if (latestTag) {
-    return latestTag.replace(/^v/, '');
+  const tag = execSync('git describe --tags --abbrev=0', {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    }).trim();
+  if (tag) {
+    return tag.replace(/^v/, '');
   } else {
     throw new Error('`No git tag found');
   }
@@ -94,17 +85,26 @@ function updateAppVersion(version:string) {
 
 if (process.env.NODE_ENV !== 'test') {
   const update = process.env.UPDATE_APP_VERSION;
+  let gitVersion = null;
   try {
-    const gitVersion = getGitTagVersion();
-    if (update) {
-      updateAppVersion(gitVersion);
+    if (process.env.VERSION) {
+      gitVersion = process.env.VERSION;
     } else {
-      const packageVersion = getPackageVersion();
-      const configVersion = getConfigVersion();
-      matchVersionsOrExit(packageVersion, configVersion, gitVersion);
+      gitVersion = getGitTagVersion();
     }
-  } catch(err) {
-    console.error('Error in checking or updating app version:', err);
-    process.exit(1);
+    try {
+      if (update) {
+        updateAppVersion(gitVersion);
+      } else {
+        const packageVersion = getPackageVersion();
+        const configVersion = getConfigVersion();
+        matchVersionsOrExit(packageVersion, configVersion, gitVersion);
+      }
+    } catch(err) {
+      console.error('Error in checking or updating app version:', err);
+      process.exit(1);
+    }
+  } catch (err) {
+    console.log('No git version tag found, skipping version consistency check');
   }
 }
