@@ -2,10 +2,22 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 import { exit } from 'process';
+import { parseArgs } from "node:util";
 
 const packageJsonPath = path.join(process.cwd(), 'package.json');
 const configPath = path.join(process.cwd(), 'src', 'config.ts');
 const APP_VERSION_PATTERN = /export const APP_VERSION = '(?<version>[0-9\.]+)'/;
+
+const { values } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    version: {
+      type: "string",
+      short: "v",
+    },
+  },
+  strict: false,
+});
 
 function getPackageVersion():string {
   if (fs.existsSync(packageJsonPath)) {
@@ -87,8 +99,8 @@ if (process.env.NODE_ENV !== 'test') {
   const update = process.env.UPDATE_APP_VERSION;
   let gitVersion = null;
   try {
-    if (process.env.VERSION) {
-      gitVersion = process.env.VERSION;
+    if (values.version) {
+      gitVersion = values.version;
     } else {
       gitVersion = getGitTagVersion();
     }
