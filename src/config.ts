@@ -4,7 +4,7 @@ const env = (typeof import.meta !== 'undefined' && import.meta.env)
   || (typeof process !== 'undefined' ? process.env : {}) as Record<string, string | undefined>;
 
 // App version (automated via git tag)
-export const APP_VERSION = '0.9.0';
+export const APP_VERSION = '0.9.1';
 
 export const CONFIG = {
   appVersion: APP_VERSION,
