@@ -120,23 +120,14 @@ Kaavatietomallin avulla voidaan kuvata kaavasuunnitelman lisäksi myös kaavahan
 * Kaavan osallistumis- ja arviointisuunnitelma.
 * Kaava-asian ajalliset vaiheet ja vaiheesta toiseen siirtymiseen liittyvät hallinnolliset päätökset.
 
-Kaavatietomallissa kaava-asian elinkaaren vaiheet on vakioitu. Seuraavassa on esitetty tyypillisimmät kaavan elinkaaren tilat ajallisessa järjestyksessä:
+Kaavatietomallissa kaava-asian elinkaaren vaiheet on vakioitu. Kaavaprosesseissa tyypillisimmät kaavan elinkaaren tilat ajallisessa järjestyksessä ovat seuraavat:
 
-```mermaid
-gantt
-    title Kaavan elinkaaren tilat
-    dateFormat YYYY-MM-DD
-    axisFormat .
-    tickInterval 1month
-    todayMarker off
-
-    Virelletullut           :sj1, 2026-01-01, 3M  
-    Valmistelu              :sj2 , after sj1, 3M
-    Kaavaehdotus            :sj3, after sj2, 3M
-    Muutettu kaavaehdotus   :sj4, after sj3, 3M
-    Hyväksytty kaava        :sj5, after sj4, 3M
-    Voimassa                :sj6, after sj5, 3M
-```
+* Virelletullut
+* Valmistelu
+* Kaavaehdotus
+* Muutettu kaavaehdotus
+* Hyväksytty kaava
+* Voimassa
 
 Kaavatietomallissa jokaisella kaavasuunnitelman versiolla ja niiden sisältämillä kaavakohteilla ja -määräyksillä on tilatieto (elinkaaren tila). Kaava-asiaan liitetään prosessin kuluessa kunkin vaiheen tiedot kaavasuunnitelmineen ja asiakirjoineen. Tämä mahdollistaa kaavan tarkastelun myös kaavaprosessin aikana, esimerkiksi sen ollessa julkisesti nähtävillä. Kaavan elinkaaren vaiheiden avulla on myös helppo nähdä onko kaava hyväksytty, onko valitusaika vielä kesken, onko se lainvoimainen ja mahdollisesti kokonaan tai osittain kumottu.
 
@@ -209,6 +200,40 @@ classDiagram
     `Kaava-asian päätös` o-- "0.." Kaava 
     
 ```
+
+Perusajatus kaavan elinkaaren tilan mallintamisessa on seuraava: Kaava-asian elinkaari alkaa alueidenkäytön suunnittelutarpeen tai voimassa olevan suunnitelman muuttamistarpeen perustelemasta aloitteesta tai virelletulosta. Kaavaprosessin aikana tämä tarve kiteytyy ja muovaantuu suunnitelmaksi, joka on hyväksyttävissä kunnan tai maakunnan hallinnoillisessa prosessissa, ja jonka hyväksymispäätöksestä voidaan valittaa, kuten useimmista  hallinnollisista päätöksistä. Ennen kaava-asian ratkaisua, eli hyväksymistä tai hylkäämistä, kaavasuunnitelma ja sen sisältämien määräysten määrä ja laatu voivat muuttua ja tarkentua. Kaava-asian ratkaisun jälkeen kaavaan sisältyvät kaavamääräykset sen sijaan eivät voi muuttua, vaan ainoastaan tulla lainvoimaisiksi tai kumoutua. Lainvoimaisen kaavan kaavamääräyksten kumoaminen vaatii uuden kaava-asian ja siinä tehtävän päätöksen yhden tai useamman kaavamääräyksen kumoamisesta.
+
+### Kaavatiedon käsitemallinnus
+
+Kaavatietomallin kaava-asian, kaavasuunnitelman ja yksittäisten määräysten elinkaaren mallinnus perustuu kaavoitusprosessin and siihen liittyvän hallinnollisen prosessin käsiteanalyysiin. Keskeisimpiä käsitteitä tässä ovat seuraavat:
+
+* Maankäyttöpäätös (alueidenkäyttöpäätös): alueidenkäyttöä koskeva hallintopäätös ([Rakennetun ympäristön pääsanasto](https://sanastot.suomi.fi/terminology/rakymp/concept/c496))
+* (Kaavasuunnitelman) asettaminen julkisesti nähtäville: viranomaisen toiminta, jolla aineisto laitetaan yleisesti saataville ([Rakennetun ympäristön pääsanasto](https://sanastot.suomi.fi/terminology/rakymp/concept/c625)
+* (Hallinnollinen) määräys, erit. kaavamääräys: kaavaan sisältyvä määräys, jolla ohjataan alueidenkäyttöä, alueidenkäytön suunnittelua ja rakentamista ([Rakennetun ympäristön pääsanasto](https://sanastot.suomi.fi/terminology/rakymp/concept/c124))
+
+Käsiteanalyysissa hankaluuksia aiheutti mm. alueidenkäyttöpäätös-termi, jota käytetään sekä kaava-asian (suunnitelman) hyväksymiseen johtavasta hallinnollisesta käsittelytapahtumasta (päätös) että päätöksellä hyväksytystä suunnitelmasta (kaava): Onko kaava siis alueidenkäyttöpäätös vai virallinen suunnitelma ja alueiden käytön ohjausdokumentti, jonka hyväksymisestä on tehty (alueidenkäyttö)päätös? Vielä hyväksymistä vailla olevan kaavan osalta sen samaistaminen alueidenkäyttöpäätöseen aiheutaa erityistä käsitteellistä ristiriitaa: Miten (alueidenkäyttö)päätös voi olla elinkaaren vaiheessa, jossa päätöstä sen hyväksymisestä ei ole (vielä) tehty, ei ehkä koskaan tehdä?
+
+Sanastotyössä on päädytty ratkaisuun, jossa [kaava](https://sanastot.suomi.fi/terminology/rakymp/concept/c122) on erikostatapaus [alueidenkäytön suunnitelmasta](https://sanastot.suomi.fi/terminology/rakymp/concept/c491). [Kaava-asia](https://sanastot.suomi.fi/terminology/rakymp/concept/c520) on hallintoasia, joka koskee laadittavana oleva kaavaa, ja joka käsitellään [Kaavoitusmenettelyn](https://sanastot.suomi.fi/terminology/rakymp/concept/c506) mukaisesti. Menettelyn määrittelemään kaavaprosessiin kuuluu useita hallintopäätöksiä, muun muassa päätökset [kaava(suunnitelma)n asettamisesta julkisesti nähtäville](https://sanastot.suomi.fi/terminology/rakymp/concept/c625) ja [kaava hyväksymisestä](https://sanastot.suomi.fi/terminology/rakymp/concept/c530).
+
+Seuraavat Sanastokeskuksen Ryhti-hankkeen tietomallimmustyön yhteydessä laatimat käsitekaaviot ovat havainnollisia kaavan elinkaareen liittyvien käsitteiden osalta:
+
+**Kaavoitus**
+![Kaavoitus](https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/kaavoitus.svg)
+
+**Alueidenkäytön suunnittelu**
+![Alueidenkäytön suunnittelu](https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/alueidenkayton_suunnittelu.svg)
+
+Kaavan vireilletulon, nähtäville asettamisen ja päätöksen osalta relevantti on myös lupaprosessin käsitekaavio, joskin se koskee pääosin rakennusvalvonnan lupaprosessiin liittyviä käsitteitä:
+
+![Lupaprosessi](https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/lupaprosessi.svg)
+
+Sen sijaan Kaavatietomallin käsitekaavio on lähtökohdaltaan hieman ongelmallien, sillä tietomallinnusta itsessään kuvaavat käsitteet (ns. metamalli) on pyritty kuvaamaan mallinnettavan rakenteisen kaavaan ja sen käsiteiden kanssa yhdessä:
+
+![Kaavatietomalli](https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/kaavatietomalli.svg)
+
+Kaaviossa kaavatietomalli määritellään tietomallina, joka on tarkoitettu kaavan tietojen kuvaamiseen, kun taas kaava on suunnitelma, joka koostuu kaavamääräyksistä. Kaavamääräyksellä ja Kaavatietomallin kaavamääräyksellä ei ole yhteyttä keskenään, eikä ole selvää, tarkoitetaanko kaavatietomallilla säännöstöä, jolla kaava voidaan kuvata tietomallimuodossa, vai yksittäistä tietomallimuotoista kaavaa.  
+
+"Kaavamuutos"- ja "muutoskaava"-käsitteitä ei ole määritelty Yhteentoimivuusalustan sanastoissa lainkaan, mutta niillä tarkoitetaan tavallisesti kaavaa tai kaava-asiaa, joka kohdistuu ainakin osittain voimassa olevan, saman tasoisen kaavan alueelle, ja jossa muutetaan kyseisen alueen kaavasuunnitelmaa kumoamalla voimassa olevia kaavamääräyksiä tai niiden sijainnillista kohdistumista, sekä tyypillisesti korvaamalla niitä uusilla kaavamääräyksillä. 
 
 ### Tietomallimuotoinen kaavatieto mahdollistaa paljon
 
@@ -309,7 +334,7 @@ Kaavatietomallissa yleismääräysten kaavamääräysryhmä ja muiden, kaavakoht
 >
 > Kaavamääräyksen ja kaavamääräysryhmän käyttäytyminen kaavan osittaisen kumoamisen tilanteessa piti tässä uudessa tilanteessa ratkaista: olisiko kaavamuutoksella tai vaihekaavalla mahdollista kumota sekä kokonaisia kaavamääräysryhmiä että yksittäisiä kaavamääräyksiä niiden sisältä? Ja jos kaavamääräysryhmän sisältä voitaisiin kumota kaavamääräyksiä, niin voisiko esimerkiksi vaihekaavalla myös lisätä uusia kaavamääräyksiä olemassa olevien kaavamääräysryhmien sisään kumottujen sijaan tai niiden rinnalle? Logiikka ja säännöstö menisi nopeasti melko monimutkaiseksi.
 >
-> Lopulta päädyttiin siihen, että yksittäisiä kaavamääräyksiä ei voi milloinkaan kumota, vaan aina kumotaan kokonaisia kaavamääräysryhmiä kaikkine määräyksineen. Tarvittaessa tehtäisiin tilalle uusi kaavamääräysryhmä, joka sisältäisi sekä ennallaan pysyvät että muuttuvat määräykset. Havaittiin,että tämä saattaisi helposti johtaa kaavamuutoksiin, joissa tulisi kumottavaksi ja uudelleen annettavaksi tarpeettoman paljon todellisuudessa ennallaan pysyviä kaavamääräyksiä. Jotta kaavoittajat eivät tahattomasti ajautuisi tähän "lukittujen" kaavamääräysten ansaan, asetettiin niin sanottuja suureellisten, eli esimerkiksi numeerisia arvoja, tunnuksia ja nimistöä koskevien kaavamääräysten ryhmittelylle rajoitus: tällaisten kaavamääräysten tulee esiintyä kaavassa aina yksin omassa kaavamääräysryhmässään, jotta ne voidaan yksitellen kumota. Pakollinen yksittäisten kaavamääräysten kaavamääräysryhmä tuntuu jo selvästi tietomallinnuksen ongelmalta, ja muutenkin hölmöltä. Ongelma tulisi ratkaista paremmalla mallinnuksella.
+> Lopulta päädyttiin siihen, että yksittäisiä kaavamääräyksiä ei voi milloinkaan kumota, vaan aina kumotaan kokonaisia kaavamääräysryhmiä kaikkine määräyksineen. Tarvittaessa tehtäisiin tilalle uusi kaavamääräysryhmä, joka sisältäisi sekä ennallaan pysyvät että muuttuvat määräykset. Havaittiin,että tämä saattaisi helposti johtaa kaavamuutoksiin, joissa tulisi kumottavaksi ja uudelleen annettavaksi tarpeettoman paljon todellisuudessa ennallaan pysyviä kaavamääräyksiä. Jotta kaavoittajat eivät tahattomasti ajautuisi tähän "lukittujen" kaavamääräysten ansaan, asetettiin niin sanottuja suureellisten, eli esimerkiksi numeerisia arvoja, tunnuksia ja nimistöä koskevien kaavamääräysten ryhmittelylle rajoitus: tällaisten kaavamääräysten tulee esiintyä kaavassa aina yksin omassa kaavamääräysryhmässään, jotta ne voidaan yksitellen kumota. Pakollinen yksittäisten kaavamääräysten kaavamääräysryhmä tuntuu jo selvästi ongelmalliselta. Ongelma tulisi ratkaista paremmalla mallinnuksella.
 
 Kaavamääräys-luokka kuvaa yksittäisen kaavamääräyksen: sen lajin, mahdollisen arvon ja mahdollisen lisätiedon. Kaavamääräyksen lisätiedolla on edelleen laji-luokittelu ja mahdollinen arvo. Sekä kaavamääräyksen että sen lisätiedon arvot on kuvattu abstraktin OminaisuudenArvo-luokan avulla, jolla on kuusi konkreettista aliluokkaa erityyppisten arvojen kuvaamiseen. 
 
