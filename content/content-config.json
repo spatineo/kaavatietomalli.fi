@@ -6,7 +6,7 @@
       "type": "menu",
       "subitems": [
         { "label": "Lait ja asetukset", "type": "page", "slug": "lainsaadanto" },
-        { "label": "Kaavatietomalli", "type": "page", "slug": "kaavatietomalli-yalusta" },
+        { "label": "Kaavatietomalli", "type": "page", "slug": "kaavatietomalli" },
         { "label": "Ryhti-järjestelmä", "type": "page", "slug": "ryhti-jarjestelma" },
         { "label": "Kaavatieto kuntajärjestelmissä", "type": "page", "slug": "kuntajarjestelmat" },
         { "label": "Kansainväliset standardit", "type": "page", "slug": "kv-standardit" }

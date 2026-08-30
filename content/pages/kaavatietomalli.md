@@ -203,7 +203,7 @@ classDiagram
 
 Perusajatus kaavan elinkaaren tilan mallintamisessa on seuraava: Kaava-asian elinkaari alkaa alueidenkäytön suunnittelutarpeen tai voimassa olevan suunnitelman muuttamistarpeen perustelemasta aloitteesta tai virelletulosta. Kaavaprosessin aikana tämä tarve kiteytyy ja muovaantuu suunnitelmaksi, joka on hyväksyttävissä kunnan tai maakunnan hallinnollisessa prosessissa, ja jonka hyväksymispäätöksestä voidaan valittaa, kuten useimmista  hallinnollisista päätöksistä. Ennen kaava-asian ratkaisua, eli hyväksymistä tai hylkäämistä, kaavasuunnitelma ja sen sisältämien määräysten määrä ja laatu voivat muuttua ja tarkentua. Kaava-asian ratkaisun jälkeen kaavaan sisältyvät kaavamääräykset sen sijaan eivät voi muuttua, vaan ainoastaan tulla lainvoimaisiksi tai kumoutua. Lainvoimaisen kaavan kaavamääräysten kumoaminen vaatii uuden kaava-asian ja siinä tehtävän päätöksen yhden tai useamman kaavamääräyksen kumoamisesta.
 
-### Kaavatiedon käsitemallinnus
+### Kaavatiedon käsitemallinnuksen haasteita
 
 Kaavatietomallin kaava-asian, kaavasuunnitelman ja yksittäisten määräysten elinkaaren mallinnus perustuu kaavoitusprosessin and siihen liittyvän hallinnollisen prosessin käsiteanalyysiin. Keskeisimpiä käsitteitä tässä ovat seuraavat:
 
@@ -358,6 +358,8 @@ Kaavatietomallin rakenne mahdollistaa minkä tahansa arvotyypin käyttämisen Ka
 > [Note]
 > Alla olevat esimerkit ovat loogisen tietomallin objektikaavioita. Nämä eivät vastaa suoraan esimerkiksi Ryhti-järjestelmän JSON-rakenteita. Erityisesti Sijainti-luokan mallinnus ei ole paikkatieto standardien (ISO 19107) mukainen. Esimerkeissä on noudatettu Yhteentoimivuusalustan luokkamallin rakenteita. Koodistoviittauksista on kaavion selkeyssyistä jätetty pois alkuosa `http://uri.suomi.fi/codelist/`.
 
+**Käyttötarkoitusalueen (eli aluevarauksen) osoittaminen**
+
 ```instance
 instanceDiagram
 title: Käyttötarkoitusalueen osoittamien (Asuinkerrostalojen alue), kaksi eri aluetta
@@ -413,6 +415,7 @@ kk1 -> sij1: Sijainti
 kk2 -> sij2: Sijainti
 ```
 
+**Rakennusaooikeuden ja sallitun kerrosluvun osoittaminen (suureelliset määräykset)**
 
 ```instance
 instanceDiagram
@@ -508,6 +511,7 @@ km4 -> na2: Ominaisuuden arvo
 kk1 -> sij1: Sijainti
 ```
 
+**Yhdistetty jalankulku- ja pyöräilyalue (osa-alue)**
 
 ```instance
 instanceDiagram
@@ -571,6 +575,8 @@ km2 -> lt2: Kaavamääräyksen lisätieto
 km2 -> lt4: Kaavamääräyksen lisätieto
 ```
 
+**Tuulivoimatuotantoalue (käyttötarkoituskohdistus)**
+
 ```instance
 instanceDiagram
 title: Tuulivoimatuotantoon tarkoitettu energiatuotannon alue
@@ -626,6 +632,19 @@ lt2 -> ka1: Ominaisuuden arvo
 
 ### Kaavan ja sen osien kumoaminen
 
+Voimaantullut kaava voidaan kumota osana kaava-asiaa joko siten, että samalle alueelle vahvistetaan uusi korvaava kaava osana kaava-asiaan, tai ainoastaan kumoamalla olemassaoleva kaava ja sen määräykset ilman uutta voimaan tulevaa kaavaa. Kaava voidaan kumota joko kokonaan tai osittain. Osittaisessa kumoamisessa voimassa olevan kaavaan voidaan kohdistaa useita erityyppisiä kumoamisoperaatioita:
+
+* Voidaan kumota haluttuja voimassa olevien kaavojen kaavamääräysryhmiä määräyksineen.
+* Voidaan kumota kokonaisia kaavakohteita, jolloin pelkästään niihin kohdistetut kaavamääräysryhmät ja niiden määräykset myös automaattisesti kumoutuvat. Mikäli sama kaavamääräysryhmä kohdistuu myös kumoamatta jääviin kaavakohteisiin, se ei kumoudu.
+* Voidaan pienentää voimassa olevaan kaavaan sisältyvän kaavakohteen geometriaa siten, ettei se enää sijaitse uuden kaavan aluerajauksen sisällä.
+* Voidaan kumota kaavamääräysryhmien kohdistumisia valittuihin kaavakohteisiin (vaihekaavat) jättäen ne edelleen kohdistumaan muihin kaavakohteisiin. Tällöin myös kaavakohteet jäävät voimaan mutta vain ilman valittujen kaavamääräysryhmien määräyksiä.
+
+Tavallisesti yhdellä alueella ei ole mahdollista olla voimassa enempää kuin yksi saman kaavatason kaava. Siten kaavamuutoksen aluerajauksen sisältä kumotaan kaavamuutoksella pois kaikki voimassaolevat kaavakohteet niiden alueelle kohdistuvat kaavamääräykset ja korvataan ne kokonaan uudella kaavasuunnitelmalla uusine kaavakohteineen ja -määräyksineen.
+
+Vaihekaavoissa puolestaan muutetaan kaavasuunnitelmaa valikoivasti halutulla kaava-alueella: tarkoituksena on tehdä alueelle tarkasti määriteltyjä muutoksia ja jättää voimassaolevan kaavan kaavamääräykset ja -kohteet pääosin voimaan. Vaihekaavan voimaantulon jälkeen alueella voi olla tavanomaisen kaavan lisäksi voimassa yksi tai useampi vaihekaava voimassa samaan aikaan. Vaihekaavoillakaan ei ole mahdollista suoraan muuttaa voimassaolevia kaavamääräyksiä ja niiden arvoja, vaan on kumottava kokonaisia kaavamääräysryhmiä ja tarvittaessa tehtävä niiden tilalle uusia kaavamääräysryhmiä uusine määräyksineen. Vaihekaavoissa voi olla tarpeen kohdistaa uusia kaavamääräysryhmiä myös voimassa oleviin, aiempien kaavojen kaavakohteisiin, mikäli kaavakohteiden geometrioihin ei ole tarpeen tehdä muutoksia.
+
+Kaavatietomallissa voimassa oleviin kaavoihin kohdistuvat kumoamiset kuvataan Kaavan kumoamistieto -luokan avulla. Kumottaessa jokin kaava kokonaan tai osittain saattamata voimaan korvaavaa kaavaa, voidaan yksittäinen Kaava kumoamistieto liittää suoraan Kaava-asian päätös luokan objektiin ilman Kaava-luokkaa. Mikäli kumoaminen liittyy uuden kaavasuunnitelman voimaansaattamiseen, liitetään tarvittava määrä Kaava kumoamistietoja kaava-asiaan Kaava-asian vaiheen, Kaava-asian päätökseen ja edelleen Kaava-luokan kautta.
+
 ```data-model-snippet
     title: Kaavan kumoamistieto ja sen käyttö Kaava- ja Kaava-asian päätös -luokista
     modelId: rytj-kaava-1.0.5
@@ -636,3 +655,6 @@ lt2 -> ka1: Ominaisuuden arvo
         - "https://iri.suomi.fi/model/rytj-kaava/KaavakohteenKumoamistieto"
         - "https://iri.suomi.fi/model/rytj-kaava/KumottavanRyhmanKohdistus"
 ```
+
+Kuntaliitto on julkaissut Ylivieskan kaupungin vetämässä YES -Ryhti-kumppanitestaushankkeessa keväällä 2026 laaditun oppaan [Tietomallimuotoinen asemakaavan muutos](https://www.kuntaliitto.fi/julkaisut/2026/2386-tietomallimuotoinen-asemakaavan-muutos) (ISBN
+978-952-431-010-9), jossa käsitellään tietomallimuotoisen kaavan muuttamista laajemmin.
