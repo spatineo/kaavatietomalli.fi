@@ -129,7 +129,7 @@ Kaavatietomallissa kaava-asian elinkaaren vaiheet on vakioitu. Kaavaprosesseissa
 * Hyväksytty kaava
 * Voimassa
 
-Kaavatietomallissa jokaisella kaavasuunnitelman versiolla ja niiden sisältämillä kaavakohteilla ja -määräyksillä on tilatieto (elinkaaren tila). Kaava-asiaan liitetään prosessin kuluessa kunkin vaiheen tiedot kaavasuunnitelmineen ja asiakirjoineen. Tämä mahdollistaa kaavan tarkastelun myös kaavaprosessin aikana, esimerkiksi sen ollessa julkisesti nähtävillä. Kaavan elinkaaren vaiheiden avulla on myös helppo nähdä onko kaava hyväksytty, onko valitusaika vielä kesken, onko se lainvoimainen ja mahdollisesti kokonaan tai osittain kumottu.
+Kaavatietomallissa jokaisella kaavasuunnitelman versiolla ja niiden sisältämillä kaavakohteilla ja -määräyksillä on tilatieto (elinkaaren tila). Kaava-asiaan liitetään prosessin kuluessa kunkin vaiheen tiedot kaavasuunnitelmineen ja asiakirjoineen. Tämä mahdollistaa kaavan tarkastelun myös kaavaprosessin aikana, esimerkiksi sen ollessa julkisesti nähtävillä. Kaavan elinkaaren vaiheiden avulla on myös helppo nähdä onko kaava hyväksytty, onko valitusaika vielä kesken, onko kaava lainvoimainen tai kumottu.
 
 ```mermaid
 ---
@@ -205,7 +205,7 @@ Perusajatus kaavan elinkaaren tilan mallintamisessa on seuraava: Kaava-asian eli
 
 ### Kaavatiedon käsitemallinnuksen haasteita
 
-Kaavatietomallin kaava-asian, kaavasuunnitelman ja yksittäisten määräysten elinkaaren mallinnus perustuu kaavoitusprosessin and siihen liittyvän hallinnollisen prosessin käsiteanalyysiin. Keskeisimpiä käsitteitä tässä ovat seuraavat:
+Kaavatietomallin kaava-asian, kaavasuunnitelman ja yksittäisten määräysten elinkaaren mallinnus perustuu kaavoitusprosessin ja siihen liittyvän hallinnollisen prosessin käsiteanalyysiin. Keskeisimpiä käsitteitä tässä ovat seuraavat:
 
 * Maankäyttöpäätös (alueidenkäyttöpäätös): alueidenkäyttöä koskeva hallintopäätös ([Rakennetun ympäristön pääsanasto](https://sanastot.suomi.fi/terminology/rakymp/concept/c496))
 * (Kaavasuunnitelman) asettaminen julkisesti nähtäville: viranomaisen toiminta, jolla aineisto laitetaan yleisesti saataville ([Rakennetun ympäristön pääsanasto](https://sanastot.suomi.fi/terminology/rakymp/concept/c625)
