@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
+
 import { Voikko } from "@yongsk0066/voikko";
+
+// Extract instance type cleanly
+type VoikkoInstance = Awaited<ReturnType<typeof Voikko.init>>;
 
 interface Issue {
   file: string;
@@ -225,7 +229,8 @@ function getTargetDirectory(): string {
 }
 
 async function validate() {
-  const voikko: Voikko = await Voikko.init();
+  const voikko: VoikkoInstance = await Voikko.init();
+  
   const ignoreList = loadIgnoreList();
 
   let filesToProcess: string[] = [];
