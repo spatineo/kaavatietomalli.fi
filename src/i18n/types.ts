@@ -61,12 +61,14 @@ export interface Translations {
     description: string;
     exploreData: string;
   };
-  mermaid: {
+  interactiveImage: {
     expand: string;
     zoomIn: string;
     zoomOut: string;
     zoomToFit: string;
     close: string;
+  };
+  mermaid: {
     renderError: string;
   };
   post: {

@@ -217,19 +217,37 @@ Sanastotyössä on päädytty ratkaisuun, jossa [kaava](https://sanastot.suomi.f
 
 Seuraavat Sanastokeskuksen Ryhti-hankkeen tietomallimmustyön yhteydessä laatimat käsitekaaviot ovat havainnollisia kaavan elinkaareen liittyvien käsitteiden osalta:
 
-**Kaavoitus**
-![Kaavoitus](https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/kaavoitus.svg)
+```interactive-image
+    href: https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/kaavoitus.svg
+    title: Kaavoitus
+    style: 'background-color: #ffffff;'
+    note: '© Sanastokeskus ry'
+```
 
-**Alueidenkäytön suunnittelu**
-![Alueidenkäytön suunnittelu](https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/alueidenkayton_suunnittelu.svg)
+```interactive-image
+    href: https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/alueidenkayton_suunnittelu.svg
+    title: Alueidenkäytön suunnittelu
+    style: 'background-color: #ffffff;'
+    note: '© Sanastokeskus ry'
+```
 
 Kaavan vireilletulon, nähtäville asettamisen ja päätöksen osalta relevantti on myös lupaprosessin käsitekaavio, joskin se koskee pääosin rakennusvalvonnan lupaprosessiin liittyviä käsitteitä:
 
-![Lupaprosessi](https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/lupaprosessi.svg)
+```interactive-image
+    href: https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/lupaprosessi.svg
+    title: Lupaprosessi
+    style: 'background-color: #ffffff;'
+    note: '© Sanastokeskus ry'
+```
 
 Sen sijaan Kaavatietomallin käsitekaavio on lähtökohdaltaan hieman ongelmallien, sillä tietomallinnusta itsessään kuvaavat käsitteet (ns. metamalli) on pyritty kuvaamaan mallinnettavan rakenteisen kaavaan ja sen käsiteiden kanssa yhdessä:
 
-![Kaavatietomalli](https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/kaavatietomalli.svg)
+```interactive-image
+    href: https://sanastokeskus.fi/suomi.fi/Rakennettu_ymparisto/kaavatietomalli.svg
+    title: Kaavatietomalli
+    style: 'background-color: #ffffff;'
+    note: '© Sanastokeskus ry'
+```
 
 Kaaviossa kaavatietomalli määritellään tietomallina, joka on tarkoitettu kaavan tietojen kuvaamiseen, kun taas kaava on suunnitelma, joka koostuu kaavamääräyksistä. Kaavamääräyksellä ja Kaavatietomallin kaavamääräyksellä ei ole yhteyttä keskenään, eikä ole selvää, tarkoitetaanko kaavatietomallilla säännöstöä, jolla kaava voidaan kuvata tietomallimuodossa, vai yksittäistä tietomallimuotoista kaavaa.  
 
@@ -415,7 +433,7 @@ kk1 -> sij1: Sijainti
 kk2 -> sij2: Sijainti
 ```
 
-**Rakennusaooikeuden ja sallitun kerrosluvun osoittaminen (suureelliset määräykset)**
+**Rakennusoikeuden ja sallitun kerrosluvun osoittaminen (suureelliset määräykset)**
 
 ```instance
 instanceDiagram
