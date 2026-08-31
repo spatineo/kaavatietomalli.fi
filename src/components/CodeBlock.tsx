@@ -8,11 +8,13 @@ import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-ge
 import { FetchDataModelAccess } from '../lib/fetch-data-model-access';
 import { useAppRouter } from '../hooks/useRouter';
 import { getTracker } from '../services/analytics';
+import { parseInteractiveImageBlock } from '../lib/interactive-image-parser';
 
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
 const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
 const VideoEmbed = lazy(() => import('./VideoEmbed').then(module => ({ default: module.VideoEmbed })));
 const GeoJsonMapViewer = lazy(() => import('./GeoJSONMapViewer').then(module => ({ default: module.GeoJsonMapViewer })));
+const InteractiveImage = lazy(() => import('./InteractiveImage').then(module => ({ default: module.InteractiveImage })));
 
 interface CodeBlockProps {
   className?: string;
@@ -167,6 +169,33 @@ export function CallToActionBlock({ code }: { code: string }) {
   }
 }
 
+export function InteractiveImageBlock({ code }: { code: string }) {
+  try {
+    const properties = parseInteractiveImageBlock(code);
+    if (!properties.href && !properties.svgContent) {
+      throw new Error("Property 'href' or 'svgContent' is required for an interactive-image block");
+    }
+    return (
+      <InteractiveImage
+        href={properties.href}
+        alt={properties.alt}
+        title={properties.title}
+        style={properties.style}
+        svgContent={properties.svgContent}
+        note={properties.note}
+      />
+    );
+  } catch (error: any) {
+    return (
+      <div className="my-6 p-6 rounded-2xl border border-amber-500/20 bg-amber-950/10 text-left">
+        <p className="text-xs text-amber-400">
+          Virheellinen interactive-image -lohko: {error?.message || "'href' tai 'svgContent' on pakollinen kenttä."}
+        </p>
+      </div>
+    );
+  }
+}
+
 function BlockFallback({ language, code }: { language: string; code: string }) {
   const t = getTranslations(CONFIG.language as Language);
   return (
@@ -309,6 +338,22 @@ export function CodeBlock({
           }
         >
           <DataModelSnippetBlock code={codeContent} placeholderHeight={placeholderHeight} language={language} fallbackText={t.common.loadingChart} />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
+
+  if (language === 'interactive-image') {
+    return (
+      <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>
+        <Suspense
+          fallback={
+            <div className={`${placeholderHeight} flex items-center justify-center text-slate-500 font-mono text-[10px] animate-pulse`}>
+              {t.common.loading}
+            </div>
+          }
+        >
+          <InteractiveImageBlock code={codeContent} />
         </Suspense>
       </ErrorBoundary>
     );

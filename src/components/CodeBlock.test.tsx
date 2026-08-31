@@ -144,4 +144,78 @@ buttonText: Click
     expect(button).toBeDefined();
     expect(button.textContent).toBe('Click');
   });
+
+  it('correctly parses and renders interactive-image block with YAML-like config', async () => {
+    const code = `
+href: /data/images/architecture.svg
+title: Tietojärjestelmäarkkitehtuuri
+alt: Looginen tietovirtojen kuvailu
+style: .node { fill: #fff; }
+`;
+
+    render(
+      <CodeBlock className="language-interactive-image">
+        {code}
+      </CodeBlock>
+    );
+
+    // Wait for the lazy component to load
+    const container = await screen.findByTestId('interactive-image-container');
+    expect(container).toBeDefined();
+    expect(screen.getByText('Tietojärjestelmäarkkitehtuuri')).toBeDefined();
+  });
+
+  it('correctly parses and renders interactive-image block using JSON config', async () => {
+    const jsonCode = JSON.stringify({
+      href: '/data/images/model.svg',
+      title: 'Tietomalli',
+      alt: 'Kaavatietomallin UML-diagrammi'
+    });
+
+    render(
+      <CodeBlock className="language-interactive-image">
+        {jsonCode}
+      </CodeBlock>
+    );
+
+    const container = await screen.findByTestId('interactive-image-container');
+    expect(container).toBeDefined();
+    expect(screen.getByText('Tietomalli')).toBeDefined();
+  });
+
+  it('renders an error banner if href is missing in interactive-image block', async () => {
+    const code = `
+title: Puutteellinen kuvaaja
+alt: Tästä puuttuu href-osoite
+`;
+
+    render(
+      <CodeBlock className="language-interactive-image">
+        {code}
+      </CodeBlock>
+    );
+
+    const errorBanner = await screen.findByText(/Virheellinen interactive-image -lohko/i);
+    expect(errorBanner).toBeDefined();
+    expect(errorBanner.textContent).toContain("Property 'href' or 'svgContent' is required");
+  });
+
+  it('correctly parses and renders interactive-image block with svgContent but without href, and renders copyright note', async () => {
+    const code = `
+title: Direct Inline Diagram
+svgContent: <svg data-testid="inline-direct"><rect width="20" height="20" /></svg>
+note: © 2026 Kaavatietomalli
+`;
+
+    render(
+      <CodeBlock className="language-interactive-image">
+        {code}
+      </CodeBlock>
+    );
+
+    const container = await screen.findByTestId('interactive-image-container');
+    expect(container).toBeDefined();
+    expect(screen.getByText('Direct Inline Diagram')).toBeDefined();
+    expect(screen.getByText('© 2026 Kaavatietomalli')).toBeDefined();
+  });
 });

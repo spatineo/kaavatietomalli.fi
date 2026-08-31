@@ -13,6 +13,7 @@ import {
   ensureOutputDirectories,
   writeMetadataIndexes,
   runGenerators,
+  downloadAndEmbedInteractiveImages,
 } from './generate-assets';
 import { escapeXml, parseVideoConfig, validateVideoBlock, validateMarkdownVideoBlocks } from './content-utils';
 import { CONFIG } from '../src/config';
@@ -885,6 +886,39 @@ describe('Modular Sub-pipelines', () => {
       } finally {
         writeSpy.mockRestore();
       }
+    });
+  });
+
+  describe('downloadAndEmbedInteractiveImages', () => {
+    it('should fetch remote SVG and embed it as svgContent inside JSON format', async () => {
+      const mockSvg = '<svg><rect width="100" height="100" /></svg>';
+      const fetchSpy = vi.spyOn(global, 'fetch').mockImplementation(() => {
+        return Promise.resolve({
+          ok: true,
+          text: () => Promise.resolve(mockSvg),
+        } as any);
+      });
+
+      const input = '```interactive-image\nhref: "https://example.com/test.svg"\ntitle: "Test"\n```';
+      const output = await downloadAndEmbedInteractiveImages(input);
+
+      expect(fetchSpy).toHaveBeenCalledWith('https://example.com/test.svg');
+      expect(output).toContain('svgContent');
+      expect(output).toContain('<svg><rect width=\\"100\\" height=\\"100\\" /></svg>');
+
+      fetchSpy.mockRestore();
+    });
+
+    it('should ignore non-remote SVG hrefs', async () => {
+      const fetchSpy = vi.spyOn(global, 'fetch');
+
+      const input = '```interactive-image\nhref: "/content/images/local.svg"\ntitle: "Local"\n```';
+      const output = await downloadAndEmbedInteractiveImages(input);
+
+      expect(fetchSpy).not.toHaveBeenCalled();
+      expect(output).toBe(input);
+
+      fetchSpy.mockRestore();
     });
   });
 });

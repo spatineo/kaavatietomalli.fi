@@ -415,6 +415,43 @@ The rendering engine automatically extracts the custom title, strips the annotat
 
 ---
 
+#### G. Interactive Images (`interactive-image`)
+To integrate highly detailed schemas, UML diagrams, or system architectures saved as SVG graphics, use the custom ````interactive-image```` code block. This embeds the graphic as a fully interactive image with zoom-and-pan capabilities (including mouse dragging, pinch-to-zoom gestures, mouse wheel adjustments, and touch support), rendering in a sleek, darkened context with double-click and full-screen preview triggers.
+
+##### Syntax (YAML-style):
+```markdown
+```interactive-image
+href: "/content/images/data-hierarchy.svg"
+title: "Tietorakenne ja luokkahierarkia"
+alt: "Kaavatietomallin looginen UML-rakennekaavio"
+note: "© 2026 Suomen ympäristökeskus"
+style: "background-color: #f8fafc; border-radius: 8px;"
+```
+```
+
+##### Alternative Syntax (JSON-style):
+```markdown
+```interactive-image
+{
+  "href": "/content/images/data-hierarchy.svg",
+  "title": "Tietorakenne ja luokkahierarkia",
+  "alt": "Kaavatietomallin looginen UML-rakennekaavio",
+  "note": "© 2026 Suomen ympäristökeskus",
+  "style": "background-color: #f8fafc; border-radius: 8px;"
+}
+```
+```
+
+* **Supported properties**:
+  - `href` (Optional if `svgContent` is provided): The relative or absolute URL path referencing the source `.svg` file to fetch and render.
+  - `svgContent` (Optional if `href` is provided): Directly embedded raw SVG source code. This enables offline-first vector diagram rendering without requesting external network resources.
+  - `title` (Optional): A readable, descriptive header string positioned above the image.
+  - `alt` (Optional): Alternate text description used for accessible rendering and screen readers.
+  - `note` (Optional): Short note text (such as a copyright notice or citation) displayed as a small italic caption under the inline image and as a beautiful floating overlay inside the full-screen modal viewport.
+  - `style` (Optional): Custom, inline-style rule declarations. Properties specified here are parsed into a dynamic React style dictionary and merged directly with the inline style properties of the immediate SVG container elements, completely eliminating clipping issues and HTML style tag injection.
+
+---
+
 ### 6. Testing & Validating Your Content
 
 To prevent common errors (such as missing required metadata fields or broken embedded video parameters) from breaking the website, you can run an automated validator locally:

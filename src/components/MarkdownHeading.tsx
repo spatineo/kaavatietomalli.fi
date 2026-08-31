@@ -108,11 +108,11 @@ export function MarkdownHeading({ level, children }: HeadingProps) {
   };
 
   return (
-    <Tag id={id} className="group relative flex items-center -ml-6 pl-6 scroll-mt-24">
+    <Tag id={id} className="group relative flex scroll-mt-24">
       <a
         href={`#${id}`}
         onClick={handleAnchorClick}
-        className="absolute left-0 opacity-0 group-hover:opacity-100 transition-opacity pr-2 text-slate-500 hover:text-brand-accent flex items-center justify-center w-6 h-full cursor-pointer"
+        className="absolute left-0 -ml-6 opacity-0 group-hover:opacity-100 transition-opacity pr-2 text-slate-500 hover:text-brand-accent flex items-center justify-center w-6 h-full cursor-pointer"
         title={t.page.linkToSection.replace('{{text}}', text)}
         aria-label={t.page.linkToSection.replace('{{text}}', text)}
       >

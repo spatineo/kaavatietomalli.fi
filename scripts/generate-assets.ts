@@ -9,8 +9,10 @@ import { getTranslations } from '../src/i18n/index.js';
 import { getFilesRecursive, escapeXml, validateMarkdownVideoBlocks } from './content-utils.js';
 import { LocalFileDataModelAccess } from '../src/lib/local-data-model-access.js';
 import { convertDataModelDiagramsToMermaid } from '../src/lib/data-model-diagram-generator.js';
+import { transpileInstanceToMermaid } from '../src/lib/instance-diagram-transpiler.js'
 import { parseModelId } from '../src/lib/data-model-utils.js';
 import { PostData, PageData, AuthorData } from '@/src/lib/blog.js';
+import { parseInteractiveImageBlock } from '../src/lib/interactive-image-parser.js';
 
 dotenv.config();
 
@@ -211,6 +213,57 @@ export function copyContentConfig(contentDir: string, outputDir: string): void {
   }
 }
 
+export async function downloadAndEmbedInteractiveImages(content: string): Promise<string> {
+  if (!content) return content;
+
+  const blockRegex = /```interactive-image\s*\n([\s\S]*?)\n```/g;
+  let match;
+  let updatedContent = content;
+  const replacements: { original: string; replacement: string }[] = [];
+
+  blockRegex.lastIndex = 0;
+  while ((match = blockRegex.exec(content)) !== null) {
+    const originalFullBlock = match[0];
+    const blockInner = match[1];
+
+    try {
+      const config = parseInteractiveImageBlock(blockInner);
+      if (config && config.href) {
+        const href = config.href.trim();
+        if ((href.startsWith('http://') || href.startsWith('https://')) && !config.svgContent) {
+          console.log(`Downloading remotely referenced SVG for interactive-image at build-time: ${href}`);
+          try {
+            const response = await fetch(href);
+            if (response.ok) {
+              const svgText = await response.text();
+              if (svgText.includes('<svg') || svgText.includes('<?xml')) {
+                config.svgContent = svgText.trim();
+                const newInner = JSON.stringify(config, null, 2);
+                const replacementFullBlock = `\`\`\`interactive-image\n${newInner}\n\`\`\``;
+                replacements.push({ original: originalFullBlock, replacement: replacementFullBlock });
+              } else {
+                console.warn(`Downloaded content from ${href} does not appear to be a valid SVG.`);
+              }
+            } else {
+              console.warn(`Failed to download remote SVG from ${href}: HTTP status ${response.status}`);
+            }
+          } catch (fetchErr: any) {
+            console.warn(`Error fetching remote SVG from ${href}:`, fetchErr.message || fetchErr);
+          }
+        }
+      }
+    } catch (parseErr) {
+      console.warn(`Failed to parse interactive-image block:`, parseErr);
+    }
+  }
+
+  for (const { original, replacement } of replacements) {
+    updatedContent = updatedContent.replace(original, replacement);
+  }
+
+  return updatedContent;
+}
+
 export async function generateIndividualContentFiles(
   posts: PostData[],
   pages: PageData[],
@@ -233,6 +286,9 @@ export async function generateIndividualContentFiles(
     if (post.content && post.content.includes('```data-model-snippet')) {
       post.content = await convertDataModelDiagramsToMermaid(post.content, dataAccess);
     }
+    if (post.content && post.content.includes('```interactive-image')) {
+      post.content = await downloadAndEmbedInteractiveImages(post.content);
+    }
     const outPath = path.join(POST_JSON_OUT_DIR, `${post.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
@@ -254,6 +310,9 @@ export async function generateIndividualContentFiles(
   for (const page of pages) {
     if (page.content && page.content.includes('```data-model-snippet')) {
       page.content = await convertDataModelDiagramsToMermaid(page.content, dataAccess);
+    }
+    if (page.content && page.content.includes('```interactive-image')) {
+      page.content = await downloadAndEmbedInteractiveImages(page.content);
     }
     const outPath = path.join(PAGE_JSON_OUT_DIR, `${page.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });

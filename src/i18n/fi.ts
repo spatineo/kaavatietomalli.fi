@@ -63,12 +63,14 @@ export const fi: Translations = {
       codelist: 'Koodisto',
     },
   },
-  mermaid: {
-    expand: 'Laajenna kaavio',
+  interactiveImage: {
+    expand: 'Laajenna kuvaaja',
     zoomIn: 'Lähennä',
     zoomOut: 'Loitonna',
     zoomToFit: 'Mahduta',
     close: 'Sulje',
+  },
+  mermaid: {
     renderError: 'Mermaid-kaavion piirto epäonnistui',
   },
   post: {
