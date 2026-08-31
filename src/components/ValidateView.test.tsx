@@ -63,4 +63,26 @@ describe('ValidateView Component', () => {
     const errorAlert = screen.queryByText(new RegExp(t.validation.invalidJson));
     expect(errorAlert).toBeDefined();
   });
+
+  it('loads a local JSON file into the JSON editor', async () => {
+    render(<ValidateView onBack={vi.fn()} />);
+
+    const loadFileBtn = screen.getByText(new RegExp(t.validation.buttonLoadFile));
+    expect(loadFileBtn).toBeDefined();
+
+    const file = new File(['{"uploadedPlanKey": "test-123"}'], 'test-plan.json', {
+      type: 'application/json',
+    });
+
+    // Find hidden input
+    const fileInput = screen.getByText(t.validation.buttonLoadFile).parentElement?.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+
+    fireEvent.change(fileInput, { target: { files: [file] } });
+
+    await waitFor(() => {
+      const textarea = screen.getByPlaceholderText('{}') as HTMLTextAreaElement;
+      expect(textarea.value).toContain('"uploadedPlanKey": "test-123"');
+    });
+  });
 });

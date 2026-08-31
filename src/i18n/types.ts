@@ -248,6 +248,7 @@ export interface Translations {
     areaIdentifier: string;
     areaPlaceholder: string;
     editorLabel: string;
+    buttonLoadFile: string;
     buttonFormat: string;
     buttonExample: string;
     buttonValidate: string;

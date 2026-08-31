@@ -19,7 +19,8 @@ import {
   Eye,
   EyeOff,
   ArrowLeft,
-  Trash
+  Trash,
+  Upload
 } from 'lucide-react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
@@ -353,10 +354,11 @@ export function ValidateView({ onBack }: ValidateViewProps) {
   const [selectedLineNum, setSelectedLineNum] = useState<number | null>(null);
   const [showRawResponse, setShowRawResponse] = useState<boolean>(false);
 
-  // Refs for scroll synchronization
+  // Refs for scroll synchronization and file loading
   const lineCounterRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightsRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [isValidating, setIsValidating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -365,6 +367,37 @@ export function ValidateView({ onBack }: ValidateViewProps) {
   const [responseStatus, setResponseStatus] = useState<number | null>(null);
   const [rawResponse, setRawResponse] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const content = event.target?.result as string;
+        if (content) {
+          try {
+            const parsed = JSON.parse(content);
+            setJsonInput(JSON.stringify(parsed, null, 2));
+            setJsonError(null);
+          } catch (parseErr: any) {
+            setJsonInput(content);
+            setJsonError(parseErr.message || strings.invalidJson);
+          }
+          setResponseStatus(null);
+          setRawResponse(null);
+          setErrorMsg(null);
+          setSelectedLineNum(null);
+        }
+      } catch (err: any) {
+        setJsonError(err.message || strings.unknownError);
+      }
+    };
+    reader.readAsText(file);
+
+    e.target.value = '';
+  };
 
   // Auto-save API Key securely to localStorage for convenience
   useEffect(() => {
@@ -762,7 +795,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
       </div>
 
       {/* Direct Side-by-Side Workspace Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fade-in">
         
         {/* Left Column: JSON Code Editor (Editable, Always Visible) */}
         <div className="lg:col-span-7 flex flex-col gap-4 code-editor">
@@ -777,17 +810,32 @@ export function ValidateView({ onBack }: ValidateViewProps) {
               </div>
               
               <div className="flex flex-wrap items-center gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".json,application/json"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="text-[11px] font-semibold text-slate-300 hover:text-white transition-colors bg-white/5 border border-white/10 hover:border-white/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Upload size={12} />
+                  {strings.buttonLoadFile}
+                </button>
                 <button
                   type="button"
                   onClick={handleLoadExample}
-                  className="text-[11px] font-semibold text-brand-accent hover:text-white transition-colors bg-brand-accent/5 border border-brand-accent/20 hover:border-brand-accent/40 px-2.5 py-1 rounded-lg"
+                  className="text-[11px] font-semibold text-slate-300 hover:text-white transition-colors bg-white/5 border border-white/10 hover:border-white/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer"
                 >
                   {strings.buttonExample}
                 </button>
                 <button
                   type="button"
                   onClick={handleFormatJson}
-                  className="text-[11px] font-semibold text-slate-300 hover:text-white transition-colors bg-white/5 border border-white/10 hover:border-white/20 px-2.5 py-1 rounded-lg"
+                  className="text-[11px] font-semibold text-slate-300 hover:text-white transition-colors bg-white/5 border border-white/10 hover:border-white/20 px-2.5 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer"
                 >
                   {strings.buttonFormat}
                 </button>
@@ -921,7 +969,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
             )}
           </button>
 
-          <div className="bg-brand-muted/70 backdrop-blur-md rounded-2xl border border-white/10 p-6 min-h-[500px] flex flex-col justify-between gap-6">
+          <div className="bg-brand-muted/70 backdrop-blur-md rounded-2xl border border-white/10 p-6 min-h-[500px] flex-grow flex flex-col justify-between gap-6">
             
             {/* Initial empty state */}
             {responseStatus === null && !errorMsg && !isValidating && !jsonError && (
