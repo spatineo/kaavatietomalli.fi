@@ -19,7 +19,7 @@ Suomen valtakunnallisesti yhteentoimiva Kaavatietomalli määrittelee rakenteen 
 * **Koodistopohjaisuus:** Merkinnät ja määräykset nojaavat valtakunnallisiin koodistoihin, mikä poistaa tulkinnanvaraisuutta ja yhdenmukaistaa termistöä.
 * **Geometrian ja tiedon yhdistäminen:** Jokaiseen kaavakohteeseen kytkeytyy sekä sen spatiaalinen geometria (alue, viiva tai piste) että siihen liittyvät laadulliset ja numeeriset ominaisuudesta vastaavat tiedot.
 
-Kaavatietomallin kenties keskeisin soveltamisalue on Suomen ympäristökeskuksen ylläpitämä Rakennetun ympäristön tietojärjestelmä eli lyhemmin [Ryhti-järjestelmä](https://ryhti.syke.fi/). Yhteinen Kaavatietomalli mahdollistaa rakennetun ympäristön käyttöä ja kehittämistä koskevien suunnitelmien ja päätösten, eli kaavatiedon, yhteiskäytön eri käyttäjien ja tietojärjestelmien kesken.
+Kaavatietomallin kenties keskeisin soveltamisalue on Suomen ympäristökeskuksen ylläpitämä Rakennetun ympäristön tietojärjestelmä eli lyhemmin [Ryhti-järjestelmä](/ryhti-jarjestelma/). Yhteinen Kaavatietomalli mahdollistaa rakennetun ympäristön käyttöä ja kehittämistä koskevien suunnitelmien ja päätösten, eli kaavatiedon, yhteiskäytön eri käyttäjien ja tietojärjestelmien kesken.
 
 Kaavatietomalli on niin sanottu loogisen tason tietomalli, josta voidaan tuottaa erilaisia teknisiä toteutuksia sekä tietojärjestelmien sisäiseen kaavatiedon hallintaan ja tallennukseen että eri tietojärjestelmien väliseen kaavatiedon vaihtoon. [Ryhti-järjestelmän rajapintakuvaukset](https://github.com/sykefi/Ryhti-rajapintakuvaukset/) sisältävät erään Kaavatietomallin teknisen toteutuksen kaavatiedon siirtämiseksi kuntien ja maakuntien tietojärjestelmistä keskitettyyn kansalliseen Ryhti-järjestelmään ja niiden hakemiseksi Ryhti-järjestelmästä. 
 
