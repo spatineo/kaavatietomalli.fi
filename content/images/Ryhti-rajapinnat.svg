@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" viewBox="231.59378 155.7565 1255.7866 781.3134" width="1255.7866" height="781.3134">
+  <defs>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="SharpArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-3 -3 7 6" markerWidth="7" markerHeight="6" color="#aaa">
+      <g>
+        <path d="M 3 0 L -1.8 -1.8 L 0 0 L 0 0 L -1.8 1.8 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="SharpArrow_Marker_2" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-4 -3 7 6" markerWidth="7" markerHeight="6" color="#aaa">
+      <g>
+        <path d="M -3 0 L 1.8 1.8 L 0 0 L 0 0 L 1.8 -1.8 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="SharpArrow_Marker_3" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-3 -3 7 6" markerWidth="7" markerHeight="6" color="#aaa">
+      <g>
+        <path d="M 3 0 L -1.8 -1.8 L 0 0 L 0 0 L -1.8 1.8 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+  </defs>
+  <g id="Canvas_1" fill="none" fill-opacity="1" stroke-dasharray="none" stroke="none" stroke-opacity="1">
+    <title>Canvas 1</title>
+    <g id="Canvas_1_Layer_1">
+      <title>Layer 1</title>
+      <g id="Graphic_4">
+        <path d="M 561.9614 363.69424 L 1111.5434 363.69424 C 1114.8571 363.69424 1117.5434 366.38053 1117.5434 369.69424 L 1117.5434 714.6942 C 1117.5434 718.00795 1114.8571 720.6942 1111.5434 720.6942 L 561.9614 720.6942 C 558.6477 720.6942 555.9614 718.00795 555.9614 714.6942 L 555.9614 369.69424 C 555.9614 366.38053 558.6477 363.69424 561.9614 363.69424 Z" fill="#333"/>
+      </g>
+      <g id="Group_9">
+        <g id="Graphic_2">
+          <path d="M 830.459 616.19424 L 905.3438 616.19424 C 942.7861 616.19424 980.2285 597.69424 980.2285 542.19424 C 980.2285 486.69424 942.7861 468.19424 905.3438 468.19424 L 830.459 468.19424 Z" fill="#eabd00"/>
+          <text transform="translate(835.459 523.74624)" fill="#221e1f">
+            <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="31.204766" y="15" xml:space="preserve">Rakennus- </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="27.364766" y="33.448" xml:space="preserve">tietovaranto</tspan>
+          </text>
+        </g>
+        <g id="Graphic_3">
+          <path d="M 821.959 616.19424 L 747.0742 616.19424 C 709.6318 616.19424 672.18945 597.69424 672.18945 542.19424 C 672.18945 486.69424 709.6318 468.19424 747.0742 468.19424 L 821.959 468.19424 Z" fill="#eabd00"/>
+          <text transform="translate(677.18945 523.74624)" fill="#221e1f">
+            <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="14.908766" y="15" xml:space="preserve">Alueidenkäytön </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="27.364766" y="33.448" xml:space="preserve">tietovaranto</tspan>
+          </text>
+        </g>
+      </g>
+      <g id="Graphic_5">
+        <text transform="translate(737.484 415.12054)" fill="#929292">
+          <tspan font-family="Helvetica Neue" font-size="25" fill="#929292" x="36948222e-20" y="24" xml:space="preserve">Ryhti-järjestelmä</tspan>
+        </text>
+      </g>
+      <g id="Graphic_6">
+        <path d="M 603.0088 661.11606 L 803.5166 661.11606 C 806.8303 661.11606 809.5166 663.80235 809.5166 667.11606 L 809.5166 744.2411 C 809.5166 747.5548 806.8303 750.2411 803.5166 750.2411 L 603.0088 750.2411 C 599.6951 750.2411 597.0088 747.5548 597.0088 744.2411 L 597.0088 667.11606 C 597.0088 663.80235 599.6951 661.11606 603.0088 661.11606 Z" fill="#67cef9"/>
+        <text transform="translate(602.0088 687.2306)" fill="#221e1f">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="34.437906" y="15" xml:space="preserve">Ryhti Syke Service</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="21.101906" y="33.448" xml:space="preserve">(Suomi.fi-palveluväylä)</tspan>
+        </text>
+      </g>
+      <g id="Graphic_10">
+        <path d="M 1016.1963 540.91143 L 1216.7041 540.91143 C 1220.0178 540.91143 1222.7041 543.5977 1222.7041 546.91143 L 1222.7041 624.0364 C 1222.7041 627.35014 1220.0178 630.0364 1216.7041 630.0364 L 1016.1963 630.0364 C 1012.8826 630.0364 1010.1963 627.35014 1010.1963 624.0364 L 1010.1963 546.91143 C 1010.1963 543.5977 1012.8826 540.91143 1016.1963 540.91143 Z" fill="#67cef9"/>
+        <text transform="translate(1015.1963 557.80194)" fill="#221e1f">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="72.20591" y="15" xml:space="preserve">Avoimet </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="26.869906" y="33.448" xml:space="preserve">paikkatietorajapinnat</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="31.325906" y="51.895996" xml:space="preserve">(OGC API Features)</tspan>
+        </text>
+      </g>
+      <g id="Graphic_11">
+        <path d="M 850.9403 661.11606 L 1051.4481 661.11606 C 1054.7618 661.11606 1057.4481 663.80235 1057.4481 667.11606 L 1057.4481 744.2411 C 1057.4481 747.5548 1054.7618 750.2411 1051.4481 750.2411 L 850.9403 750.2411 C 847.6266 750.2411 844.9403 747.5548 844.9403 744.2411 L 844.9403 667.11606 C 844.9403 663.80235 847.6266 661.11606 850.9403 661.11606 Z" fill="#67cef9"/>
+        <text transform="translate(849.9403 687.2306)" fill="#221e1f">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="9.965906" y="15" xml:space="preserve">Kaavasuunnitelman avoin </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="44.213906" y="33.448" xml:space="preserve">validointipalvelu</tspan>
+        </text>
+      </g>
+      <g id="Graphic_12">
+        <path d="M 1184.6202 691.3433 L 1385.128 691.3433 C 1388.4417 691.3433 1391.128 694.0296 1391.128 697.3433 L 1391.128 774.4683 C 1391.128 777.782 1388.4417 780.4683 1385.128 780.4683 L 1184.6202 780.4683 C 1181.3065 780.4683 1178.6202 777.782 1178.6202 774.4683 L 1178.6202 697.3433 C 1178.6202 694.0296 1181.3065 691.3433 1184.6202 691.3433 Z" fill="#009193"/>
+        <text transform="translate(1183.6202 726.6818)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x=".9339062" y="15" xml:space="preserve">Muut viranomaisjärjestelmät</tspan>
+        </text>
+      </g>
+      <g id="Graphic_13">
+        <path d="M 300.51732 260.7166 L 501.02513 260.7166 C 504.33884 260.7166 507.02513 263.4029 507.02513 266.7166 L 507.02513 343.8416 C 507.02513 347.1553 504.33884 349.8416 501.02513 349.8416 L 300.51732 349.8416 C 297.2036 349.8416 294.51732 347.1553 294.51732 343.8416 L 294.51732 266.7166 C 294.51732 263.4029 297.2036 260.7166 300.51732 260.7166 Z" fill="#009193"/>
+        <text transform="translate(299.51732 277.6071)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="60.357906" y="15" xml:space="preserve">Kansallinen </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="39.309906" y="33.448" xml:space="preserve">maastotietokanta</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="5.077906" y="51.895996" xml:space="preserve">(KMTK, Maanmittauslaitos)</tspan>
+        </text>
+      </g>
+      <g id="Graphic_14">
+        <path d="M 247.59378 400.814 L 448.1016 400.814 C 451.4153 400.814 454.1016 403.5003 454.1016 406.814 L 454.1016 483.939 C 454.1016 487.2527 451.4153 489.939 448.1016 489.939 L 247.59378 489.939 C 244.28008 489.939 241.59378 487.2527 241.59378 483.939 L 241.59378 406.814 C 241.59378 403.5003 244.28008 400.814 247.59378 400.814 Z" fill="#009193"/>
+        <text transform="translate(246.59378 426.9285)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="13.989906" y="15" xml:space="preserve">Kiinteistötietojärjestelmä </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="13.229906" y="33.448" xml:space="preserve">(KTJ, Maanmittauslaitos)</tspan>
+        </text>
+      </g>
+      <g id="Graphic_15">
+        <path d="M 258.57968 540.91143 L 459.0875 540.91143 C 462.4012 540.91143 465.0875 543.5977 465.0875 546.91143 L 465.0875 624.0364 C 465.0875 627.35014 462.4012 630.0364 459.0875 630.0364 L 258.57968 630.0364 C 255.26597 630.0364 252.57968 627.35014 252.57968 624.0364 L 252.57968 546.91143 C 252.57968 543.5977 255.26597 540.91143 258.57968 540.91143 Z" fill="#009193"/>
+        <text transform="translate(257.57968 567.02594)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="74.29391" y="15" xml:space="preserve">GenTax</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="55.621906" y="33.448" xml:space="preserve">(Verohallinto)</tspan>
+        </text>
+      </g>
+      <g id="Graphic_16">
+        <path d="M 725.9551 302.647 L 926.4629 302.647 C 929.7766 302.647 932.4629 305.3333 932.4629 308.647 L 932.4629 385.772 C 932.4629 389.0857 929.7766 391.772 926.4629 391.772 L 725.9551 391.772 C 722.6414 391.772 719.9551 389.0857 719.9551 385.772 L 719.9551 308.647 C 719.9551 305.3333 722.6414 302.647 725.9551 302.647 Z" fill="#67cef9"/>
+        <text transform="translate(724.9551 337.9855)" fill="#221e1f">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="8.493906" y="15" xml:space="preserve">Ryhti-verkkokäyttöliittymä</tspan>
+        </text>
+      </g>
+      <g id="Graphic_17">
+        <path d="M 1151.3928 260.7166 L 1351.9006 260.7166 C 1355.2144 260.7166 1357.9006 263.4029 1357.9006 266.7166 L 1357.9006 343.8416 C 1357.9006 347.1553 1355.2144 349.8416 1351.9006 349.8416 L 1151.3928 349.8416 C 1148.0791 349.8416 1145.3928 347.1553 1145.3928 343.8416 L 1145.3928 266.7166 C 1145.3928 263.4029 1148.0791 260.7166 1151.3928 260.7166 Z" fill="#009193"/>
+        <text transform="translate(1150.3928 286.8311)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="5.237906" y="15" xml:space="preserve">Elinympäristön tietopalvelu </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="57.997906" y="33.448" xml:space="preserve">Liiteri (Syke)</tspan>
+        </text>
+      </g>
+      <g id="Group_24">
+        <g id="Graphic_18">
+          <path d="M 582.1107 825.1609 L 782.6185 825.1609 C 785.9322 825.1609 788.6185 827.8472 788.6185 831.1609 L 788.6185 908.2859 C 788.6185 911.5996 785.9322 914.2859 782.6185 914.2859 L 582.1107 914.2859 C 578.79696 914.2859 576.1107 911.5996 576.1107 908.2859 L 576.1107 831.1609 C 576.1107 827.8472 578.79696 825.1609 582.1107 825.1609 Z" fill="#009193"/>
+          <path d="M 582.1107 825.1609 L 782.6185 825.1609 C 785.9322 825.1609 788.6185 827.8472 788.6185 831.1609 L 788.6185 908.2859 C 788.6185 911.5996 785.9322 914.2859 782.6185 914.2859 L 582.1107 914.2859 C 578.79696 914.2859 576.1107 911.5996 576.1107 908.2859 L 576.1107 831.1609 C 576.1107 827.8472 578.79696 825.1609 582.1107 825.1609 Z" stroke="#424242" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+          <text transform="translate(581.1107 842.0514)" fill="white">
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="21.957906" y="15" xml:space="preserve">Kuntien ja maakuntien </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="13.693906" y="33.448" xml:space="preserve">liittojen kaavarekisterit ja </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="23.005906" y="51.895996" xml:space="preserve">suunnitteluohjelmistot</tspan>
+          </text>
+        </g>
+        <g id="Graphic_20">
+          <path d="M 588.0114 831.3029 L 788.5192 831.3029 C 791.8329 831.3029 794.5192 833.9892 794.5192 837.3029 L 794.5192 914.4279 C 794.5192 917.7416 791.8329 920.4279 788.5192 920.4279 L 588.0114 920.4279 C 584.6977 920.4279 582.0114 917.7416 582.0114 914.4279 L 582.0114 837.3029 C 582.0114 833.9892 584.6977 831.3029 588.0114 831.3029 Z" fill="#009193"/>
+          <path d="M 588.0114 831.3029 L 788.5192 831.3029 C 791.8329 831.3029 794.5192 833.9892 794.5192 837.3029 L 794.5192 914.4279 C 794.5192 917.7416 791.8329 920.4279 788.5192 920.4279 L 588.0114 920.4279 C 584.6977 920.4279 582.0114 917.7416 582.0114 914.4279 L 582.0114 837.3029 C 582.0114 833.9892 584.6977 831.3029 588.0114 831.3029 Z" stroke="#424242" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+          <text transform="translate(587.0114 848.1934)" fill="white">
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="21.957906" y="15" xml:space="preserve">Kuntien ja maakuntien </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="13.693906" y="33.448" xml:space="preserve">liittojen kaavarekisterit ja </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="23.005906" y="51.895996" xml:space="preserve">suunnitteluohjelmistot</tspan>
+          </text>
+        </g>
+        <g id="Graphic_21">
+          <path d="M 593.91214 837.4449 L 794.41995 837.4449 C 797.7337 837.4449 800.41995 840.1312 800.41995 843.4449 L 800.41995 920.5699 C 800.41995 923.8836 797.7337 926.5699 794.41995 926.5699 L 593.91214 926.5699 C 590.5984 926.5699 587.91214 923.8836 587.91214 920.5699 L 587.91214 843.4449 C 587.91214 840.1312 590.5984 837.4449 593.91214 837.4449 Z" fill="#009193"/>
+          <path d="M 593.91214 837.4449 L 794.41995 837.4449 C 797.7337 837.4449 800.41995 840.1312 800.41995 843.4449 L 800.41995 920.5699 C 800.41995 923.8836 797.7337 926.5699 794.41995 926.5699 L 593.91214 926.5699 C 590.5984 926.5699 587.91214 923.8836 587.91214 920.5699 L 587.91214 843.4449 C 587.91214 840.1312 590.5984 837.4449 593.91214 837.4449 Z" stroke="#424242" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+          <text transform="translate(592.91214 854.3354)" fill="white">
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="21.957906" y="15" xml:space="preserve">Kuntien ja maakuntien </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="13.693906" y="33.448" xml:space="preserve">liittojen kaavarekisterit ja </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="23.005906" y="51.895996" xml:space="preserve">suunnitteluohjelmistot</tspan>
+          </text>
+        </g>
+      </g>
+      <g id="Group_25">
+        <g id="Graphic_19">
+          <path d="M 860.2989 825.1413 L 1060.8067 825.1413 C 1064.1204 825.1413 1066.8067 827.8276 1066.8067 831.1413 L 1066.8067 908.2663 C 1066.8067 911.58 1064.1204 914.2663 1060.8067 914.2663 L 860.2989 914.2663 C 856.9852 914.2663 854.2989 911.58 854.2989 908.2663 L 854.2989 831.1413 C 854.2989 827.8276 856.9852 825.1413 860.2989 825.1413 Z" fill="#009193"/>
+          <path d="M 860.2989 825.1413 L 1060.8067 825.1413 C 1064.1204 825.1413 1066.8067 827.8276 1066.8067 831.1413 L 1066.8067 908.2663 C 1066.8067 911.58 1064.1204 914.2663 1060.8067 914.2663 L 860.2989 914.2663 C 856.9852 914.2663 854.2989 911.58 854.2989 908.2663 L 854.2989 831.1413 C 854.2989 827.8276 856.9852 825.1413 860.2989 825.1413 Z" stroke="#424242" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+          <text transform="translate(859.2989 851.2558)" fill="white">
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="7.757906" y="15" xml:space="preserve">Kaavakonsultointiyritysten </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="23.005906" y="33.448" xml:space="preserve">suunnitteluohjelmistot</tspan>
+          </text>
+        </g>
+        <g id="Graphic_22">
+          <path d="M 865.4824 831.2833 L 1065.9902 831.2833 C 1069.3039 831.2833 1071.9902 833.9696 1071.9902 837.2833 L 1071.9902 914.4083 C 1071.9902 917.722 1069.3039 920.4083 1065.9902 920.4083 L 865.4824 920.4083 C 862.1687 920.4083 859.4824 917.722 859.4824 914.4083 L 859.4824 837.2833 C 859.4824 833.9696 862.1687 831.2833 865.4824 831.2833 Z" fill="#009193"/>
+          <path d="M 865.4824 831.2833 L 1065.9902 831.2833 C 1069.3039 831.2833 1071.9902 833.9696 1071.9902 837.2833 L 1071.9902 914.4083 C 1071.9902 917.722 1069.3039 920.4083 1065.9902 920.4083 L 865.4824 920.4083 C 862.1687 920.4083 859.4824 917.722 859.4824 914.4083 L 859.4824 837.2833 C 859.4824 833.9696 862.1687 831.2833 865.4824 831.2833 Z" stroke="#424242" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+          <text transform="translate(864.4824 857.3978)" fill="white">
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="7.757906" y="15" xml:space="preserve">Kaavakonsultointiyritysten </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="23.005906" y="33.448" xml:space="preserve">suunnitteluohjelmistot</tspan>
+          </text>
+        </g>
+        <g id="Graphic_23">
+          <path d="M 870.6854 837.4449 L 1071.1932 837.4449 C 1074.5069 837.4449 1077.1932 840.1312 1077.1932 843.4449 L 1077.1932 920.5699 C 1077.1932 923.8836 1074.5069 926.5699 1071.1932 926.5699 L 870.6854 926.5699 C 867.3717 926.5699 864.6854 923.8836 864.6854 920.5699 L 864.6854 843.4449 C 864.6854 840.1312 867.3717 837.4449 870.6854 837.4449 Z" fill="#009193"/>
+          <path d="M 870.6854 837.4449 L 1071.1932 837.4449 C 1074.5069 837.4449 1077.1932 840.1312 1077.1932 843.4449 L 1077.1932 920.5699 C 1077.1932 923.8836 1074.5069 926.5699 1071.1932 926.5699 L 870.6854 926.5699 C 867.3717 926.5699 864.6854 923.8836 864.6854 920.5699 L 864.6854 843.4449 C 864.6854 840.1312 867.3717 837.4449 870.6854 837.4449 Z" stroke="#424242" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
+          <text transform="translate(869.6854 863.5594)" fill="white">
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="7.757906" y="15" xml:space="preserve">Kaavakonsultointiyritysten </tspan>
+            <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="23.005906" y="33.448" xml:space="preserve">suunnitteluohjelmistot</tspan>
+          </text>
+        </g>
+      </g>
+      <g id="Graphic_27">
+        <path d="M 288.37683 691.3433 L 488.88464 691.3433 C 492.19835 691.3433 494.88464 694.0296 494.88464 697.3433 L 494.88464 774.4683 C 494.88464 777.782 492.19835 780.4683 488.88464 780.4683 L 288.37683 780.4683 C 285.06312 780.4683 282.37683 777.782 282.37683 774.4683 L 282.37683 697.3433 C 282.37683 694.0296 285.06312 691.3433 288.37683 691.3433 Z" fill="#009193"/>
+        <text transform="translate(287.37683 708.2338)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="19.773906" y="15" xml:space="preserve">Väestötietojärjesrtelmä</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="55.917906" y="33.448" xml:space="preserve">(VTJ, Digi- ja </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="35.925906" y="51.895996" xml:space="preserve">väestötietovirasto)</tspan>
+        </text>
+      </g>
+      <g id="Line_28">
+        <line x1="490.94846" y1="354.282" x2="547.78993" y2="385.17006" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_29">
+        <line x1="463.22444" y1="468.22455" x2="546.83855" y2="484.78264" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_30">
+        <line x1="474.3496" y1="575.01296" x2="546.6993" y2="568.46107" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_31">
+        <line x1="499.44574" y1="688.0033" x2="547.4248" y2="667.2632" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_32">
+        <line x1="696.4105" y1="759.4665" x2="689.27995" y2="815.43945" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_33">
+        <line x1="870.2284" y1="755.0854" x2="755.8185" y2="824.9004" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_34">
+        <line x1="781.00545" y1="755.2404" x2="882.3885" y2="819.87315" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_35">
+        <line x1="957.5221" y1="825.1413" x2="954.0466" y2="759.528" marker-end="url(#SharpArrow_Marker)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_36">
+        <line x1="1182.5956" y1="691.6934" x2="1126.08" y2="667.2632" marker-end="url(#SharpArrow_Marker)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_37">
+        <line x1="1117.5434" y1="381.8555" x2="1165.5312" y2="354.45323" marker-end="url(#SharpArrow_Marker)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Graphic_38">
+        <path d="M 725.9551 165.7565 L 926.4629 165.7565 C 929.7766 165.7565 932.4629 168.4428 932.4629 171.7565 L 932.4629 248.8815 C 932.4629 252.1952 929.7766 254.8815 926.4629 254.8815 L 725.9551 254.8815 C 722.6414 254.8815 719.9551 252.1952 719.9551 248.8815 L 719.9551 171.7565 C 719.9551 168.4428 722.6414 165.7565 725.9551 165.7565 Z" fill="#009193"/>
+        <text transform="translate(724.9551 191.871)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="21.957906" y="15" xml:space="preserve">Kuntien ja maakuntien </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="22.581906" y="33.448" xml:space="preserve">liittojen selainkäyttäjät</tspan>
+        </text>
+      </g>
+      <g id="Line_39">
+        <line x1="826.209" y1="254.8815" x2="826.209" y2="293.347" marker-end="url(#SharpArrow_Marker_3)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Graphic_40">
+        <path d="M 1270.8725 540.91143 L 1471.3803 540.91143 C 1474.694 540.91143 1477.3803 543.5977 1477.3803 546.91143 L 1477.3803 624.0364 C 1477.3803 627.35014 1474.694 630.0364 1471.3803 630.0364 L 1270.8725 630.0364 C 1267.5588 630.0364 1264.8725 627.35014 1264.8725 624.0364 L 1264.8725 546.91143 C 1264.8725 543.5977 1267.5588 540.91143 1270.8725 540.91143 Z" fill="#009193"/>
+        <text transform="translate(1269.8725 576.2499)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="19.461906" y="15" xml:space="preserve">Paikkatieto-ohjelmistot</tspan>
+        </text>
+      </g>
+      <g id="Line_41">
+        <line x1="1264.8725" y1="585.4739" x2="1232.0041" y2="585.4739" marker-end="url(#SharpArrow_Marker_3)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Graphic_42">
+        <path d="M 1225.4032 400.814 L 1425.911 400.814 C 1429.2247 400.814 1431.911 403.5003 1431.911 406.814 L 1431.911 483.939 C 1431.911 487.2527 1429.2247 489.939 1425.911 489.939 L 1225.4032 489.939 C 1222.0895 489.939 1219.4032 487.2527 1219.4032 483.939 L 1219.4032 406.814 C 1219.4032 403.5003 1222.0895 400.814 1225.4032 400.814 Z" fill="#009193"/>
+        <text transform="translate(1224.4032 417.7045)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="13.525906" y="15" xml:space="preserve">Kaavoituksen seurannan </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="41.253906" y="33.448" xml:space="preserve">tilastojärjestelmä</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="79.47791" y="51.895996" xml:space="preserve">(Syke)</tspan>
+        </text>
+      </g>
+      <g id="Line_43">
+        <line x1="1117.5434" y1="486.58924" x2="1210.2804" y2="468.22455" marker-end="url(#SharpArrow_Marker_3)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+    </g>
+  </g>
+</svg>
