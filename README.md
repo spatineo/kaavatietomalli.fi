@@ -427,7 +427,6 @@ alt: "Kaavatietomallin looginen UML-rakennekaavio"
 note: "© 2026 Suomen ympäristökeskus"
 style: "background-color: #f8fafc; border-radius: 8px;"
 ```
-```
 
 ##### Alternative Syntax (JSON-style):
 ```markdown
@@ -439,7 +438,6 @@ style: "background-color: #f8fafc; border-radius: 8px;"
   "note": "© 2026 Suomen ympäristökeskus",
   "style": "background-color: #f8fafc; border-radius: 8px;"
 }
-```
 ```
 
 * **Supported properties**:
