@@ -30,7 +30,7 @@ Valtionhallinnon on kilpailulainsäädännön puitteissa käytännössä mahdoto
 ## Tietoa järjestelmiltä järjestelmille
 
 ```interactive-image
-href: "/content/images/Ryhti-rajapinnat.svg"
+href: "/images/Ryhti-rajapinnat.svg"
 title: "Ryhti-järjestelmän tietovarannot ja yhteydet"
 alt: "Kaaviokuva Ryhti-järjestelmän integraatioista muihin tietojärjestelmiin"
 ```
