@@ -60,7 +60,7 @@ export interface ThemeItem {
 
 export interface NavItem {
   label?: string;
-  type: 'page' | 'tag' | 'blog' | 'menu' | 'model' | 'validate';
+  type: 'page' | 'tag' | 'blog' | 'menu' | 'model' | 'validate' | 'planIndex';
   slug?: string;
   subitems?: NavItem[];
 }
@@ -79,17 +79,22 @@ export async function getBuildVersion(): Promise<string> {
   if (fetchedVersion) {
     return fetchedVersion;
   }
+  if (import.meta.env.DEV) {
+    fetchedVersion = CONFIG.appVersion || '1';
+    return fetchedVersion;
+  }
   if (versionPromise) {
     return versionPromise;
   }
   versionPromise = (async () => {
     try {
       const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/version.json`, true);
-      fetchedVersion = data?.version || '1';
+      fetchedVersion = data?.version || CONFIG.appVersion || '1';
       return fetchedVersion;
     } catch (error) {
-      console.error('Failed to load version.json, using fallback:', error);
-      return '1';
+      console.warn('Failed to load version.json, using fallback:', error);
+      fetchedVersion = CONFIG.appVersion || '1';
+      return fetchedVersion;
     } finally {
       versionPromise = null;
     }
@@ -121,6 +126,43 @@ export interface TagIndex {
     posts: string[];
     pages: string[];
   };
+}
+
+export interface MunicipalityInfo {
+  id: string;
+  natcode: string;
+  kuntatunnus?: number;
+  nameFin: string;
+  nameSwe?: string;
+  numberOfDetailedPlansInRyhti?: number;
+  properties?: {
+    kuntatunnus?: number;
+    NATCODE?: string;
+    NAMEFIN?: string;
+    NAMESWE?: string;
+    [key: string]: any;
+  };
+}
+
+export interface MunicipalityFeature {
+  id: string;
+  type: 'Feature';
+  geometry: any;
+  properties: {
+    kuntatunnus?: number;
+    NATCODE?: string;
+    NAMEFIN?: string;
+    NAMESWE?: string;
+    [key: string]: any;
+  };
+}
+
+export interface MunicipalityCollection {
+  type: 'FeatureCollection';
+  numberMatched?: number;
+  numberReturned?: number;
+  features: MunicipalityFeature[];
+  [key: string]: any;
 }
 
 // Keep track of pending loads to avoid duplicate requests for simultaneous needs
@@ -245,3 +287,56 @@ export async function getRelatedPostSlugs(currentSlug: string, count: number = 3
     
   return related;
 }
+
+const municipalityFeatureCache = new Map<string, MunicipalityFeature>();
+
+export async function getMunicipalityList(): Promise<MunicipalityInfo[]> {
+  try {
+    const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/data/nls.fi/municipalities.json`);
+    if (Array.isArray(data)) {
+      return data;
+    }
+    if (data && Array.isArray(data.features)) {
+      return data.features.map((f: any) => ({
+        id: f.id,
+        natcode: String(f.properties?.NATCODE || f.properties?.kuntatunnus || '').padStart(3, '0'),
+        kuntatunnus: f.properties?.kuntatunnus,
+        nameFin: f.properties?.NAMEFIN || '',
+        nameSwe: f.properties?.NAMESWE,
+        numberOfDetailedPlansInRyhti: f.numberOfDetailedPlansInRyhti ?? f.properties?.numberOfDetailedPlansInRyhti ?? 0,
+        properties: f.properties
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Error loading municipality index:', error);
+    return [];
+  }
+}
+
+export const getMunicipalityData = getMunicipalityList;
+export const getMunicipalities = getMunicipalityList;
+
+export async function getMunicipalityByCode(code: string): Promise<MunicipalityFeature | null> {
+  const rawCode = String(code || '').trim();
+  if (!rawCode) return null;
+  const padCode = rawCode.padStart(3, '0');
+
+  if (municipalityFeatureCache.has(padCode)) {
+    return municipalityFeatureCache.get(padCode) || null;
+  }
+
+  try {
+    const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/data/nls.fi/municipalities/${padCode}.json`);
+    if (data && (data.type === 'Feature' || data.geometry)) {
+      municipalityFeatureCache.set(padCode, data);
+      municipalityFeatureCache.set(rawCode, data);
+      return data;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error loading municipality feature for ${padCode}:`, error);
+    return null;
+  }
+}
+

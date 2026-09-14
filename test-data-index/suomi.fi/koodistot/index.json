@@ -20,6 +20,14 @@
           "name": "RY_AsiakirjanLaji_YKAK"
         }
       ]
+    },
+    {
+      "name": "jhs",
+      "codelists": [
+        {
+          "name": "kunta_1_20240101"
+        }
+      ]
     }
   ]
 }

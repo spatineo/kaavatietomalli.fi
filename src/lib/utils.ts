@@ -40,7 +40,7 @@ export async function fetchServerVersion(): Promise<string | null> {
     const data = await res.json();
     return data?.version || null;
   } catch (error) {
-    console.error('Failed to verify backend version:', error);
+    console.warn('Failed to verify backend version:', error);
   }
   return null;
 }
@@ -69,5 +69,36 @@ export function scrollToAnchor(id: string) {
     window.history.pushState(null, '', `#${id}`);
     window.dispatchEvent(new Event('hashchange'));
   }
+}
+
+/**
+ * Formats date strings returned by the plan API (e.g. "1900-01-01Z", "2024-05-15T00:00:00Z", null)
+ * using the Finnish date format locale (e.g., "1.1.1900" or "15.5.2024").
+ * Handles null, undefined, or invalid date values gracefully by returning a fallback string (default '-').
+ */
+export function formatPlanDate(dateStr: string | null | undefined, fallback = '-'): string {
+  if (!dateStr || typeof dateStr !== 'string') return fallback;
+  const trimmed = dateStr.trim();
+  if (!trimmed || trimmed === '-') return fallback;
+
+  // Match YYYY-MM-DD pattern at the beginning of the string
+  const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const year = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const day = parseInt(match[3], 10);
+    if (!isNaN(year) && !isNaN(month) && !isNaN(day) && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      // Create UTC Date to avoid local timezone offset shifts (e.g., UTC-7 shifting 1900-01-01Z to 1899-12-31)
+      const d = new Date(Date.UTC(year, month - 1, day));
+      return d.toLocaleDateString('fi-FI', { timeZone: 'UTC' });
+    }
+  }
+
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toLocaleDateString('fi-FI', { timeZone: 'UTC' });
+  }
+
+  return fallback;
 }
 

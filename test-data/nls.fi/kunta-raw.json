@@ -1,0 +1,64 @@
+{
+  "type": "FeatureCollection",
+  "numberMatched": 3,
+  "numberReturned": 3,
+  "features": [
+    {
+      "id": "kunta.091",
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [24.82, 60.13],
+            [25.25, 60.13],
+            [25.25, 60.29],
+            [24.82, 60.29],
+            [24.82, 60.13]
+          ]
+        ]
+      },
+      "properties": {
+        "kuntatunnus": 91
+      }
+    },
+    {
+      "id": "kunta.049",
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [24.58, 60.11],
+            [24.86, 60.11],
+            [24.86, 60.36],
+            [24.58, 60.36],
+            [24.58, 60.11]
+          ]
+        ]
+      },
+      "properties": {
+        "kuntatunnus": 49
+      }
+    },
+    {
+      "id": "kunta.749",
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [27.50, 63.00],
+            [27.85, 63.00],
+            [27.85, 63.20],
+            [27.50, 63.20],
+            [27.50, 63.00]
+          ]
+        ]
+      },
+      "properties": {
+        "kuntatunnus": 749
+      }
+    }
+  ]
+}

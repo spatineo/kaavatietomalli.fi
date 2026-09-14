@@ -11,6 +11,8 @@
     "fetch-data-models:test": "CONTENT_MODE=test tsx scripts/fetch-data-models.ts",
     "fetch-codelists": "tsx scripts/fetch-codelists.ts",
     "fetch-codelists:test": "CONTENT_MODE=test tsx scripts/fetch-codelists.ts",
+    "fetch-municipality-data": "tsx scripts/fetch-municipality-data.ts",
+    "fetch-municipality-data:test": "CONTENT_MODE=test tsx scripts/fetch-municipality-data.ts",
     "fetch-data": "tsx scripts/fetch-data.ts",
     "fetch-data:test": "CONTENT_MODE=test tsx scripts/fetch-data.ts",
     "fetch-giscus-stats": "tsx scripts/fetch-giscus-stats.ts",

@@ -16,9 +16,10 @@
       "label": "Työkalut",
       "type": "menu",
       "subitems": [
-        { "label": "Tietomallselain: Kaavatietomalli", "type": "model", "slug": "rytj-kaava"},
+        { "label": "Tietomalliselain: Kaavatietomalli", "type": "model", "slug": "rytj-kaava"},
         { "label": "Tietomalliselain: Sitova tonttijako", "type": "model", "slug": "ryhti-tont"},
-        { "label": "Validaattori: Kaavasuunnitelma", "type": "validate", "slug": "ryhti-kaava" }
+        { "label": "Validaattori: Kaavasuunnitelma", "type": "validate", "slug": "spatialPlan" },
+        { "label": "Kaavaindeksiselain", "type": "planIndex", "slug": "localDetailedPlans" }
       ]
     },
     { 

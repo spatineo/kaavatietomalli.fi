@@ -4,7 +4,7 @@
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { cn, resolveImageUrl, fetchServerVersion, checkBackendVersion, scrollToAnchor } from './utils';
+import { cn, resolveImageUrl, fetchServerVersion, checkBackendVersion, scrollToAnchor, formatPlanDate } from './utils';
 import { CONFIG } from '../config';
 
 describe('utils library', () => {
@@ -89,6 +89,25 @@ describe('utils library', () => {
       scrollToAnchor('test-id');
 
       expect(scrollIntoViewSpy).toHaveBeenCalledWith({ behavior: 'smooth' });
+    });
+  });
+
+  describe('formatPlanDate()', () => {
+    it('formats date-only UTC string (e.g. 1900-01-01Z) in Finnish locale without timezone shift', () => {
+      expect(formatPlanDate('1900-01-01Z')).toBe('1.1.1900');
+      expect(formatPlanDate('2024-05-15Z')).toBe('15.5.2024');
+    });
+
+    it('formats datetime UTC string (e.g. 2024-05-15T00:00:00Z) in Finnish locale', () => {
+      expect(formatPlanDate('2024-05-15T00:00:00Z')).toBe('15.5.2024');
+    });
+
+    it('handles null, undefined, empty, and dashed values gracefully', () => {
+      expect(formatPlanDate(null)).toBe('-');
+      expect(formatPlanDate(undefined)).toBe('-');
+      expect(formatPlanDate('')).toBe('-');
+      expect(formatPlanDate('-')).toBe('-');
+      expect(formatPlanDate(null, '')).toBe('');
     });
   });
 });
