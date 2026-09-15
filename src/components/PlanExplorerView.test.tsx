@@ -130,12 +130,22 @@ const mockFetchHandler = (url: string) => {
         { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/39', codeValue: '39', hierarchyLevel: 2, broaderCode: '3', status: 'SUPERSEDED', names: { fi: 'Asemakaava (ohjeellinen tonttijako)' } }
       ]
     };
+  } else if (url.includes('pub_valid_lm_plan_ix_gs')) {
+    data = {
+      type: 'FeatureCollection',
+      numberMatched: 0,
+      numberReturned: 0,
+      features: []
+    };
   } else if (url.includes('pub_valid_ld_plan_ix_gs') || url.includes('wfs')) {
+    const match = url.match(/startIndex=(\d+)/);
+    const startIndex = match ? parseInt(match[1], 10) : 0;
+    const isNextPage = startIndex > 0;
     data = {
       type: 'FeatureCollection',
       numberMatched: 100,
       numberReturned: 1,
-      features: [mockPlanFeature]
+      features: [isNextPage ? mockPlanFeature2 : mockPlanFeature]
     };
   }
   return Promise.resolve({
@@ -200,7 +210,11 @@ vi.mock('proj4', () => {
   return { default: proj };
 });
 
-import { PlanExplorerView } from './PlanExplorerView';
+import { PlanExplorerView, DEFAULT_DIGITAL_ORIGIN_MAP } from './PlanExplorerView';
+import { getTranslations } from '../i18n';
+
+const translations = getTranslations('fi');
+const strings = translations.planBrowser;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -218,17 +232,17 @@ beforeEach(() => {
       };
     } else if (url.includes('kunta_1_20240101.json')) {
       data = mockKuntaCodelist;
-    } else if (url.includes('startIndex=50') || url.includes('startIndex=')) {
+    } else if (url.includes('startIndex=') && !url.includes('startIndex=0')) {
       data = {
         type: 'FeatureCollection',
         numberMatched: 100,
         numberReturned: 1,
         features: [mockPlanFeature2]
       };
-    } else if (url.includes('pub_valid_ld_plan_ix_gs') || url.includes('wfs')) {
+    } else if (url.includes('pub_valid_ld_plan_ix_gs') || url.includes('pub_valid_lm_plan_ix_gs') || url.includes('wfs')) {
       data = {
         type: 'FeatureCollection',
-        numberMatched: 100,
+        numberMatched: 50,
         numberReturned: 1,
         features: [mockPlanFeature]
       };
@@ -257,8 +271,8 @@ describe('PlanExplorerView Component', () => {
     render(<PlanExplorerView initialPlans={[mockPlanFeature]} initialMunicipalities={[mockMunicipalityFeature, mockMunicipalityFeature2]} />);
     await flushPromises();
 
-    expect(screen.getByText('Asemakaavaselain')).toBeDefined();
-    expect(screen.getByPlaceholderText('Hae kaavan nimellä...')).toBeDefined();
+    expect(screen.getByText(strings.title)).toBeDefined();
+    expect(screen.getByPlaceholderText(strings.searchPlanPlaceholder)).toBeDefined();
 
     await waitFor(() => {
       expect(screen.getAllByText(/Testiasemakaava Keskusta/i).length).toBeGreaterThan(0);
@@ -279,10 +293,12 @@ describe('PlanExplorerView Component', () => {
     await flushPromises();
 
     expect(window.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('cql_filter=administrative_area_identifiers')
+      expect.stringContaining('cql_filter=administrative_area_identifiers'),
+      expect.anything()
     );
     expect(window.fetch).toHaveBeenCalledWith(
-      expect.stringContaining('sortby=approval_date+DESC')
+      expect.stringContaining('sortby=approval_date+DESC'),
+      expect.anything()
     );
   });
 
@@ -299,8 +315,8 @@ describe('PlanExplorerView Component', () => {
       expect(screen.getAllByText(/Testiasemakaava Keskusta/i).length).toBeGreaterThan(0);
     });
 
-    // Load more button should be rendered on the header row with "Hae lisää"
-    const loadMoreBtn = screen.getByText('Hae lisää');
+    // Load more button should be rendered on the header row with strings.loadMorePlans
+    const loadMoreBtn = screen.getByText(strings.loadMorePlans);
     expect(loadMoreBtn).toBeDefined();
 
     fireEvent.click(loadMoreBtn);
@@ -326,7 +342,7 @@ describe('PlanExplorerView Component', () => {
     await waitFor(() => {
       expect(screen.getAllByText(/Testiasemakaavan kuvausteksti/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/Helsinki/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/Tietomallin mukaan laadittu/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(new RegExp(DEFAULT_DIGITAL_ORIGIN_MAP['01'], 'i')).length).toBeGreaterThan(0);
     });
   });
 
@@ -373,23 +389,23 @@ describe('PlanExplorerView Component', () => {
     render(<PlanExplorerView initialPlans={[mockPlanFeature]} initialMunicipalities={[mockMunicipalityFeature]} />);
     await flushPromises();
 
-    const fullscreenBtn = screen.getByTitle('Koko ruutu');
+    const fullscreenBtn = screen.getByTitle(strings.enterFullscreen);
     expect(fullscreenBtn).toBeDefined();
 
     fireEvent.click(fullscreenBtn);
     await flushPromises();
 
-    // In fullscreen mode, title switches to 'Poistu koko ruudun tilasta'
+    // In fullscreen mode, title switches to strings.exitFullscreen
     await waitFor(() => {
-      expect(screen.getByTitle('Poistu koko ruudun tilasta')).toBeDefined();
+      expect(screen.getByTitle(strings.exitFullscreen)).toBeDefined();
     });
 
     // Exit fullscreen
-    fireEvent.click(screen.getByTitle('Poistu koko ruudun tilasta'));
+    fireEvent.click(screen.getByTitle(strings.exitFullscreen));
     await flushPromises();
 
     await waitFor(() => {
-      expect(screen.getByTitle('Koko ruutu')).toBeDefined();
+      expect(screen.getByTitle(strings.enterFullscreen)).toBeDefined();
     });
   });
 

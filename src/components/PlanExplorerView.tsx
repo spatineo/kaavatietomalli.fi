@@ -27,11 +27,14 @@ import { CONFIG } from '../config';
 import { formatPlanDate } from '../lib/utils';
 import { getMunicipalityList, getMunicipalityByCode, MunicipalityFeature, MunicipalityInfo } from '../lib/blog';
 import {
-  fetchPlans,
+  ryhtiPlanWfsService,
   getPlanMunicipalityCodes,
   PlanDocument,
-  PlanFeature
+  PlanFeature,
+  getWfsTypesForPlanType,
+  buildWfsCqlFilter
 } from '../services/plan-api';
+import { useMergedWfs } from '../hooks/useMergedWfs';
 import { CodeItem } from '../lib/data-model-types';
 
 // Lazy load Leaflet and Proj4 libraries
@@ -141,19 +144,27 @@ const buildMunicipalityMap = (list: (MunicipalityFeature | MunicipalityInfo)[]):
   return map;
 };
 
-interface KaavalajiCodeOption {
+export interface KaavalajiCodeOption {
   uri: string;
   codeValue: string;
   name: string;
+  broaderCode?: string;
 }
 
-const DEFAULT_KAAVALAJI_OPTIONS: KaavalajiCodeOption[] = [
-  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/31', codeValue: '31', name: 'Asemakaava' },
-  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/32', codeValue: '32', name: 'Vaiheasemakaava' },
-  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/33', codeValue: '33', name: 'Ranta-asemakaava' },
-  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/34', codeValue: '34', name: 'Vaiheranta-asemakaava' },
-  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/35', codeValue: '35', name: 'Maanalaisten tilojen asemakaava' },
-  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/39', codeValue: '39', name: 'Asemakaava (ohjeellinen tonttijako)' }
+export const DEFAULT_KAAVALAJI_OPTIONS: KaavalajiCodeOption[] = [
+  // Yleiskaava types
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/21', codeValue: '21', name: 'Yleiskaava', broaderCode: '2' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/22', codeValue: '22', name: 'Vaiheyleiskaava', broaderCode: '2' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/23', codeValue: '23', name: 'Osayleiskaava', broaderCode: '2' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/24', codeValue: '24', name: 'Kuntien yhteinen yleiskaava', broaderCode: '2' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/25', codeValue: '25', name: 'Maanalainen yleiskaava', broaderCode: '2' },
+  // Asemakaava types
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/31', codeValue: '31', name: 'Asemakaava', broaderCode: '3' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/32', codeValue: '32', name: 'Vaiheasemakaava', broaderCode: '3' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/33', codeValue: '33', name: 'Ranta-asemakaava', broaderCode: '3' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/34', codeValue: '34', name: 'Vaiheranta-asemakaava', broaderCode: '3' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/35', codeValue: '35', name: 'Maanalaisten tilojen asemakaava', broaderCode: '3' },
+  { uri: 'http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/39', codeValue: '39', name: 'Asemakaava (ohjeellinen tonttijako)', broaderCode: '3' }
 ];
 
 export const DEFAULT_DIGITAL_ORIGIN_MAP: Record<string, string> = {
@@ -238,7 +249,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   });
 
   // State
-  const [plans, setPlans] = useState<PlanFeature[]>(initialPlans || []);
   const [municipalities, setMunicipalities] = useState<MunicipalityInfo[]>(() => {
     return initialMunicipalities ? normalizeMunicipalityList(initialMunicipalities) : [];
   });
@@ -273,14 +283,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     return null;
   }, [selectedMunicipalityCode, selectedMunicipalityFeature, initialMunicipalities]);
   
-  const [isLoadingPlans, setIsLoadingPlans] = useState<boolean>(false);
   const [isLoadingMunicipalities, setIsLoadingMunicipalities] = useState<boolean>(!initialMunicipalities);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-
-  // Pagination & matched count state
-  const [totalMatched, setTotalMatched] = useState<number>(initialPlans ? initialPlans.length : 0);
-  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
-  const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -288,6 +291,50 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const [selectedPlanType, setSelectedPlanType] = useState<string>('ALL');
   const [kaavalajiOptions, setKaavalajiOptions] = useState<KaavalajiCodeOption[]>(DEFAULT_KAAVALAJI_OPTIONS);
   const [digitalOriginMap, setDigitalOriginMap] = useState<Record<string, string>>(DEFAULT_DIGITAL_ORIGIN_MAP);
+
+  // Track whether we should use initialPlans (e.g. testing) until user changes filters
+  const [useInitialPlans, setUseInitialPlans] = useState<boolean>(Boolean(initialPlans && initialPlans.length > 0));
+
+  // Selected item
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(
+    initialPlans && initialPlans.length > 0 ? initialPlans[0].id : null
+  );
+  const [detailTab, setDetailTab] = useState<'info' | 'documents' | 'json'>('info');
+
+  // Derive WFS query parameters
+  const typeFilter = selectedPlanType !== 'ALL' ? selectedPlanType : undefined;
+  const { typeA, typeB } = useMemo(() => getWfsTypesForPlanType(typeFilter), [typeFilter]);
+  const cqlFilter = useMemo(
+    () => buildWfsCqlFilter(selectedMunicipalityCode, debouncedSearchQuery, typeFilter),
+    [selectedMunicipalityCode, debouncedSearchQuery, typeFilter]
+  );
+
+  const {
+    features: plans,
+    totalMatched,
+    loading: isWfsLoading,
+    hasMore,
+    error: wfsError,
+    loadMore: handleLoadMore
+  } = useMergedWfs(ryhtiPlanWfsService, typeA, typeB, cqlFilter, 50, {
+    enabled: !useInitialPlans,
+    initialFeatures: initialPlans || []
+  });
+
+  const isLoadingPlans = isWfsLoading && plans.length === 0;
+  const isLoadingMore = isWfsLoading && plans.length > 0;
+  const fetchError = wfsError ? (wfsError.message || strings.fetchError) : null;
+
+  // Auto-select first plan when features list changes or currently selected plan is not found
+  useEffect(() => {
+    if (plans.length > 0) {
+      if (!selectedPlanId || !plans.some(p => p.id === selectedPlanId)) {
+        setSelectedPlanId(plans[0].id);
+      }
+    } else {
+      setSelectedPlanId(null);
+    }
+  }, [plans, selectedPlanId]);
 
   // Load RY_Kaavalaji codelist dynamically
   useEffect(() => {
@@ -301,11 +348,12 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         if (ignore) return;
         if (data && Array.isArray(data.codes)) {
           const options: KaavalajiCodeOption[] = data.codes
-            .filter((item: CodeItem) => item.hierarchyLevel === 2 && String(item.broaderCode) === '3')
+            .filter((item: CodeItem) => item.hierarchyLevel === 2 && (String(item.broaderCode) === '3' || String(item.broaderCode) === '2'))
             .map((item: CodeItem) => ({
               uri: item.uri || `http://uri.suomi.fi/codelist/rytj/RY_Kaavalaji/code/${item.codeValue}`,
               codeValue: String(item.codeValue),
-              name: item.name?.fi || item.name?.en || item.name?.sv || `${strings.planType} ${item.codeValue}`
+              name: item.name?.fi || item.name?.en || item.name?.sv || `${strings.planType} ${item.codeValue}`,
+              broaderCode: item.broaderCode ? String(item.broaderCode) : undefined
             }));
           if (options.length > 0) {
             setKaavalajiOptions(options);
@@ -358,12 +406,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
-
-  // Selected item
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(
-    initialPlans && initialPlans.length > 0 ? initialPlans[0].id : null
-  );
-  const [detailTab, setDetailTab] = useState<'info' | 'documents' | 'json'>('info');
 
   // Map settings
   const [tileStyle, setTileStyle] = useState<'dark' | 'light'>('dark');
@@ -447,6 +489,14 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       return;
     }
 
+    // Immediately clear previous municipality if it does not match the new selection
+    setSelectedMunicipalityFeature(prev => {
+      if (prev && isMatchingMunicipality(prev, selectedMunicipalityCode)) {
+        return prev;
+      }
+      return null;
+    });
+
     // Check if initialMunicipalities passed full feature with geometry
     if (initialMunicipalities && initialMunicipalities.length > 0) {
       const match = initialMunicipalities.find((m: any) => isMatchingMunicipality(m, selectedMunicipalityCode));
@@ -469,73 +519,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
     return () => { ignore = true; };
   }, [selectedMunicipalityCode, initialMunicipalities]);
-
-
-  // Dynamic Query: Fetch WFS 2.0 Plans with server-side CQL filtering & descending sort by approval_date
-  useEffect(() => {
-    if (initialLoadedRef.current) {
-      initialLoadedRef.current = false;
-      return;
-    }
-
-    let ignore = false;
-    setIsLoadingPlans(true);
-    setFetchError(null);
-    setPlans([]);
-    setSelectedPlanId(null);
-    setLoadMoreError(null);
-
-    const typeFilter = selectedPlanType !== 'ALL' ? selectedPlanType : undefined;
-
-    fetchPlans(selectedMunicipalityCode, debouncedSearchQuery, 50, 0, typeFilter)
-      .then(data => {
-        if (ignore) return;
-        if (data && Array.isArray(data.features)) {
-          setPlans(data.features);
-          const matched = typeof data.numberMatched === 'number' ? data.numberMatched : data.features.length;
-          setTotalMatched(matched);
-          if (data.features.length > 0) {
-            setSelectedPlanId(data.features[0].id);
-          }
-        } else {
-          setPlans([]);
-          setTotalMatched(0);
-        }
-      })
-      .catch(err => {
-        if (!ignore) setFetchError(err.message || strings.fetchError);
-      })
-      .finally(() => {
-        if (!ignore) setIsLoadingPlans(false);
-      });
-
-    return () => { ignore = true; };
-  }, [selectedMunicipalityCode, debouncedSearchQuery, selectedPlanType]);
-
-  // Load next batch of features (Pagination via WFS 2.0 startIndex)
-  const handleLoadMore = () => {
-    if (isLoadingMore || plans.length >= totalMatched) return;
-    setIsLoadingMore(true);
-    setLoadMoreError(null);
-
-    const currentOffset = plans.length;
-    const typeFilter = selectedPlanType !== 'ALL' ? selectedPlanType : undefined;
-    fetchPlans(selectedMunicipalityCode, debouncedSearchQuery, 50, currentOffset, typeFilter)
-      .then(data => {
-        if (data && Array.isArray(data.features)) {
-          setPlans(prev => [...prev, ...data.features]);
-          if (typeof data.numberMatched === 'number') {
-            setTotalMatched(data.numberMatched);
-          }
-        }
-      })
-      .catch(err => {
-        setLoadMoreError(err.message || strings.loadMoreError);
-      })
-      .finally(() => {
-        setIsLoadingMore(false);
-      });
-  };
 
   // Helper to format plan municipality names
   const getPlanMunicipalityNames = (plan: PlanFeature): string => {
@@ -674,10 +657,16 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       selectedPlanIdRef.current = selectedPlanId;
 
       // 3. Municipality boundaries overlay: ONLY update if municipality filter or toggle changed
+      const isMuniFeatureMatching = Boolean(
+        currentMunicipalityFeature &&
+        selectedMunicipalityCode &&
+        isMatchingMunicipality(currentMunicipalityFeature, selectedMunicipalityCode)
+      );
+
       const muniNeedsUpdate =
         currentShowMuniRef.current !== showMunicipalityBoundaries ||
         currentMunicipalityCodeRef.current !== selectedMunicipalityCode ||
-        (showMunicipalityBoundaries && currentMunicipalityFeature && !municipalityLayerRef.current);
+        (showMunicipalityBoundaries && isMuniFeatureMatching && !municipalityLayerRef.current);
 
       if (muniNeedsUpdate) {
         if (municipalityLayerRef.current) {
@@ -685,7 +674,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           municipalityLayerRef.current = null;
         }
 
-        if (showMunicipalityBoundaries && currentMunicipalityFeature) {
+        if (showMunicipalityBoundaries && isMuniFeatureMatching && currentMunicipalityFeature) {
           const muniLayer = L.geoJSON(currentMunicipalityFeature, {
             interactive: false,
             style: {
@@ -815,7 +804,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       } 
       // Priority 2: Municipality selection changed -> Zoom to municipality bbox when matching feature is ready
       else if (selectedMunicipalityCode && lastZoomedMuniCodeRef.current !== selectedMunicipalityCode) {
-        if (currentMunicipalityFeature && currentMunicipalityFeature.geometry) {
+        if (isMuniFeatureMatching && currentMunicipalityFeature && currentMunicipalityFeature.geometry) {
           try {
             const muniLayer = L.geoJSON(currentMunicipalityFeature);
             const b = muniLayer.getBounds();
@@ -957,7 +946,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
               <h1 className="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 {strings.title}
               </h1>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5 max-w-xl">
                 {strings.subtitle}
               </p>
             </div>
@@ -1124,7 +1113,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
               </div>
             ) : (
               <>
-                {filteredPlans.map(plan => {
+                {filteredPlans.map((plan, index) => {
                   const isSelected = plan.id === selectedPlanId;
                   const name = plan.properties?.name_fin || plan.properties?.name_swe || plan.properties?.permanent_plan_identifier || strings.defaultPlanName;
                   const muniNames = getPlanMunicipalityNames(plan);
@@ -1135,7 +1124,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
                   return (
                     <button
-                      key={plan.id}
+                      key={`${plan.id}-${index}`}
                       onClick={() => handleSelectPlanFromList(plan)}
                       className={`w-full text-left p-3.5 rounded-xl border transition-all flex flex-col gap-2 group relative overflow-hidden shrink-0 ${
                         isSelected
