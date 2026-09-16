@@ -63,7 +63,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
       else if (item.type === 'tag' && item.slug) handleNavClick(() => onNavigateTag(item.slug!));
       else if (item.type === 'model' && item.slug) handleNavClick(() => onNavigateModel(item.slug!));
       else if (item.type === 'validate' && onNavigateValidate) handleNavClick(() => onNavigateValidate(item.slug || null));
-      else if (item.type === 'planIndex' && onNavigatePlans) handleNavClick(() => onNavigatePlans(item.slug || null));
+      else if (item.type === 'planExplorer' && onNavigatePlans) handleNavClick(() => onNavigatePlans(item.slug || null));
     }
   };
 
@@ -149,7 +149,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
                           else if (sub.type === 'tag' && sub.slug) handleNavClick(() => onNavigateTag(sub.slug!));
                           else if (sub.type === 'model' && sub.slug) handleNavClick(() => onNavigateModel(sub.slug!));
                           else if (sub.type === 'validate' && onNavigateValidate) handleNavClick(() => onNavigateValidate(sub.slug || null));
-                          else if (sub.type === 'planIndex' && onNavigatePlans) handleNavClick(() => onNavigatePlans(sub.slug || null));
+                          else if (sub.type === 'planExplorer' && onNavigatePlans) handleNavClick(() => onNavigatePlans(sub.slug || null));
                         }}
                         className="text-slate-400 hover:text-brand-accent transition-colors text-left text-base font-medium"
                       >
@@ -199,7 +199,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
                         else if (sub.type === 'tag' && sub.slug) handleNavClick(() => onNavigateTag(sub.slug!));
                         else if (sub.type === 'model' && sub.slug) handleNavClick(() => onNavigateModel(sub.slug!));
                         else if (sub.type === 'validate' && onNavigateValidate) handleNavClick(() => onNavigateValidate(sub.slug || null));
-                        else if (sub.type === 'planIndex' && onNavigatePlans) handleNavClick(() => onNavigatePlans(sub.slug || null));
+                        else if (sub.type === 'planExplorer' && onNavigatePlans) handleNavClick(() => onNavigatePlans(sub.slug || null));
                       }}
                       className="w-full px-6 py-2.5 text-left text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
                       role="menuitem"

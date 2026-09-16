@@ -212,7 +212,7 @@ vi.mock('proj4', () => {
   return { default: proj };
 });
 
-import { PlanExplorerView, DEFAULT_DIGITAL_ORIGIN_MAP } from './PlanExplorerView';
+import { PlanExplorerView, DEFAULT_DIGITAL_ORIGIN_MAP, getPlanCategory } from './PlanExplorerView';
 import { getTranslations } from '../i18n';
 
 const translations = getTranslations('fi');
@@ -520,7 +520,7 @@ describe('PlanExplorerView Component', () => {
       await flushPromises();
 
       await waitFor(() => {
-        const planButtons = screen.getAllByRole('button').filter(b => b.textContent?.includes('Yleiskaava'));
+        const planButtons = screen.getAllByRole('button').filter(b => b.className.includes('text-left') && b.textContent?.includes('Yleiskaava'));
         expect(planButtons.length).toBe(2);
         // Null approval date plan must be first
         expect(planButtons[0].textContent).toContain('Yleiskaava Ilman Päivämäärää');
@@ -567,7 +567,7 @@ describe('PlanExplorerView Component', () => {
 
       await waitFor(() => {
         const planButtons = screen.getAllByRole('button').filter(b => 
-          b.textContent?.includes('Kaava') || b.textContent?.includes('Yleiskaava') || b.textContent?.includes('Asemakaava')
+          b.className.includes('text-left') && (b.textContent?.includes('Kaava') || b.textContent?.includes('Yleiskaava') || b.textContent?.includes('Asemakaava'))
         );
         expect(planButtons.length).toBe(3);
         // 1st: Null approval date master plan
@@ -577,6 +577,169 @@ describe('PlanExplorerView Component', () => {
         // 3rd: 2020 detailed plan
         expect(planButtons[2].textContent).toContain('Vanha Asemakaava 2020');
       });
+    });
+  });
+
+  describe('Plan Categories and Map Layers', () => {
+    it('correctly categorizes plans into detailed (code 3) and master (code 2) plans', () => {
+      const detailedPlan = {
+        ...mockPlanFeature,
+        properties: { ...mockPlanFeature.properties, plan_type_code_value: '31' }
+      };
+      const masterPlan = {
+        ...mockPlanFeature,
+        id: 'pub_valid_lm_plan_ix_gs.lm-001',
+        properties: { ...mockPlanFeature.properties, plan_type_code_value: '21' }
+      };
+
+      expect(getPlanCategory(detailedPlan)).toBe('detailed');
+      expect(getPlanCategory(masterPlan)).toBe('master');
+    });
+
+    it('renders layer visibility toggle buttons for both detailed and master plans when present', async () => {
+      const testMaster = {
+        id: 'pub_valid_lm_plan_ix_gs.2025-master',
+        type: 'Feature' as const,
+        geometry: { type: 'Polygon', coordinates: [[[24.0, 60.0], [25.0, 60.0], [25.0, 61.0], [24.0, 61.0], [24.0, 60.0]]] },
+        properties: {
+          id: 'pub_valid_lm_plan_ix_gs.2025-master',
+          name_fin: 'Uusin Yleiskaava 2025',
+          approval_date: '2025-01-01T00:00:00Z',
+          administrative_area_identifiers: '["091"]'
+        }
+      };
+
+      const testDetailed = {
+        id: 'pub_valid_ld_plan_ix_gs.2020-detailed',
+        type: 'Feature' as const,
+        geometry: { type: 'Polygon', coordinates: [[[24.0, 60.0], [25.0, 60.0], [25.0, 61.0], [24.0, 61.0], [24.0, 60.0]]] },
+        properties: {
+          id: 'pub_valid_ld_plan_ix_gs.2020-detailed',
+          name_fin: 'Vanha Asemakaava 2020',
+          approval_date: '2020-01-01T00:00:00Z',
+          administrative_area_identifiers: '["091"]'
+        }
+      };
+
+      const customFetch = (url: string) => {
+        if (url.includes('pub_valid_lm_plan_ix_gs')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve({
+              type: 'FeatureCollection',
+              numberMatched: 1,
+              features: [testMaster]
+            })
+          });
+        }
+        if (url.includes('pub_valid_ld_plan_ix_gs')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve({
+              type: 'FeatureCollection',
+              numberMatched: 1,
+              features: [testDetailed]
+            })
+          });
+        }
+        return mockFetchHandler(url);
+      };
+      vi.stubGlobal('fetch', vi.fn(customFetch));
+
+      render(<PlanExplorerView initialMunicipalities={[mockMunicipalityFeature]} />);
+      await flushPromises();
+
+      const selects = screen.getAllByRole('combobox');
+      fireEvent.change(selects[0], { target: { value: '091' } });
+      await flushPromises();
+
+      await waitFor(() => {
+        const toggleButtons = screen.getAllByRole('button').filter(b => b.textContent?.includes('Asemakaavat') || b.textContent?.includes('Yleiskaavat'));
+        expect(toggleButtons.length).toBeGreaterThanOrEqual(2);
+      });
+
+      const detailedToggle = screen.getAllByRole('button').find(b => b.textContent?.includes('Asemakaavat (1)'))!;
+      expect(detailedToggle).toBeTruthy();
+      fireEvent.click(detailedToggle);
+      await flushPromises();
+
+      const masterToggle = screen.getAllByRole('button').find(b => b.textContent?.includes('Yleiskaavat (1)'))!;
+      expect(masterToggle).toBeTruthy();
+      fireEvent.click(masterToggle);
+      await flushPromises();
+    });
+
+    it('automatically enables corresponding layer when selecting a plan whose layer is hidden', async () => {
+      const testMaster = {
+        id: 'pub_valid_lm_plan_ix_gs.2025-master-auto',
+        type: 'Feature' as const,
+        geometry: { type: 'Polygon', coordinates: [[[24.0, 60.0], [25.0, 60.0], [25.0, 61.0], [24.0, 61.0], [24.0, 60.0]]] },
+        properties: {
+          id: 'pub_valid_lm_plan_ix_gs.2025-master-auto',
+          name_fin: 'Yleiskaava 2025 Testi',
+          plan_type_name_fin: 'Yleiskaava',
+          approval_date: '2025-01-01T00:00:00Z',
+          administrative_area_identifiers: '["091"]'
+        }
+      };
+
+      const testDetailed = {
+        id: 'pub_valid_ld_plan_ix_gs.2020-detailed-auto',
+        type: 'Feature' as const,
+        geometry: { type: 'Polygon', coordinates: [[[24.0, 60.0], [25.0, 60.0], [25.0, 61.0], [24.0, 61.0], [24.0, 60.0]]] },
+        properties: {
+          id: 'pub_valid_ld_plan_ix_gs.2020-detailed-auto',
+          name_fin: 'Asemakaava 2020 Testi',
+          plan_type_name_fin: 'Asemakaava',
+          approval_date: '2020-01-01T00:00:00Z',
+          administrative_area_identifiers: '["091"]'
+        }
+      };
+
+      render(
+        <PlanExplorerView
+          initialPlans={[testMaster, testDetailed]}
+          initialMunicipalities={[mockMunicipalityFeature]}
+        />
+      );
+      await flushPromises();
+
+      await waitFor(() => {
+        expect(screen.getAllByText(/Yleiskaava 2025 Testi/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/Asemakaava 2020 Testi/i).length).toBeGreaterThan(0);
+      });
+
+      // Initially Yleiskaava 2025 Testi is selected (newer date). Toggle master plan layer off.
+      const masterToggle = screen.getAllByRole('button').find(b => b.textContent?.includes('Yleiskaavat (1)'))!;
+      expect(masterToggle).toBeTruthy();
+      fireEvent.click(masterToggle);
+      await flushPromises();
+
+      // Now click on the Asemakaava plan item in the list
+      const detailedPlanButton = screen.getAllByText(/Asemakaava 2020 Testi/i)[0].closest('button')!;
+      fireEvent.click(detailedPlanButton);
+      await flushPromises();
+
+      // Detailed plan layer button is active (bg-orange-500/20)
+      const detailedToggle = screen.getAllByRole('button').find(b => b.textContent?.includes(`${strings.detailedPlanLayer} (1)`))!;
+      expect(detailedToggle.className).toContain('bg-orange-500/20');
+
+      // Toggle detailed plan layer off
+      fireEvent.click(detailedToggle);
+      await flushPromises();
+
+      // Re-select the Master plan item in the list
+      const masterPlanButton = screen.getAllByText(/Yleiskaava 2025 Testi/i)[0].closest('button')!;
+      fireEvent.click(masterPlanButton);
+      await flushPromises();
+
+      // Master plan layer automatically turned back on (bg-purple-500/20)
+      const updatedMasterToggle = screen.getAllByRole('button').find(b => b.textContent?.includes(`${strings.masterPlanLayer} (1)`))!;
+      expect(updatedMasterToggle.className).toContain('bg-purple-500/20');
     });
   });
 });

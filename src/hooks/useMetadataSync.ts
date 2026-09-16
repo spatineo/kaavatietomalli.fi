@@ -101,7 +101,7 @@ export function useMetadataSync({
   }, [activeView, modelIndex, searchString, loadedModelData]);
 
   useEffect(() => {
-    if (!isDataReady && activeView.type !== 'home' && activeView.type !== 'model' && activeView.type !== 'validate' && activeView.type !== 'planIndex' && !contentNotFound) return;
+    if (!isDataReady && activeView.type !== 'home' && activeView.type !== 'model' && activeView.type !== 'validate' && activeView.type !== 'planExplorer' && !contentNotFound) return;
 
     let title = 'Kaavatietomalli.fi';
     let description = t.hero.description;
@@ -128,7 +128,7 @@ export function useMetadataSync({
     } else if (activeView.type === 'validate') {
       title = `${t.validation.title} | Kaavatietomalli.fi`;
       description = `${t.validation.apiInfoDesc}`;
-    } else if (activeView.type === 'planIndex') {
+    } else if (activeView.type === 'planExplorer') {
       title = `${t.planBrowser.title} | Kaavatietomalli.fi`;
       description = `${t.planBrowser.description}`;
     } else if (activeView.type === 'model' && activeView.slug) {
@@ -239,7 +239,7 @@ export function useMetadataSync({
         getTracker().trackPageView(`${CONFIG.basePath}${currentPath}`, title);
       } else if (activeView.type == 'validate') {
         getTracker().trackPageView(`${CONFIG.basePath}${currentPath}`, title);
-      } else if (activeView.type == 'planIndex') {
+      } else if (activeView.type == 'planExplorer') {
         getTracker().trackPageView(`${CONFIG.basePath}${currentPath}`, title);
       }
     }

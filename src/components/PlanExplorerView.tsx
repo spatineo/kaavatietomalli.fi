@@ -233,6 +233,29 @@ export const isMatchingMunicipality = (
   });
 };
 
+// Helper function to identify if a plan is local detailed plan ('3') or master plan ('2')
+export function getPlanCategory(plan: PlanFeature): 'detailed' | 'master' {
+  const code = String(
+    plan.properties?.plan_type_code_value ||
+    plan.properties?.plan_type ||
+    ''
+  ).trim();
+  if (code.startsWith('3')) return 'detailed';
+  if (code.startsWith('2')) return 'master';
+
+  const uri = String(plan.properties?.plan_type_uri || '').trim();
+  if (uri.includes('/code/3') || uri.endsWith('/3')) return 'detailed';
+  if (uri.includes('/code/2') || uri.endsWith('/2')) return 'master';
+
+  const id = String(plan.id || '').toLowerCase();
+  if (id.includes('valid_ld_') || id.includes('ld_plan')) return 'detailed';
+  if (id.includes('valid_lm_') || id.includes('lm_plan')) return 'master';
+
+  const name = String(plan.properties?.plan_type_name_fin || '').toLowerCase();
+  if (name.includes('yleis')) return 'master';
+  return 'detailed';
+}
+
 export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }: PlanExplorerViewProps) {
   const strings = getTranslations(CONFIG.language as Language).planBrowser;
 
@@ -410,20 +433,26 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const [tileStyle, setTileStyle] = useState<'dark' | 'light'>('dark');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMunicipalityBoundaries, setShowMunicipalityBoundaries] = useState(true);
+  const [showDetailedPlanLayer, setShowDetailedPlanLayer] = useState(true);
+  const [showMasterPlanLayer, setShowMasterPlanLayer] = useState(true);
 
   // Map refs
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any | null>(null);
-  const planLayerRef = useRef<any | null>(null);
+  const detailedPlanLayerRef = useRef<any | null>(null);
+  const masterPlanLayerRef = useRef<any | null>(null);
   const municipalityLayerRef = useRef<any | null>(null);
   const tileLayerRef = useRef<any | null>(null);
   const isInitialMapRenderRef = useRef<boolean>(true);
   const prevMunicipalityCodeRef = useRef<string | null>(null);
-  const prevSelectedPlanIdRef = useRef<string | null>(null);
+  const prevSelectedPlanIdRef = useRef<string | null>(selectedPlanId);
   const currentTileStyleRef = useRef<string | null>(null);
   const currentMunicipalityCodeRef = useRef<string | null>(null);
   const currentShowMuniRef = useRef<boolean | null>(null);
-  const currentFilteredPlansRef = useRef<PlanFeature[] | null>(null);
+  const currentDetailedPlansRef = useRef<PlanFeature[] | null>(null);
+  const currentMasterPlansRef = useRef<PlanFeature[] | null>(null);
+  const currentShowDetailedRef = useRef<boolean | null>(null);
+  const currentShowMasterRef = useRef<boolean | null>(null);
   const selectedPlanIdRef = useRef<string | null>(selectedPlanId);
 
   const lastZoomedMuniCodeRef = useRef<string | null>(null);
@@ -431,6 +460,28 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   useEffect(() => {
     selectedPlanIdRef.current = selectedPlanId;
   }, [selectedPlanId]);
+
+  const prevPlanIdForLayerRef = useRef<string | null>(null);
+
+  // Automatically show the corresponding plan layer when a new plan is selected
+  useEffect(() => {
+    if (selectedPlanId) {
+      if (selectedPlanId !== prevPlanIdForLayerRef.current) {
+        const targetPlan = plans.find(p => p.id === selectedPlanId);
+        if (targetPlan) {
+          prevPlanIdForLayerRef.current = selectedPlanId;
+          const category = getPlanCategory(targetPlan);
+          if (category === 'detailed') {
+            setShowDetailedPlanLayer(true);
+          } else if (category === 'master') {
+            setShowMasterPlanLayer(true);
+          }
+        }
+      }
+    } else {
+      prevPlanIdForLayerRef.current = null;
+    }
+  }, [selectedPlanId, plans]);
 
   const [libs, setLibs] = useState<{ L: any; proj4: any } | null>(() => {
     if (mapLibsReady) return { L: LeafletInstance, proj4: Proj4Instance };
@@ -563,6 +614,15 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     });
   }, [plans, selectedPlanType, kaavalajiOptions]);
 
+  // Separate detailed plans (type '3') and master plans (type '2')
+  const detailedPlans = useMemo(() => {
+    return filteredPlans.filter(p => getPlanCategory(p) === 'detailed');
+  }, [filteredPlans]);
+
+  const masterPlans = useMemo(() => {
+    return filteredPlans.filter(p => getPlanCategory(p) === 'master');
+  }, [filteredPlans]);
+
   // Currently selected plan object
   const selectedPlan = useMemo(() => {
     return plans.find(p => p.id === selectedPlanId) || null;
@@ -602,11 +662,15 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           mapRef.current = null;
           tileLayerRef.current = null;
           municipalityLayerRef.current = null;
-          planLayerRef.current = null;
+          detailedPlanLayerRef.current = null;
+          masterPlanLayerRef.current = null;
           currentTileStyleRef.current = null;
           currentMunicipalityCodeRef.current = null;
           currentShowMuniRef.current = null;
-          currentFilteredPlansRef.current = null;
+          currentDetailedPlansRef.current = null;
+          currentMasterPlansRef.current = null;
+          currentShowDetailedRef.current = null;
+          currentShowMasterRef.current = null;
           isInitialMapRenderRef.current = true;
         }
       }
@@ -656,7 +720,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
       selectedPlanIdRef.current = selectedPlanId;
 
-      // 3. Municipality boundaries overlay: ONLY update if municipality filter or toggle changed
+      // 3. Municipality boundaries overlay (Bottom layer directly on top of base map)
       const isMuniFeatureMatching = Boolean(
         currentMunicipalityFeature &&
         selectedMunicipalityCode &&
@@ -682,7 +746,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
               weight: 2.5,
               opacity: 0.85,
               fillColor: '#38BDF8',
-              fillOpacity: 0.08,
+              fillOpacity: 0.05,
               dashArray: '4, 4',
               interactive: false
             }
@@ -698,35 +762,49 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         currentMunicipalityCodeRef.current = selectedMunicipalityCode;
       }
 
-      // 4. Plans geometries layer
-      const getPlanStyle = (feature: PlanFeature) => {
+      // 4. Styles for Detailed vs Master Plans
+      const getDetailedPlanStyle = (feature: PlanFeature) => {
         const isSelected = feature.id === selectedPlanId;
         return {
-          color: isSelected ? '#FFAF00' : '#F97316',
+          color: isSelected ? '#FFAF00' : '#F97316', // Orange for detailed plans, Gold for selected
           weight: isSelected ? 4 : 2,
-          opacity: isSelected ? 1 : 0.7,
+          opacity: isSelected ? 1 : 0.8,
           fillColor: isSelected ? '#FFAF00' : '#F97316',
-          fillOpacity: isSelected ? 0.4 : 0.15
+          fillOpacity: isSelected ? 0.45 : 0.18
         };
       };
 
-      let planGeoJsonLayer: any = planLayerRef.current;
+      const getMasterPlanStyle = (feature: PlanFeature) => {
+        const isSelected = feature.id === selectedPlanId;
+        return {
+          color: isSelected ? '#FFAF00' : '#A855F7', // Purple/Violet for master plans, Gold for selected
+          weight: isSelected ? 4 : 2,
+          opacity: isSelected ? 1 : 0.8,
+          fillColor: isSelected ? '#FFAF00' : '#A855F7',
+          fillOpacity: isSelected ? 0.45 : 0.18
+        };
+      };
 
-      if (planLayerRef.current && typeof planLayerRef.current.setStyle === 'function' && currentFilteredPlansRef.current === filteredPlans) {
-        // If filtered plans array reference is unchanged, update feature styles in-place without rebuilding the layer
-        planLayerRef.current.setStyle(getPlanStyle);
-        if (typeof planLayerRef.current.bringToFront === 'function') {
-          planLayerRef.current.bringToFront();
-        }
+      // 5. Master Plan Layer (Middle layer above municipality area)
+      const shouldShowMaster = showMasterPlanLayer && masterPlans.length > 0;
+      let masterGeoJsonLayer: any = masterPlanLayerRef.current;
+
+      if (
+        masterPlanLayerRef.current &&
+        typeof masterPlanLayerRef.current.setStyle === 'function' &&
+        currentMasterPlansRef.current === masterPlans &&
+        currentShowMasterRef.current === showMasterPlanLayer
+      ) {
+        masterPlanLayerRef.current.setStyle(getMasterPlanStyle);
       } else {
-        if (planLayerRef.current) {
-          map.removeLayer(planLayerRef.current);
-          planLayerRef.current = null;
+        if (masterPlanLayerRef.current) {
+          map.removeLayer(masterPlanLayerRef.current);
+          masterPlanLayerRef.current = null;
         }
 
-        if (filteredPlans.length > 0) {
-          planGeoJsonLayer = L.geoJSON(filteredPlans, {
-            style: getPlanStyle,
+        if (shouldShowMaster) {
+          masterGeoJsonLayer = L.geoJSON(masterPlans, {
+            style: getMasterPlanStyle,
             onEachFeature: (feature: PlanFeature, layer: any) => {
               layer.on({
                 click: (e: any) => {
@@ -737,28 +815,88 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 },
                 mouseover: (e: any) => {
                   if (feature.id !== selectedPlanIdRef.current) {
-                    e.target.setStyle({ weight: 3, fillOpacity: 0.25 });
+                    e.target.setStyle({ weight: 3, fillOpacity: 0.28 });
                   }
                 },
                 mouseout: (e: any) => {
                   if (feature.id !== selectedPlanIdRef.current) {
-                    e.target.setStyle({ weight: 2, fillOpacity: 0.15 });
+                    e.target.setStyle({ weight: 2, fillOpacity: 0.18 });
                   }
                 }
               });
             }
           }).addTo(map);
 
-          if (typeof planGeoJsonLayer.bringToFront === 'function') {
-            planGeoJsonLayer.bringToFront();
-          }
-
-          planLayerRef.current = planGeoJsonLayer;
+          masterPlanLayerRef.current = masterGeoJsonLayer;
         }
-        currentFilteredPlansRef.current = filteredPlans;
+        currentMasterPlansRef.current = masterPlans;
+        currentShowMasterRef.current = showMasterPlanLayer;
       }
 
-      // Priority 1: Initial map load
+      // 6. Detailed Plan Layer (Top layer above master plans)
+      const shouldShowDetailed = showDetailedPlanLayer && detailedPlans.length > 0;
+      let detailedGeoJsonLayer: any = detailedPlanLayerRef.current;
+
+      if (
+        detailedPlanLayerRef.current &&
+        typeof detailedPlanLayerRef.current.setStyle === 'function' &&
+        currentDetailedPlansRef.current === detailedPlans &&
+        currentShowDetailedRef.current === showDetailedPlanLayer
+      ) {
+        detailedPlanLayerRef.current.setStyle(getDetailedPlanStyle);
+        if (typeof detailedPlanLayerRef.current.bringToFront === 'function') {
+          detailedPlanLayerRef.current.bringToFront();
+        }
+      } else {
+        if (detailedPlanLayerRef.current) {
+          map.removeLayer(detailedPlanLayerRef.current);
+          detailedPlanLayerRef.current = null;
+        }
+
+        if (shouldShowDetailed) {
+          detailedGeoJsonLayer = L.geoJSON(detailedPlans, {
+            style: getDetailedPlanStyle,
+            onEachFeature: (feature: PlanFeature, layer: any) => {
+              layer.on({
+                click: (e: any) => {
+                  if (e && e.originalEvent && typeof e.originalEvent.stopPropagation === 'function') {
+                    e.originalEvent.stopPropagation();
+                  }
+                  setSelectedPlanId(feature.id);
+                },
+                mouseover: (e: any) => {
+                  if (feature.id !== selectedPlanIdRef.current) {
+                    e.target.setStyle({ weight: 3, fillOpacity: 0.28 });
+                  }
+                },
+                mouseout: (e: any) => {
+                  if (feature.id !== selectedPlanIdRef.current) {
+                    e.target.setStyle({ weight: 2, fillOpacity: 0.18 });
+                  }
+                }
+              });
+            }
+          }).addTo(map);
+
+          if (typeof detailedGeoJsonLayer.bringToFront === 'function') {
+            detailedGeoJsonLayer.bringToFront();
+          }
+
+          detailedPlanLayerRef.current = detailedGeoJsonLayer;
+        }
+        currentDetailedPlansRef.current = detailedPlans;
+        currentShowDetailedRef.current = showDetailedPlanLayer;
+      }
+
+      // Ensure explicit layer order: Municipality (bottom) -> Master plans -> Detailed plans (top)
+      if (municipalityLayerRef.current && typeof municipalityLayerRef.current.bringToBack === 'function') {
+        municipalityLayerRef.current.bringToBack();
+      }
+      if (detailedPlanLayerRef.current && typeof detailedPlanLayerRef.current.bringToFront === 'function') {
+        detailedPlanLayerRef.current.bringToFront();
+      }
+
+      // Priority 1: Initial map load zoom
       if (isInitialMapRenderRef.current) {
         if (selectedPlan && selectedPlan.geometry) {
           try {
@@ -785,11 +923,15 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           } catch (e) {
             console.warn('Error computing municipality bounds', e);
           }
-        } else if (planGeoJsonLayer) {
+        } else if (detailedGeoJsonLayer || masterGeoJsonLayer) {
           try {
-            const b = planGeoJsonLayer.getBounds();
-            if (b.isValid()) {
-              map.fitBounds(b, { padding: [40, 40], maxZoom: 14 });
+            const boundsLayers = [detailedGeoJsonLayer, masterGeoJsonLayer].filter(Boolean);
+            if (boundsLayers.length > 0) {
+              const group = L.featureGroup(boundsLayers);
+              const b = group.getBounds();
+              if (b.isValid()) {
+                map.fitBounds(b, { padding: [40, 40], maxZoom: 14 });
+              }
             }
           } catch (e) {
             console.warn('Error computing plan layer bounds', e);
@@ -816,9 +958,11 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         prevMunicipalityCodeRef.current = selectedMunicipalityCode;
         prevSelectedPlanIdRef.current = selectedPlanId;
       } else if (!selectedMunicipalityCode && lastZoomedMuniCodeRef.current) {
-        if (planGeoJsonLayer) {
+        const boundsLayers = [detailedGeoJsonLayer || detailedPlanLayerRef.current, masterGeoJsonLayer || masterPlanLayerRef.current].filter(Boolean);
+        if (boundsLayers.length > 0) {
           try {
-            const b = planGeoJsonLayer.getBounds();
+            const group = L.featureGroup(boundsLayers);
+            const b = group.getBounds();
             if (b.isValid()) {
               map.fitBounds(b, { padding: [40, 40], maxZoom: 14 });
             }
@@ -842,7 +986,21 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     } catch (err) {
       console.error('Error rendering Leaflet plan map:', err);
     }
-  }, [filteredPlans, selectedPlanId, selectedMunicipalityCode, tileStyle, showMunicipalityBoundaries, isFullscreen, libs, currentMunicipalityFeature, selectedPlan]);
+  }, [
+    filteredPlans,
+    detailedPlans,
+    masterPlans,
+    selectedPlanId,
+    selectedMunicipalityCode,
+    tileStyle,
+    showMunicipalityBoundaries,
+    showDetailedPlanLayer,
+    showMasterPlanLayer,
+    isFullscreen,
+    libs,
+    currentMunicipalityFeature,
+    selectedPlan
+  ]);
 
   // Teardown Leaflet map on component unmount
   useEffect(() => {
@@ -850,7 +1008,8 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
-        planLayerRef.current = null;
+        detailedPlanLayerRef.current = null;
+        masterPlanLayerRef.current = null;
         municipalityLayerRef.current = null;
         tileLayerRef.current = null;
       }
@@ -1169,9 +1328,20 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
                       <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/5 text-[10px]">
                         <span className="font-mono text-slate-400 truncate max-w-[180px]">{permId || prodId || plan.id}</span>
-                        <span className="bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider shrink-0">
-                          {planType}
-                        </span>
+                        {(() => {
+                          const isMaster = getPlanCategory(plan) === 'master';
+                          return (
+                            <span
+                              className={`px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider shrink-0 border ${
+                                isMaster
+                                  ? 'bg-purple-500/10 text-purple-300 border-purple-500/20'
+                                  : 'bg-orange-500/10 text-orange-300 border-orange-500/20'
+                              }`}
+                            >
+                              {planType}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </button>
                   );
@@ -1201,7 +1371,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
             />
 
             {/* Floating Map Overlay Controls */}
-            <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+            <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-24px)]">
               <div className="flex items-center bg-black/80 backdrop-blur-md rounded-xl p-1 border border-white/10 shadow-xl">
                 <button
                   onClick={() => setTileStyle('dark')}
@@ -1230,14 +1400,42 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                       : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
                   }`}
                 >
-                  <Layers className="w-3.5 h-3.5" />
+                  <Layers className="w-3.5 h-3.5 text-sky-400" />
                   <span>{strings.municipalityBoundary}</span>
+                </button>
+              )}
+
+              {detailedPlans.length > 0 && (
+                <button
+                  onClick={() => setShowDetailedPlanLayer(!showDetailedPlanLayer)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
+                    showDetailedPlanLayer
+                      ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
+                      : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
+                  }`}
+                >
+                  <span className={`w-2.5 h-2.5 rounded-full ${showDetailedPlanLayer ? 'bg-orange-400' : 'bg-slate-500'}`} />
+                  <span>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
+                </button>
+              )}
+
+              {masterPlans.length > 0 && (
+                <button
+                  onClick={() => setShowMasterPlanLayer(!showMasterPlanLayer)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
+                    showMasterPlanLayer
+                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                      : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
+                  }`}
+                >
+                  <span className={`w-2.5 h-2.5 rounded-full ${showMasterPlanLayer ? 'bg-purple-400' : 'bg-slate-500'}`} />
+                  <span>{strings.masterPlanLayer} ({masterPlans.length})</span>
                 </button>
               )}
             </div>
 
             {/* Map Zoom Actions */}
-            <div className="absolute bottom-3 right-3 z-10 flex items-center gap-2">
+            <div className="absolute bottom-5 right-3 z-10 flex items-center gap-2">
               {currentMunicipalityFeature && (
                 <button
                   onClick={handleZoomToMunicipality}

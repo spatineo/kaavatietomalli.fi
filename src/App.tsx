@@ -176,7 +176,7 @@ function AppContent() {
           onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
           onNavigateModel={(slug, queryParams) => navigate({ type: 'model', slug, queryParams })}
           onNavigateValidate={(slug) => navigate({ type: 'validate', slug })}
-          onNavigatePlans={(slug) => navigate({ type: 'planIndex', slug })}
+          onNavigatePlans={(slug) => navigate({ type: 'planExplorer', slug })}
           onHome={onHome} 
           onBlog={scrollToBlog} 
           onSearchNavigate={handleSearchNavigate}
@@ -326,7 +326,7 @@ function AppContent() {
               >
                 <ValidateView onBack={onHome} />
               </motion.div>
-            ) : activeView.type === 'planIndex' ? (
+            ) : activeView.type === 'planExplorer' ? (
               <motion.div
                 key={`plansIndex-${activeView.slug || 'localDetailedPlans'}`}
                 initial={{ opacity: 0, y: 10 }}

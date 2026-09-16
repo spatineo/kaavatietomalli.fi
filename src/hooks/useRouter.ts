@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, createContext, useContext, ReactNode, createElement } from 'react';
 import { CONFIG } from '../config';
 
-export type ViewType = 'home' | 'post' | 'page' | 'author' | 'tag' | 'model' | 'validate' | 'planIndex';
+export type ViewType = 'home' | 'post' | 'page' | 'author' | 'tag' | 'model' | 'validate' | 'planExplorer';
 
 export interface ActiveView {
   type: ViewType;
@@ -47,12 +47,12 @@ export function useRouter() {
       if (firstPart === 'validate') {
         return { type: 'validate', slug: secondPart || 'spatialPlan' };
       }
-      if (firstPart === 'planIndex') {
-        return { type: 'planIndex', slug: secondPart || 'localDetailedPlan' };
+      if (firstPart === 'planExplorer') {
+        return { type: 'planExplorer', slug: secondPart || 'index' };
       }
 
       // Check if it's not reserved for data-model, validate, or plans
-      if (firstPart !== 'data-model' && firstPart !== 'model' && firstPart !== 'validate' && firstPart !== 'planIndex') {
+      if (firstPart !== 'data-model' && firstPart !== 'model' && firstPart !== 'validate' && firstPart !== 'planExplorer') {
         return { type: 'page', slug: decodeURIComponent(firstPart) };
       }
     }
@@ -65,7 +65,7 @@ export function useRouter() {
     const author = params.get('author');
     const tag = params.get('tag');
     const validate = params.get('validate');
-    const planIndex = params.get('planIndex');
+    const planExplorer = params.get('planExplorer');
 
     if (model) return { type: 'model', slug: model };
     if (post) return { type: 'post', slug: post };
@@ -73,7 +73,7 @@ export function useRouter() {
     if (author) return { type: 'author', slug: author };
     if (tag) return { type: 'tag', slug: tag };
     if (validate) return { type: 'validate', slug: validate };
-    if (planIndex) return { type: 'planIndex', slug: planIndex };
+    if (planExplorer) return { type: 'planExplorer', slug: planExplorer };
     return { type: 'home', slug: null };
   }, [pathname, searchString]);
 
@@ -107,8 +107,8 @@ export function useRouter() {
         pathPart = `data-model/${encodeURIComponent(view.slug)}`;
       } else if (view.type === 'validate') {
         pathPart = `validate/${encodeURIComponent(view.slug || 'spatialPlan')}`;
-      } else if (view.type === 'planIndex') {
-        pathPart = `planIndex/${encodeURIComponent(view.slug || 'localDetailedPlan')}`;
+      } else if (view.type === 'planExplorer') {
+        pathPart = `planExplorer/${encodeURIComponent(view.slug || 'index')}`;
       } else {
         pathPart = `${view.type}/${encodeURIComponent(view.slug)}`;
       }

@@ -19,7 +19,7 @@
         { "label": "Tietomalliselain: Kaavatietomalli", "type": "model", "slug": "rytj-kaava"},
         { "label": "Tietomalliselain: Sitova tonttijako", "type": "model", "slug": "ryhti-tont"},
         { "label": "Validaattori: Kaavasuunnitelma", "type": "validate", "slug": "spatialPlan" },
-        { "label": "Kaavaindeksiselain", "type": "planIndex", "slug": "localDetailedPlans" }
+        { "label": "Kaavaselain", "type": "planExplorer", "slug": "index" }
       ]
     },
     { 

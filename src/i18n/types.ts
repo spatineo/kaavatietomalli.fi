@@ -361,5 +361,7 @@ export interface Translations {
     noDocumentsDesc: string;
     downloadGeoJson: string;
     countUnit: string;
+    detailedPlanLayer: string;
+    masterPlanLayer: string;
   };
 }

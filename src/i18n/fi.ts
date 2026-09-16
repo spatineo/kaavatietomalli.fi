@@ -313,7 +313,7 @@ export const fi: Translations = {
   },
   planBrowser: {
     title: 'Kaavaselain',
-    subtitle: 'Selaa Ryhti-järjestelmään vietyjä kaavaindeksitietoja. Tiedoissa saattaa olla virheitä ja puutteita, ne haetaan sellaisenaan Ryhti-palvelun avoimesta paikkatietorajapinnasta. Huomaa, että GeoJSON-muotoinen sisältö ei ole valtakunnallisen kaavatietomallin mukaista. Kaavatiedot / Lähde: Syke. Kuntarajat / Lähde: Maanmittauslaitoksen Maastotietokanta.',
+    subtitle: 'Selaa Ryhti-järjestelmään vietyjä kaavaindeksitietoja. Tiedoissa saattaa olla virheitä ja puutteita, ne haetaan sellaisenaan Ryhti-palvelun avoimesta paikkatietorajapinnasta. Huomaa, että GeoJSON-muotoinen sisältö ei ole valtakunnallisen kaavatietomallin rakenteen mukaista. Kaavatiedot / Lähde: Syke. Kuntarajat / Lähde: Maanmittauslaitoksen Maastotietokanta.',
     searchPlanPlaceholder: 'Hae kaavan nimellä...',
     searchPlanPlaceholderLabel: 'Hae kaavan nimellä',
     filterMunicipalityPlaceholder: 'Suodata kunnan mukaan...',
@@ -362,6 +362,8 @@ export const fi: Translations = {
     noDocuments: 'Ei erillisiä asiakirjaliitteitä',
     noDocumentsDesc: 'Tälle kaavalla ei ole linkitetty erillisiä PDF-asiakirjoja.',
     downloadGeoJson: 'Lataa GeoJSON',
-    countUnit: 'kpl'
+    countUnit: 'kpl',
+    detailedPlanLayer: 'Asemakaavat',
+    masterPlanLayer: 'Yleiskaavat'
   },
 };
