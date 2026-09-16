@@ -4,7 +4,7 @@ title: "Ryhti-järjestelmä"
 
 ## Rakennetun ympäristön tietojärjestelmä (Ryhti)
 
-Rakennetun ympäristön tietojärjestelmä, eli Ryhti-järjestelmä on kansallinen, keskitetty tietojärjestelemä, johon kuntien ja maakuntien liittojen tuottamat alueidenkäyttöä ja rakennuksia koskevat tiedot kootaan valtakunnallisesti yhtenäisessä tietomallimuodossa. Tiedon keräämisen tarkoituksena on käyttää sitä "laissa säädettyihin olennaisiin viranomaiskäyttötarkoituksiin".
+Rakennetun ympäristön tietojärjestelmä, eli Ryhti-järjestelmä on kansallinen, keskitetty tietojärjestelemä, johon kuntien ja maakuntien liittojen tuottamat alueidenkäyttöä ja rakennuksia koskevat tiedot kootaan valtakunnallisesti yhtenäisessä tietomallimuodossa. Tiedon keräämisen tarkoituksena on käyttää sitä "laissa säädettyihin olennaisiin viranomaiskäyttötarkoituksiin" ([RYTJ-laki, 2 §](https://www.finlex.fi/fi/lainsaadanto/2023/431)).
 
 Ryhti-järjestelmän tietosisältö on vielä vuoden 2026 loppupuolella varsin vähäinen, koska kuntien ja maakuntien liittojen käytössä olevien ohjelmistojen kyvykkyydet tuottaa alueiden ja rakentamisen tietoja valtakunnallisesti yhteentoimivassa muodossa ovat edelleen rakentumassa.
 
@@ -29,21 +29,64 @@ Valtionhallinnon on kilpailulainsäädännön puitteissa käytännössä mahdoto
 
 ## Tietoa järjestelmiltä järjestelmille
 
+Ryhti-järjestelmän suunnittelun alkuvaiheessa järjestelmästä visioitiin tulevan Suomen rakennetun ympäristön toimijoiden yhteinen palvelualusta, jossa alueidenkäytön ja rakentamisen tiedot ovat aina ajantasalla, ja jonka päälle kaupalliset toimijat voivat rakentaa maksullisia, yhtenäistä valtakunnallista tietoaineistoa hyödyntäviä palveluita. Sanna Marinin hallituksen vuoden 2019 hallituksohjelman kirjauksen mukaisesti tavoitteena oli "luoda rakennetun ympäristön valtakunnallinen digitaalinen rekisteri ja tietoalusta, joihin maankäyttöä ja rakentamista koskevat päätökset ja prosessit tukeutuvat".
+
+Tämänhetkinen näkymä järjestelmän tarjoamaan toiminnallisuuteen on hieman maanläheisempi: Ryhti toimii kuntien ja maakuntien liittojen tuottaman kaava- ja rakennustiedon koonti- ja säilytyspaikkana, ja välittää sitä edelleen muihin valtionhallinnon rekistereihin ja tietojärjestelmiin. Ryhti-järjestelmä on kytketty esimerkiksi Digi- ja väestötietoviraston Väestötietojärjestelmään, Maanmittauslaitoksen Kansalliseen maastotietokantaan ja Kiinteistötietojärjestelmään, verohallinon GenTax-järjestelmään ja Suomen ympäristökeskuksen muihin järjestelmiin. 
+
 ```interactive-image
 href: "/images/Ryhti-rajapinnat.svg"
 title: "Ryhti-järjestelmän tietovarannot ja yhteydet"
 alt: "Kaaviokuva Ryhti-järjestelmän integraatioista muihin tietojärjestelmiin"
 ```
 
+Avoimia paikkatietorajapintapalveluja ja karttakäyttöliitymää lukuunottamatta kaikki Ryhti-järjestelmän kayttö vaatii jonkintasoista käyttäjätunnistusta. Ryhdin tiedontuottajien ja viranomaiskäyttäjien tunnistautuminen ja käyttövaltuudet Ryhti-verkkokäyttöliittymän kautta tapahtumaan käyttöön hallitaan Digi- ja väestöviraston ylläpitämien Suomi.fi-tunnnistuksen ja -valtuuksien kautta. Ryhti-rajapintojen käyttö Suomi.fi-palveluväylän kautta edellyttää organisaatiokohtaista Ryhti-käyttölupaa ja siihen liittyviä järjestelmäkohtaisia tunnuksia, sekä lisäksi Palveluväylän vaatimia palvelinsertifikaatteja ja verkkoliikennöintiavauksia.
+
+Ryhti-järjestelmästä on olemassa sekä palveluun integroitavien muiden tietojärjestelmien kehittäjille ja testaajille tarkoitettu testijärjestelmä että varsinaisten tietovarantojen varastointiin ja ylläpitoon tarkoitettu tuotantoversio.
+
 ## Eri tavat käyttää Ryhti-järjestelmää
 
+Ryhti-järjestelmän tiedontuottajat, eli kunnat ja maakuntien liitot, sekä niiden valtuuttamina Ryhti-järjestelmää niiden puolesta käyttävät konsulttiyritykset, kytkeytyvät Ryhti-järjestelmään pääosin Suomi.fi-palveluväylän kautta. Vaihtoehtoisesti kaavatiedot voidaan viedä Ryhti-järjestelmään myös vuorovaikutteisesti Ryhti-verkkokäyttöliittymän avulla. Yksittäisten kaavansuunnitelmien tietorakenteiden ja sisältöjen tarkistamiseen voidaan käyttää avointa kaavasuunnitelman validointirajapintaa, ohi Palveluväylän. Tätä kautta ei kuitenkaan voi viedä tietoa Ryhtiin, eikä validoida muita Ryhtiin vietäviä aineistoja, kuten tonttijakosuunnitelmia tai rakentamisen tietoja.
+
+Muut kuin viralliset Ryhti-tiedontuottajat voivat hakea Ryhti-järjestelmään tallennettuja tietoja sen tarjoamien paikkatietorajapintojen kautta. Pääsy osaan Ryhti-tietosisällöstä, kuten GeoTIFF-muotoinen, ajantasainen kaavakartta-aineisto sekä maanalaiset kaavat ja kaavakohteet, on rajattu turvallisuussyistä vain viranomaiskäyttäjille.
+
+Ryhti-järjestelmää voidaan käyttää sekä interaktiivisesti että koneelisesti rajapintapalvelujen kautta. Osa käyttötavoista on avoimia eikä vaadi käyttäjiltä tunnistautumista, osa on rajoitettu ainoastaan viranomaiskäytöön ja osa yrityksille tarjottavista käyttötavoista on maksullisia.
+
 ### Ryhti-verkkokäyttöliittymä
+* Karttakäyttöliittymä
+* Kaavasuunnitelman avoin validointikäyttöliittymä
+* Kaavatiedon validointi- ja tallennuspalvelu, sis. pysyvän kaavatunnuksen haku
+* Asemakaavan seurantatietojen ilmoittamienn
+
 
 ### Suomi.fi-palveluväylän Ryhti-palvelut 
 
+https://liityntakatalogi.test.suomi.fi/dataset/ryhti-syke-service
+https://liityntakatalogi.suomi.fi/dataset/ryhti-syke-service
+
+OpenAPI-kuvaukset: https://github.com/sykefi/Ryhti-rajapintakuvaukset
+
 ### Avoin kaavatiedon validointirajapinta
 
+Testi: https://api-test.ymparisto.fi/ryhti/plan-public/api/Plan/Validate
+Tunnusten ja API-avainten hallinta: https://api-test-developer.ymparisto.fi/
+
+Tuotanto: https://api.ymparisto.fi/ryhti/plan-public/api/Plan/Validate
+Tunnusten ja API-avainten hallinta: https://api-developer.ymparisto.fi/
+
 ### Kaavatiedon luovutuksen rajapintapalvelut
+
+Voimassa olevien asemakaavojen hakemisto
+
+https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/wms?request=GetCapabilities
+
+https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/ogc/features/v1
+
+Voimassa olevien yleiskaavojen hakemisto
+
+https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/wms?request=GetCapabilities
+
+https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/ogc/features/v1
+
 
 ### Integraatiot viranomaisjärjestelmiin ja rekistereihin
 

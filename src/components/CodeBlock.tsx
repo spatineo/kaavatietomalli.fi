@@ -10,8 +10,9 @@ import { useAppRouter } from '../hooks/useRouter';
 import { getTracker } from '../services/analytics';
 import { parseInteractiveImageBlock } from '../lib/interactive-image-parser';
 
+import { LazySyntaxHighlighter } from './LazySyntaxHighlighter';
+
 const Mermaid = lazy(() => import('./Mermaid').then(module => ({ default: module.Mermaid })));
-const LazySyntaxHighlighter = lazy(() => import('./LazySyntaxHighlighter').then(module => ({ default: module.LazySyntaxHighlighter })));
 const VideoEmbed = lazy(() => import('./VideoEmbed').then(module => ({ default: module.VideoEmbed })));
 const GeoJsonMapViewer = lazy(() => import('./GeoJSONMapViewer').then(module => ({ default: module.GeoJsonMapViewer })));
 const InteractiveImage = lazy(() => import('./InteractiveImage').then(module => ({ default: module.InteractiveImage })));

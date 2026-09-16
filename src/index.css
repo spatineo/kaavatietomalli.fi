@@ -426,12 +426,43 @@ code *,
   font-family: var(--font-mono), "JetBrains Mono", monospace;
 }
 
-/* Prevent markdown image styles from leaking into Leaflet map tiles and markers */
-.markdown-body .leaflet-container img {
+/* Prevent Tailwind and markdown image styles from leaking into Leaflet map tiles and markers */
+.leaflet-container img,
+.leaflet-container img.leaflet-tile,
+.leaflet-tile,
+.leaflet-tile-container img {
+  max-width: none !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  margin: 0 !important;
-  max-width: none !important;
+  outline: none !important;
+  mix-blend-mode: normal;
+}
+
+/* Disable tile fade & transition effects that cause flashing during selection state updates */
+.leaflet-tile {
+  transition: none !important;
+}
+.leaflet-fade-anim .leaflet-tile,
+.leaflet-fade-anim .leaflet-popup {
+  transition: none !important;
+  opacity: 1 !important;
+}
+.leaflet-zoom-anim .leaflet-zoom-animated {
+  transition: none !important;
+}
+.leaflet-container path {
+  transition: none !important;
+}
+
+/* Match Leaflet container background color to map tiles to eliminate subpixel seam contrast lines */
+.leaflet-container {
+  background-color: #191a1a !important;
 }
 
 .leaflet-container .leaflet-control-attribution {

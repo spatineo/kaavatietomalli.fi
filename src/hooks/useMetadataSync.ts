@@ -101,7 +101,7 @@ export function useMetadataSync({
   }, [activeView, modelIndex, searchString, loadedModelData]);
 
   useEffect(() => {
-    if (!isDataReady && activeView.type !== 'home' && activeView.type !== 'model' && activeView.type !== 'validate' && !contentNotFound) return;
+    if (!isDataReady && activeView.type !== 'home' && activeView.type !== 'model' && activeView.type !== 'validate' && activeView.type !== 'planExplorer' && !contentNotFound) return;
 
     let title = 'Kaavatietomalli.fi';
     let description = t.hero.description;
@@ -125,9 +125,12 @@ export function useMetadataSync({
     } else if (activeView.type === 'tag' && activeView.slug) {
       title = `#${activeView.slug} | Kaavatietomalli.fi`;
       description = `${t.blog.relatedArticles}: #${activeView.slug}`;
-    } else if (activeView.type === 'validate' && activeView.slug) {
+    } else if (activeView.type === 'validate') {
       title = `${t.validation.title} | Kaavatietomalli.fi`;
       description = `${t.validation.apiInfoDesc}`;
+    } else if (activeView.type === 'planExplorer') {
+      title = `${t.planBrowser.title} | Kaavatietomalli.fi`;
+      description = `${t.planBrowser.description}`;
     } else if (activeView.type === 'model' && activeView.slug) {
       const modelName = activeView.slug;
       const versions = modelIndex.filter((m: any) => m.path.startsWith(`${modelName}-`));
@@ -232,9 +235,11 @@ export function useMetadataSync({
       } else if (activeView.type === 'author' && currentAuthor) {
         getTracker().trackAuthorView(currentAuthor.slug, currentAuthor.name);
         getTracker().trackPageView(`${CONFIG.basePath}author/${encodeURIComponent(currentAuthor.slug)}`, currentAuthor.name);
-      } else if (activeView.type === 'model' && activeView.slug) {
+      } else if (activeView.type === 'model') {
         getTracker().trackPageView(`${CONFIG.basePath}${currentPath}`, title);
-      } else if (activeView.type == 'validate' && activeView.slug) {
+      } else if (activeView.type == 'validate') {
+        getTracker().trackPageView(`${CONFIG.basePath}${currentPath}`, title);
+      } else if (activeView.type == 'planExplorer') {
         getTracker().trackPageView(`${CONFIG.basePath}${currentPath}`, title);
       }
     }

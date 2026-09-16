@@ -1,0 +1,18 @@
+{
+  "id": "b4dc80b5-5097-4dce-bacc-9d72466ac663",
+  "codeValue": "kunta_1_20240101",
+  "uri": "http://uri.suomi.fi/codelist/jhs/kunta_1_20240101",
+  "prefLabel": {
+    "en": "Municipalities 2024",
+    "fi": "Kunnat 2024",
+    "sv": "Kommuner 2024"
+  },
+  "description": {
+    "fi": "Kunnat 2024 test data"
+  },
+  "status": "VALID",
+  "codeRegistry": {
+    "uri": "http://uri.suomi.fi/codelist/jhs",
+    "codeValue": "jhs"
+  }
+}

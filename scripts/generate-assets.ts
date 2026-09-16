@@ -9,7 +9,6 @@ import { getTranslations } from '../src/i18n/index.js';
 import { getFilesRecursive, escapeXml, validateMarkdownVideoBlocks } from './content-utils.js';
 import { LocalFileDataModelAccess } from '../src/lib/local-data-model-access.js';
 import { convertDataModelDiagramsToMermaid } from '../src/lib/data-model-diagram-generator.js';
-import { transpileInstanceToMermaid } from '../src/lib/instance-diagram-transpiler.js'
 import { parseModelId } from '../src/lib/data-model-utils.js';
 import { PostData, PageData, AuthorData } from '@/src/lib/blog.js';
 import { parseInteractiveImageBlock } from '../src/lib/interactive-image-parser.js';

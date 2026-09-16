@@ -198,13 +198,16 @@ interface GeoJsonMapViewerProps {
   language?: string;
 }
 
+const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY || '';
+const KEY_PARAM = CARTO_KEY ? `?key=${CARTO_KEY}` : '';
+
 const TILE_LAYERS = {
   dark: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    url: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${KEY_PARAM}`,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
   },
   light: {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${KEY_PARAM}`,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
   }
 };
@@ -318,7 +321,9 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
     const selectedTile = TILE_LAYERS[tileStyle];
     const tileLayer = L.tileLayer(selectedTile.url, {
       attribution: selectedTile.attribution,
-      maxZoom: 19
+      maxZoom: 19,
+      tileSize: 256,
+      zoomOffset: 0
     }).addTo(map);
     tileLayerRef.current = tileLayer;
 
@@ -657,7 +662,8 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
               {/* The absolute container Leaflet bind-draws into */}
               <div
                 ref={mapContainerRef}
-                className="absolute inset-0 w-full h-full z-0 bg-slate-950 focus:outline-none"
+                className="absolute inset-0 w-full h-full z-0 focus:outline-none"
+                style={{ backgroundColor: tileStyle === 'dark' ? '#191a1a' : '#e8e6e3' }}
               />
             </div>
           )

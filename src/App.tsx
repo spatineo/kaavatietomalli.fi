@@ -14,6 +14,7 @@ import { HomeView } from './components/HomeView';
 import { TagView } from './components/TagView';
 import { DataModelView } from './components/DataModelView';
 import { ValidateView } from './components/ValidateView';
+import { PlanExplorerView } from './components/PlanExplorerView';
 import { CookieConsent } from './components/CookieConsent';
 import { getAllPostMetadata, getAuthorBySlug, PostMetadata, AuthorData } from './lib/blog';
 import { CONFIG } from './config';
@@ -175,6 +176,7 @@ function AppContent() {
           onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
           onNavigateModel={(slug, queryParams) => navigate({ type: 'model', slug, queryParams })}
           onNavigateValidate={(slug) => navigate({ type: 'validate', slug })}
+          onNavigatePlans={(slug) => navigate({ type: 'planExplorer', slug })}
           onHome={onHome} 
           onBlog={scrollToBlog} 
           onSearchNavigate={handleSearchNavigate}
@@ -317,12 +319,21 @@ function AppContent() {
               />
             ) : activeView.type === 'validate' ? (
               <motion.div
-                key={`validate-${activeView.slug || 'ryhti'}`}
+                key={`validate-${activeView.slug || 'spatialPlan'}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3 }}
               >
                 <ValidateView onBack={onHome} />
+              </motion.div>
+            ) : activeView.type === 'planExplorer' ? (
+              <motion.div
+                key={`plansIndex-${activeView.slug || 'localDetailedPlans'}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <PlanExplorerView onBack={onHome} />
               </motion.div>
             ) : (
               <HomeView

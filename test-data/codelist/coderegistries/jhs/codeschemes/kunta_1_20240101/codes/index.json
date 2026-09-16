@@ -1,0 +1,41 @@
+[
+  {
+    "id": "code-091",
+    "uri": "http://uri.suomi.fi/codelist/jhs/kunta_1_20240101/code/091",
+    "codeValue": "091",
+    "prefLabel": {
+      "fi": "Helsinki",
+      "sv": "Helsingfors",
+      "en": "Helsinki"
+    },
+    "hierarchyLevel": 1,
+    "status": "VALID",
+    "order": 1
+  },
+  {
+    "id": "code-749",
+    "uri": "http://uri.suomi.fi/codelist/jhs/kunta_1_20240101/code/749",
+    "codeValue": "749",
+    "prefLabel": {
+      "fi": "Siilinjärvi",
+      "sv": "Siilinjärvi",
+      "en": "Siilinjärvi"
+    },
+    "hierarchyLevel": 1,
+    "status": "VALID",
+    "order": 2
+  },
+  {
+    "id": "code-049",
+    "uri": "http://uri.suomi.fi/codelist/jhs/kunta_1_20240101/code/049",
+    "codeValue": "049",
+    "prefLabel": {
+      "fi": "Espoo",
+      "sv": "Esbo",
+      "en": "Espoo"
+    },
+    "hierarchyLevel": 1,
+    "status": "VALID",
+    "order": 3
+  }
+]

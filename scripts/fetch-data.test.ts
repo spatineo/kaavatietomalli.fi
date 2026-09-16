@@ -3,6 +3,7 @@ import { isContentEqual } from './content-utils';
 import { fetchAllData } from './fetch-data';
 import * as fetchDataModelsModule from './fetch-data-models';
 import * as fetchCodelistsModule from './fetch-codelists';
+import * as fetchMunicipalityDataModule from './fetch-municipality-data';
 import fs from 'fs';
 
 describe('isContentEqual', () => {
@@ -82,6 +83,10 @@ describe('fetchAllData', () => {
       totalProcessed: 5,
       changedCount: 0
     });
+    vi.spyOn(fetchMunicipalityDataModule, 'fetchAndTransformMunicipalities').mockResolvedValue({
+      totalProcessed: 3,
+      changedCount: 0
+    });
 
     const result = await fetchAllData();
     expect(result.dataChanged).toBe(false);
@@ -96,6 +101,29 @@ describe('fetchAllData', () => {
     vi.spyOn(fetchCodelistsModule, 'fetchAndTransformCodelists').mockResolvedValue({
       totalProcessed: 5,
       changedCount: 0
+    });
+    vi.spyOn(fetchMunicipalityDataModule, 'fetchAndTransformMunicipalities').mockResolvedValue({
+      totalProcessed: 3,
+      changedCount: 0
+    });
+
+    const result = await fetchAllData();
+    expect(result.dataChanged).toBe(true);
+    expect(result.totalChanged).toBe(1);
+  });
+
+  it('returns dataChanged: true when municipality data changed', async () => {
+    vi.spyOn(fetchDataModelsModule, 'fetchAndTransformDataModels').mockResolvedValue({
+      totalProcessed: 2,
+      changedCount: 0
+    });
+    vi.spyOn(fetchCodelistsModule, 'fetchAndTransformCodelists').mockResolvedValue({
+      totalProcessed: 5,
+      changedCount: 0
+    });
+    vi.spyOn(fetchMunicipalityDataModule, 'fetchAndTransformMunicipalities').mockResolvedValue({
+      totalProcessed: 3,
+      changedCount: 1
     });
 
     const result = await fetchAllData();

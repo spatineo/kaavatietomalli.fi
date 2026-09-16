@@ -60,23 +60,29 @@ jobs:
         id: check
         run: npx tsx scripts/check-scheduled-posts.ts
 
-      - name: Restore cached datamodels and codelists
+      - name: Restore cached datamodels, codelists and municipalities
         id: restore-data
         uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: public/data/suomi.fi
+          path: |
+            public/data/suomi.fi
+            public/data/nls.fi
           key: suomi-data-${{ steps.get-date.outputs.date }}
           restore-keys: suomi-data-
 
-      - name: Fetch datamodels and codelists, detect actual data changes
+      - name: Fetch datamodels, codelists and municipalities, detect actual data changes
         id: fetch-data
         run: npm run fetch-data
+        env:
+          MML_API_KEY: ${{ secrets.MML_API_KEY }}
 
-      - name: Save data model and codelists to cache if changed
+      - name: Save data models, codelists and municipalities to cache if changed
         if: steps.fetch-data.outputs.data_changed == 'true'
         uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          path: public/data/suomi.fi
+          path: |
+            public/data/suomi.fi
+            public/data/nls.fi
           key: ${{ steps.restore-data.outputs.cache-primary-key }}
       
       - name: Build
