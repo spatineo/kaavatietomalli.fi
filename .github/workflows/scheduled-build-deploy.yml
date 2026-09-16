@@ -91,6 +91,7 @@ jobs:
         env:
           VITE_BASE_PATH: /
           VITE_PRELAUNCH_PASSWORD: ${{ secrets.VITE_PRELAUNCH_PASSWORD }}
+          VITE_CARTO_API_KEY: ${{ secrets.VITE_CARTO_API_KEY }}
 
       - name: Configure AWS Credentials (OIDC)
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
