@@ -2,19 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { MunicipalityInfo } from '@/src/lib/blog';
 import { isContentEqual } from './content-utils';
 import { CONFIG } from '../src/config';
 
 dotenv.config();
 
-export interface MunicipalityInfo {
-  id: string;
-  natcode: string;
-  kuntatunnus?: number;
-  nameFin: string;
-  nameSwe?: string;
-  numberOfDetailedPlansInRyhti?: number;
-}
 
 export interface MunicipalityFeature {
   id: string;
@@ -171,20 +164,22 @@ export function enrichMunicipalityFeatures(
   return enriched;
 }
 
-const RYHTI_PLAN_ITEMS_URL = 'https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/ogc/features/v1/collections/pub_valid_ld_plan_ix_gs/items';
+const RYHTI_DETAILED_PLAN_ITEMS_URL = 'https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/ogc/features/v1/collections/pub_valid_ld_plan_ix_gs/items';
+const RYHTI_MASTER_PLAN_ITEMS_URL = 'https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/ogc/features/v1/collections/pub_valid_lm_plan_ix_gs/items';
 
-export async function fetchPlanCountForMunicipality(natcode: string): Promise<number> {
+
+async function fetchPlanCountForMunicipality(baseUrl:string, natcode: string): Promise<number> {
   const code = natcode.trim();
   if (!code) return 0;
   const filterExpr = `administrative_area_identifiers = '["${code}"]'`;
   const params = new URLSearchParams({
-    filter: filterExpr,
-    'filter-lang': 'cql2-text',
-    limit: '1',
-    f: 'json'
+      filter: filterExpr,
+      'filter-lang': 'cql2-text',
+      limit: '1',
+      f: 'json'
   });
-  const url = `${RYHTI_PLAN_ITEMS_URL}?${params.toString()}`;
 
+  const url = `${baseUrl}?${params.toString()}`;
   try {
     const res = await fetch(url, { ...CONFIG.remoteFetchOptions });
     if (!res.ok) {
@@ -331,11 +326,13 @@ export async function fetchAndTransformMunicipalities(
   totalProcessed = enrichedFeatures.length;
 
   // 3.5 Fetch number of plans from Ryhti OGC API for each municipality
-  const planCounts: Record<string, number> = {};
+  const detailedPlanCounts: Record<string, number> = {};
+  const masterPlanCounts: Record<string, number> = {};
   if (isTestMode) {
     for (const feat of enrichedFeatures) {
       const natcode = String(feat.properties?.NATCODE || feat.properties?.kuntatunnus || '').padStart(3, '0');
-      planCounts[natcode] = natcode === '091' ? 15 : natcode === '749' ? 3 : 1;
+      detailedPlanCounts[natcode] = natcode === '091' ? 15 : natcode === '749' ? 3 : 1;
+      masterPlanCounts[natcode] = natcode === '091' ? 10 : natcode === '749' ? 4 : 2;
     }
   } else {
     console.log(`Fetching plan counts from Ryhti OGC API for ${enrichedFeatures.length} municipalities...`);
@@ -345,7 +342,15 @@ export async function fetchAndTransformMunicipalities(
       const chunk = natcodes.slice(i, i + chunkSize);
       await Promise.all(
         chunk.map(async (code) => {
-          planCounts[code] = await fetchPlanCountForMunicipality(code);
+          detailedPlanCounts[code] = await fetchPlanCountForMunicipality(RYHTI_DETAILED_PLAN_ITEMS_URL,code);
+        })
+      );
+    }
+    for (let i = 0; i < natcodes.length; i += chunkSize) {
+      const chunk = natcodes.slice(i, i + chunkSize);
+      await Promise.all(
+        chunk.map(async (code) => {
+          masterPlanCounts[code] = await fetchPlanCountForMunicipality(RYHTI_MASTER_PLAN_ITEMS_URL,code);
         })
       );
     }
@@ -353,15 +358,16 @@ export async function fetchAndTransformMunicipalities(
 
   const outputIndex: MunicipalityInfo[] = enrichedFeatures.map((feat) => {
     const natcode = String(feat.properties?.NATCODE || feat.properties?.kuntatunnus || '').padStart(3, '0');
-    const planCount = planCounts[natcode] ?? 0;
-    feat.properties.numberOfDetailedPlansInRyhti = planCount;
+    const detailedPlanCount = detailedPlanCounts[natcode] ?? 0;
+    const masterPlanCount = masterPlanCounts[natcode] ?? 0;
     return {
       id: feat.id,
       natcode,
       kuntatunnus: feat.properties?.kuntatunnus,
       nameFin: feat.properties?.NAMEFIN || `Kunta ${natcode}`,
       ...(feat.properties?.NAMESWE ? { nameSwe: feat.properties.NAMESWE } : {}),
-      numberOfDetailedPlansInRyhti: planCount
+      numberOfDetailedPlansInRyhti: detailedPlanCount,
+      numberOfMasterPlansInRyhti: masterPlanCount
     };
   });
 

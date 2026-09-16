@@ -29,8 +29,6 @@ export interface WFSService<TFeature extends WFSResultFeature = WFSResultFeature
   srsName?: string;
   outputFormat?: string;
   sortBy?: string;
-  defaultTypeA?: string | null;
-  defaultTypeB?: string | null;
   fetchChunk?: (
     typeName: string,
     startIndex: number,
@@ -47,7 +45,7 @@ export interface WFSService<TFeature extends WFSResultFeature = WFSResultFeature
   sortFeatures?: (a: TFeature, b: TFeature) => number;
 }
 
-export interface MergedWfsResult<TFeature extends WFSResultFeature = WFSResultFeature> {
+export interface WfsResult<TFeature extends WFSResultFeature = WFSResultFeature> {
   features: TFeature[];
   totalMatched: number;
   done: boolean;

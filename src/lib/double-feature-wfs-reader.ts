@@ -2,14 +2,14 @@ import {
   WFSResultFeature,
   WFSFeatureCollectionResponse,
   WFSService,
-  MergedWfsResult
-} from './merged-wfs-reader.types';
+  WfsResult
+} from './double-feature-wfs-reader.types';
 
 export type {
   WFSResultFeature,
   WFSFeatureCollectionResponse,
   WFSService,
-  MergedWfsResult
+  WfsResult as MergedWfsResult
 };
 
 /**
@@ -18,7 +18,7 @@ export type {
  * Handles parallel fetching of multiple typeNames, sorting, offset tracking,
  * request cancellation, and deduplication by feature ID.
  */
-export class MergedWfsReader<TFeature extends WFSResultFeature = WFSResultFeature> {
+export class DoubleFeatureWfsReader<TFeature extends WFSResultFeature = WFSResultFeature> {
   service: WFSService<TFeature>;
   typeA: string | null;
   typeB: string | null;
@@ -35,17 +35,16 @@ export class MergedWfsReader<TFeature extends WFSResultFeature = WFSResultFeatur
 
   constructor(
     service: WFSService<TFeature> | string,
-    typeA: string | null = null,
-    typeB: string | null = null,
+    typeA: string | null,
+    typeB: string | null,
     cqlFilter: string | null = null,
     pageSize = 50
   ) {
     this.service = typeof service === 'string' ? { baseUrl: service } : service;
-    this.typeA = typeA ?? this.service.defaultTypeA ?? null;
-    this.typeB = typeB ?? this.service.defaultTypeB ?? null;
+    this.typeA = typeA;
+    this.typeB = typeB;
     this.cqlFilter = cqlFilter;
     this.pageSize = pageSize;
-
     this.reset();
   }
 
@@ -73,7 +72,7 @@ export class MergedWfsReader<TFeature extends WFSResultFeature = WFSResultFeatur
     this.isClosed = true;
   }
 
-  async next(): Promise<MergedWfsResult<TFeature>> {
+  async next(): Promise<WfsResult<TFeature>> {
     if (this.isClosed) {
       return { features: [], totalMatched: 0, done: true };
     }
@@ -88,7 +87,6 @@ export class MergedWfsReader<TFeature extends WFSResultFeature = WFSResultFeatur
         done: true
       };
     }
-
     const signal = this.abortController?.signal;
 
     const fetchA: Promise<WFSFeatureCollectionResponse<TFeature>> = hasA && this.typeA
@@ -130,9 +128,16 @@ export class MergedWfsReader<TFeature extends WFSResultFeature = WFSResultFeatur
     const itemsB = (resB.features || []).map((f: TFeature) => ({ ...f, _source: 'B' as const }));
 
     const sortFn = this.service.sortFeatures || ((a: TFeature, b: TFeature) => {
-      const dateA = new Date((a.properties as any)?.approval_date || 0).getTime();
-      const dateB = new Date((b.properties as any)?.approval_date || 0).getTime();
-      return dateB - dateA;
+      const valA = (a.properties as any)?.approval_date;
+      const valB = (b.properties as any)?.approval_date;
+      const tA = valA ? new Date(valA).getTime() : null;
+      const tB = valB ? new Date(valB).getTime() : null;
+      const validA = tA !== null && !isNaN(tA);
+      const validB = tB !== null && !isNaN(tB);
+      if (!validA && !validB) return 0;
+      if (!validA) return -1; // nulls first for descending order
+      if (!validB) return 1;
+      return tB - tA;
     });
 
     const merged = [...itemsA, ...itemsB].sort(sortFn);

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Map as MapIcon,
@@ -17,9 +17,7 @@ import {
   AlertCircle,
   ArrowLeft,
   ChevronRight,
-  Code,
-  CheckCircle2,
-  FileCode
+  Code
 } from 'lucide-react';
 import { LazySyntaxHighlighter } from './LazySyntaxHighlighter';
 import { getTranslations, Language } from '../i18n';
@@ -34,7 +32,7 @@ import {
   getWfsTypesForPlanType,
   buildWfsCqlFilter
 } from '../services/plan-api';
-import { useMergedWfs } from '../hooks/useMergedWfs';
+import { useDoubleFeatureWfs } from '../hooks/useDoubleFeatureWfs';
 import { CodeItem } from '../lib/data-model-types';
 
 // Lazy load Leaflet and Proj4 libraries
@@ -112,6 +110,7 @@ const normalizeMunicipalityList = (list: (MunicipalityFeature | MunicipalityInfo
         nameFin: item.properties.NAMEFIN || item.properties.NAMESWE || natcode,
         nameSwe: item.properties.NAMESWE,
         numberOfDetailedPlansInRyhti: item.numberOfDetailedPlansInRyhti ?? item.properties.numberOfDetailedPlansInRyhti ?? 0,
+        numberOfMasterPlansInRyhti: item.numberOfMasterPlansInRyhti ?? item.properties.numberOfMasterPlansInRyhti ?? 0,
         properties: item.properties
       };
     }
@@ -123,6 +122,7 @@ const normalizeMunicipalityList = (list: (MunicipalityFeature | MunicipalityInfo
       nameFin: item.nameFin || item.nameSwe || natcode,
       nameSwe: item.nameSwe,
       numberOfDetailedPlansInRyhti: item.numberOfDetailedPlansInRyhti ?? 0,
+      numberOfMasterPlansInRyhti: item.numberOfMasterPlansInRyhti ?? 0,
       properties: item.properties
     };
   });
@@ -302,11 +302,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const [detailTab, setDetailTab] = useState<'info' | 'documents' | 'json'>('info');
 
   // Derive WFS query parameters
-  const typeFilter = selectedPlanType !== 'ALL' ? selectedPlanType : undefined;
-  const { typeA, typeB } = useMemo(() => getWfsTypesForPlanType(typeFilter), [typeFilter]);
+  const { typeA, typeB } = useMemo(() => getWfsTypesForPlanType(selectedPlanType), [selectedPlanType]);
   const cqlFilter = useMemo(
-    () => buildWfsCqlFilter(selectedMunicipalityCode, debouncedSearchQuery, typeFilter),
-    [selectedMunicipalityCode, debouncedSearchQuery, typeFilter]
+    () => buildWfsCqlFilter(selectedMunicipalityCode, debouncedSearchQuery, selectedPlanType),
+    [selectedMunicipalityCode, debouncedSearchQuery, selectedPlanType]
   );
 
   const {
@@ -316,7 +315,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     hasMore,
     error: wfsError,
     loadMore: handleLoadMore
-  } = useMergedWfs(ryhtiPlanWfsService, typeA, typeB, cqlFilter, 50, {
+  } = useDoubleFeatureWfs(ryhtiPlanWfsService, typeA, typeB, cqlFilter, 50, {
     enabled: !useInitialPlans,
     initialFeatures: initialPlans || []
   });
@@ -534,8 +533,9 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       .map(m => {
         const code = String(m.natcode || '').trim();
         const name = m.nameFin || m.nameSwe || code;
-        const planCount = m.numberOfDetailedPlansInRyhti ?? 0;
-        return { code, name, planCount, info: m };
+        const detailedPlanCount = m.numberOfDetailedPlansInRyhti ?? 0;
+        const masterPlanCount = m.numberOfMasterPlansInRyhti ?? 0;
+        return { code, name, detailedPlanCount, masterPlanCount, info: m };
       })
       .filter(m => m.code && m.name)
       .sort((a, b) => a.name.localeCompare(b.name, 'fi'));
@@ -758,9 +758,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         currentFilteredPlansRef.current = filteredPlans;
       }
 
-      // Auto zoom behavior:
-      const planChanged = prevSelectedPlanIdRef.current !== selectedPlanId;
-
       // Priority 1: Initial map load
       if (isInitialMapRenderRef.current) {
         if (selectedPlan && selectedPlan.geometry) {
@@ -946,7 +943,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
               <h1 className="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 {strings.title}
               </h1>
-              <p className="text-xs text-slate-400 mt-0.5 max-w-xl">
+              <p className="text-xs text-slate-400 mt-0.5">
                 {strings.subtitle}
               </p>
             </div>
@@ -987,13 +984,19 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
+                  onChange={e => {
+                    setSearchQuery(e.target.value);
+                    setUseInitialPlans(false);
+                  }}
                   placeholder={strings.searchPlanPlaceholder}
                   className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFAF00] transition-colors"
                 />
                 {searchQuery && (
                   <button
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => {
+                      setSearchQuery('');
+                      setUseInitialPlans(false);
+                    }}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
                   >
                     <X className="w-3.5 h-3.5" />
@@ -1012,15 +1015,18 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
               </label>
               <select
                 value={selectedMunicipalityCode}
-                onChange={e => setSelectedMunicipalityCode(e.target.value)}
+                onChange={e => {
+                  setSelectedMunicipalityCode(e.target.value);
+                  setUseInitialPlans(false);
+                }}
                 className="bg-white/5 border border-white/10 text-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FFAF00] transition-colors custom-scrollbar font-medium"
               >
                 <option value="" className="bg-[#0D0D11] text-slate-300">
-                  -- {strings.allMunicipalities} --
+                  {strings.allMunicipalities}
                 </option>
                 {municipalityOptions.map(m => (
                   <option key={m.code} value={m.code} className="bg-[#0D0D11] text-slate-200">
-                    {m.name} ({m.planCount})
+                    {m.name} ({m.detailedPlanCount + m.masterPlanCount})
                   </option>
                 ))}
               </select>
@@ -1039,6 +1045,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                       setSearchQuery('');
                       setSelectedMunicipalityCode('');
                       setSelectedPlanType('ALL');
+                      setUseInitialPlans(false);
                     }}
                     className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold underline"
                   >
@@ -1048,14 +1055,17 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
               </div>
               <select
                 value={selectedPlanType}
-                onChange={e => setSelectedPlanType(e.target.value)}
+                onChange={e => {
+                  setSelectedPlanType(e.target.value);
+                  setUseInitialPlans(false);
+                }}
                 className="bg-white/5 border border-white/10 text-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FFAF00] transition-colors custom-scrollbar font-medium"
               >
                 <option value="ALL" className="bg-[#0D0D11] text-slate-300">
                   {strings.allPlanTypes}
                 </option>
                 {kaavalajiOptions.map(opt => (
-                  <option key={opt.uri} value={opt.uri} className="bg-[#0D0D11] text-slate-200">
+                  <option key={opt.uri} value={opt.codeValue || opt.uri} className="bg-[#0D0D11] text-slate-200">
                     {opt.name}
                   </option>
                 ))}
@@ -1075,7 +1085,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
               {isLoadingPlans && <span className="text-amber-400 text-[10px] animate-pulse">{strings.loadingMorePlans}</span>}
             </div>
 
-            {plans.length < totalMatched && (
+            {hasMore && (
               <button
                 onClick={handleLoadMore}
                 disabled={isLoadingMore}

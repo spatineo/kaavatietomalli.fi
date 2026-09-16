@@ -146,6 +146,8 @@ describe('fetch-municipality-data script', () => {
         expect(indexContent[0].nameFin).toBeDefined();
         expect(indexContent[0].numberOfDetailedPlansInRyhti).toBeDefined();
         expect(typeof indexContent[0].numberOfDetailedPlansInRyhti).toBe('number');
+        expect(indexContent[0].numberOfMasterPlansInRyhti).toBeDefined();
+        expect(typeof indexContent[0].numberOfMasterPlansInRyhti).toBe('number');
 
         // Check that individual municipality files were created
         const firstMuniCode = indexContent[0].natcode;

@@ -58,7 +58,8 @@ const mockMunicipalityFeature = {
     NATCODE: '091',
     NAMEFIN: 'Helsinki',
     NAMESWE: 'Helsingfors',
-    numberOfDetailedPlansInRyhti: 15
+    numberOfDetailedPlansInRyhti: 15,
+    numberOfMasterPlansInRyhti: 10
   }
 };
 
@@ -74,7 +75,8 @@ const mockMunicipalityFeature2 = {
     NATCODE: '749',
     NAMEFIN: 'Seinäjoki',
     NAMESWE: 'Seinäjoki',
-    numberOfDetailedPlansInRyhti: 3
+    numberOfDetailedPlansInRyhti: 3,
+    numberOfMasterPlansInRyhti: 4
   }
 };
 
@@ -110,8 +112,8 @@ const mockFetchHandler = (url: string) => {
     data = { version: '1.0.0' };
   } else if (url.includes('municipalities.json')) {
     data = [
-      { id: 'kunta.091', natcode: '091', kuntatunnus: 91, nameFin: 'Helsinki', nameSwe: 'Helsingfors', numberOfDetailedPlansInRyhti: 15 },
-      { id: 'kunta.749', natcode: '749', kuntatunnus: 749, nameFin: 'Seinäjoki', nameSwe: 'Seinäjoki', numberOfDetailedPlansInRyhti: 3 }
+      { id: 'kunta.091', natcode: '091', kuntatunnus: 91, nameFin: 'Helsinki', nameSwe: 'Helsingfors', numberOfDetailedPlansInRyhti: 15, numberOfMasterPlansInRyhti: 10 },
+      { id: 'kunta.749', natcode: '749', kuntatunnus: 749, nameFin: 'Seinäjoki', nameSwe: 'Seinäjoki', numberOfDetailedPlansInRyhti: 3, numberOfMasterPlansInRyhti: 4 }
     ];
   } else if (url.includes('municipalities/091.json') || url.includes('/091.json')) {
     data = mockMunicipalityFeature;
@@ -357,8 +359,8 @@ describe('PlanExplorerView Component', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/Helsinki \(15\)/i)).toBeDefined();
-      expect(screen.getByText(/Seinäjoki \(3\)/i)).toBeDefined();
+      expect(screen.getByText(/Helsinki \(25\)/i)).toBeDefined();
+      expect(screen.getByText(/Seinäjoki \(7\)/i)).toBeDefined();
     });
   });
 
@@ -447,6 +449,134 @@ describe('PlanExplorerView Component', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText(/Testiasemakaava Ranta/i).length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('WFS result sorting order by approval_date (NULLS FIRST)', () => {
+    const planNullMaster = {
+      id: 'pub_valid_lm_plan_ix_gs.null-master',
+      type: 'Feature' as const,
+      geometry: { type: 'Polygon', coordinates: [[[24.0, 60.0], [25.0, 60.0], [25.0, 61.0], [24.0, 61.0], [24.0, 60.0]]] },
+      properties: {
+        id: 'pub_valid_lm_plan_ix_gs.null-master',
+        name_fin: 'Yleiskaava Ilman Päivämäärää',
+        approval_date: null,
+        administrative_area_identifiers: '["091"]'
+      }
+    };
+
+    const plan2025Master = {
+      id: 'pub_valid_lm_plan_ix_gs.2025-master',
+      type: 'Feature' as const,
+      geometry: { type: 'Polygon', coordinates: [[[24.0, 60.0], [25.0, 60.0], [25.0, 61.0], [24.0, 61.0], [24.0, 60.0]]] },
+      properties: {
+        id: 'pub_valid_lm_plan_ix_gs.2025-master',
+        name_fin: 'Uusin Yleiskaava 2025',
+        approval_date: '2025-01-01T00:00:00Z',
+        administrative_area_identifiers: '["091"]'
+      }
+    };
+
+    const plan2020Detailed = {
+      id: 'pub_valid_ld_plan_ix_gs.2020-detailed',
+      type: 'Feature' as const,
+      geometry: { type: 'Polygon', coordinates: [[[24.0, 60.0], [25.0, 60.0], [25.0, 61.0], [24.0, 61.0], [24.0, 60.0]]] },
+      properties: {
+        id: 'pub_valid_ld_plan_ix_gs.2020-detailed',
+        name_fin: 'Vanha Asemakaava 2020',
+        approval_date: '2020-01-01T00:00:00Z',
+        administrative_area_identifiers: '["091"]'
+      }
+    };
+
+    it('places master plans with null approval_date at the top when requesting master plans', async () => {
+      const customFetch = (url: string) => {
+        if (url.includes('pub_valid_lm_plan_ix_gs')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve({
+              type: 'FeatureCollection',
+              numberMatched: 2,
+              features: [plan2025Master, planNullMaster]
+            })
+          });
+        }
+        return mockFetchHandler(url);
+      };
+      vi.stubGlobal('fetch', vi.fn(customFetch));
+
+      render(<PlanExplorerView initialMunicipalities={[mockMunicipalityFeature]} />);
+      await flushPromises();
+
+      const selects = screen.getAllByRole('combobox');
+      // Select Helsinki
+      fireEvent.change(selects[0], { target: { value: '091' } });
+      await flushPromises();
+
+      // Select Yleiskaava planType (code '2')
+      fireEvent.change(selects[1], { target: { value: '2' } });
+      await flushPromises();
+
+      await waitFor(() => {
+        const planButtons = screen.getAllByRole('button').filter(b => b.textContent?.includes('Yleiskaava'));
+        expect(planButtons.length).toBe(2);
+        // Null approval date plan must be first
+        expect(planButtons[0].textContent).toContain('Yleiskaava Ilman Päivämäärää');
+        expect(planButtons[1].textContent).toContain('Uusin Yleiskaava 2025');
+      });
+    });
+
+    it('places null approval_date plans at the top when requesting both master and detailed plans', async () => {
+      const customFetch = (url: string) => {
+        if (url.includes('pub_valid_lm_plan_ix_gs')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve({
+              type: 'FeatureCollection',
+              numberMatched: 2,
+              features: [plan2025Master, planNullMaster]
+            })
+          });
+        }
+        if (url.includes('pub_valid_ld_plan_ix_gs')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: 'OK',
+            json: () => Promise.resolve({
+              type: 'FeatureCollection',
+              numberMatched: 1,
+              features: [plan2020Detailed]
+            })
+          });
+        }
+        return mockFetchHandler(url);
+      };
+      vi.stubGlobal('fetch', vi.fn(customFetch));
+
+      render(<PlanExplorerView initialMunicipalities={[mockMunicipalityFeature]} />);
+      await flushPromises();
+
+      const selects = screen.getAllByRole('combobox');
+      fireEvent.change(selects[0], { target: { value: '091' } });
+      await flushPromises();
+
+      await waitFor(() => {
+        const planButtons = screen.getAllByRole('button').filter(b => 
+          b.textContent?.includes('Kaava') || b.textContent?.includes('Yleiskaava') || b.textContent?.includes('Asemakaava')
+        );
+        expect(planButtons.length).toBe(3);
+        // 1st: Null approval date master plan
+        expect(planButtons[0].textContent).toContain('Yleiskaava Ilman Päivämäärää');
+        // 2nd: 2025 master plan
+        expect(planButtons[1].textContent).toContain('Uusin Yleiskaava 2025');
+        // 3rd: 2020 detailed plan
+        expect(planButtons[2].textContent).toContain('Vanha Asemakaava 2020');
+      });
     });
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { MergedWfsReader } from './merged-wfs-reader';
+import { DoubleFeatureWfsReader, WFSResultFeature, WFSService } from './double-feature-wfs-reader';
 import { PlanFeature } from '../services/plan-api';
 
 const createMockPlan = (id: string, approvalDate: string, name = 'Test Plan'): PlanFeature => ({
@@ -16,7 +16,7 @@ const createMockPlan = (id: string, approvalDate: string, name = 'Test Plan'): P
   }
 });
 
-describe('MergedWfsReader', () => {
+describe('DoubleFeatureWfsReader', () => {
   const baseUrl = 'https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/wfs';
   const typeA = 'ryhti_plan:pub_valid_ld_plan_ix_gs';
   const typeB = 'ryhti_plan:pub_valid_lm_plan_ix_gs';
@@ -30,7 +30,7 @@ describe('MergedWfsReader', () => {
   });
 
   it('initializes with default values and reset state', () => {
-    const reader = new MergedWfsReader(baseUrl, typeA, typeB, 'some_cql', 25);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, 'some_cql', 25);
     expect(reader.baseUrl).toBe(baseUrl);
     expect(reader.typeA).toBe(typeA);
     expect(reader.typeB).toBe(typeB);
@@ -73,7 +73,7 @@ describe('MergedWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new MergedWfsReader(baseUrl, typeA, typeB, null, 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
     const result = await reader.next();
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -116,7 +116,7 @@ describe('MergedWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new MergedWfsReader(baseUrl, typeA, typeB, null, 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
     const result = await reader.next();
 
     expect(result.features).toHaveLength(2);
@@ -161,7 +161,7 @@ describe('MergedWfsReader', () => {
     vi.stubGlobal('fetch', mockFetch);
 
     // Page size = 2
-    const reader = new MergedWfsReader(baseUrl, typeA, typeB, null, 2);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 2);
 
     // Page 1
     const page1 = await reader.next();
@@ -200,7 +200,7 @@ describe('MergedWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new MergedWfsReader(baseUrl, typeA, null, 'administrative_area_identifiers=[\"091\"]', 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, null, 'administrative_area_identifiers=[\"091\"]', 10);
     const result = await reader.next();
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -223,7 +223,7 @@ describe('MergedWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new MergedWfsReader(baseUrl, null, typeB, null, 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, null, typeB, null, 10);
     const result = await reader.next();
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -234,7 +234,7 @@ describe('MergedWfsReader', () => {
   });
 
   it('handles both streams being null gracefully', async () => {
-    const reader = new MergedWfsReader(baseUrl, null, null, null, 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, null, null, null, 10);
     const result = await reader.next();
 
     expect(result.features).toEqual([]);
@@ -250,12 +250,12 @@ describe('MergedWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new MergedWfsReader(baseUrl, typeA, null, null, 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, null, null, 10);
     await expect(reader.next()).rejects.toThrow('HTTP 502 - Bad Gateway');
   });
 
   it('returns empty result when closed or aborted', async () => {
-    const reader = new MergedWfsReader(baseUrl, typeA, typeB, null, 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
     reader.close();
     expect(reader.isClosed).toBe(true);
 
@@ -271,7 +271,7 @@ describe('MergedWfsReader', () => {
     const mockFetch = vi.fn().mockRejectedValue(abortErr);
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new MergedWfsReader(baseUrl, typeA, null, null, 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, null, null, 10);
     const result = await reader.next();
 
     expect(result.features).toEqual([]);
@@ -279,7 +279,7 @@ describe('MergedWfsReader', () => {
   });
 
   it('resets offsets, matched counts, and abort controller upon reset()', () => {
-    const reader = new MergedWfsReader(baseUrl, typeA, typeB, null, 10);
+    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
     reader.offsetA = 5;
     reader.offsetB = 3;
     reader.matchedA = 100;
@@ -296,15 +296,13 @@ describe('MergedWfsReader', () => {
   });
 
   it('works with a custom WFSService object implementation', async () => {
-    interface CustomFeature {
-      id: string;
-      properties: { name: string; date: string };
+    interface CustomFeature extends WFSResultFeature {
+      id: string | number;
+      properties?: Record<string, any>;
     }
 
-    const customService = {
+    const customService: WFSService = {
       baseUrl: 'https://custom-wfs.example.com/geoserver/wfs',
-      defaultTypeA: 'custom:layer_a',
-      defaultTypeB: 'custom:layer_b',
       sortFeatures: (a: CustomFeature, b: CustomFeature) =>
         new Date(b.properties.date).getTime() - new Date(a.properties.date).getTime(),
       fetchChunk: vi.fn().mockImplementation((typeName: string) => {
@@ -323,11 +321,102 @@ describe('MergedWfsReader', () => {
       })
     };
 
-    const reader = new MergedWfsReader<CustomFeature>(customService);
+    const reader = new DoubleFeatureWfsReader<CustomFeature>(customService,'custom:layer_a', 'custom:layer_b');
     const result = await reader.next();
 
     expect(customService.fetchChunk).toHaveBeenCalled();
     expect(result.features).toHaveLength(1);
     expect(result.features[0].id).toBe('feat-1');
+  });
+
+  describe('approval_date sorting order (NULLS FIRST descending)', () => {
+    const planNull = {
+      id: 'plan-null',
+      properties: { approval_date: null, name_fin: 'Plan Null' }
+    };
+    const plan2025 = {
+      id: 'plan-2025',
+      properties: { approval_date: '2025-06-01T00:00:00Z', name_fin: 'Plan 2025' }
+    };
+    const plan2020 = {
+      id: 'plan-2020',
+      properties: { approval_date: '2020-01-01T00:00:00Z', name_fin: 'Plan 2020' }
+    };
+
+    it('sorts master plans (typeB only) placing null approval_dates at the top', async () => {
+      const mockFetch = vi.fn().mockImplementation((url: string) => {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            type: 'FeatureCollection',
+            numberMatched: 3,
+            features: [plan2020, planNull, plan2025]
+          })
+        });
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const reader = new DoubleFeatureWfsReader(baseUrl, null, typeB, null, 10);
+      const res = await reader.next();
+
+      expect(res.features).toHaveLength(3);
+      expect(res.features[0].id).toBe('plan-null');
+      expect(res.features[1].id).toBe('plan-2025');
+      expect(res.features[2].id).toBe('plan-2020');
+    });
+
+    it('sorts detailed plans (typeA only) placing null approval_dates at the top', async () => {
+      const mockFetch = vi.fn().mockImplementation((url: string) => {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            type: 'FeatureCollection',
+            numberMatched: 3,
+            features: [plan2020, plan2025, planNull]
+          })
+        });
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const reader = new DoubleFeatureWfsReader(baseUrl, typeA, null, null, 10);
+      const res = await reader.next();
+
+      expect(res.features).toHaveLength(3);
+      expect(res.features[0].id).toBe('plan-null');
+      expect(res.features[1].id).toBe('plan-2025');
+      expect(res.features[2].id).toBe('plan-2020');
+    });
+
+    it('sorts merged detailed and master plans placing null approval_dates at the top', async () => {
+      const mockFetch = vi.fn().mockImplementation((url: string) => {
+        if (url.includes(encodeURIComponent(typeA))) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              type: 'FeatureCollection',
+              numberMatched: 2,
+              features: [plan2020]
+            })
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            type: 'FeatureCollection',
+            numberMatched: 2,
+            features: [planNull, plan2025]
+          })
+        });
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
+      const res = await reader.next();
+
+      expect(res.features).toHaveLength(3);
+      expect(res.features[0].id).toBe('plan-null');
+      expect(res.features[1].id).toBe('plan-2025');
+      expect(res.features[2].id).toBe('plan-2020');
+    });
   });
 });

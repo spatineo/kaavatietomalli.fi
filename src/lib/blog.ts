@@ -135,6 +135,7 @@ export interface MunicipalityInfo {
   nameFin: string;
   nameSwe?: string;
   numberOfDetailedPlansInRyhti?: number;
+  numberOfMasterPlansInRyhti?: number;
   properties?: {
     kuntatunnus?: number;
     NATCODE?: string;
@@ -304,6 +305,7 @@ export async function getMunicipalityList(): Promise<MunicipalityInfo[]> {
         nameFin: f.properties?.NAMEFIN || '',
         nameSwe: f.properties?.NAMESWE,
         numberOfDetailedPlansInRyhti: f.numberOfDetailedPlansInRyhti ?? f.properties?.numberOfDetailedPlansInRyhti ?? 0,
+        numberOfMasterPlansInRyhti: f.numberOfMasterPlansInRyhti ?? f.properties?.numberOfMasterPlansInRyhti ?? 0,
         properties: f.properties
       }));
     }

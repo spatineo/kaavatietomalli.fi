@@ -2,7 +2,7 @@
  * WFS 2.0 API Service for Ryhti Plan Data
  */
 
-import { WFSResultFeature, WFSService } from '../lib/merged-wfs-reader';
+import { WFSResultFeature, WFSService } from '../lib/double-feature-wfs-reader';
 
 export const WFS_API_URL = 'https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/wfs';
 
@@ -62,15 +62,24 @@ export const ryhtiPlanWfsService: WFSService<PlanFeature> = {
   srsName: 'EPSG:4326',
   outputFormat: 'application/json',
   sortBy: 'approval_date DESC',
-  defaultTypeA: WFS_TYPE_DETAILED_PLAN,
-  defaultTypeB: WFS_TYPE_MASTER_PLAN
+  sortFeatures: (a: PlanFeature, b: PlanFeature) => {
+    const valA = a.properties?.approval_date;
+    const valB = b.properties?.approval_date;
+    const tA = valA ? new Date(valA).getTime() : null;
+    const tB = valB ? new Date(valB).getTime() : null;
+    const validA = tA !== null && !isNaN(tA);
+    const validB = tB !== null && !isNaN(tB);
+    if (!validA && !validB) return 0;
+    if (!validA) return -1; // nulls first for descending order
+    if (!validB) return 1;
+    return tB - tA;
+  }
 };
 
 export interface WfsTypesSelection {
   typeA: string | null;
   typeB: string | null;
 }
-
 
 /**
  * Determines whether WFS request should query detailed plans (typeA),
@@ -80,7 +89,6 @@ export interface WfsTypesSelection {
  * 2) Yleiskaava sub-types (broaderCode === '2' or code '2*'): only 'ryhti_plan:pub_valid_lm_plan_ix_gs'
  * 3) No planType or 'ALL': query both in parallel
  */
-
 export function getWfsTypesForPlanType(planType?: string | null): WfsTypesSelection {
   if (!planType || planType === 'ALL') {
     return {
@@ -89,32 +97,37 @@ export function getWfsTypesForPlanType(planType?: string | null): WfsTypesSelect
     };
   }
 
-  const clean = planType
-    .trim()
-    .replace(/^https?:\/\/uri\.suomi\.fi\/codelist\/rytj\/RY_Kaavalaji\/code\//, '');
+  const raw = planType.trim();
 
-  // Asemakaava and sub-types (3, 31, 32, 33, 34, 35, 39)
-  if (clean === '3' || clean.startsWith('3')) {
+  // Extract code value or numeric part if present
+  let code = raw;
+  if (raw.includes('/code/')) {
+    code = raw.split('/code/').pop() || raw;
+  } else if (raw.includes('/')) {
+    code = raw.split('/').pop() || raw;
+  }
+  const digits = code.replace(/[^0-9]/g, '');
+
+  // Asemakaava and sub-types start with '3' (3, 31, 32, 33, 34, 35, 39)
+  if (digits.startsWith('3') || code === '3') {
     return {
       typeA: WFS_TYPE_DETAILED_PLAN,
       typeB: null
     };
   }
 
-  // Yleiskaava and sub-types (2, 21, 22, 23, 24, 25)
-  if (clean === '2' || clean.startsWith('2')) {
+  // Yleiskaava and sub-types start with '2' (2, 21, 22, 23, 24, 25)
+  if (digits.startsWith('2') || code === '2') {
     return {
       typeA: null,
       typeB: WFS_TYPE_MASTER_PLAN
     };
   }
-
   return {
     typeA: WFS_TYPE_DETAILED_PLAN,
     typeB: WFS_TYPE_MASTER_PLAN
   };
 }
-
 
 /**
  * Builds standard CQL filter for WFS 2.0 GetFeature queries.
@@ -153,7 +166,6 @@ export function buildWfsCqlFilter(
 /**
  * Builds WFS 2.0 GetFeature URL with CQL filtering and descending sort by approval_date.
  */
-/*
 export function buildWfsUrl(
   municipalityCode?: string,
   searchQuery?: string,
@@ -184,7 +196,6 @@ export function buildWfsUrl(
 
   return `${WFS_API_URL}?${params.toString()}`;
 }
-*/
 
 /**
  * Helper to extract municipality codes from plan property
