@@ -76,6 +76,7 @@
 .markdown-body.journal-normal li:not(.mermaid, .mermaid *),
 .markdown-body.journal-normal blockquote:not(.mermaid, .mermaid *) {
   font-family: var(--font-serif) !important;
+  font-size: var(--text-xl);
 }
 
 .markdown-body.journal-normal h1:not(.mermaid, .mermaid *),

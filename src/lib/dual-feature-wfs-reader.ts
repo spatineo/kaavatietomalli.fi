@@ -3,7 +3,7 @@ import {
   WFSFeatureCollectionResponse,
   WFSService,
   WfsResult
-} from './double-feature-wfs-reader.types';
+} from './dual-feature-wfs-reader.types';
 
 export type {
   WFSResultFeature,
@@ -18,7 +18,7 @@ export type {
  * Handles parallel fetching of multiple typeNames, sorting, offset tracking,
  * request cancellation, and deduplication by feature ID.
  */
-export class DoubleFeatureWfsReader<TFeature extends WFSResultFeature = WFSResultFeature> {
+export class DualFeatureWfsReader<TFeature extends WFSResultFeature = WFSResultFeature> {
   service: WFSService<TFeature>;
   typeA: string | null;
   typeB: string | null;

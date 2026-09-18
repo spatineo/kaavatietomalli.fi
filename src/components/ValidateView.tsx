@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
+import { CallToActionBlock } from './CodeBlock';
 
 // Built-in example of a ValidatePlan document based on Ryhti schema
 const EXAMPLE_PLAN = {
@@ -670,6 +671,13 @@ export function ValidateView({ onBack }: ValidateViewProps) {
     ? enrichedErrors.filter(err => err.resolvedLineNum === selectedLineNum)
     : [];
 
+  const ctaProps:string = JSON.stringify({
+    "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
+    "buttonText": "Kysy lisää",
+    "title":"Haasteita Ryhti-toteutuksen kanssa? Spatineo toteutti tämän palvelun ja osaamme auttaa sinuakin.",
+    "partner": "spatineo",
+    "mode": "thin"
+  });
   return (
     <div className="py-8 md:py-16 max-w-7xl mx-auto px-6 validate-view">
       {/* Top Header Section */}
@@ -1272,6 +1280,8 @@ export function ValidateView({ onBack }: ValidateViewProps) {
           )}
         </div>
       )}
+      <CallToActionBlock code={ctaProps} />
     </div>
+
   );
 }

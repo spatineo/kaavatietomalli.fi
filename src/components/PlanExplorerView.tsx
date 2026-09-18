@@ -32,8 +32,9 @@ import {
   getWfsTypesForPlanType,
   buildWfsCqlFilter
 } from '../services/plan-api';
-import { useDoubleFeatureWfs } from '../hooks/useDoubleFeatureWfs';
+import { useDualFeatureWfs } from '../hooks/useDualFeatureWfs';
 import { CodeItem } from '../lib/data-model-types';
+import { CallToActionBlock } from './CodeBlock';
 
 // Lazy load Leaflet and Proj4 libraries
 let LeafletInstance: any = null;
@@ -338,7 +339,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     hasMore,
     error: wfsError,
     loadMore: handleLoadMore
-  } = useDoubleFeatureWfs(ryhtiPlanWfsService, typeA, typeB, cqlFilter, 50, {
+  } = useDualFeatureWfs(ryhtiPlanWfsService, typeA, typeB, cqlFilter, 50, {
     enabled: !useInitialPlans,
     initialFeatures: initialPlans || []
   });
@@ -1074,6 +1075,14 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     return () => observer.disconnect();
   }, [libs]);
 
+  const ctaProps:string = JSON.stringify({
+    "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
+    "buttonText": "Kysy lisää",
+    "title":"Tarvitseeko organisaatiosi kaavatietoa? Spatineo toteutti tämän palvelun ja osaamme auttaa sinuakin.",
+    "partner": "spatineo",
+    "mode": "thin"
+  });
+
   const mainView = (
     <div
       className={`bg-[#0A0A0C] text-slate-200 font-sans flex flex-col ${
@@ -1681,6 +1690,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         </div>
 
       </div>
+      
     </div>
   );
 
@@ -1691,6 +1701,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   return (
     <div className="w-full px-2 sm:px-4 md:px-6 py-4 md:py-6">
       {mainView}
+      <CallToActionBlock code={ctaProps} />
     </div>
   );
 }

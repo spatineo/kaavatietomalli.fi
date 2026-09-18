@@ -2,7 +2,7 @@
  * WFS 2.0 API Service for Ryhti Plan Data
  */
 
-import { WFSResultFeature, WFSService } from '../lib/double-feature-wfs-reader';
+import { WFSResultFeature, WFSService } from '../lib/dual-feature-wfs-reader';
 
 export const WFS_API_URL = 'https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/wfs';
 

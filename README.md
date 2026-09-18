@@ -6,7 +6,10 @@ A serverless headless CMS website built with React, Vite, and Tailwind CSS. The 
 
 ## Table of Contents
 1. [Core CMS Operating Process](#core-cms-operating-process)
-2. [Data Model Browser](#data-model-browser)
+2. [Tool Apps](#tool-apps)
+   - [Data Model Browser](#data-model-browser)
+   - [Plan Validator](#plan-validator)
+   - [Plan Explorer](#plan-explorer)
 3. [Content Provider & Editorial Guide](#content-provider--editorial-guide)
    - [Structure of Content Directories](#1-structure-of-content-directories)
    - [Drafts vs. Scheduled Blog Posts](#2-drafts-vs-scheduled-blog-posts)
@@ -39,8 +42,8 @@ The platform operates as a **git-backed serverless developer CMS**. It requires 
                 │
                 ▼ (npm run prebuild)
    ┌─────────────────────────────────────────────────────────┐
-   │  Ingestion scripts index content, generate metadata,     │
-   │  compile search indices & fetch external Giscus stats.   │
+   │  Ingestion scripts index content, generate metadata,    │
+   │  compile search indices & fetch external Giscus stats.  │
    └─────────────────────────────────────────────────────────┘
                 │
                 ├────────────────────────┬────────────────────────┐
@@ -68,12 +71,12 @@ The platform operates as a **git-backed serverless developer CMS**. It requires 
 4. **External API Content Synchronization (Suomi.fi)**: To showcase official data models and codelists, the platform downloads official specifications directly from the Finnish Interoperability Platform [Yhteentoimivuusalusta](https://dvv.fi/yhteentoimivuusalusta). These are fetched via external APIs, transformed and normalized into static JSON arrays, and stored locally within `/public/data/suomi.fi/`. This guarantees high performance and high availability, letting diagrams and codelists render instantly on the client without live API runtime dependencies.
 
 ---
-
-## Data Model Browser
+## Tool Apps
+### Data Model Browser
 
 The website features an interactive **Data Model Browser** designed to make Finland's unified spatial planning data specifications (*Kaavatietomalli*) accessible, queryable, and understandable to planners, developers, and public authorities.
 
-### Purpose and Core Functionality
+#### Purpose and Core Functionality
 Implemented by the `DataModelView` component, the Data Model Browser provides a rich, single-page application interface to navigate complex geographic data structures:
 * **Interactive Class Diagrams**: Dynamically renders standard UML class diagrams of spatial planning entities using a responsive canvas powered by Mermaid.js. Clicking a class node isolates its local inheritance and association graph.
 * **Property & Association Inspector**: Details all technical attributes, allowed data types, cardinality constraints (e.g., `0..1`, `1..*`), and conceptual definitions for the selected class.
@@ -81,12 +84,12 @@ Implemented by the `DataModelView` component, the Data Model Browser provides a 
 * **Deep Linking & State Synchronization**: Synchronizes active browser selections with URL query parameters (such as `?model=<model-id>&class=<class-name>` or `?model=<model-id>&codelist=<codelist-name>`), enabling precise sharing, referencing, and navigation throughout the documentation.
 * **Tri-lingual Localization**: Seamlessly toggles metadata definitions, names, and comments between Finnish (`fi`), Swedish (`sv`), and English (`en`).
 
-### Architecture of Local Translated Content
+#### Architecture of Local Translated Content
 To eliminate expensive server-side databases and secure ultra-fast load times, the Data Model Browser operates purely on local, static JSON file copies:
 * **Storage Location**: Pre-processed schema files are saved locally inside `/public/data/suomi.fi/tietomallit/` (for data models) and `/public/data/suomi.fi/koodistot/` (for reference codelists).
 * **Multi-language Bundling**: The raw specifications are combined with their official translations from Suomi.fi during the pre-build phase, producing localized key-value structures. This ensures that the React application can switch languages instantly in the client’s browser without firing additional network requests to external APIs.
 
-### Automated Synchronization with Suomi.fi
+#### Automated Synchronization with Suomi.fi
 To ensure the website remains the single source of truth without manual editing, content is kept up-to-date automatically with the official registries on the **Suomi.fi Interoperability Platform** (*Yhteentoimivuusalusta*):
 
 ```
@@ -115,6 +118,70 @@ To ensure the website remains the single source of truth without manual editing,
    - `scripts/fetch-codelists.ts`: Queries the Suomi.fi code registry, extracts valid enumeration codes, names, and descriptions, and normalizes them into structured static arrays.
 2. **Transform and Normalize**: The ingestion scripts parse official Suomi.fi REST payloads, translate empty fields using automated fallback rules, and map complex URI properties onto a clean, standardized JSON format.
 3. **Continuous Nightly Sync**: As part of the nightly scheduled pipeline, the site runs the automated `npm run fetch-data` check. If any updates are detected on the Suomi.fi platform, the workflow automatically commits the updated JSON copies, builds the React bundle, and redeploys the site. This guarantees high availability and resilience—the browser never depends on a live external API connection to render specifications.
+
+### Plan Validator
+
+The **Plan Validator** is an interactive validation studio designed for municipal spatial planners, GIS specialists, and software developers to test and validate spatial planning JSON documents (*ValidatePlan* structure) against Finland's official **Ryhti** validation services.
+
+#### Purpose and Core Functionality
+Implemented by the `ValidateView` component, the Plan Validator provides an end-to-end testing environment for national spatial plan data payloads:
+* **Interactive JSON Code Editor**: Features a code editor with synchronized line numbering, automatic syntax validation, line indentation parsing (`parseJsonToLines`), file upload support (`.json`), and code formatting.
+* **Line-by-Line Error Mapping**: Parses validation response structures (`errors` array containing `ruleId`, `instance` JSON paths, and localized messages) or ASP.NET model validation outputs. Automatically maps error field paths directly onto specific lines in the JSON editor and highlights failing properties.
+* **Environment & API Gateway Switching**: Toggles seamlessly between Syke's **Test** (`api-test.ymparisto.fi`) and **Production** (`api.ymparisto.fi`) Ryhti API environments.
+* **Secure Key Management**: Persists Syke API subscription keys (`Ocp-Apim-Subscription-Key`) safely in browser `localStorage`, segmented by environment.
+* **Parameter Customization**: Supports selecting target plan types (e.g., 31 *Asemakaava*, 21 *Yleiskaava*) and administrative area identifiers (e.g., municipal code `601`).
+* **Reference Example Payloads**: Includes a built-in *ValidatePlan* example document (`EXAMPLE_PLAN`) conforming to the official Ryhti schema, allowing instant one-click testing without external files.
+* **Raw API Response Inspection**: Displays raw JSON response status codes and payloads with one-click clipboard copying for technical debugging.
+
+#### Third-Party and External Backend APIs
+The Plan Validator communicates directly with official Finnish Environment Institute (Syke / *Suomen ympäristökeskus*) validation gateways:
+* **Syke Ryhti Plan Validation REST API**:
+  * **Test Endpoint**: `https://api-test.ymparisto.fi/ryhti/plan-public/api/Plan/Validate`
+  * **Production Endpoint**: `https://api.ymparisto.fi/ryhti/plan-public/api/Plan/Validate`
+  * **Protocol / Method**: HTTP `POST` sending JSON *ValidatePlan* payloads.
+  * **HTTP Headers**: `Ocp-Apim-Subscription-Key`, `Content-Type: application/json`, `accept: application/json`.
+  * **Query Parameters**: `planType` (e.g., `31`) and `administrativeAreaIdentifiers` (e.g., `601`).
+
+---
+
+### Plan Explorer
+
+The **Plan Explorer** (*Kaavaselain*) is an interactive geospatial browser allowing users to discover, query, inspect, and map spatial plan index data (*kaavaindeksitiedot*) imported into the national **Ryhti** system (*Valtakunnallinen alueidenkäytön tietojärjestelmä*).
+
+#### Purpose and Core Functionality
+Implemented by the `PlanExplorerView` component, the Plan Explorer combines interactive map visualization with live WFS spatial data queries:
+* **Interactive Map Canvas**: Uses Leaflet and Proj4 (supporting EPSG:3067 / ETRS-TM35FIN coordinate transformations) to render municipality boundaries and spatial plan polygon geometries over dark or light Carto vector tile basemaps.
+* **Distinct Layer Hierarchy & Color Coding**:
+  * **Local Detailed Plans (*Asemakaavat*)**: Rendered with high-visibility orange styling (`#F97316`).
+  * **Master Plans (*Yleiskaavat*)**: Rendered with distinct purple styling (`#A855F7`).
+  * **Municipality Boundary**: Outlined in cyan (`#38BDF8`).
+  * **Floating Overlay Controls**: Interactive layer buttons display real-time plan counts and allow toggling detailed or master plan layers on and off.
+* **Automatic Layer Visibility**: Selecting a plan from the sidebar list or map canvas automatically re-enables and displays its corresponding map layer if it was hidden.
+* **Live WFS 2.0 Query & Filtering**: Queries live spatial plan index features directly from Syke's open WFS service. Supports filtering by municipality, plan name search, and plan type categories. Automatically sorts returned features by `approval_date` descending.
+* **Dual Feature Stream Reader (`useDualFeatureWfs`)**: Queries detailed plan (`pub_valid_ld_plan_ix_gs`) and master plan (`pub_valid_lm_plan_ix_gs`) WFS feature streams in parallel or individually based on active filters.
+* **Plan Detail & Raw GeoJSON Inspector**: Inspects selected plan attributes (lifecycle status, approval dates, digital origin, administrative IDs) and linked plan documents/attachments. Features an integrated raw GeoJSON and attribute viewer powered by `LazySyntaxHighlighter` with copy and download functionality.
+
+#### Required Built-Time Scripts and Static Data
+To provide instant UI responsiveness and offline municipality navigation, municipality boundaries and plan count statistics are pre-calculated during the build process:
+* **`scripts/fetch-municipality-data.ts` (`npm run fetch-data`)**:
+  * **Municipality Index & Feature Files**: Executes during the build pipeline to generate `/public/data/nls.fi/municipalities.json` (a sorted index of all 309 Finnish municipalities enriched with localized names and Ryhti plan count statistics) and individual municipality GeoJSON files in `/public/data/nls.fi/municipalities/`.
+  * **Suomi.fi Name Enrichment**: Correlates municipality codes with official Suomi.fi codelist `kunta_1_20240101` (`/public/data/suomi.fi/koodistot/jhs/kunta_1_20240101.json`).
+
+#### Third-Party and External Backend APIs
+The Plan Explorer integrates with external spatial data services at build-time and client runtime:
+1. **Maanmittauslaitos (NLS) OGC API Features (Build-Time)**:
+   * **Endpoint**: `https://avoin-paikkatieto.maanmittauslaitos.fi/maastotiedot/features/v1/collections/kunta/items?f=json&limit=500`
+   * **Authentication**: Basic Auth using `MML_API_KEY` / `NLS_API_KEY`.
+   * **Usage**: Downloads official 2D/3D Finnish municipality administrative boundaries during static site generation.
+2. **Syke Ryhti OGC API Features & WFS 2.0 (Build-Time & Client Runtime)**:
+   * **Build-Time Plan Count Queries**: `https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/ogc/features/v1/collections/pub_valid_ld_plan_ix_gs/items` and `pub_valid_lm_plan_ix_gs/items` (queries `numberMatched` with CQL2 filters `administrative_area_identifiers = '["<natcode>"]'`).
+   * **Client Runtime WFS 2.0 API**: `https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/wfs`
+     * **Protocol**: WFS 2.0.0, SRS: `EPSG:4326`, OutputFormat: `application/json`.
+     * **Feature Types**: `ryhti_plan:pub_valid_ld_plan_ix_gs` (local detailed plans) and `ryhti_plan:pub_valid_lm_plan_ix_gs` (master plans).
+     * **Filtering**: CQL filters (`administrative_area_identifiers LIKE '%"<code>"%'` and plan name/type queries).
+3. **Carto Vector Tile Service (Client Runtime)**:
+   * **Tile Layer URLs**: Dark (`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png`) and Light (`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`).
+   * **API Key**: Configured via `VITE_CARTO_API_KEY`.
 
 ---
 
@@ -989,7 +1056,8 @@ Executing AWS CDK CLI operations (such as `npm run cdk:synth` or `npm run cdk:de
 | `DEPLOYER_ROLE` | The custom deployment IAM Role name created in the project account for OIDC federation. | 'GitHubActionsWebsiteDeployer' |
 | `GIT_TAG` | *Optional.* Dynamic git version tag to mark deployments. | Default: Automatically resolved via `git describe` |
 | `VITE_PRELAUNCH_PASSWORD` | *Optional.* If configured, flags stack resources for dev/preview (e.g. enabling automatic bucket destruction). | Default: Off (Production configuration) |
-
+| `VITE_CARTO_API_KEY` | Carto API key to use for loading the background map tiles from Carto, see https://carto.com/basemaps/apikey/ | YOUR_KEY |
+| `MML_API_KEY` | National Land Survey of Finland  (NLS) API key used for fetching the Finnish municipality features from https://avoin-paikkatieto.maanmittauslaitos.fi/maastotiedot/features/v1/collections/kunta/ | |
 
 ---
 
