@@ -21,6 +21,7 @@ import { ClassCodelistSelector } from './ClassCodelistSelector';
 import { ClassInfoPanel } from './ClassInfoPanel';
 import { CodelistInfoPanel } from './CodelistInfoPanel';
 import { DataModelAccess, DataModel, ClassModel, Codelist, CodelistIndexItem, ModelIndexItem } from '../lib/data-model-types';
+import { CallToActionBlock } from './CodeBlock';
 
 interface DataModelViewProps {
   modelName: string; // e.g. "rytj-kaava"
@@ -396,6 +397,14 @@ lang: ${dataLang}`;
 
   const metadata = modelData?.metadata || {};
 
+  const ctaProps:string = JSON.stringify({
+    "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
+    "buttonText": "Kysy lisää",
+    "title":"Tuntuuko Kaavatietomalli haastavalta? Ei hätää, Spatineon asiantuntija osaavat auttaa.",
+    "partner": "spatineo",
+    "mode": "thin"
+  });
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-12 flex flex-col gap-10">
       {/* Header and Controls */}
@@ -595,6 +604,7 @@ lang: ${dataLang}`;
         )}
         </div>
       </div>
+      <CallToActionBlock code={ctaProps} />
     </div>
   );
 }

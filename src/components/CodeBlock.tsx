@@ -74,6 +74,7 @@ function parseCtaBlock(code: string): {
   title: string;
   description?: string;
   partner?: string;
+  mode?: string;
 } {
   const config = parseVideoProperties(code);
   
@@ -94,7 +95,8 @@ function parseCtaBlock(code: string): {
     buttonText: buttonText,
     title: findVal(['title', 'heading', 'otsikko']),
     description: findVal(['description', 'desc', 'kuvaus', 'textcontent']),
-    partner: findVal(['partner', 'kumppani'])
+    partner: findVal(['partner', 'kumppani']),
+    mode: findVal(['mode'])
   };
 }
 
@@ -104,7 +106,8 @@ interface CTAProps {
   buttonText: string,
   title?: string,
   description?:string,
-  partner?: string
+  partner?: string,
+  mode?: string
 }
 
 export function CallToAction({
@@ -112,7 +115,8 @@ export function CallToAction({
   buttonText,
   title,
   description,
-  partner
+  partner,
+  mode
 }:CTAProps) {
   const { activeView } = useAppRouter();
 
@@ -123,41 +127,70 @@ export function CallToAction({
     getTracker().trackCTA(buttonText, url, context, partner);
   };
 
-  return (
-    <div className="cta-block my-10 p-8 md:p-10 rounded-3xl bg-gradient-to-br from-brand-muted to-[#17171a] border border-white/10 shadow-2xl relative overflow-hidden text-left max-w-xl" data-testid="cta-block">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-      
-      {title && (
-        <h4 className="text-xl md:text-2xl font-black text-white mb-4 mt-0 tracking-tight leading-tight" data-testid="cta-title">
-          {title}
-        </h4>
-      )}
-      
-      {description && (
-        <p className="cta-content text-slate-300 mb-8 text-sm md:text-base leading-relaxed font-sans font-normal max-w-xl" data-testid="cta-description">
-          {description}
-        </p>
-      )}
-      
-      
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleCtaClick}
-        className="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-accent text-brand-primary rounded-xl font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity shadow-lg shadow-brand-accent/5 leading-none"
-        data-testid="cta-button"
-      >
-        {buttonText}
-        <ArrowRight size={12} className="stroke-[2.5]" />
-      </a>
-    </div>
-  );
+  if (mode === 'thin') {
+    return (
+      <div className="cta-block my-2 px-5 py-2 rounded-xl bg-[#09090B] border border-white/10 shadow-2xl relative overflow-hidden text-right flex" data-testid="cta-block">
+        
+        {title && (
+          <span className="text-amber-400 flex-grow align-middle inline-block" data-testid="cta-title">
+            {title}
+          </span>
+        )}
+        
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleCtaClick}
+          className="inline-flex items-center mx-8 gap-2 px-8 py-2 bg-brand-accent text-brand-primary rounded-xl font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity shadow-lg shadow-brand-accent/5 leading-none flex-none"
+          data-testid="cta-button"
+        >
+          {buttonText}
+          <ArrowRight size={12} className="stroke-[2.5]" />
+        </a>
+      </div>
+    );
+  } else {
+    return (
+      <div className="cta-block my-10 p-8 md:p-10 rounded-3xl bg-gradient-to-br from-brand-muted to-[#17171a] border border-white/10 shadow-2xl relative overflow-hidden text-left max-w-xl" data-testid="cta-block">
+    
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+        
+        {title && (
+          <h4 className="text-xl md:text-2xl font-black text-white mb-4 mt-0 tracking-tight leading-tight" data-testid="cta-title">
+            {title}
+          </h4>
+        )}
+        
+        {description && (
+          <p className="cta-content text-slate-300 mb-8 text-sm md:text-base leading-relaxed font-sans font-normal max-w-xl" data-testid="cta-description">
+            {description}
+          </p>
+        )}
+        
+        
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={handleCtaClick}
+          className="inline-flex items-center gap-2 px-8 py-3.5 bg-brand-accent text-brand-primary rounded-xl font-bold uppercase tracking-widest text-[10px] hover:opacity-90 transition-opacity shadow-lg shadow-brand-accent/5 leading-none"
+          data-testid="cta-button"
+        >
+          {buttonText}
+          <ArrowRight size={12} className="stroke-[2.5]" />
+        </a>
+      </div>
+    );
+  }
 }
 
 export function CallToActionBlock({ code }: { code: string }) {
   try {
     const properties = parseCtaBlock(code);
+    if (properties.mode !== 'thin') {
+      properties.mode = 'normal';
+    }
     return CallToAction(properties);
   } catch(error) {
     return (

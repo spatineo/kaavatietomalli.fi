@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { DoubleFeatureWfsReader, WFSResultFeature, WFSService } from './double-feature-wfs-reader';
+import { DualFeatureWfsReader, WFSResultFeature, WFSService } from './dual-feature-wfs-reader';
 import { PlanFeature } from '../services/plan-api';
 
 const createMockPlan = (id: string, approvalDate: string, name = 'Test Plan'): PlanFeature => ({
@@ -16,7 +16,7 @@ const createMockPlan = (id: string, approvalDate: string, name = 'Test Plan'): P
   }
 });
 
-describe('DoubleFeatureWfsReader', () => {
+describe('DualFeatureWfsReader', () => {
   const baseUrl = 'https://paikkatiedot.ymparisto.fi/geoserver/ryhti_plan/wfs';
   const typeA = 'ryhti_plan:pub_valid_ld_plan_ix_gs';
   const typeB = 'ryhti_plan:pub_valid_lm_plan_ix_gs';
@@ -30,7 +30,7 @@ describe('DoubleFeatureWfsReader', () => {
   });
 
   it('initializes with default values and reset state', () => {
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, 'some_cql', 25);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, typeB, 'some_cql', 25);
     expect(reader.baseUrl).toBe(baseUrl);
     expect(reader.typeA).toBe(typeA);
     expect(reader.typeB).toBe(typeB);
@@ -73,7 +73,7 @@ describe('DoubleFeatureWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
     const result = await reader.next();
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -116,7 +116,7 @@ describe('DoubleFeatureWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
     const result = await reader.next();
 
     expect(result.features).toHaveLength(2);
@@ -161,7 +161,7 @@ describe('DoubleFeatureWfsReader', () => {
     vi.stubGlobal('fetch', mockFetch);
 
     // Page size = 2
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 2);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, typeB, null, 2);
 
     // Page 1
     const page1 = await reader.next();
@@ -200,7 +200,7 @@ describe('DoubleFeatureWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, null, 'administrative_area_identifiers=[\"091\"]', 10);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, null, 'administrative_area_identifiers=[\"091\"]', 10);
     const result = await reader.next();
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -223,7 +223,7 @@ describe('DoubleFeatureWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new DoubleFeatureWfsReader(baseUrl, null, typeB, null, 10);
+    const reader = new DualFeatureWfsReader(baseUrl, null, typeB, null, 10);
     const result = await reader.next();
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -234,7 +234,7 @@ describe('DoubleFeatureWfsReader', () => {
   });
 
   it('handles both streams being null gracefully', async () => {
-    const reader = new DoubleFeatureWfsReader(baseUrl, null, null, null, 10);
+    const reader = new DualFeatureWfsReader(baseUrl, null, null, null, 10);
     const result = await reader.next();
 
     expect(result.features).toEqual([]);
@@ -250,12 +250,12 @@ describe('DoubleFeatureWfsReader', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, null, null, 10);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, null, null, 10);
     await expect(reader.next()).rejects.toThrow('HTTP 502 - Bad Gateway');
   });
 
   it('returns empty result when closed or aborted', async () => {
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
     reader.close();
     expect(reader.isClosed).toBe(true);
 
@@ -271,7 +271,7 @@ describe('DoubleFeatureWfsReader', () => {
     const mockFetch = vi.fn().mockRejectedValue(abortErr);
     vi.stubGlobal('fetch', mockFetch);
 
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, null, null, 10);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, null, null, 10);
     const result = await reader.next();
 
     expect(result.features).toEqual([]);
@@ -279,7 +279,7 @@ describe('DoubleFeatureWfsReader', () => {
   });
 
   it('resets offsets, matched counts, and abort controller upon reset()', () => {
-    const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
+    const reader = new DualFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
     reader.offsetA = 5;
     reader.offsetB = 3;
     reader.matchedA = 100;
@@ -321,7 +321,7 @@ describe('DoubleFeatureWfsReader', () => {
       })
     };
 
-    const reader = new DoubleFeatureWfsReader<CustomFeature>(customService,'custom:layer_a', 'custom:layer_b');
+    const reader = new DualFeatureWfsReader<CustomFeature>(customService,'custom:layer_a', 'custom:layer_b');
     const result = await reader.next();
 
     expect(customService.fetchChunk).toHaveBeenCalled();
@@ -356,7 +356,7 @@ describe('DoubleFeatureWfsReader', () => {
       });
       vi.stubGlobal('fetch', mockFetch);
 
-      const reader = new DoubleFeatureWfsReader(baseUrl, null, typeB, null, 10);
+      const reader = new DualFeatureWfsReader(baseUrl, null, typeB, null, 10);
       const res = await reader.next();
 
       expect(res.features).toHaveLength(3);
@@ -378,7 +378,7 @@ describe('DoubleFeatureWfsReader', () => {
       });
       vi.stubGlobal('fetch', mockFetch);
 
-      const reader = new DoubleFeatureWfsReader(baseUrl, typeA, null, null, 10);
+      const reader = new DualFeatureWfsReader(baseUrl, typeA, null, null, 10);
       const res = await reader.next();
 
       expect(res.features).toHaveLength(3);
@@ -410,7 +410,7 @@ describe('DoubleFeatureWfsReader', () => {
       });
       vi.stubGlobal('fetch', mockFetch);
 
-      const reader = new DoubleFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
+      const reader = new DualFeatureWfsReader(baseUrl, typeA, typeB, null, 10);
       const res = await reader.next();
 
       expect(res.features).toHaveLength(3);
