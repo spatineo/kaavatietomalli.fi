@@ -29,18 +29,21 @@ export interface WFSService<TFeature extends WFSResultFeature = WFSResultFeature
   srsName?: string;
   outputFormat?: string;
   sortBy?: string;
+  geometryProperty?: string;
   fetchChunk?: (
     typeName: string,
     startIndex: number,
     pageSize: number,
     cqlFilter?: string | null,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    bbox?: string | [number, number, number, number] | null
   ) => Promise<WFSFeatureCollectionResponse<TFeature>>;
   buildUrl?: (
     typeName: string,
     startIndex: number,
     pageSize: number,
-    cqlFilter?: string | null
+    cqlFilter?: string | null,
+    bbox?: string | [number, number, number, number] | null
   ) => string;
   sortFeatures?: (a: TFeature, b: TFeature) => number;
 }

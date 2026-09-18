@@ -461,9 +461,8 @@ code *,
   transition: none !important;
 }
 
-/* Match Leaflet container background color to map tiles to eliminate subpixel seam contrast lines */
-.leaflet-container {
-  background-color: #191a1a !important;
+.leaflet-container img.leaflet-tile {
+  mix-blend-mode: inherit !important;
 }
 
 .leaflet-container .leaflet-control-attribution {

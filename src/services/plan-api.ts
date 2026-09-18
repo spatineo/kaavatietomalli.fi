@@ -62,6 +62,7 @@ export const ryhtiPlanWfsService: WFSService<PlanFeature> = {
   srsName: 'EPSG:4326',
   outputFormat: 'application/json',
   sortBy: 'approval_date DESC',
+  geometryProperty: 'geographical_area',
   sortFeatures: (a: PlanFeature, b: PlanFeature) => {
     const valA = a.properties?.approval_date;
     const valB = b.properties?.approval_date;

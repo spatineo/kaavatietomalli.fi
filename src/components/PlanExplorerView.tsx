@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Map as MapIcon,
@@ -316,8 +316,50 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const [kaavalajiOptions, setKaavalajiOptions] = useState<KaavalajiCodeOption[]>(DEFAULT_KAAVALAJI_OPTIONS);
   const [digitalOriginMap, setDigitalOriginMap] = useState<Record<string, string>>(DEFAULT_DIGITAL_ORIGIN_MAP);
 
+  // Map BBOX filtering states
+  const [useMapBounds, setUseMapBounds] = useState<boolean>(false);
+  const [currentMapBounds, setCurrentMapBounds] = useState<[number, number, number, number] | null>(null);
+  const [debouncedMapBounds, setDebouncedMapBounds] = useState<[number, number, number, number] | null>(null);
+
   // Track whether we should use initialPlans (e.g. testing) until user changes filters
   const [useInitialPlans, setUseInitialPlans] = useState<boolean>(Boolean(initialPlans && initialPlans.length > 0));
+
+  // Helper to extract bounds from active Leaflet map
+  const updateMapBounds = useCallback(() => {
+    if (!mapRef.current) return;
+    try {
+      const b = mapRef.current.getBounds();
+      if (b && typeof b.isValid === 'function' && b.isValid()) {
+        const west = b.getWest();
+        const south = b.getSouth();
+        const east = b.getEast();
+        const north = b.getNorth();
+        setCurrentMapBounds([west, south, east, north]);
+      }
+    } catch (e) {
+      console.warn('Error reading map bounds:', e);
+    }
+  }, []);
+
+  // Debounce map bounds updates (400ms) only when BBOX filtering is enabled
+  useEffect(() => {
+    if (!useMapBounds) {
+      setDebouncedMapBounds(null);
+      return;
+    }
+
+    if (!currentMapBounds && mapRef.current) {
+      updateMapBounds();
+    }
+
+    const timer = setTimeout(() => {
+      setDebouncedMapBounds(currentMapBounds);
+    }, 400);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [currentMapBounds, useMapBounds, updateMapBounds]);
 
   // Selected item
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(
@@ -341,7 +383,8 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     loadMore: handleLoadMore
   } = useDualFeatureWfs(ryhtiPlanWfsService, typeA, typeB, cqlFilter, 50, {
     enabled: !useInitialPlans,
-    initialFeatures: initialPlans || []
+    initialFeatures: initialPlans || [],
+    bbox: debouncedMapBounds
   });
 
   const isLoadingPlans = isWfsLoading && plans.length === 0;
@@ -352,7 +395,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   useEffect(() => {
     if (plans.length > 0) {
       if (!selectedPlanId || !plans.some(p => p.id === selectedPlanId)) {
-        setSelectedPlanId(plans[0].id);
+        //setSelectedPlanId(plans[0].id);
       }
     } else {
       setSelectedPlanId(null);
@@ -446,7 +489,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const tileLayerRef = useRef<any | null>(null);
   const isInitialMapRenderRef = useRef<boolean>(true);
   const prevMunicipalityCodeRef = useRef<string | null>(null);
-  const prevSelectedPlanIdRef = useRef<string | null>(selectedPlanId);
+  //const prevSelectedPlanIdRef = useRef<string | null>(selectedPlanId);
   const currentTileStyleRef = useRef<string | null>(null);
   const currentMunicipalityCodeRef = useRef<string | null>(null);
   const currentShowMuniRef = useRef<boolean | null>(null);
@@ -686,6 +729,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           markerZoomAnimation: false
         }).setView([62.0, 26.0], 6);
 
+        map.on('moveend', () => {
+          updateMapBounds();
+        });
+
         map.on('popupopen', (e: any) => {
           const container = e.popup.getElement();
           if (container) {
@@ -698,6 +745,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           L.control.zoom({ position: 'topright' }).addTo(map);
         }
         mapRef.current = map;
+        updateMapBounds();
       }
 
       const map = mapRef.current;
@@ -939,7 +987,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           }
         }
         isInitialMapRenderRef.current = false;
-        prevSelectedPlanIdRef.current = selectedPlanId;
+
         prevMunicipalityCodeRef.current = selectedMunicipalityCode;
       } 
       // Priority 2: Municipality selection changed -> Zoom to municipality bbox when matching feature is ready
@@ -957,7 +1005,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           }
         }
         prevMunicipalityCodeRef.current = selectedMunicipalityCode;
-        prevSelectedPlanIdRef.current = selectedPlanId;
+
       } else if (!selectedMunicipalityCode && lastZoomedMuniCodeRef.current) {
         const boundsLayers = [detailedGeoJsonLayer || detailedPlanLayerRef.current, masterGeoJsonLayer || masterPlanLayerRef.current].filter(Boolean);
         if (boundsLayers.length > 0) {
@@ -973,9 +1021,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         }
         lastZoomedMuniCodeRef.current = '';
         prevMunicipalityCodeRef.current = '';
-        prevSelectedPlanIdRef.current = selectedPlanId;
-      } else {
-        prevSelectedPlanIdRef.current = selectedPlanId;
       }
 
       setTimeout(() => {
@@ -1045,7 +1090,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   // Select plan from result list (updates selection AND zooms/centers map)
   const handleSelectPlanFromList = (plan: PlanFeature) => {
     setSelectedPlanId(plan.id);
-    zoomToPlan(plan);
   };
 
   // Zoom to active selected municipality boundary
@@ -1207,12 +1251,13 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   <Layers className="w-3.5 h-3.5 text-amber-400" />
                   <span>{strings.planType}</span>
                 </label>
-                {(searchQuery || selectedMunicipalityCode || selectedPlanType !== 'ALL') && (
+                {(searchQuery || selectedMunicipalityCode || selectedPlanType !== 'ALL' || useMapBounds) && (
                   <button
                     onClick={() => {
                       setSearchQuery('');
                       setSelectedMunicipalityCode('');
                       setSelectedPlanType('ALL');
+                      setUseMapBounds(false);
                       setUseInitialPlans(false);
                     }}
                     className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold underline"
@@ -1238,6 +1283,22 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   </option>
                 ))}
               </select>
+
+              {/* 4. Map Bounds BBOX Filter Checkbox */}
+              <div className="pt-1">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-300 hover:text-white transition-colors select-none">
+                  <input
+                    type="checkbox"
+                    checked={useMapBounds}
+                    onChange={e => {
+                      setUseMapBounds(e.target.checked);
+                      setUseInitialPlans(false);
+                    }}
+                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#FFAF00] focus:ring-[#FFAF00] focus:ring-offset-0 focus:ring-1 cursor-pointer accent-[#FFAF00]"
+                  />
+                  <span>{strings.filterByMapBounds || 'Vain kartan alue'}</span>
+                </label>
+              </div>
             </div>
 
           </div>
@@ -1409,7 +1470,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                       : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
                   }`}
                 >
-                  <Layers className="w-3.5 h-3.5 text-sky-400" />
+                  <Layers className={`w-3.5 h-3.5`} />
                   <span>{strings.municipalityBoundary}</span>
                 </button>
               )}
@@ -1424,7 +1485,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   }`}
                 >
                   <span className={`w-2.5 h-2.5 rounded-full ${showDetailedPlanLayer ? 'bg-orange-400' : 'bg-slate-500'}`} />
-                  <span>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
+                  <span className={`${tileStyle !== 'light' ? 'text-orange-300' : 'text-black'}`}>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
                 </button>
               )}
 
@@ -1438,7 +1499,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   }`}
                 >
                   <span className={`w-2.5 h-2.5 rounded-full ${showMasterPlanLayer ? 'bg-purple-400' : 'bg-slate-500'}`} />
-                  <span>{strings.masterPlanLayer} ({masterPlans.length})</span>
+                  <span className={`${tileStyle !== 'light' ? 'text-purple-300' : 'text-black'}`}>{strings.masterPlanLayer} ({masterPlans.length})</span>
                 </button>
               )}
             </div>
@@ -1471,7 +1532,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           {/* Bottom Half: Plan Details Panel (fits contents without outer scrolling) */}
           <div className="w-full shrink-0 bg-[#09090B] flex flex-col border-t border-white/10">
             {selectedPlan ? (
-              <div className="flex flex-col">
+              <div className="flex flex-col min-h-[400px]">
                 {/* Details Header & Tabs */}
                 <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-[#0D0D11] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
                   <div>
@@ -1523,7 +1584,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 </div>
 
                 {/* Tab Content Body */}
-                <div className="p-4 sm:p-5 flex flex-col">
+                <div className="max-h-[330px] p-4 sm:p-5 flex flex-col">
                   {detailTab === 'info' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Basic Fields Table */}
@@ -1600,7 +1661,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   )}
 
                   {detailTab === 'documents' && (
-                    <div className="flex flex-col gap-3">
+                    <div className="overflow-y-auto custom-scrollbar flex flex-col gap-3">
                       {selectedPlanDocuments.length === 0 ? (
                         <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 border border-white/10 rounded-2xl bg-white/5">
                           <FileText className="w-8 h-8 text-slate-600 mb-1" />
@@ -1680,7 +1741,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 </div>
               </div>
             ) : (
-              <div className="flex-1 p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 my-auto">
+              <div className="min-h-[400px] flex-1 p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 my-auto">
                 <MapIcon className="w-10 h-10 text-slate-600 mb-1" />
                 <h3 className="text-base font-bold text-slate-300">{strings.selectPlanPrompt}</h3>
                 <p className="text-xs text-slate-500 max-w-sm">{strings.selectPlanPromptDesc}</p>
