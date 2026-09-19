@@ -12,6 +12,36 @@ export type {
   WfsResult as MergedWfsResult
 };
 
+export function formatBboxCql(
+  bbox: string | [number, number, number, number],
+  geomProp = 'geom',
+  srsname = 'EPSG:4326'
+): string {
+  if (Array.isArray(bbox)) {
+    const [minx, miny, maxx, maxy] = bbox;
+    return `BBOX(${geomProp}, ${minx}, ${miny}, ${maxx}, ${maxy}, '${srsname}')`;
+  }
+
+  const str = String(bbox).trim();
+  if (!str) return '';
+
+  if (str.toUpperCase().startsWith('BBOX(')) {
+    return str;
+  }
+
+  const parts = str.split(',').map(s => s.trim());
+  if (parts.length >= 4) {
+    const [minx, miny, maxx, maxy] = parts;
+    if (parts.length >= 5 && parts[4] && parts[4].includes(':')) {
+      const srs = parts[4];
+      return `BBOX(${geomProp}, ${minx}, ${miny}, ${maxx}, ${maxy}, '${srs}')`;
+    }
+    return `BBOX(${geomProp}, ${minx}, ${miny}, ${maxx}, ${maxy})`;
+  }
+
+  return str;
+}
+
 /**
  * Stateful reader for paginated and merged WFS streams.
  * Generic over feature type TFeature implementing WFSResultFeature.
@@ -24,6 +54,7 @@ export class DualFeatureWfsReader<TFeature extends WFSResultFeature = WFSResultF
   typeB: string | null;
   cqlFilter: string | null;
   pageSize: number;
+  bbox: string | [number, number, number, number] | null;
 
   abortController: AbortController | null = null;
   isClosed = false;
@@ -38,13 +69,15 @@ export class DualFeatureWfsReader<TFeature extends WFSResultFeature = WFSResultF
     typeA: string | null,
     typeB: string | null,
     cqlFilter: string | null = null,
-    pageSize = 50
+    pageSize = 50,
+    bbox: string | [number, number, number, number] | null = null
   ) {
     this.service = typeof service === 'string' ? { baseUrl: service } : service;
     this.typeA = typeA;
     this.typeB = typeB;
     this.cqlFilter = cqlFilter;
     this.pageSize = pageSize;
+    this.bbox = bbox;
     this.reset();
   }
 
@@ -178,14 +211,34 @@ export class DualFeatureWfsReader<TFeature extends WFSResultFeature = WFSResultF
     };
   }
 
+  getEffectiveCqlFilter(): string | null {
+    const baseCql = this.cqlFilter ? this.cqlFilter.trim() : null;
+    if (!this.bbox) {
+      return baseCql;
+    }
+
+    const geomProp = this.service.geometryProperty || 'geom';
+    const bboxCql = formatBboxCql(this.bbox, geomProp, this.service.srsName);
+    if (!bboxCql) {
+      return baseCql;
+    }
+
+    if (baseCql) {
+      return `${baseCql} AND ${bboxCql}`;
+    }
+    return bboxCql;
+  }
+
   async _fetchChunk(typeName: string, startIndex: number, signal?: AbortSignal): Promise<WFSFeatureCollectionResponse<TFeature>> {
+    const effectiveCql = this.getEffectiveCqlFilter();
+
     if (this.service.fetchChunk) {
-      return this.service.fetchChunk(typeName, startIndex, this.pageSize, this.cqlFilter, signal);
+      return this.service.fetchChunk(typeName, startIndex, this.pageSize, effectiveCql, signal, null);
     }
 
     let url: string;
     if (this.service.buildUrl) {
-      url = this.service.buildUrl(typeName, startIndex, this.pageSize, this.cqlFilter);
+      url = this.service.buildUrl(typeName, startIndex, this.pageSize, effectiveCql, null);
     } else {
       const version = this.service.version || '2.0.0';
       const outputFormat = this.service.outputFormat || 'application/json';
@@ -198,8 +251,8 @@ export class DualFeatureWfsReader<TFeature extends WFSResultFeature = WFSResultF
         `&srsName=${encodeURIComponent(srsName)}` +
         `&sortby=${encodeURIComponent(sortBy).replace(/%20/g, '+')}&count=${this.pageSize}&startIndex=${startIndex}`;
 
-      if (this.cqlFilter) {
-        url += `&cql_filter=${encodeURIComponent(this.cqlFilter)}`;
+      if (effectiveCql) {
+        url += `&cql_filter=${encodeURIComponent(effectiveCql)}`;
       }
     }
 

@@ -175,8 +175,24 @@ vi.mock('leaflet', () => {
         on: function() { return this; },
         off: function() { return this; },
         invalidateSize: function() { return this; },
+        getBounds: function() {
+          return {
+            isValid: () => true,
+            getWest: () => 24.0,
+            getSouth: () => 60.0,
+            getEast: () => 25.0,
+            getNorth: () => 61.0,
+          };
+        },
       }),
       tileLayer: () => ({ addTo: function() { return this; } }),
+      featureGroup: () => ({
+        getBounds: () => ({
+          isValid: () => false,
+          getNorthEast: () => ({ equals: () => true }),
+          getSouthWest: () => ({})
+        })
+      }),
       geoJSON: (data: any, options?: any) => {
         if (options && typeof options.onEachFeature === 'function') {
           const items = Array.isArray(data) ? data : data?.features || (data ? [data] : []);

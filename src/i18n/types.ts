@@ -317,6 +317,7 @@ export interface Translations {
     filterMunicipalityPlaceholder: string;
     allMunicipalities: string;
     allPlanTypes: string;
+    filterByMapBounds: string;
     showingPlansCount: string;
     noPlansFound: string;
     noPlansFoundDesc: string;

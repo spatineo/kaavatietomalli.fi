@@ -419,4 +419,83 @@ describe('DualFeatureWfsReader', () => {
       expect(res.features[2].id).toBe('plan-2020');
     });
   });
+
+  describe('bbox spatial filtering via cql_filter', () => {
+    it('formats bbox array into cql_filter expression when bbox array is provided', async () => {
+      let requestedUrls: string[] = [];
+      const mockFetch = vi.fn().mockImplementation((url: string) => {
+        requestedUrls.push(url);
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            type: 'FeatureCollection',
+            numberMatched: 0,
+            features: []
+          })
+        });
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const bbox: [number, number, number, number] = [24.0, 60.0, 25.0, 61.0];
+      const reader = new DualFeatureWfsReader(baseUrl, typeA, null, null, 10, bbox);
+      await reader.next();
+
+      expect(requestedUrls).toHaveLength(1);
+      const url = requestedUrls[0];
+      expect(url).not.toContain('&bbox=');
+      expect(url).toContain(`cql_filter=${encodeURIComponent('BBOX(geom, 24, 60, 25, 61, \'EPSG:4326\')')}`);
+    });
+
+    it('formats bbox string into cql_filter expression when bbox string is provided', async () => {
+      let requestedUrls: string[] = [];
+      const mockFetch = vi.fn().mockImplementation((url: string) => {
+        requestedUrls.push(url);
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            type: 'FeatureCollection',
+            numberMatched: 0,
+            features: []
+          })
+        });
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const bboxStr = '24.5,60.2,25.5,61.2';
+      const reader = new DualFeatureWfsReader(baseUrl, typeA, null, null, 10, bboxStr);
+      await reader.next();
+
+      expect(requestedUrls).toHaveLength(1);
+      const url = requestedUrls[0];
+      expect(url).not.toContain('&bbox=');
+      expect(url).toContain(`cql_filter=${encodeURIComponent('BBOX(geom, 24.5, 60.2, 25.5, 61.2)')}`);
+    });
+
+    it('combines existing cqlFilter and bbox into a single cql_filter using AND', async () => {
+      let requestedUrls: string[] = [];
+      const mockFetch = vi.fn().mockImplementation((url: string) => {
+        requestedUrls.push(url);
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            type: 'FeatureCollection',
+            numberMatched: 0,
+            features: []
+          })
+        });
+      });
+      vi.stubGlobal('fetch', mockFetch);
+
+      const baseCql = "administrative_area_identifiers='[\"091\"]'";
+      const bbox: [number, number, number, number] = [24.0, 60.0, 25.0, 61.0];
+      const reader = new DualFeatureWfsReader(baseUrl, typeA, null, baseCql, 10, bbox);
+      await reader.next();
+
+      expect(requestedUrls).toHaveLength(1);
+      const url = requestedUrls[0];
+      expect(url).not.toContain('&bbox=');
+      const expectedCombined = `${baseCql} AND BBOX(geom, 24, 60, 25, 61, \'EPSG:4326\')`;
+      expect(url).toContain(`cql_filter=${encodeURIComponent(expectedCombined)}`);
+    });
+  });
 });

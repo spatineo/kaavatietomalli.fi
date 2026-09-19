@@ -9,6 +9,7 @@ export interface UseDualFeatureWfsOptions<TFeature extends WFSResultFeature = WF
   enabled?: boolean;
   initialFeatures?: TFeature[];
   initialTotalMatched?: number;
+  bbox?: string | [number, number, number, number] | null;
 }
 
 export interface UseDualFeatureWfsResult<TFeature extends WFSResultFeature = WFSResultFeature> {
@@ -34,6 +35,7 @@ export function useDualFeatureWfs<TFeature extends WFSResultFeature = WFSResultF
   const enabled = options?.enabled !== false;
   const initialFeatures = options?.initialFeatures;
   const initialTotalMatched = options?.initialTotalMatched ?? (initialFeatures ? initialFeatures.length : 0);
+  const bbox = options?.bbox ?? null;
 
   const [features, setFeatures] = useState<TFeature[]>(initialFeatures || []);
   const [totalMatched, setTotalMatched] = useState<number>(initialTotalMatched);
@@ -42,6 +44,8 @@ export function useDualFeatureWfs<TFeature extends WFSResultFeature = WFSResultF
   const [error, setError] = useState<Error | null>(null);
 
   const readerRef = useRef<DualFeatureWfsReader<TFeature> | null>(null);
+
+  const bboxKey = Array.isArray(bbox) ? bbox.map(n => n.toFixed(6)).join(',') : (bbox || '');
 
   // Instantiates a new reader when query parameters change
   useEffect(() => {
@@ -54,7 +58,7 @@ export function useDualFeatureWfs<TFeature extends WFSResultFeature = WFSResultF
       return;
     }
 
-    const reader = new DualFeatureWfsReader<TFeature>(service, typeA, typeB, cqlFilter, pageSize);
+    const reader = new DualFeatureWfsReader<TFeature>(service, typeA, typeB, cqlFilter, pageSize, bbox);
     readerRef.current = reader;
 
     setFeatures([]);
@@ -84,7 +88,7 @@ export function useDualFeatureWfs<TFeature extends WFSResultFeature = WFSResultF
       isSubscribed = false;
       reader.close();
     };
-  }, [service, typeA, typeB, cqlFilter, pageSize, enabled]);
+  }, [service, typeA, typeB, cqlFilter, pageSize, bboxKey, enabled]);
 
   const loadMore = useCallback(async () => {
     if (!readerRef.current || loading || !hasMore) return;
