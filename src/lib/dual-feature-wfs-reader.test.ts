@@ -443,7 +443,7 @@ describe('DualFeatureWfsReader', () => {
       expect(requestedUrls).toHaveLength(1);
       const url = requestedUrls[0];
       expect(url).not.toContain('&bbox=');
-      expect(url).toContain(`cql_filter=${encodeURIComponent('BBOX(geom, 24, 60, 25, 61)')}`);
+      expect(url).toContain(`cql_filter=${encodeURIComponent('BBOX(geom, 24, 60, 25, 61, \'EPSG:4326\')')}`);
     });
 
     it('formats bbox string into cql_filter expression when bbox string is provided', async () => {
@@ -494,7 +494,7 @@ describe('DualFeatureWfsReader', () => {
       expect(requestedUrls).toHaveLength(1);
       const url = requestedUrls[0];
       expect(url).not.toContain('&bbox=');
-      const expectedCombined = `${baseCql} AND BBOX(geom, 24, 60, 25, 61)`;
+      const expectedCombined = `${baseCql} AND BBOX(geom, 24, 60, 25, 61, \'EPSG:4326\')`;
       expect(url).toContain(`cql_filter=${encodeURIComponent(expectedCombined)}`);
     });
   });

@@ -217,7 +217,7 @@ export class DualFeatureWfsReader<TFeature extends WFSResultFeature = WFSResultF
       return baseCql;
     }
 
-    const geomProp = this.service.geometryProperty || 'location';
+    const geomProp = this.service.geometryProperty || 'geom';
     const bboxCql = formatBboxCql(this.bbox, geomProp, this.service.srsName);
     if (!bboxCql) {
       return baseCql;
