@@ -326,7 +326,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
   // Helper to extract bounds from active Leaflet map
   const updateMapBounds = useCallback(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || typeof mapRef.current.getBounds !== 'function') return;
     try {
       const b = mapRef.current.getBounds();
       if (b && typeof b.isValid === 'function' && b.isValid()) {
@@ -489,7 +489,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const tileLayerRef = useRef<any | null>(null);
   const isInitialMapRenderRef = useRef<boolean>(true);
   const prevMunicipalityCodeRef = useRef<string | null>(null);
-  //const prevSelectedPlanIdRef = useRef<string | null>(selectedPlanId);
   const currentTileStyleRef = useRef<string | null>(null);
   const currentMunicipalityCodeRef = useRef<string | null>(null);
   const currentShowMuniRef = useRef<boolean | null>(null);
@@ -975,11 +974,13 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         } else if (detailedGeoJsonLayer || masterGeoJsonLayer) {
           try {
             const boundsLayers = [detailedGeoJsonLayer, masterGeoJsonLayer].filter(Boolean);
-            if (boundsLayers.length > 0) {
+            if (boundsLayers.length > 0 && typeof L.featureGroup === 'function') {
               const group = L.featureGroup(boundsLayers);
-              const b = group.getBounds();
-              if (b.isValid()) {
-                map.fitBounds(b, { padding: [40, 40], maxZoom: 14 });
+              if (group && typeof group.getBounds === 'function') {
+                const b = group.getBounds();
+                if (b && typeof b.isValid === 'function' && b.isValid()) {
+                  map.fitBounds(b, { padding: [40, 40], maxZoom: 14 });
+                }
               }
             }
           } catch (e) {
@@ -1008,12 +1009,14 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
       } else if (!selectedMunicipalityCode && lastZoomedMuniCodeRef.current) {
         const boundsLayers = [detailedGeoJsonLayer || detailedPlanLayerRef.current, masterGeoJsonLayer || masterPlanLayerRef.current].filter(Boolean);
-        if (boundsLayers.length > 0) {
+        if (boundsLayers.length > 0 && typeof L.featureGroup === 'function') {
           try {
             const group = L.featureGroup(boundsLayers);
-            const b = group.getBounds();
-            if (b.isValid()) {
-              map.fitBounds(b, { padding: [40, 40], maxZoom: 14 });
+            if (group && typeof group.getBounds === 'function') {
+              const b = group.getBounds();
+              if (b && typeof b.isValid === 'function' && b.isValid()) {
+                map.fitBounds(b, { padding: [40, 40], maxZoom: 14 });
+              }
             }
           } catch (e) {
             console.warn('Error zooming on clear filter', e);
