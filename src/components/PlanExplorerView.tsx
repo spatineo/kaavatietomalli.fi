@@ -391,17 +391,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const isLoadingMore = isWfsLoading && plans.length > 0;
   const fetchError = wfsError ? (wfsError.message || strings.fetchError) : null;
 
-  // Auto-select first plan when features list changes or currently selected plan is not found
-  useEffect(() => {
-    if (plans.length > 0) {
-      if (!selectedPlanId || !plans.some(p => p.id === selectedPlanId)) {
-        //setSelectedPlanId(plans[0].id);
-      }
-    } else {
-      setSelectedPlanId(null);
-    }
-  }, [plans, selectedPlanId]);
-
   // Load RY_Kaavalaji codelist dynamically
   useEffect(() => {
     let ignore = false;
@@ -1474,7 +1463,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   }`}
                 >
                   <Layers className={`w-3.5 h-3.5`} />
-                  <span>{strings.municipalityBoundary}</span>
+                  <span className={`${tileStyle === 'light' &&  showMunicipalityBoundaries ? 'text-black' : ''}`}>{strings.municipalityBoundary}</span>
                 </button>
               )}
 
@@ -1488,7 +1477,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   }`}
                 >
                   <span className={`w-2.5 h-2.5 rounded-full ${showDetailedPlanLayer ? 'bg-orange-400' : 'bg-slate-500'}`} />
-                  <span className={`${tileStyle !== 'light' ? 'text-orange-300' : 'text-black'}`}>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
+                  <span className={`${tileStyle === 'light' &&  showDetailedPlanLayer ? 'text-black' : ''}`}>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
                 </button>
               )}
 
@@ -1502,7 +1491,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   }`}
                 >
                   <span className={`w-2.5 h-2.5 rounded-full ${showMasterPlanLayer ? 'bg-purple-400' : 'bg-slate-500'}`} />
-                  <span className={`${tileStyle !== 'light' ? 'text-purple-300' : 'text-black'}`}>{strings.masterPlanLayer} ({masterPlans.length})</span>
+                  <span className={`${tileStyle === 'light' && showMasterPlanLayer ? 'text-black' : ''}`}>{strings.masterPlanLayer} ({masterPlans.length})</span>
                 </button>
               )}
             </div>
@@ -1587,7 +1576,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 </div>
 
                 {/* Tab Content Body */}
-                <div className="max-h-[330px] p-4 sm:p-5 flex flex-col">
+                <div className="max-h-[330px] p-4 sm:p-5 flex flex-col overflow-y-auto">
                   {detailTab === 'info' && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Basic Fields Table */}

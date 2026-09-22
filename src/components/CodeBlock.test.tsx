@@ -33,6 +33,17 @@ describe('CallToActionBlock & CodeBlock CTA features', () => {
     mockTrackCTA.mockClear();
     mockActiveView.type = 'post';
     mockActiveView.slug = 'some-test-post';
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((url: string) => {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          text: () => Promise.resolve('<svg data-testid="mock-svg"><rect width="100" height="100"/></svg>')
+        });
+      })
+    );
   });
 
   it('correctly parses and renders a valid call-to-action block with all properties', () => {
