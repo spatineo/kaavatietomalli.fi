@@ -5,7 +5,7 @@
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useOramaSearch } from './useOramaSearch';
+import { useOramaSearch, computeRelevanceMultiplier } from './useOramaSearch';
 import { create, load, search } from '@orama/orama';
 
 const BUILD_VERSION = '1787141584399';
@@ -233,5 +233,63 @@ describe('useOramaSearch hook', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(create).toHaveBeenCalledTimes(3);
     expect(result.current.isInitializing).toBe(false);
+  });
+
+  describe('computeRelevanceMultiplier (whole-word vs compound-word matching)', () => {
+    const mockFiStemmer = (word: string) => {
+      const lower = word.toLowerCase();
+      if (lower === 'kaava' || lower === 'kaavat' || lower === 'kaavan') return 'kaava';
+      if (lower === 'kaavamääräys') return 'kaavamääräy';
+      if (lower === 'kaavakohde') return 'kaavakohd';
+      return lower;
+    };
+
+    it('scores exact full field matches highest (multiplier = 100)', () => {
+      const doc = { title: 'Kaava', name: 'Kaava' };
+      const mult = computeRelevanceMultiplier(doc, 'Kaava', mockFiStemmer);
+      expect(mult).toBe(100);
+    });
+
+    it('scores whole-word title matches significantly higher than compound words', () => {
+      const docExact = { title: 'Kaava' };
+      const docWholeWord = { title: 'Uusi Kaava alueelle' };
+      const docCompound1 = { title: 'Kaavamääräys' };
+      const docCompound2 = { title: 'Kaavakohde' };
+
+      const multExact = computeRelevanceMultiplier(docExact, 'Kaava', mockFiStemmer);
+      const multWholeWord = computeRelevanceMultiplier(docWholeWord, 'Kaava', mockFiStemmer);
+      const multCompound1 = computeRelevanceMultiplier(docCompound1, 'Kaava', mockFiStemmer);
+      const multCompound2 = computeRelevanceMultiplier(docCompound2, 'Kaava', mockFiStemmer);
+
+      expect(multExact).toBe(100);
+      expect(multWholeWord).toBeGreaterThan(multCompound1);
+      expect(multWholeWord).toBeGreaterThan(multCompound2);
+      expect(multCompound1).toBe(1);
+      expect(multCompound2).toBe(1);
+    });
+
+    it('ranks exact class "Kaava" ahead of compound word classes when performSearch is executed', async () => {
+      vi.mocked(search).mockResolvedValue({
+        hits: [
+          { id: '1', score: 1.0, document: { type: 'class', slug: 'kaavamaarays', title: 'Kaavamääräys' } },
+          { id: '2', score: 0.95, document: { type: 'class', slug: 'kaavakohde', title: 'Kaavakohde' } },
+          { id: '3', score: 0.9, document: { type: 'class', slug: 'kaava', title: 'Kaava' } },
+        ]
+      } as any);
+
+      const { result } = renderHook(() => useOramaSearch());
+
+      await waitFor(() => {
+        expect(result.current.db).not.toBeNull();
+      });
+
+      const searchResults = await result.current.performSearch('Kaava');
+
+      // "Kaava" has raw score 0.9, but gets multiplier 100 -> adjusted score 90
+      // "Kaavamääräys" has raw score 1.0, but gets multiplier 1 -> adjusted score 1.0
+      expect(searchResults[0].document.title).toBe('Kaava');
+      expect(searchResults[0].score).toBe(90);
+      expect(searchResults[1].document.title).toBe('Kaavamääräys');
+    });
   });
 });

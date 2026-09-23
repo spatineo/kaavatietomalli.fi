@@ -223,18 +223,17 @@ async function generateSearchIndex() {
           const classes: ClassModel[] = modelJson.classes || [];
 
           for (const cls of classes) {
-            if (!cls.id) continue;
-            if (processedClassIds.has(cls.id)) {
+            if (!cls.technicalName) continue;
+            const classSlug = `${groupName}:${cls.technicalName}`;
+            if (processedClassIds.has(classSlug)) {
               continue;
             }
-            processedClassIds.add(cls.id);
+            processedClassIds.add(classSlug);
 
             const attributes = cls.attributes || [];
             const fiAttrs = attributes.map((a) => a.name?.fi || '').filter(Boolean).join(' ');
             const svAttrs = attributes.map((a) => a.name?.sv || '').filter(Boolean).join(' ');
             const enAttrs = attributes.map((a) => a.name?.en || '').filter(Boolean).join(' ');
-
-            const classSlug = `${groupName}:${cls.technicalName}`;
 
             const classVersions = Array.from(classToVersions[cls.id] || []);
             
@@ -293,6 +292,7 @@ async function generateSearchIndex() {
   const codelistsIndexPath = path.join(PUBLIC_DIR, 'data', 'suomi.fi', 'koodistot', 'index.json');
   if (fs.existsSync(codelistsIndexPath)) {
     console.log('Indexing codelists...');
+    const processedCodelistSlugs = new Set<string>();
     try {
       const codelistsIndex = JSON.parse(fs.readFileSync(codelistsIndexPath, 'utf-8'));
       
@@ -316,6 +316,8 @@ async function generateSearchIndex() {
           const enCodes = codes.map((c) => c.name?.en || '').filter(Boolean).join(' ');
 
           const codelistSlug = `rytj-kaava:${codelist.technicalName}`;
+          if (processedCodelistSlugs.has(codelistSlug)) continue;
+          processedCodelistSlugs.add(codelistSlug);
           const codelistVersions = Array.from(codelistUriToVersions[item.uri] || []);
 
           await insert(dbFi, {
@@ -379,8 +381,6 @@ async function generateSearchIndex() {
   fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index-fi.json'), JSON.stringify(indexFi));
   fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index-sv.json'), JSON.stringify(indexSv));
   fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index-en.json'), JSON.stringify(indexEn));
-  // Backwards compatibility / default:
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'search-index.json'), JSON.stringify(indexFi));
 
   console.log('Search indexes generated at public/search-index-{fi,sv,en}.json');
 }
