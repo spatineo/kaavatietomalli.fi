@@ -52,7 +52,7 @@ export const fi: Translations = {
   },
   search: {
     title: 'Haku',
-    placeholder: 'Hae artikkeleita, sivuja...',
+    placeholder: 'Hae kaikesta sisällöstä...',
     noResults: 'Ei tuloksia haulle',
     close: 'Sulje',
     types: {
