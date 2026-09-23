@@ -7,7 +7,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { Timeline } from './Timeline';
 import { HistoryHero } from './HistoryHero';
-import { ContentFooter } from './ContentFooter';
 import { PostMetadata, AuthorData, getContentConfig, ThemeItem } from '../lib/blog';
 import { CONFIG } from '../config';
 import { resolveImageUrl } from '../lib/utils';
@@ -246,9 +245,6 @@ export function HomeView({
             </button>
           </div>
         )}
-        <div className="max-w-4xl mr-auto px-6 md:px-10 mt-40">
-          <ContentFooter onBack={onBlog} />
-        </div>
       </section>
     </motion.div>
   );
