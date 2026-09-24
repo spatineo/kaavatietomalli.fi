@@ -400,7 +400,7 @@ lang: ${dataLang}`;
   const ctaProps:string = JSON.stringify({
     "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
     "buttonText": "Kysy lisää",
-    "title":"Tuntuuko Kaavatietomalli haastavalta? Ei hätää, Spatineon asiantuntija osaavat auttaa.",
+    "title":"Tuntuuko Kaavatietomalli haastavalta? Ei hätää, Spatineon asiantuntijat osaavat auttaa.",
     "partner": "spatineo",
     "mode": "thin"
   });

@@ -313,7 +313,7 @@ export const fi: Translations = {
   },
   planBrowser: {
     title: 'Kaavaselain',
-    subtitle: 'Selaa Ryhti-järjestelmään vietyjä voimassa olevien kaavojen tietoja. Tiedot haetaan sellaisenaan Ryhti-palvelun avoimesta paikkatietorajapinnasta ja niissä saattaa olla virheitä ja puutteita. Huomaa, että kaavan tiedot sisältävät tässä vaiheessa vain ulkorajan, ei kaavakohteita tai -määräyksiä. Kaavatiedot / Lähde: Syke. Kuntarajat / Lähde: Maanmittauslaitoksen Maastotietokanta.',
+    subtitle: 'Selaa Ryhti-järjestelmään vietyjen voimassa olevien kaavojen tietoja. Tiedot haetaan sellaisenaan Ryhti-palvelun avoimesta paikkatietorajapinnasta ja niissä saattaa olla virheitä ja puutteita. Huomaa, että kaavan tiedot sisältävät tässä vaiheessa vain ulkorajan, ei kaavakohteita tai -määräyksiä. Kaavatiedot / Lähde: Syke. Kuntarajat / Lähde: Maanmittauslaitoksen Maastotietokanta.',
     searchPlanPlaceholder: 'Hae kaavan nimellä...',
     searchPlanPlaceholderLabel: 'Hae kaavan nimellä',
     filterMunicipalityPlaceholder: 'Suodata kunnan mukaan...',
