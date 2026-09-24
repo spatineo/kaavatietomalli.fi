@@ -714,7 +714,9 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           attributionControl: true,
           fadeAnimation: false,
           zoomAnimation: false,
-          markerZoomAnimation: false
+          markerZoomAnimation: false,
+          minZoom: 4,
+          maxZoom: 18,
         }).setView([62.0, 26.0], 6);
 
         map.on('moveend', () => {
@@ -804,10 +806,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         const isSelected = feature.id === selectedPlanId;
         return {
           color: isSelected ? '#FFAF00' : '#F97316', // Orange for detailed plans, Gold for selected
-          weight: isSelected ? 4 : 2,
+          weight: isSelected ? 3 : 2,
           opacity: isSelected ? 1 : 0.8,
-          fillColor: isSelected ? '#FFAF00' : '#F97316',
-          fillOpacity: isSelected ? 0.45 : 0.18
+          fillColor: '#F97316',
+          fillOpacity: isSelected ? 0.40 : 0.18
         };
       };
 
@@ -815,10 +817,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         const isSelected = feature.id === selectedPlanId;
         return {
           color: isSelected ? '#FFAF00' : '#A855F7', // Purple/Violet for master plans, Gold for selected
-          weight: isSelected ? 4 : 2,
-          opacity: isSelected ? 1 : 0.8,
-          fillColor: isSelected ? '#FFAF00' : '#A855F7',
-          fillOpacity: isSelected ? 0.45 : 0.18
+          weight: isSelected ? 3 : 2,
+          opacity: isSelected ? 0.6 : 0.5,
+          fillColor: '#A855F7',
+          fillOpacity: isSelected ? 0.40 : 0.15
         };
       };
 
@@ -1521,10 +1523,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
             </div>
           </div>
 
-          {/* Bottom Half: Plan Details Panel (fits contents without outer scrolling) */}
-          <div className="w-full shrink-0 bg-[#09090B] flex flex-col border-t border-white/10">
+          {/* Bottom Half: Plan Details Panel (fixed size container to prevent map layout shifts) */}
+          <div className="w-full h-[250px] shrink-0 bg-[#09090B] flex flex-col border-t border-white/10 overflow-hidden">
             {selectedPlan ? (
-              <div className="flex flex-col min-h-[400px]">
+              <div className="flex flex-col h-full min-h-0 overflow-hidden">
                 {/* Details Header & Tabs */}
                 <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-[#0D0D11] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
                   <div>
@@ -1575,87 +1577,87 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   </div>
                 </div>
 
-                {/* Tab Content Body */}
-                <div className="max-h-[330px] p-4 sm:p-5 flex flex-col overflow-y-auto">
+                {/* Tab Content Body (constrained height container with subtab scrolling) */}
+                <div className="flex-1 min-h-0 relative overflow-hidden">
                   {detailTab === 'info' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Basic Fields Table */}
-                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
-                          {strings.basicInfo}
-                        </h4>
-                        
-                        <div className="flex flex-col gap-2.5 text-xs">
-                          <div className="flex justify-between border-b border-white/5 pb-1.5">
-                            <span className="text-slate-400">{strings.municipality}:</span>
-                            <span className="font-semibold text-white">{getPlanMunicipalityNames(selectedPlan)}</span>
-                          </div>
-                          <div className="flex justify-between border-b border-white/5 pb-1.5">
-                            <span className="text-slate-400">{strings.permanentId}:</span>
-                            <span className="font-mono text-amber-300">{selectedPlan.properties?.permanent_plan_identifier || '-'}</span>
-                          </div>
-                          <div className="flex justify-between border-b border-white/5 pb-1.5">
-                            <span className="text-slate-400">{strings.producerId}:</span>
-                            <span className="font-mono text-slate-200">{selectedPlan.properties?.producer_plan_identifier || '-'}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Dates & Timeline */}
-                      <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
-                          {strings.timeline}
-                        </h4>
-
-                        <div className="flex flex-col gap-2.5 text-xs">
-                          <div className="flex justify-between border-b border-white/5 pb-1.5">
-                            <span className="text-slate-400">{strings.initiationDate}:</span>
-                            <span className="font-semibold text-slate-300">
-                              {formatPlanDate(selectedPlan.properties?.time_of_initiation)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between border-b border-white/5 pb-1.5">
-                            <span className="text-slate-400">{strings.approvalDate}:</span>
-                            <span className="font-semibold text-white">
-                              {formatPlanDate(selectedPlan.properties?.approval_date)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between border-b border-white/5 pb-1.5">
-                            <span className="text-slate-400">{strings.validityDate}:</span>
-                            <span className="font-semibold text-white">
-                             {(() => {
-                                const begin = formatPlanDate(selectedPlan.properties?.date_of_validity || selectedPlan.properties?.period_of_validity_begin, '');
-                                const end = formatPlanDate(selectedPlan.properties?.period_of_validity_end, '');
-                                if (begin && end) return `${begin} – ${end}`;
-                                if (begin) return begin;
-                                if (end) return `– ${end}`;
-                                return '-';
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Description Panel */}
-                      {selectedPlan.properties?.description_fin && (
-                        <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-2">
+                    <div className="h-full w-full overflow-y-auto custom-scrollbar p-4 sm:p-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Basic Fields Table */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
                           <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
-                            {strings.description}
+                            {strings.basicInfo}
                           </h4>
-                          <div className="max-h-24 overflow-y-auto custom-scrollbar pr-1">
-                            <p className="text-xs text-slate-300 leading-relaxed font-sans">
+                          
+                          <div className="flex flex-col gap-2.5 text-xs">
+                            <div className="flex justify-between border-b border-white/5 pb-1.5">
+                              <span className="text-slate-400">{strings.municipality}:</span>
+                              <span className="font-semibold text-white">{getPlanMunicipalityNames(selectedPlan)}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-white/5 pb-1.5">
+                              <span className="text-slate-400">{strings.permanentId}:</span>
+                              <span className="font-mono text-amber-300">{selectedPlan.properties?.permanent_plan_identifier || '-'}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-white/5 pb-1.5">
+                              <span className="text-slate-400">{strings.producerId}:</span>
+                              <span className="font-mono text-slate-200">{selectedPlan.properties?.producer_plan_identifier || '-'}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Dates & Timeline */}
+                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
+                            {strings.timeline}
+                          </h4>
+
+                          <div className="flex flex-col gap-2.5 text-xs">
+                            <div className="flex justify-between border-b border-white/5 pb-1.5">
+                              <span className="text-slate-400">{strings.initiationDate}:</span>
+                              <span className="font-semibold text-slate-300">
+                                {formatPlanDate(selectedPlan.properties?.time_of_initiation)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between border-b border-white/5 pb-1.5">
+                              <span className="text-slate-400">{strings.approvalDate}:</span>
+                              <span className="font-semibold text-white">
+                                {formatPlanDate(selectedPlan.properties?.approval_date)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between border-b border-white/5 pb-1.5">
+                              <span className="text-slate-400">{strings.validityDate}:</span>
+                              <span className="font-semibold text-white">
+                               {(() => {
+                                  const begin = formatPlanDate(selectedPlan.properties?.date_of_validity || selectedPlan.properties?.period_of_validity_begin, '');
+                                  const end = formatPlanDate(selectedPlan.properties?.period_of_validity_end, '');
+                                  if (begin && end) return `${begin} – ${end}`;
+                                  if (begin) return begin;
+                                  if (end) return `– ${end}`;
+                                  return '-';
+                                })()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Description Panel */}
+                        {selectedPlan.properties?.description_fin && (
+                          <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-2">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
+                              {strings.description}
+                            </h4>
+                            <p className="text-xs text-slate-300 leading-relaxed font-sans whitespace-pre-wrap">
                               {selectedPlan.properties.description_fin}
                             </p>
                           </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   )}
 
                   {detailTab === 'documents' && (
-                    <div className="overflow-y-auto custom-scrollbar flex flex-col gap-3">
+                    <div className="h-full w-full overflow-y-auto custom-scrollbar p-4 sm:p-5 flex flex-col gap-3">
                       {selectedPlanDocuments.length === 0 ? (
-                        <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 border border-white/10 rounded-2xl bg-white/5">
+                        <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 border border-white/10 rounded-2xl bg-white/5 h-full">
                           <FileText className="w-8 h-8 text-slate-600 mb-1" />
                           <h4 className="text-sm font-bold text-slate-300">{strings.noDocuments}</h4>
                           <p className="text-xs text-slate-500 max-w-sm">
@@ -1700,8 +1702,8 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   )}
 
                   {detailTab === 'json' && (
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
+                    <div className="h-full w-full p-4 sm:p-5 flex flex-col gap-3 overflow-hidden">
+                      <div className="flex items-center justify-between shrink-0">
                         <span className="text-xs text-slate-400 font-mono">OGC Feature ID: {selectedPlan.id}</span>
                         <a
                           href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(selectedPlan, null, 2))}`}
@@ -1713,7 +1715,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                         </a>
                       </div>
 
-                      <div className="border border-white/10 rounded-2xl overflow-hidden bg-black max-h-60 overflow-y-auto custom-scrollbar">
+                      <div className="flex-1 min-h-0 border border-white/10 rounded-2xl overflow-y-auto custom-scrollbar bg-black">
                         <LazySyntaxHighlighter
                           language="json"
                           PreTag="div"
@@ -1733,7 +1735,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 </div>
               </div>
             ) : (
-              <div className="min-h-[400px] flex-1 p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 my-auto">
+              <div className="h-full flex-1 p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 my-auto">
                 <MapIcon className="w-10 h-10 text-slate-600 mb-1" />
                 <h3 className="text-base font-bold text-slate-300">{strings.selectPlanPrompt}</h3>
                 <p className="text-xs text-slate-500 max-w-sm">{strings.selectPlanPromptDesc}</p>
