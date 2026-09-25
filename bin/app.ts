@@ -83,6 +83,7 @@ const siteStack = new WebsiteStack(app, siteStackName, {
   isProduction: !process.env.VITE_PRELAUNCH_PASSWORD,
 
   deployerRole: getEnvVar('DEPLOYER_ROLE'),
+  mmlAPIKey: getEnvVar('MML_API_KEY')
 });
 
 siteStack.addStackDependency(certStack);

@@ -221,6 +221,7 @@ jobs:
           GIT_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }} # For auto-tagging the CDK stacks
           CERTIFICATE_STACK_NAME: ${{ vars. CERTIFICATE_STACK_NAME || 'KaavatietomalliWebsiteCertStack' }}
           WEBSITE_STACK_NAME: ${{ vars.WEBSITE_STACK_NAME || 'KaavatietomalliWebsiteMainStack' }}
+          MML_API_KEY: ${{ secrets.MML_API_KEY }}
 
         run: |
           npx cdk deploy --all \
