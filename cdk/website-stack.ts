@@ -19,6 +19,7 @@ export interface WebsiteStackProps extends cdk.StackProps {
   certificate: acm.ICertificate;
   hostedZone: route53.IHostedZone;
   isProduction: boolean;
+  mmlAPIKey: string;
 }
 
 export class WebsiteStack extends cdk.Stack {
@@ -111,6 +112,51 @@ export class WebsiteStack extends cdk.Stack {
     distribution.addBehavior('/assets/*', s3Origin, {
       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+    });
+
+    // ==========================================================
+    // Maanmittauslaitos (NLS) WMTS Proxy Origin & Cache Policy
+    // ==========================================================
+
+    const mmlAuthHeader = props.mmlAPIKey ? `Basic ${Buffer.from(`${props.mmlAPIKey}:`).toString('base64')}` : '';
+
+    const mmlOrigin = new origins.HttpOrigin('avoin-karttakuva.maanmittauslaitos.fi', {
+      protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
+    });
+
+    const mmlProxyFn = new cloudfront.Function(this, 'MmlProxyFunction', {
+      code: cloudfront.FunctionCode.fromInline(`
+        function handler(event) {
+          var request = event.request;
+          // Rewrite URI prefix /mml-wmts/ -> /avoin/wmts/
+          request.uri = request.uri.replace(/^\\/mml-wmts/, '/avoin/wmts');
+          ${mmlAuthHeader ? `request.headers['authorization'] = { value: ${JSON.stringify(mmlAuthHeader)} };` : ''}
+          return request;
+        }
+      `),
+    });
+
+    const mmlTileCachePolicy = new cloudfront.CachePolicy(this, 'MmlTileCachePolicy', {
+      cachePolicyName: `${this.stackName}-MmlTileCachePolicy`,
+      comment: 'Aggressive 30-day edge caching for NLS / MML map tile images',
+      defaultTtl: cdk.Duration.days(30),
+      minTtl: cdk.Duration.days(1),
+      maxTtl: cdk.Duration.days(365),
+      enableAcceptEncodingGzip: true,
+      enableAcceptEncodingBrotli: true,
+      queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
+    });
+
+    distribution.addBehavior('/mml-wmts/*', mmlOrigin, {
+      viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+      cachePolicy: mmlTileCachePolicy,
+      allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+      functionAssociations: [
+        {
+          function: mmlProxyFn,
+          eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+        },
+      ],
     });
  
     new ARecord(this, 'IPV4AliasRecord',{

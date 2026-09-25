@@ -35,6 +35,7 @@ import {
 import { useDualFeatureWfs } from '../hooks/useDualFeatureWfs';
 import { CodeItem } from '../lib/data-model-types';
 import { CallToActionBlock } from './CodeBlock';
+import { TILE_LAYERS, TileStyle } from '../lib/basemaps';
 
 // Lazy load Leaflet and Proj4 libraries
 let LeafletInstance: any = null;
@@ -78,20 +79,6 @@ async function getMapLibraries() {
     return { L: null, proj4: null };
   }
 }
-
-const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY || '';
-const KEY_PARAM = CARTO_KEY ? `?key=${CARTO_KEY}` : '';
-
-const TILE_LAYERS = {
-  dark: {
-    url: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${KEY_PARAM}`,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
-  },
-  light: {
-    url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${KEY_PARAM}`,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
-  }
-};
 
 interface PlanExplorerViewProps {
   onBack?: () => void;
@@ -463,7 +450,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   }, [searchQuery]);
 
   // Map settings
-  const [tileStyle, setTileStyle] = useState<'dark' | 'light'>('dark');
+  const [tileStyle, setTileStyle] = useState<TileStyle>('mml_taustakartta');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showMunicipalityBoundaries, setShowMunicipalityBoundaries] = useState(true);
   const [showDetailedPlanLayer, setShowDetailedPlanLayer] = useState(true);
@@ -745,10 +732,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         if (tileLayerRef.current) {
           map.removeLayer(tileLayerRef.current);
         }
-        const selectedTile = TILE_LAYERS[tileStyle];
+        const selectedTile = TILE_LAYERS[tileStyle] || TILE_LAYERS.dark;
         const tileLayer = L.tileLayer(selectedTile.url, {
           attribution: selectedTile.attribution,
-          maxZoom: 19,
+          maxZoom: selectedTile.maxZoom || 18,
           tileSize: 256,
           zoomOffset: 0,
           fadeAnimation: false
@@ -1431,28 +1418,32 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
             <div
               ref={mapContainerRef}
               className="absolute inset-0 w-full h-full z-0 focus:outline-none"
-              style={{ backgroundColor: tileStyle === 'dark' ? '#191a1a' : '#e8e6e3' }}
+              style={{ backgroundColor: (TILE_LAYERS[tileStyle]?.isLight ?? false) ? '#e8e6e3' : '#191a1a' }}
             />
 
             {/* Floating Map Overlay Controls */}
             <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-24px)]">
-              <div className="flex items-center bg-black/80 backdrop-blur-md rounded-xl p-1 border border-white/10 shadow-xl">
-                <button
-                  onClick={() => setTileStyle('dark')}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                    tileStyle === 'dark' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                  }`}
+              <div className="flex items-center bg-black/80 backdrop-blur-md rounded-xl px-2.5 py-1.5 border border-white/10 shadow-xl gap-2 text-xs">
+                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider hidden sm:inline-flex items-center gap-1 shrink-0">
+                  <Layers className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Taustakartta:</span>
+                </span>
+                <select
+                  value={tileStyle}
+                  onChange={(e) => setTileStyle(e.target.value as TileStyle)}
+                  className="bg-transparent text-white font-semibold text-xs focus:outline-none cursor-pointer py-0.5 pr-1 border-0"
                 >
-                  {strings.darkMap}
-                </button>
-                <button
-                  onClick={() => setTileStyle('light')}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                    tileStyle === 'light' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {strings.lightMap}
-                </button>
+                  <optgroup label="CARTO">
+                    <option value="dark" className="bg-[#09090B] text-slate-200">Carto Tumma</option>
+                    <option value="light" className="bg-[#09090B] text-slate-200">Carto Vaalea</option>
+                  </optgroup>
+                  <optgroup label="Maanmittauslaitos (WMTS)">
+                    <option value="mml_taustakartta" className="bg-[#09090B] text-slate-200" >MML Taustakartta</option>
+                    <option value="mml_maastokartta" className="bg-[#09090B] text-slate-200">MML Maastokartta</option>
+                    <option value="mml_selkokartta" className="bg-[#09090B] text-slate-200">MML Selkokartta</option>
+                    <option value="mml_ortokuva" className="bg-[#09090B] text-slate-200">MML Ortokuva (ilmakuva)</option>
+                  </optgroup>
+                </select>
               </div>
 
               {currentMunicipalityFeature && (
@@ -1465,7 +1456,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   }`}
                 >
                   <Layers className={`w-3.5 h-3.5`} />
-                  <span className={`${tileStyle === 'light' &&  showMunicipalityBoundaries ? 'text-black' : ''}`}>{strings.municipalityBoundary}</span>
+                  <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showMunicipalityBoundaries ? 'text-black' : ''}`}>{strings.municipalityBoundary}</span>
                 </button>
               )}
 
@@ -1479,7 +1470,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   }`}
                 >
                   <span className={`w-2.5 h-2.5 rounded-full ${showDetailedPlanLayer ? 'bg-orange-400' : 'bg-slate-500'}`} />
-                  <span className={`${tileStyle === 'light' &&  showDetailedPlanLayer ? 'text-black' : ''}`}>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
+                  <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showDetailedPlanLayer ? 'text-black' : ''}`}>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
                 </button>
               )}
 
@@ -1493,7 +1484,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                   }`}
                 >
                   <span className={`w-2.5 h-2.5 rounded-full ${showMasterPlanLayer ? 'bg-purple-400' : 'bg-slate-500'}`} />
-                  <span className={`${tileStyle === 'light' && showMasterPlanLayer ? 'text-black' : ''}`}>{strings.masterPlanLayer} ({masterPlans.length})</span>
+                  <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showMasterPlanLayer ? 'text-black' : ''}`}>{strings.masterPlanLayer} ({masterPlans.length})</span>
                 </button>
               )}
             </div>

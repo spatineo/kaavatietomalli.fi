@@ -53,6 +53,23 @@ export default defineConfig(({mode}) => {
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
+      proxy: {
+        '/mml-wmts': {
+          target: 'https://avoin-karttakuva.maanmittauslaitos.fi',
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/mml-wmts/, '/avoin/wmts'),
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              const apiKey = process.env.MML_API_KEY || env.MML_API_KEY || env.VITE_MML_API_KEY;
+              if (apiKey) {
+                const u = new URL(proxyReq.path, 'https://avoin-karttakuva.maanmittauslaitos.fi');
+                u.searchParams.set('api-key', apiKey);
+                proxyReq.path = u.pathname + u.search;
+              }
+            });
+          },
+        },
+      },
       hmr: process.env.DISABLE_HMR !== 'true',
     },
   };

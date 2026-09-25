@@ -4,6 +4,7 @@ import { Map, Code, Maximize2, Minimize2, Info, Layers, AlertCircle } from 'luci
 import { LazySyntaxHighlighter } from './LazySyntaxHighlighter';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
+import { TILE_LAYERS, TileStyle } from '../lib/basemaps';
 
 // Lazy load Leaflet and Proj4 libraries
 let LeafletInstance: any = null;
@@ -198,25 +199,11 @@ interface GeoJsonMapViewerProps {
   language?: string;
 }
 
-const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY || '';
-const KEY_PARAM = CARTO_KEY ? `?key=${CARTO_KEY}` : '';
-
-const TILE_LAYERS = {
-  dark: {
-    url: `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${KEY_PARAM}`,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
-  },
-  light: {
-    url: `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png${KEY_PARAM}`,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
-  }
-};
-
 export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewerProps) {
   const t = getTranslations(CONFIG.language as Language);
   const [activeTab, setActiveTab] = useState<'map' | 'code'>('map');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [tileStyle, setTileStyle] = useState<'dark' | 'light'>('dark');
+  const [tileStyle, setTileStyle] = useState<TileStyle>('dark');
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any | null>(null);
@@ -318,10 +305,10 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
     }
 
     // Set map background map tiles
-    const selectedTile = TILE_LAYERS[tileStyle];
+    const selectedTile = TILE_LAYERS[tileStyle] || TILE_LAYERS.dark;
     const tileLayer = L.tileLayer(selectedTile.url, {
       attribution: selectedTile.attribution,
-      maxZoom: 19,
+      maxZoom: selectedTile.maxZoom || 18,
       tileSize: 256,
       zoomOffset: 0
     }).addTo(map);
@@ -335,8 +322,9 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
     // Load and style the GeoJSON
     if (geojsondata) {
       try {
+        const isLight = TILE_LAYERS[tileStyle]?.isLight ?? false;
         // Aesthetic custom brand styles
-        const defaultColor = tileStyle === 'dark' ? '#FFAF00' : '#E08A00'; // high contrast orange-yellow
+        const defaultColor = isLight ? '#E08A00' : '#FFAF00'; // high contrast orange-yellow
 
         // Vibrant color palette matching the modern slate style
         const PALETTE = [
@@ -604,29 +592,25 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
 
           {/* Custom Base map layers chooser - Only active when "map" mode is on, placed vertically below the rendering selector */}
           {activeTab === 'map' && !parseError && (
-            <div className="flex items-center bg-white/5 rounded-lg p-0.5 border border-white/10">
-              <button
-                id="btn-tile-dark"
-                type="button"
-                className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${
-                  tileStyle === 'dark' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                }`}
-                onClick={() => setTileStyle('dark')}
-                title={t.geojson.darkThemeTooltip}
+            <div className="flex items-center bg-white/5 rounded-lg px-2 py-1 border border-white/10 gap-1.5 text-xs">
+              <Layers className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <select
+                id="select-basemap-style"
+                value={tileStyle}
+                onChange={(e) => setTileStyle(e.target.value as TileStyle)}
+                className="bg-transparent text-white font-semibold text-[11px] focus:outline-none cursor-pointer py-0.5 border-0"
               >
-                {t.geojson.darkTheme}
-              </button>
-              <button
-                id="btn-tile-light"
-                type="button"
-                className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${
-                  tileStyle === 'light' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                }`}
-                onClick={() => setTileStyle('light')}
-                title={t.geojson.lightThemeTooltip}
-              >
-                {t.geojson.lightTheme}
-              </button>
+                <optgroup label="CARTO">
+                  <option value="dark" className="bg-[#09090B] text-slate-200">Carto Tumma</option>
+                  <option value="light" className="bg-[#09090B] text-slate-200">Carto Vaalea</option>
+                </optgroup>
+                <optgroup label="Maanmittauslaitos (WMTS)">
+                  <option value="mml_taustakartta" className="bg-[#09090B] text-slate-200">MML Taustakartta</option>
+                  <option value="mml_maastokartta" className="bg-[#09090B] text-slate-200">MML Maastokartta</option>
+                  <option value="mml_selkokartta" className="bg-[#09090B] text-slate-200">MML Selkokartta</option>
+                  <option value="mml_ortokuva" className="bg-[#09090B] text-slate-200">MML Ortokuva (ilmakuva)</option>
+                </optgroup>
+              </select>
             </div>
           )}
         </div>
@@ -663,7 +647,7 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
               <div
                 ref={mapContainerRef}
                 className="absolute inset-0 w-full h-full z-0 focus:outline-none"
-                style={{ backgroundColor: tileStyle === 'dark' ? '#191a1a' : '#e8e6e3' }}
+                style={{ backgroundColor: (TILE_LAYERS[tileStyle]?.isLight ?? false) ? '#e8e6e3' : '#191a1a' }}
               />
             </div>
           )
