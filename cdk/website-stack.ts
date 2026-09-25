@@ -118,8 +118,11 @@ export class WebsiteStack extends cdk.Stack {
     // Maanmittauslaitos (NLS) WMTS Proxy Origin & Cache Policy
     // ==========================================================
 
+    if (!props.mmlAPIKey) {
+      console.warn('[CDK Warning] MML_API_KEY is not set in environment during CDK synthesis. CloudFront Function will omit Authorization header and NLS proxy will return 401 Unauthorized.');
+    }
     const mmlAuthHeader = props.mmlAPIKey ? `Basic ${Buffer.from(`${props.mmlAPIKey}:`).toString('base64')}` : '';
-
+    
     const mmlOrigin = new origins.HttpOrigin('avoin-karttakuva.maanmittauslaitos.fi', {
       protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
     });
@@ -150,6 +153,7 @@ export class WebsiteStack extends cdk.Stack {
     distribution.addBehavior('/mml-wmts/*', mmlOrigin, {
       viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       cachePolicy: mmlTileCachePolicy,
+      originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
       functionAssociations: [
         {

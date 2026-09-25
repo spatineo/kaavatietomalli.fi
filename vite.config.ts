@@ -62,9 +62,8 @@ export default defineConfig(({mode}) => {
             proxy.on('proxyReq', (proxyReq) => {
               const apiKey = process.env.MML_API_KEY || env.MML_API_KEY || env.VITE_MML_API_KEY;
               if (apiKey) {
-                const u = new URL(proxyReq.path, 'https://avoin-karttakuva.maanmittauslaitos.fi');
-                u.searchParams.set('api-key', apiKey);
-                proxyReq.path = u.pathname + u.search;
+                const authHeader = `Basic ${Buffer.from(`${apiKey}:`).toString('base64')}`;
+                proxyReq.setHeader('Authorization', authHeader);
               }
             });
           },
