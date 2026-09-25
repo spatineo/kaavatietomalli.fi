@@ -285,14 +285,17 @@ export async function generateIndividualContentFiles(
     if (post.content && post.content.includes('```data-model-snippet')) {
       post.content = await convertDataModelDiagramsToMermaid(post.content, dataAccess);
     }
-    if (post.content && post.content.includes('```interactive-image')) {
-      post.content = await downloadAndEmbedInteractiveImages(post.content);
+
+    const prerenderedPost: PostData = JSON.parse(JSON.stringify(post)); // Deep copy
+    if (prerenderedPost.content && prerenderedPost.content.includes('```interactive-image')) {
+      prerenderedPost.content = await downloadAndEmbedInteractiveImages(prerenderedPost.content);
     }
+    
     const outPath = path.join(POST_JSON_OUT_DIR, `${post.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
       outPath,
-      JSON.stringify(post, null, 2),
+      JSON.stringify(prerenderedPost, null, 2),
       'utf-8'
     );
 
