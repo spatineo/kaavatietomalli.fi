@@ -116,6 +116,7 @@ export class WebsiteStack extends cdk.Stack {
 
     // ==========================================================
     // Maanmittauslaitos (NLS) WMTS Proxy Origin & Cache Policy
+    // (Served on dedicated map.<domain> distribution to avoid log bloat)
     // ==========================================================
 
     if (!props.mmlAPIKey) {
@@ -131,9 +132,43 @@ export class WebsiteStack extends cdk.Stack {
       code: cloudfront.FunctionCode.fromInline(`
         function handler(event) {
           var request = event.request;
-          // Rewrite URI prefix /mml-wmts/ -> /avoin/wmts/
+          var headers = request.headers;
+          var refererHeader = headers.referer ? headers.referer.value : (headers.referrer ? headers.referrer.value : '');
+
+          // Restrict tile proxy requests to kaavatietomalli.fi (and allowed dev/preview environments)
+          var isAllowed = false;
+          if (refererHeader) {
+            var ref = refererHeader.toLowerCase();
+            if (
+              ref.indexOf('://kaavatietomalli.fi') !== -1 ||
+              ref.indexOf('.kaavatietomalli.fi') !== -1 ||
+              ref.indexOf('localhost') !== -1 ||
+              ref.indexOf('127.0.0.1') !== -1 ||
+              ref.indexOf('.run.app') !== -1
+            ) {
+              isAllowed = true;
+            }
+          }
+
+          if (!isAllowed) {
+            return {
+              statusCode: 403,
+              statusDescription: 'Forbidden',
+              headers: {
+                'content-type': { value: 'text/plain; charset=utf-8' },
+                'access-control-allow-origin': { value: '*' }
+              },
+              body: {
+                encoding: 'text',
+                data: 'Forbidden: WMTS map tile proxy usage is restricted to kaavatietomalli.fi'
+              }
+            };
+          }
+            
           request.uri = request.uri.replace(/^\\/mml-wmts/, '/avoin/wmts');
+
           ${mmlAuthHeader ? `request.headers['authorization'] = { value: ${JSON.stringify(mmlAuthHeader)} };` : ''}
+
           return request;
         }
       `),
@@ -150,17 +185,38 @@ export class WebsiteStack extends cdk.Stack {
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.all(),
     });
 
-    distribution.addBehavior('/mml-wmts/*', mmlOrigin, {
-      viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-      cachePolicy: mmlTileCachePolicy,
-      originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
-      allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
-      functionAssociations: [
-        {
-          function: mmlProxyFn,
-          eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
-        },
-      ],
+    const tilesDomainName = `map.${props.domainName}`;
+
+    // Dedicated light-weight distribution for tile proxying (NO logBucket configured -> excludes tile requests from access logs)
+    const tilesDistribution = new cloudfront.Distribution(this, 'TilesDistribution', {
+      domainNames: [tilesDomainName],
+      certificate: props.certificate,
+      defaultBehavior: {
+        origin: mmlOrigin,
+        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        cachePolicy: mmlTileCachePolicy,
+        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        responseHeadersPolicy: cloudfront.ResponseHeadersPolicy.CORS_ALLOW_ALL_ORIGINS,
+        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD,
+        functionAssociations: [
+          {
+            function: mmlProxyFn,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          },
+        ],
+      },
+    });
+
+    new ARecord(this, 'TilesIPV4AliasRecord', {
+      zone: props.hostedZone,
+      recordName: 'map',
+      target: RecordTarget.fromAlias(new CloudFrontTarget(tilesDistribution)),
+    });
+
+    new AaaaRecord(this, 'TilesIPv6AliasRecord', {
+      zone: props.hostedZone,
+      recordName: 'map',
+      target: RecordTarget.fromAlias(new CloudFrontTarget(tilesDistribution)),
     });
  
     new ARecord(this, 'IPV4AliasRecord',{
@@ -465,6 +521,7 @@ export class WebsiteStack extends cdk.Stack {
 
     websiteBucket.grantReadWrite(githubRole);
     distribution.grantCreateInvalidation(githubRole);
+    tilesDistribution.grantCreateInvalidation(githubRole);
 
     // Required by the GitHub action to run the cdk deploy task. The TagSession is for the cross-region resources:
     githubRole.addToPolicy(
@@ -500,6 +557,16 @@ export class WebsiteStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CloudFrontDistributionId', {
       value: distribution.distributionId,
       description: 'Use for CloudFront invalidations in GitHub Actions',
+    });
+
+    new cdk.CfnOutput(this, 'TilesDistributionId', {
+      value: tilesDistribution.distributionId,
+      description: 'Use for CloudFront invalidations on map tiles distribution',
+    });
+
+    new cdk.CfnOutput(this, 'TilesDomainName', {
+      value: tilesDomainName,
+      description: 'Subdomain for map tile proxying without access logs',
     });
 
     new cdk.CfnOutput(this, 'GitHubDeployRoleArn', {

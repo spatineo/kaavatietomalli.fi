@@ -24,6 +24,19 @@ export interface BasemapConfig {
 const CARTO_KEY = import.meta.env.VITE_CARTO_API_KEY || '';
 const KEY_PARAM = CARTO_KEY ? `?key=${CARTO_KEY}` : '';
 
+// Resolve MML tiles base URL:
+// In production, use dedicated map subdomain https://map.kaavatietomalli.fi/mml-tiles
+// In local dev/preview environments, fall back to relative /mml-tiles proxied by Vite
+const isLocalDevOrPreview = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname.endsWith('.run.app')
+);
+
+export const MML_TILES_BASE_URL = import.meta.env.VITE_MML_TILES_BASE_URL || (
+  isLocalDevOrPreview ? '/mml-wmts' : 'https://map.kaavatietomalli.fi/mml-wmts'
+);
+
 export const TILE_LAYERS: Record<TileStyle, BasemapConfig> = {
   dark: {
     key: 'dark',
@@ -48,7 +61,7 @@ export const TILE_LAYERS: Record<TileStyle, BasemapConfig> = {
     label: 'MML Taustakartta',
     provider: 'mml',
     isLight: true,
-    url: `/mml-wmts/1.0.0/taustakartta/default/WGS84_Pseudo-Mercator/{z}/{y}/{x}.png`,
+    url: `${MML_TILES_BASE_URL}/1.0.0/taustakartta/default/WGS84_Pseudo-Mercator/{z}/{y}/{x}.png`,
     attribution: '&copy; <a href="https://www.maanmittauslaitos.fi" target="_blank">Maanmittauslaitos</a>',
     maxZoom: 18
   },
@@ -57,7 +70,7 @@ export const TILE_LAYERS: Record<TileStyle, BasemapConfig> = {
     label: 'MML Maastokartta',
     provider: 'mml',
     isLight: true,
-    url: `/mml-wmts/1.0.0/maastokartta/default/WGS84_Pseudo-Mercator/{z}/{y}/{x}.png`,
+    url: `${MML_TILES_BASE_URL}/1.0.0/maastokartta/default/WGS84_Pseudo-Mercator/{z}/{y}/{x}.png`,
     attribution: '&copy; <a href="https://www.maanmittauslaitos.fi" target="_blank">Maanmittauslaitos</a>',
     maxZoom: 18
   },
@@ -66,7 +79,7 @@ export const TILE_LAYERS: Record<TileStyle, BasemapConfig> = {
     label: 'MML Selkokartta',
     provider: 'mml',
     isLight: true,
-    url: `/mml-wmts/1.0.0/selkokartta/default/WGS84_Pseudo-Mercator/{z}/{y}/{x}.png`,
+    url: `${MML_TILES_BASE_URL}/1.0.0/selkokartta/default/WGS84_Pseudo-Mercator/{z}/{y}/{x}.png`,
     attribution: '&copy; <a href="https://www.maanmittauslaitos.fi" target="_blank">Maanmittauslaitos</a>',
     maxZoom: 18
   },
@@ -75,7 +88,7 @@ export const TILE_LAYERS: Record<TileStyle, BasemapConfig> = {
     label: 'MML Ortokuva (ilmakuva)',
     provider: 'mml',
     isLight: false,
-    url: `/mml-wmts/1.0.0/ortokuva/default/WGS84_Pseudo-Mercator/{z}/{y}/{x}.jpg`,
+    url: `${MML_TILES_BASE_URL}/1.0.0/ortokuva/default/WGS84_Pseudo-Mercator/{z}/{y}/{x}.jpg`,
     attribution: '&copy; <a href="https://www.maanmittauslaitos.fi" target="_blank">Maanmittauslaitos</a>',
     maxZoom: 18
   }

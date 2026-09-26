@@ -59,11 +59,15 @@ export default defineConfig(({mode}) => {
           changeOrigin: true,
           rewrite: (p) => p.replace(/^\/mml-wmts/, '/avoin/wmts'),
           configure: (proxy) => {
-            proxy.on('proxyReq', (proxyReq) => {
+            proxy.on('proxyReq', (proxyReq, req) => {
               const apiKey = process.env.MML_API_KEY || env.MML_API_KEY || env.VITE_MML_API_KEY;
               if (apiKey) {
                 const authHeader = `Basic ${Buffer.from(`${apiKey}:`).toString('base64')}`;
                 proxyReq.setHeader('Authorization', authHeader);
+              }
+              const referer = req.headers['referer'] || req.headers['referrer'];
+              if (referer) {
+                proxyReq.setHeader('Referer', referer);
               }
             });
           },
