@@ -21,11 +21,14 @@ export class CertificateStack extends cdk.Stack {
         comment: 'Public hosted zone for kaavatietomalli.fi',
         });
 
-        this.certificate = new acm.Certificate(this, 'SiteCertificate', {
+        // Wildcard Certificate covering both kaavatietomalli.fi and *.kaavatietomalli.fi
+        const wildcardCert = new acm.Certificate(this, 'WildcardSiteCertificate', {
           domainName: props.domainName,
           subjectAlternativeNames: [`*.${props.domainName}`],
           validation: acm.CertificateValidation.fromDns(this.hostedZone),
         });
+
+        this.certificate = wildcardCert;
 
         // Automatically update Route 53 Registrar name servers to match the new Hosted Zone
         new custom_resources.AwsCustomResource(this, 'UpdateDomainNameServers', {
@@ -53,4 +56,3 @@ export class CertificateStack extends cdk.Stack {
         });
     }
 }
-
