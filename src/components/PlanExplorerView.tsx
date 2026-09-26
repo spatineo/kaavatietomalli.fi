@@ -1103,7 +1103,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const ctaProps:string = JSON.stringify({
     "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
     "buttonText": "Kysy lisää",
-    "title":"Tarvitseeko organisaatiosi kaavatietoa? Spatineo toteutti tämän palvelun ja osaamme auttaa sinuakin.",
+    "title":"Tarvitseeko organisaatiosi kaavatietoa? Spatineo toteutti tämän palvelun - osaamme auttaa sinuakin.",
     "partner": "spatineo",
     "mode": "thin"
   });

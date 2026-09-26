@@ -22,8 +22,9 @@ export class CertificateStack extends cdk.Stack {
         });
 
         this.certificate = new acm.Certificate(this, 'SiteCertificate', {
-        domainName: props.domainName,
-        validation: acm.CertificateValidation.fromDns(this.hostedZone),
+          domainName: props.domainName,
+          subjectAlternativeNames: [`*.${props.domainName}`],
+          validation: acm.CertificateValidation.fromDns(this.hostedZone),
         });
 
         // Automatically update Route 53 Registrar name servers to match the new Hosted Zone
