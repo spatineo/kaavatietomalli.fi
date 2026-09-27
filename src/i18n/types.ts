@@ -242,11 +242,10 @@ export interface Translations {
     title: string;
     subtitle: string;
     environment: string;
-    apiKey: string;
-    apiKeyPlaceholder: string;
     planType: string;
-    areaIdentifier: string;
-    areaPlaceholder: string;
+    municipalityOrRegion: string;
+    municipalities: string;
+    regions: string;
     editorLabel: string;
     buttonLoadFile: string;
     buttonFormat: string;
@@ -305,7 +304,6 @@ export interface Translations {
     deserializationFailure: string;
     rootDeserializationFailure: string;
     showAllIssues: string;
-    savedToBrowserMemory: string;
     environmentTest: string;
     environmentProduction: string;
   };

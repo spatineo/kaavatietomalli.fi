@@ -316,7 +316,6 @@ export async function getMunicipalityList(): Promise<MunicipalityInfo[]> {
   }
 }
 
-export const getMunicipalityData = getMunicipalityList;
 export const getMunicipalities = getMunicipalityList;
 
 export async function getMunicipalityByCode(code: string): Promise<MunicipalityFeature | null> {
