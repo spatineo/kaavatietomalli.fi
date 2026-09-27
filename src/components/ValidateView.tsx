@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Play, 
   CheckCircle2, 
@@ -25,6 +25,16 @@ import {
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { CallToActionBlock } from './CodeBlock';
+import { getMunicipalityList, MunicipalityInfo } from '../lib/blog';
+import { CodeItem } from '../lib/data-model-types';
+
+interface RegionInfo {
+  codeValue: string;
+  name: string; 
+}
+
+const VALIDATOR_API_KEY_TEST = import.meta.env.VITE_SYKE_DEVELOPER_TEST_API_KEY || '';
+const VALIDATOR_API_KEY_PROD = import.meta.env.VITE_SYKE_DEVELOPER_PROD_API_KEY || '';
 
 // Built-in example of a ValidatePlan document based on Ryhti schema
 const EXAMPLE_PLAN = {
@@ -346,8 +356,6 @@ export function ValidateView({ onBack }: ValidateViewProps) {
 
   // State variables
   const [env, setEnv] = useState<'test' | 'prod'>('test');
-  const [apiKey, setApiKey] = useState(() => localStorage.getItem(`syke_api_key_${env}`) || '');
-  const [showApiKey, setShowApiKey] = useState(false);
   const [planType, setPlanType] = useState('31');
   const [areaId, setAreaId] = useState('601');
   const [jsonInput, setJsonInput] = useState(() => JSON.stringify(EXAMPLE_PLAN, null, 2));
@@ -368,6 +376,69 @@ export function ValidateView({ onBack }: ValidateViewProps) {
   const [responseStatus, setResponseStatus] = useState<number | null>(null);
   const [rawResponse, setRawResponse] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+  const [municipalities, setMunicipalities] = useState<MunicipalityInfo[]>([]);
+  const [regions, setRegions] = useState<RegionInfo[]>([]);
+
+  useEffect(() => {
+    let ignore = false;
+    getMunicipalityList()
+      .then(data => {
+        if (ignore) return;
+        if (data && Array.isArray(data)) {
+          setMunicipalities(data);
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to load municipality list:', err);
+      });
+    return () => { ignore = true; };
+  }, []);
+
+  // Load maakunta_1_20240101 codelist dynamically
+  useEffect(() => {
+    let ignore = false;
+    fetch(`${CONFIG.basePath.replace(/\/$/, '')}/data/suomi.fi/koodistot/jhs/maakunta_1_20240101.json`)
+      .then(res => {
+        if (res.ok) return res.json();
+        throw new Error(`Failed to fetch codelist HTTP ${res.status}`);
+      })
+      .then(data => {
+        if (ignore) return;
+        if (data && Array.isArray(data.codes)) {
+          const options: RegionInfo[] = data.codes
+            .map((item: CodeItem) => ({
+              codeValue: String(item.codeValue),
+              name: item.name?.fi || item.name?.en || item.name?.sv || `${strings.planType} ${item.codeValue}`
+            }));
+          if (options.length > 0) {
+            setRegions(options);
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('Failed to load region code list:', err);
+      });
+    return () => { ignore = true; };
+  }, []);
+
+  // Sorted list of all municipalities for dropdown
+  const municipalityOptions = useMemo(() => {
+    return municipalities
+      .map(m => {
+        const code = String(m.natcode || '').trim();
+        const name = m.nameFin || m.nameSwe || code;
+        return { code, name };
+      })
+      .filter(m => m.code && m.name)
+      .sort((a, b) => a.name.localeCompare(b.name, 'fi'));
+  }, [municipalities]);
+
+  // Sorted list of all regions for dropdown
+  const regionOptions = useMemo(() => {
+    return regions
+      .filter(m => m.codeValue && m.name)
+      .sort((a, b) => a.name.localeCompare(b.name, 'fi'));
+  }, [regions]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -399,20 +470,6 @@ export function ValidateView({ onBack }: ValidateViewProps) {
 
     e.target.value = '';
   };
-
-  // Auto-save API Key securely to localStorage for convenience
-  useEffect(() => {
-    localStorage.setItem(`syke_api_key_${env}`, apiKey);
-  }, [apiKey]);
-
-  useEffect(() => {
-    setApiKey(localStorage.getItem(`syke_api_key_${env}`));
-  }, [env]);
-
-  const clearApiKey = () => {
-    localStorage.removeItem(`syke_api_key_${env}`);
-    setApiKey('');
-  }
 
   const handleFormatJson = () => {
     try {
@@ -459,7 +516,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
       return;
     }
 
-    if (!apiKey.trim() || !areaId.trim()) {
+    if (!areaId.trim()) {
       setErrorMsg(strings.missingParams);
       return;
     }
@@ -480,7 +537,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
           'User-Agent': CONFIG.remoteFetchOptions.headers['User-Agent'],
           'accept': 'application/json',
           'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': apiKey.trim()
+          'Ocp-Apim-Subscription-Key': env === 'prod' ? VALIDATOR_API_KEY_PROD : VALIDATOR_API_KEY_TEST
         },
         body: JSON.stringify(jsonDoc)
       });
@@ -698,12 +755,11 @@ export function ValidateView({ onBack }: ValidateViewProps) {
           <h1 className="text-3xl md:text-4xl font-black tracking-tight mt-2">{strings.title}</h1>
           <p className="text-slate-400 text-sm md:text-base mt-2">
             {strings.apiInfoDesc}
-            &nbsp;{t.post.readMore} <a href="/ryhti-jarjestelma#avoin-kaavatiedon-validointirajapinta" className="text-brand-accent">Ryhti-järjestelmä / Avoin kaavatiedon validointirajapinta</a>
           </p>
         </div>
       </div>
 
-      {/* Credentials & Settings Panel */}
+      {/* Settings Panel */}
       <div className="bg-brand-muted/70 backdrop-blur-md rounded-2xl border border-white/10 p-6 flex flex-col gap-5 mb-8 animate-fade-in">
         <h2 className="text-xs font-black uppercase tracking-widest text-brand-accent flex items-center gap-1.5 border-b border-white/5 pb-2">
           <span>Yhteysasetukset & Kaavan tiedot</span>
@@ -733,55 +789,35 @@ export function ValidateView({ onBack }: ValidateViewProps) {
             </div>
           </div>
 
-          {/* API Key */}
-          <div className="flex flex-col gap-2 md:col-span-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>{strings.apiKey} ({env === 'prod' ? strings.environmentProduction : strings.environmentTest})</span>
-              <span className="text-[10px] text-brand-accent font-semibold lowercase">
-                * {strings.savedToBrowserMemory}
-              </span>
-            </label>
-            <div className="relative flex items-center text-xs">
-              <input
-                type={showApiKey ? 'text' : 'password'}
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder={strings.apiKeyPlaceholder}
-                className="w-full bg-black/50 text-slate-100 placeholder-slate-500 rounded-xl border border-white/10 p-2.5 pr-10 focus:border-brand-accent focus:ring-1 focus:ring-brand-accent font-mono"
-              />
-              <button
-                type="button"
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-2.5 p-1.5 text-slate-400 hover:text-white transition-colors"
-              >
-                {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
-              <button
-                type="button"
-                onClick={() => clearApiKey()}
-                className="absolute right-8 p-1.5 text-slate-400 hover:text-white transition-colors"
-              >
-                {<Trash size={14} />}
-              </button>
-            </div>
-          </div>
-
           {/* Administrative Area Identifier */}
           <div className="flex flex-col gap-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
-              {strings.areaIdentifier}
+              {strings.municipalityOrRegion}
             </label>
-            <input
-              type="text"
+            <select
               value={areaId}
               onChange={(e) => setAreaId(e.target.value)}
-              placeholder={strings.areaPlaceholder}
-              className="w-full bg-black/50 text-slate-100 placeholder-slate-500 rounded-xl border border-white/10 p-2.5 focus:border-brand-accent focus:ring-1 focus:ring-brand-accent text-xs font-mono transition-all"
-            />
+              className="bg-white/5 border border-white/10 text-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FFAF00] transition-colors custom-scrollbar font-medium"
+            >
+              <optgroup label={strings.municipalities}>
+                {municipalityOptions.map(m => (
+                  <option key={m.code} value={m.code} className="bg-[#0D0D11] text-slate-200">
+                    {m.name}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label={strings.regions}>
+                {regionOptions.map(m => (
+                  <option key={m.codeValue} value={m.codeValue} className="bg-[#0D0D11] text-slate-200">
+                    {m.name}
+                  </option>
+                ))}
+              </optgroup>
+            </select>
           </div>
 
           {/* Plan Type */}
-          <div className="flex flex-col gap-2 md:col-span-2">
+          <div className="flex flex-col gap-2">
             <label className="text-xs font-bold uppercase tracking-wider text-slate-400">
               {strings.planType}
             </label>

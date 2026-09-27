@@ -294,7 +294,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     return null;
   }, [selectedMunicipalityCode, selectedMunicipalityFeature, initialMunicipalities]);
   
-  const [isLoadingMunicipalities, setIsLoadingMunicipalities] = useState<boolean>(!initialMunicipalities);
+  //const [isLoadingMunicipalities, setIsLoadingMunicipalities] = useState<boolean>(!initialMunicipalities);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -524,11 +524,9 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   // Load Municipalities index from pre-built static data file
   useEffect(() => {
     if (initialMunicipalities) {
-      setIsLoadingMunicipalities(false);
       return;
     }
     let ignore = false;
-    setIsLoadingMunicipalities(true);
 
     getMunicipalityList()
       .then(data => {
@@ -543,9 +541,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       })
       .catch(err => {
         console.warn('Failed to load municipality list:', err);
-      })
-      .finally(() => {
-        if (!ignore) setIsLoadingMunicipalities(false);
       });
 
     return () => { ignore = true; };
