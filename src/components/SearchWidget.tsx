@@ -29,7 +29,7 @@ export function SearchWidget({ onNavigate, isMobile }: SearchWidgetProps) {
   }, [isOpen]);
 
   const handleNavigate = (type: string, slug: string) => {
-    getTracker().trackCTA('Search Result Click', `${type}:${slug}`, 'widget');
+    getTracker().trackToolEvent('searchWidget', 'select_result',`${type}:${slug}`);
     onNavigate(type, slug);
     setIsOpen(false);
   };

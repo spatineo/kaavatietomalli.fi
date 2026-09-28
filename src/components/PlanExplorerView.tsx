@@ -36,6 +36,7 @@ import { useDualFeatureWfs } from '../hooks/useDualFeatureWfs';
 import { CodeItem } from '../lib/data-model-types';
 import { CallToActionBlock } from './CodeBlock';
 import { TILE_LAYERS, TileStyle } from '../lib/basemaps';
+import { getTracker } from '../services/analytics';
 
 // Lazy load Leaflet and Proj4 libraries
 let LeafletInstance: any = null;
@@ -295,7 +296,6 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     return null;
   }, [selectedMunicipalityCode, selectedMunicipalityFeature, initialMunicipalities]);
   
-  //const [isLoadingMunicipalities, setIsLoadingMunicipalities] = useState<boolean>(!initialMunicipalities);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -348,6 +348,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       clearTimeout(timer);
     };
   }, [currentMapBounds, useMapBounds, updateMapBounds]);
+
+  useEffect(() => {
+    getTracker().trackToolEvent('planExplorerView','query',debouncedSearchQuery);
+  }, [debouncedSearchQuery]);
 
   // Selected item
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(
@@ -479,6 +483,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
   useEffect(() => {
     selectedPlanIdRef.current = selectedPlanId;
+    getTracker().trackToolEvent('planExplorerView','select_plan',selectedPlanId);
   }, [selectedPlanId]);
 
   const prevPlanIdForLayerRef = useRef<string | null>(null);
@@ -581,7 +586,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       .catch(err => {
         console.warn(`Could not load municipality feature for ${selectedMunicipalityCode}:`, err);
       });
-
+      getTracker().trackToolEvent('planExplorerView','aa_select',selectedMunicipalityCode);
     return () => { ignore = true; };
   }, [selectedMunicipalityCode, initialMunicipalities]);
 

@@ -5,6 +5,7 @@ import { useOramaSearch } from '../hooks/useOramaSearch';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { SearchResultItem } from './SearchResultItem';
+import { getTracker } from '../services/analytics';
 
 interface SearchBoxProps {
   size?: 'sm' | 'lg';
@@ -55,6 +56,7 @@ export function SearchBox({
       const searchResults = await performSearch(query);
       setResults(searchResults);
       setIsSearching(false);
+      getTracker().trackToolEvent('searchBox','search',query);
     };
 
     const timeout = setTimeout(handleSearch, 300);
