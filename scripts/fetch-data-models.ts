@@ -170,11 +170,27 @@ export function transformJsonLdToModel(
     }
   });
 
-  // Filter nodes that define a class (sh:NodeShape)
-  const classNodes = graph.filter(
-    (n: any) =>
-      n['@type'] === 'sh:NodeShape' || (Array.isArray(n['@type']) && n['@type'].includes('sh:NodeShape'))
-  );
+  // Filter nodes that define a class (sh:NodeShape or owl:Class)
+  const rawClassNodes = graph.filter((n: any) => {
+    if (!n || !n['@type']) return false;
+    const types = Array.isArray(n['@type']) ? n['@type'] : [n['@type']];
+    return types.includes('sh:NodeShape') || types.includes('owl:Class');
+  });
+
+  // Deduplicate class nodes by target class or class ID
+  const classNodesMap = new Map<string, any>();
+  rawClassNodes.forEach((cls: any) => {
+    const targetClass = getShTargetClass(cls);
+    const key = targetClass ? expandUri(targetClass) : expandUri(cls['@id']);
+    if (!key) return;
+
+    const isNodeShape = cls['@type'] === 'sh:NodeShape' || (Array.isArray(cls['@type']) && cls['@type'].includes('sh:NodeShape'));
+    if (!classNodesMap.has(key) || isNodeShape) {
+      classNodesMap.set(key, cls);
+    }
+  });
+
+  const classNodes = Array.from(classNodesMap.values());
 
   // Pre-build lookup maps to resolve Shape / TargetClass URIs to refined Class IDs and labels
   const shapeOrClassToRefinedId = new Map<string, string>();
@@ -264,6 +280,65 @@ export function transformJsonLdToModel(
 
     const classTargetConceptClass = getShTargetClass(cls);
     if (!classTargetConceptClass) return;
+
+    // Helper to resolve subClassOf entries to a refined superclass ID
+    const extractSuperclassFromSubClassOf = (subClassOfData: any): string | null => {
+      if (!subClassOfData) return null;
+      const items = Array.isArray(subClassOfData) ? subClassOfData : [subClassOfData];
+
+      for (const item of items) {
+        if (!item) continue;
+        const rawTargetId = typeof item === 'string' ? item : item['@id'];
+        if (!rawTargetId) continue;
+
+        const expandedTarget = expandUri(rawTargetId);
+
+        // Ignore RDF top class owl:Thing
+        if (
+          rawTargetId === 'owl:Thing' ||
+          expandedTarget === 'owl:Thing' ||
+          expandedTarget === 'http://www.w3.org/2002/07/owl#Thing' ||
+          expandedTarget.endsWith('#Thing') ||
+          expandedTarget.endsWith('/owl#Thing')
+        ) {
+          continue;
+        }
+
+        const resolvedSuperclass =
+          shapeOrClassToRefinedId.get(expandedTarget) ||
+          shapeOrClassToRefinedId.get(rawTargetId) ||
+          expandedTarget;
+
+        if (resolvedSuperclass) {
+          return resolvedSuperclass;
+        }
+      }
+      return null;
+    };
+
+    // Detect superclass via rdfs:subClassOf property on class node, concept node, or node lookup
+    let detectedSuperclass = extractSuperclassFromSubClassOf(cls['rdfs:subClassOf']);
+
+    if (!detectedSuperclass && classTargetConceptClass) {
+      const conceptNode =
+        nodes.get(classTargetConceptClass) ||
+        nodes.get(expandUri(classTargetConceptClass));
+      if (conceptNode) {
+        detectedSuperclass = extractSuperclassFromSubClassOf(conceptNode['rdfs:subClassOf']);
+      }
+    }
+
+    if (!detectedSuperclass && cls['@id']) {
+      const nodeById = nodes.get(cls['@id']) || nodes.get(expandUri(cls['@id']));
+      if (nodeById) {
+        detectedSuperclass = extractSuperclassFromSubClassOf(nodeById['rdfs:subClassOf']);
+      }
+    }
+
+    if (detectedSuperclass) {
+      hasSuperclass = true;
+      superclass = detectedSuperclass;
+    }
 
     let properties = cls['sh:property'];
     if (properties) {

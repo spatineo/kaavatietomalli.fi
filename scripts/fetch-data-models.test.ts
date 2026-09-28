@@ -144,6 +144,43 @@ describe('fetch-data-models script', () => {
       expect(childClass?.associations?.length).toBe(0);
     });
 
+    it('handles rdfs:subClassOf property to detect superclass and ignores owl:Thing', () => {
+      const jsonldContent = {
+        '@graph': [
+          {
+            '@id': 'https://iri.suomi.fi/model/test-model/',
+            '@type': 'owl:Ontology',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Testimalli' }],
+            'owl:versionInfo': '1.0.0'
+          },
+          {
+            '@id': 'rak:Koodiarvo',
+            '@type': 'owl:Class',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Koodiarvo' }],
+            'rdfs:subClassOf': { '@id': 'rak:OminaisuudenArvo' },
+            'sh:targetClass': [{ '@id': 'rak:Koodiarvo' }]
+          },
+          {
+            '@id': 'rak:OminaisuudenArvo',
+            '@type': 'owl:Class',
+            'rdfs:label': [{ '@language': 'fi', '@value': 'Ominaisuuden arvo' }],
+            'rdfs:subClassOf': { '@id': 'owl:Thing' },
+            'sh:targetClass': [{ '@id': 'rak:OminaisuudenArvo' }]
+          }
+        ]
+      };
+
+      const result = transformJsonLdToModel(jsonldContent, 'test-model', '1.0.0', '2026-07-28T10:00:00.000Z');
+      const koodiarvo = result.classes.find((c: any) => c.id.endsWith('Koodiarvo'));
+      const ominaisuudenArvo = result.classes.find((c: any) => c.id.endsWith('OminaisuudenArvo'));
+
+      expect(koodiarvo).toBeDefined();
+      expect(koodiarvo?.superclass).toBe('https://iri.suomi.fi/model/rak/OminaisuudenArvo');
+
+      expect(ominaisuudenArvo).toBeDefined();
+      expect(ominaisuudenArvo?.superclass).toBeUndefined();
+    });
+
     it('handles prefixed protocol formats like rak:Kaava-asianPaatos correctly without including colons in technicalName', () => {
       const jsonldContent = {
         '@graph': [
