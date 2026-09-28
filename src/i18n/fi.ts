@@ -348,7 +348,6 @@ export const fi: Translations = {
     loadMorePlans: 'Hae lisää',
     loadingMorePlans: 'Ladataan...',
     allPlansLoaded: 'Kaikki kaavat ladattu',
-    back: 'Takaisin',
     exitFullscreen: 'Poistu koko ruudun tilasta',
     enterFullscreen: 'Koko ruutu',
     fetchError: 'Virhe ladattaessa kaavatietoja WFS-rajapinnasta',

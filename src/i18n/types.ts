@@ -346,7 +346,6 @@ export interface Translations {
     loadMorePlans: string;
     loadingMorePlans: string;
     allPlansLoaded: string;
-    back: string;
     exitFullscreen: string;
     enterFullscreen: string;
     fetchError: string;

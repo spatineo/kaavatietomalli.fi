@@ -245,7 +245,8 @@ export function getPlanCategory(plan: PlanFeature): 'detailed' | 'master' {
 }
 
 export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }: PlanExplorerViewProps) {
-  const strings = getTranslations(CONFIG.language as Language).planBrowser;
+  const t = getTranslations(CONFIG.language as Language);
+  const strings = t.planBrowser;
 
   // Track if initial mock dataset was passed for testing
   const initialLoadedRef = useRef<boolean>(Boolean(initialPlans && initialPlans.length > 0));
@@ -1112,10 +1113,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 onClick={onBack}  
                 data-testid="back-to-home-btn"
                 className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px] mb-6"
-                aria-label={strings.back}
+                aria-label={t.common.backToHome}
               >
                 <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                {strings.back}
+                {t.common.backToHome}
               </button>
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
