@@ -1072,9 +1072,8 @@ export function ValidateView({ onBack }: ValidateViewProps) {
             )}
 
             {/* Real-time validation results and line specific error report */}
-            {responseStatus !== null && !isValidating && (
+            {responseStatus !== null && !isValidating && responseStatus !== 401 && (
               <div className="flex flex-col gap-5 flex-1">
-                
                 {/* Compact Status Indicator combined with Localized Result Message */}
                 {responseStatus === 200 && validationErrors.length === 0 ? (
                   <div className="flex flex-col gap-4 animate-fade-in">
