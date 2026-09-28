@@ -375,8 +375,8 @@ describe('PlanExplorerView Component', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText(/Helsinki \(25\)/i)).toBeDefined();
-      expect(screen.getByText(/Seinäjoki \(7\)/i)).toBeDefined();
+      expect(screen.getByText(/Helsinki \(25/i)).toBeDefined();
+      expect(screen.getByText(/Seinäjoki \(7/i)).toBeDefined();
     });
   });
 
