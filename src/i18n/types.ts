@@ -310,6 +310,7 @@ export interface Translations {
   planBrowser: {
     title: string;
     subtitle: string;
+    overview: string;
     searchPlanPlaceholder: string;
     searchPlanPlaceholderLabel: string;
     filterMunicipalityPlaceholder: string;

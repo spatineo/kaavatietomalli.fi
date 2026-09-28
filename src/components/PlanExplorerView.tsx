@@ -1104,634 +1104,647 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   });
 
   const mainView = (
-    <div
-      className={`bg-[#0A0A0C] text-slate-200 font-sans flex flex-col ${
-        isFullscreen
-          ? 'fixed inset-0 z-[99999] w-screen h-screen overflow-hidden'
-          : 'w-full h-full rounded-2xl border border-white/10 shadow-2xl overflow-hidden lg:h-[calc(100vh-80px)] lg:min-h-[620px] lg:max-h-[calc(100vh-350px)]'
-      }`}
-    >
-      {/* Top Bar Header */}
-      <div className="bg-[#09090B] border-b border-white/10 px-4 sm:px-6 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-4">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="p-2 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 transition-colors flex items-center justify-center"
-              title={strings.back}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          )}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FFAF00]/10 border border-[#FFAF00]/30 flex items-center justify-center text-[#FFAF00] shrink-0">
-              <MapIcon className="w-5 h-5" />
+    <div className="plan-explorer-view">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-white/10 pb-8 mb-10">
+          <div>
+            <div className="flex flex-col md:flex-row md:justify-between items-start">
+              <button
+                onClick={onBack}  
+                data-testid="back-to-home-btn"
+                className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px] mb-6"
+                aria-label={strings.back}
+              >
+                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                {strings.back}
+              </button>
+              <button
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                title={strings.enterFullscreen}
+              >
+              <Maximize2 className="w-4 h-4" />
+              </button>
             </div>
-            <div>
-              <h1 className="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                {strings.title}
-              </h1>
-              <p className="text-xs text-slate-400 mt-0.5">
-                {strings.subtitle}
-              </p>
+            <div className="flex items-center gap-6 mb-2 uppercase">
+                <MapIcon size={24} className="text-brand-accent" aria-hidden="true" />
+                <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{strings.subtitle}</span>
+                <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
             </div>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight mt-2">{strings.title}</h1>
+            <p className="text-slate-400 text-sm md:text-base mt-2">
+              {strings.overview}
+            </p>
           </div>
-        </div>
-
-        {/* API Info & Fullscreen */}
-        <div className="flex items-center gap-3 self-end md:self-auto">
-          <button
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-            title={isFullscreen ? strings.exitFullscreen : strings.enterFullscreen}
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-          </button>
-        </div>
+          
       </div>
 
-      {/* Main Workspace Layout: Left Panel & Right Map/Details */}
-      <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-visible lg:overflow-hidden">
-        
-        {/* Left Column: Filterable List Panel (max width to fit contents) */}
-        <div className="w-full lg:w-[340px] lg:max-w-[380px] lg:shrink-0 bg-[#0D0D11] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col overflow-hidden">
+      <div
+          className={`bg-[#0A0A0C] text-slate-200 font-sans flex flex-col border-y sm:border border-white/10 ${
+            isFullscreen
+              ? 'fixed inset-0 z-[99999] w-screen h-screen overflow-hidden'
+              : 'w-full h-full lg:h-[calc(100vh-120px)] lg:min-h-[680px]'
+          }`}
+      >
+        {isFullscreen &&
+          <div className="flex flex-col md:flex-row md:justify-between items-start p-5">
+            <div className="flex items-center gap-6 mb-2 uppercase">
+                <MapIcon size={24} className="text-brand-accent" aria-hidden="true" />
+                <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{strings.subtitle}</span>
+                <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
+            </div>
+            <button
+                onClick={() => setIsFullscreen(false)}
+                className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                title={strings.exitFullscreen}
+              >
+              <Minimize2 className="w-4 h-4" />
+            </button>
+          </div>
+        }  
+  
+        {/* Main Workspace Layout: Left Panel & Right Map/Details */}
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-visible lg:overflow-hidden">
           
-          {/* Filters Header */}
-          <div className="p-4 border-b border-white/10 bg-[#09090B] flex flex-col gap-3 shrink-0">
+          {/* Left Column: Filterable List Panel (max width to fit contents) */}
+          <div className="w-full lg:w-[340px] lg:max-w-[380px] lg:shrink-0 bg-[#0D0D11] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col overflow-hidden">
             
-            {/* 1. Free-text Search Input */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <Search className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{strings.searchPlanPlaceholderLabel}</span>
-                </span>
-              </label>
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
+            {/* Filters Header */}
+            <div className="p-4 border-b border-white/10 bg-[#09090B] flex flex-col gap-3 shrink-0">
+              
+              {/* 1. Free-text Search Input */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Search className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{strings.searchPlanPlaceholderLabel}</span>
+                  </span>
+                </label>
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => {
+                      setSearchQuery(e.target.value);
+                      setUseInitialPlans(false);
+                    }}
+                    placeholder={strings.searchPlanPlaceholder}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFAF00] transition-colors"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setUseInitialPlans(false);
+                      }}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* 2. Municipality Dropdown (Optional) */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Building2 className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{strings.municipality}</span>
+                  </span>
+                </label>
+                <select
+                  value={selectedMunicipalityCode}
                   onChange={e => {
-                    setSearchQuery(e.target.value);
+                    setSelectedMunicipalityCode(e.target.value);
                     setUseInitialPlans(false);
                   }}
-                  placeholder={strings.searchPlanPlaceholder}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#FFAF00] transition-colors"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setUseInitialPlans(false);
-                    }}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* 2. Municipality Dropdown (Optional) */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{strings.municipality}</span>
-                </span>
-              </label>
-              <select
-                value={selectedMunicipalityCode}
-                onChange={e => {
-                  setSelectedMunicipalityCode(e.target.value);
-                  setUseInitialPlans(false);
-                }}
-                className="bg-white/5 border border-white/10 text-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FFAF00] transition-colors custom-scrollbar font-medium"
-              >
-                <option value="" className="bg-[#0D0D11] text-slate-300">
-                  {strings.allMunicipalities}
-                </option>
-                {municipalityOptions.map(m => (
-                  <option key={m.code} value={m.code} className="bg-[#0D0D11] text-slate-200">
-                    {m.name} ({m.detailedPlanCount + m.masterPlanCount})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* 3. Plan Type Dropdown & Clear Filters */}
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between gap-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{strings.planType}</span>
-                </label>
-                {(searchQuery || selectedMunicipalityCode || selectedPlanType !== 'ALL' || useMapBounds) && (
-                  <button
-                    onClick={() => {
-                      setSearchQuery('');
-                      setSelectedMunicipalityCode('');
-                      setSelectedPlanType('ALL');
-                      setUseMapBounds(false);
-                      setUseInitialPlans(false);
-                    }}
-                    className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold underline"
-                  >
-                    {strings.clearFilters}
-                  </button>
-                )}
-              </div>
-              <select
-                value={selectedPlanType}
-                onChange={e => {
-                  setSelectedPlanType(e.target.value);
-                  setUseInitialPlans(false);
-                }}
-                className="bg-white/5 border border-white/10 text-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FFAF00] transition-colors custom-scrollbar font-medium"
-              >
-                <option value="ALL" className="bg-[#0D0D11] text-slate-300">
-                  {strings.allPlanTypes}
-                </option>
-                {kaavalajiOptions.map(opt => (
-                  <option key={opt.uri} value={opt.codeValue || opt.uri} className="bg-[#0D0D11] text-slate-200">
-                    {opt.name}
-                  </option>
-                ))}
-              </select>
-
-              {/* 4. Map Bounds BBOX Filter Checkbox */}
-              <div className="pt-1">
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-300 hover:text-white transition-colors select-none">
-                  <input
-                    type="checkbox"
-                    checked={useMapBounds}
-                    onChange={e => {
-                      setUseMapBounds(e.target.checked);
-                      setUseInitialPlans(false);
-                    }}
-                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#FFAF00] focus:ring-[#FFAF00] focus:ring-offset-0 focus:ring-1 cursor-pointer accent-[#FFAF00]"
-                  />
-                  <span>{strings.filterByMapBounds || 'Vain kartan alue'}</span>
-                </label>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Result List Header: Number Matched Count & "Hae lisää" Button Row */}
-          <div className="px-4 py-2.5 bg-[#09090B] border-b border-white/10 flex items-center justify-between gap-2 shrink-0">
-            <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
-              <span>
-                {strings.showingPlansCount
-                  .replace('{loaded}', String(plans.length))
-                  .replace('{total}', String(totalMatched))}
-              </span>
-              {isLoadingPlans && <span className="text-amber-400 text-[10px] animate-pulse">{strings.loadingMorePlans}</span>}
-            </div>
-
-            {hasMore && (
-              <button
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                className="py-1 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-300 hover:text-amber-200 text-xs font-bold flex items-center gap-1.5 transition-all disabled:opacity-50 shrink-0"
-              >
-                {isLoadingMore ? (
-                  <>
-                    <div className="w-3 h-3 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                    <span>{strings.loadingMorePlans}</span>
-                  </>
-                ) : (
-                    <span>{strings.loadMorePlans}</span>
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* List Scroll Container */}
-          <div className="p-3 flex flex-col gap-2 overflow-y-auto max-h-[350px] lg:max-h-none lg:flex-1 lg:min-h-0 custom-scrollbar">
-            {fetchError ? (
-              <div className="p-4 bg-red-950/30 border border-red-500/20 rounded-xl text-center my-4">
-                <AlertCircle className="w-6 h-6 text-red-400 mx-auto mb-2" />
-                <div className="text-xs text-red-300 font-semibold">{fetchError}</div>
-              </div>
-            ) : isLoadingPlans ? (
-              <div className="p-8 text-center flex flex-col items-center justify-center text-slate-400 gap-2 my-auto">
-                <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
-                <span className="text-xs font-medium">{strings.loadingPlans}</span>
-              </div>
-            ) : filteredPlans.length === 0 ? (
-              <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 my-auto">
-                <Filter className="w-8 h-8 text-slate-600 mb-1" />
-                <h3 className="text-sm font-bold text-slate-300">{strings.noPlansFound}</h3>
-                <p className="text-xs text-slate-500 max-w-xs">{strings.noPlansFoundDesc}</p>
-              </div>
-            ) : (
-              <>
-                {filteredPlans.map((plan, index) => {
-                  const isSelected = plan.id === selectedPlanId;
-                  const name = plan.properties?.name_fin || plan.properties?.name_swe || plan.properties?.permanent_plan_identifier || strings.defaultPlanName;
-                  const muniNames = getPlanMunicipalityNames(plan);
-                  const permId = plan.properties?.permanent_plan_identifier;
-                  const prodId = plan.properties?.producer_plan_identifier;
-                  const planType = plan.properties?.plan_type_name_fin || strings.defaultPlanType;
-                  const formattedApprovalDate = formatPlanDate(plan.properties?.approval_date, '');
-
-                  return (
-                    <button
-                      key={`${plan.id}-${index}`}
-                      onClick={() => handleSelectPlanFromList(plan)}
-                      className={`w-full text-left p-3.5 rounded-xl border transition-all flex flex-col gap-2 group relative overflow-hidden shrink-0 ${
-                        isSelected
-                          ? 'bg-[#FFAF00]/10 border-[#FFAF00]/50 shadow-lg shadow-black/50'
-                          : 'bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10'
-                      }`}
-                    >
-                      {/* Selected Left Stripe Accent */}
-                      {isSelected && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FFAF00]" />
-                      )}
-
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="font-bold text-sm text-white group-hover:text-amber-300 transition-colors line-clamp-2 break-words">
-                          {name}
-                        </div>
-                        <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${isSelected ? 'text-[#FFAF00] translate-x-0.5' : 'text-slate-600'}`} />
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
-                        <span className="flex items-center gap-1 text-slate-300 font-medium">
-                          <Building2 className="w-3 h-3 text-amber-400 shrink-0" />
-                          <span>{muniNames}</span>
-                        </span>
-                        {formattedApprovalDate && (
-                          <span className="flex items-center gap-1 text-slate-400">
-                            <Calendar className="w-3 h-3 shrink-0" />
-                            <span>{formattedApprovalDate}</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/5 text-[10px]">
-                        <span className="font-mono text-slate-400 truncate max-w-[180px]">{permId || prodId || plan.id}</span>
-                        {(() => {
-                          const isMaster = getPlanCategory(plan) === 'master';
-                          return (
-                            <span
-                              className={`px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider shrink-0 border ${
-                                isMaster
-                                  ? 'bg-purple-500/10 text-purple-300 border-purple-500/20'
-                                  : 'bg-orange-500/10 text-orange-300 border-orange-500/20'
-                              }`}
-                            >
-                              {planType}
-                            </span>
-                          );
-                        })()}
-                      </div>
-                    </button>
-                  );
-                })}
-
-                {plans.length > 0 && plans.length >= totalMatched && !isLoadingPlans && (
-                  <div className="text-center py-3 text-[10px] text-slate-500 uppercase tracking-wider font-semibold shrink-0">
-                    {strings.allPlansLoaded} ({plans.length} {strings.countUnit})
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Center/Right Map & Detail Panels */}
-        <div className="w-full lg:flex-1 lg:min-w-0 flex flex-col bg-[#0A0A0C] relative lg:h-full lg:overflow-hidden">
-          
-          {/* Top Half: Interactive Leaflet Map (grows to fill available space on desktop, 360px min height on mobile) */}
-          <div className="w-full h-[360px] min-h-[360px] lg:h-auto lg:min-h-[250px] lg:flex-1 relative border-b border-white/10 flex flex-col bg-[#191a1a] shrink-0 lg:shrink">
-            
-            {/* Map Canvas */}
-            <div
-              ref={mapContainerRef}
-              className="absolute inset-0 w-full h-full z-0 focus:outline-none"
-              style={{ backgroundColor: (TILE_LAYERS[tileStyle]?.isLight ?? false) ? '#e8e6e3' : '#191a1a' }}
-            />
-
-            {/* Floating Map Overlay Controls */}
-            <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-24px)]">
-              <div className="flex items-center bg-black/80 backdrop-blur-md rounded-xl px-2.5 py-1.5 border border-white/10 shadow-xl gap-2 text-xs">
-                <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider hidden sm:inline-flex items-center gap-1 shrink-0">
-                  <Layers className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Taustakartta:</span>
-                </span>
-                <select
-                  value={tileStyle}
-                  onChange={(e) => setTileStyle(e.target.value as TileStyle)}
-                  className="bg-transparent text-white font-semibold text-xs focus:outline-none cursor-pointer py-0.5 pr-1 border-0"
+                  className="bg-white/5 border border-white/10 text-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FFAF00] transition-colors custom-scrollbar font-medium"
                 >
-                  <optgroup label="CARTO">
-                    <option value="dark" className="bg-[#09090B] text-slate-200">Carto Tumma</option>
-                    <option value="light" className="bg-[#09090B] text-slate-200">Carto Vaalea</option>
-                  </optgroup>
-                  <optgroup label="Maanmittauslaitos (WMTS)">
-                    <option value="mml_taustakartta" className="bg-[#09090B] text-slate-200" >MML Taustakartta</option>
-                    <option value="mml_maastokartta" className="bg-[#09090B] text-slate-200">MML Maastokartta</option>
-                    <option value="mml_selkokartta" className="bg-[#09090B] text-slate-200">MML Selkokartta</option>
-                    <option value="mml_ortokuva" className="bg-[#09090B] text-slate-200">MML Ortokuva (ilmakuva)</option>
-                  </optgroup>
+                  <option value="" className="bg-[#0D0D11] text-slate-300">
+                    {strings.allMunicipalities}
+                  </option>
+                  {municipalityOptions.map(m => (
+                    <option key={m.code} value={m.code} className="bg-[#0D0D11] text-slate-200">
+                      {m.name} ({m.detailedPlanCount + m.masterPlanCount} {strings.countUnit})
+                    </option>
+                  ))}
                 </select>
               </div>
 
-              {currentMunicipalityFeature && (
-                <button
-                  onClick={() => setShowMunicipalityBoundaries(!showMunicipalityBoundaries)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
-                    showMunicipalityBoundaries
-                      ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
-                      : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
-                  }`}
+              {/* 3. Plan Type Dropdown & Clear Filters */}
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <Layers className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{strings.planType}</span>
+                  </label>
+                  {(searchQuery || selectedMunicipalityCode || selectedPlanType !== 'ALL' || useMapBounds) && (
+                    <button
+                      onClick={() => {
+                        setSearchQuery('');
+                        setSelectedMunicipalityCode('');
+                        setSelectedPlanType('ALL');
+                        setUseMapBounds(false);
+                        setUseInitialPlans(false);
+                      }}
+                      className="text-[10px] text-amber-400 hover:text-amber-300 font-semibold underline"
+                    >
+                      {strings.clearFilters}
+                    </button>
+                  )}
+                </div>
+                <select
+                  value={selectedPlanType}
+                  onChange={e => {
+                    setSelectedPlanType(e.target.value);
+                    setUseInitialPlans(false);
+                  }}
+                  className="bg-white/5 border border-white/10 text-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FFAF00] transition-colors custom-scrollbar font-medium"
                 >
-                  <Layers className={`w-3.5 h-3.5`} />
-                  <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showMunicipalityBoundaries ? 'text-black' : ''}`}>{strings.municipalityBoundary}</span>
-                </button>
-              )}
+                  <option value="ALL" className="bg-[#0D0D11] text-slate-300">
+                    {strings.allPlanTypes}
+                  </option>
+                  {kaavalajiOptions.map(opt => (
+                    <option key={opt.uri} value={opt.codeValue || opt.uri} className="bg-[#0D0D11] text-slate-200">
+                      {opt.name}
+                    </option>
+                  ))}
+                </select>
 
-              {detailedPlans.length > 0 && (
-                <button
-                  onClick={() => setShowDetailedPlanLayer(!showDetailedPlanLayer)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
-                    showDetailedPlanLayer
-                      ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
-                      : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
-                  }`}
-                >
-                  <span className={`w-2.5 h-2.5 rounded-full ${showDetailedPlanLayer ? 'bg-orange-400' : 'bg-slate-500'}`} />
-                  <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showDetailedPlanLayer ? 'text-black' : ''}`}>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
-                </button>
-              )}
+                {/* 4. Map Bounds BBOX Filter Checkbox */}
+                <div className="pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-300 hover:text-white transition-colors select-none">
+                    <input
+                      type="checkbox"
+                      checked={useMapBounds}
+                      onChange={e => {
+                        setUseMapBounds(e.target.checked);
+                        setUseInitialPlans(false);
+                      }}
+                      className="w-4 h-4 rounded border-white/20 bg-white/5 text-[#FFAF00] focus:ring-[#FFAF00] focus:ring-offset-0 focus:ring-1 cursor-pointer accent-[#FFAF00]"
+                    />
+                    <span>{strings.filterByMapBounds || 'Vain kartan alue'}</span>
+                  </label>
+                </div>
+              </div>
 
-              {masterPlans.length > 0 && (
+            </div>
+
+            {/* Result List Header: Number Matched Count & "Hae lisää" Button Row */}
+            <div className="px-4 py-2.5 bg-[#09090B] border-b border-white/10 flex items-center justify-between gap-2 shrink-0">
+              <div className="text-xs font-semibold text-slate-300 flex items-center gap-2">
+                <span>
+                  {strings.showingPlansCount
+                    .replace('{loaded}', String(plans.length))
+                    .replace('{total}', String(totalMatched))}
+                </span>
+                {isLoadingPlans && <span className="text-amber-400 text-[10px] animate-pulse">{strings.loadingMorePlans}</span>}
+              </div>
+
+              {hasMore && (
                 <button
-                  onClick={() => setShowMasterPlanLayer(!showMasterPlanLayer)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
-                    showMasterPlanLayer
-                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
-                      : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
-                  }`}
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                  className="py-1 px-3 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/50 text-amber-300 hover:text-amber-200 text-xs font-bold flex items-center gap-1.5 transition-all disabled:opacity-50 shrink-0"
                 >
-                  <span className={`w-2.5 h-2.5 rounded-full ${showMasterPlanLayer ? 'bg-purple-400' : 'bg-slate-500'}`} />
-                  <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showMasterPlanLayer ? 'text-black' : ''}`}>{strings.masterPlanLayer} ({masterPlans.length})</span>
+                  {isLoadingMore ? (
+                    <>
+                      <div className="w-3 h-3 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                      <span>{strings.loadingMorePlans}</span>
+                    </>
+                  ) : (
+                      <span>{strings.loadMorePlans}</span>
+                  )}
                 </button>
               )}
             </div>
 
-            {/* Map Zoom Actions */}
-            <div className="absolute bottom-5 right-3 z-10 flex items-center gap-2">
-              {currentMunicipalityFeature && (
-                <button
-                  onClick={handleZoomToMunicipality}
-                  className="bg-black/80 backdrop-blur-md border border-sky-500/40 text-sky-300 hover:text-white hover:bg-sky-500/20 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xl flex items-center gap-1.5 transition-colors"
-                  title={strings.zoomToMunicipality}
-                >
-                  <Building2 className="w-3.5 h-3.5 text-sky-400" />
-                  <span>{currentMunicipalityFeature.properties?.NAMEFIN || strings.municipality}</span>
-                </button>
-              )}
+            {/* List Scroll Container */}
+            <div className="p-3 flex flex-col gap-2 overflow-y-auto max-h-[350px] lg:max-h-none lg:flex-1 lg:min-h-0 custom-scrollbar">
+              {fetchError ? (
+                <div className="p-4 bg-red-950/30 border border-red-500/20 rounded-xl text-center my-4">
+                  <AlertCircle className="w-6 h-6 text-red-400 mx-auto mb-2" />
+                  <div className="text-xs text-red-300 font-semibold">{fetchError}</div>
+                </div>
+              ) : isLoadingPlans ? (
+                <div className="p-8 text-center flex flex-col items-center justify-center text-slate-400 gap-2 my-auto">
+                  <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs font-medium">{strings.loadingPlans}</span>
+                </div>
+              ) : filteredPlans.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 my-auto">
+                  <Filter className="w-8 h-8 text-slate-600 mb-1" />
+                  <h3 className="text-sm font-bold text-slate-300">{strings.noPlansFound}</h3>
+                  <p className="text-xs text-slate-500 max-w-xs">{strings.noPlansFoundDesc}</p>
+                </div>
+              ) : (
+                <>
+                  {filteredPlans.map((plan, index) => {
+                    const isSelected = plan.id === selectedPlanId;
+                    const name = plan.properties?.name_fin || plan.properties?.name_swe || plan.properties?.permanent_plan_identifier || strings.defaultPlanName;
+                    const muniNames = getPlanMunicipalityNames(plan);
+                    const permId = plan.properties?.permanent_plan_identifier;
+                    const prodId = plan.properties?.producer_plan_identifier;
+                    const planType = plan.properties?.plan_type_name_fin || strings.defaultPlanType;
+                    const formattedApprovalDate = formatPlanDate(plan.properties?.approval_date, '');
 
-              {selectedPlan && (
-                <button
-                  onClick={handleZoomToPlan}
-                  className="bg-amber-500 text-black hover:bg-amber-400 px-3 py-1.5 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-1.5 transition-transform hover:scale-105"
-                >
-                  <MapIcon className="w-3.5 h-3.5" />
-                  <span>{strings.zoomToPlan}</span>
-                </button>
+                    return (
+                      <button
+                        key={`${plan.id}-${index}`}
+                        onClick={() => handleSelectPlanFromList(plan)}
+                        className={`w-full text-left p-3.5 rounded-xl border transition-all flex flex-col gap-2 group relative overflow-hidden shrink-0 ${
+                          isSelected
+                            ? 'bg-[#FFAF00]/10 border-[#FFAF00]/50 shadow-lg shadow-black/50'
+                            : 'bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10'
+                        }`}
+                      >
+                        {/* Selected Left Stripe Accent */}
+                        {isSelected && (
+                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FFAF00]" />
+                        )}
+
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="font-bold text-sm text-white group-hover:text-amber-300 transition-colors line-clamp-2 break-words">
+                            {name}
+                          </div>
+                          <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${isSelected ? 'text-[#FFAF00] translate-x-0.5' : 'text-slate-600'}`} />
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400">
+                          <span className="flex items-center gap-1 text-slate-300 font-medium">
+                            <Building2 className="w-3 h-3 text-amber-400 shrink-0" />
+                            <span>{muniNames}</span>
+                          </span>
+                          {formattedApprovalDate && (
+                            <span className="flex items-center gap-1 text-slate-400">
+                              <Calendar className="w-3 h-3 shrink-0" />
+                              <span>{formattedApprovalDate}</span>
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-white/5 text-[10px]">
+                          <span className="font-mono text-slate-400 truncate max-w-[180px]">{permId || prodId || plan.id}</span>
+                          {(() => {
+                            const isMaster = getPlanCategory(plan) === 'master';
+                            return (
+                              <span
+                                className={`px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider shrink-0 border ${
+                                  isMaster
+                                    ? 'bg-purple-500/10 text-purple-300 border-purple-500/20'
+                                    : 'bg-orange-500/10 text-orange-300 border-orange-500/20'
+                                }`}
+                              >
+                                {planType}
+                              </span>
+                            );
+                          })()}
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                  {plans.length > 0 && plans.length >= totalMatched && !isLoadingPlans && (
+                    <div className="text-center py-3 text-[10px] text-slate-500 uppercase tracking-wider font-semibold shrink-0">
+                      {strings.allPlansLoaded} ({plans.length} {strings.countUnit})
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
 
-          {/* Bottom Half: Plan Details Panel (fixed size container to prevent map layout shifts) */}
-          <div className="w-full h-[250px] shrink-0 bg-[#09090B] flex flex-col border-t border-white/10 overflow-hidden">
-            {selectedPlan ? (
-              <div className="flex flex-col h-full min-h-0 overflow-hidden">
-                {/* Details Header & Tabs */}
-                <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-[#0D0D11] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
-                        {selectedPlan.properties?.plan_type_name_fin || strings.defaultPlanName}
-                      </span>
-                      {selectedPlan.properties?.digital_origin && getDigitalOriginName(selectedPlan.properties.digital_origin, digitalOriginMap) && (
-                        <span className="text-xs text-slate-300">
-                          {getDigitalOriginName(selectedPlan.properties.digital_origin, digitalOriginMap)}
-                        </span>
-                      )}
-                    </div>
-                    <h2 className="text-base font-bold text-white mt-1 line-clamp-1">
-                      {selectedPlan.properties?.name_fin || selectedPlan.properties?.name_swe || strings.defaultPlanName}
-                    </h2>
-                  </div>
+          {/* Center/Right Map & Detail Panels */}
+          <div className="w-full lg:flex-1 lg:min-w-0 flex flex-col bg-[#0A0A0C] relative lg:h-full lg:overflow-hidden">
+            
+            {/* Top Half: Interactive Leaflet Map (grows to fill available space on desktop, 360px min height on mobile) */}
+            <div className="w-full h-[360px] min-h-[360px] lg:h-auto lg:min-h-[250px] lg:flex-1 relative border-b border-white/10 flex flex-col bg-[#191a1a] shrink-0 lg:shrink">
+              
+              {/* Map Canvas */}
+              <div
+                ref={mapContainerRef}
+                className="absolute inset-0 w-full h-full z-0 focus:outline-none"
+                style={{ backgroundColor: (TILE_LAYERS[tileStyle]?.isLight ?? false) ? '#e8e6e3' : '#191a1a' }}
+              />
 
-                  {/* Detail Subtabs */}
-                  <div className="flex items-center bg-white/5 rounded-xl p-1 border border-white/10 shrink-0">
-                    <button
-                      onClick={() => setDetailTab('info')}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                        detailTab === 'info' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <Info className="w-3.5 h-3.5" />
-                      <span>{strings.basicInfo}</span>
-                    </button>
-                    <button
-                      onClick={() => setDetailTab('documents')}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                        detailTab === 'documents' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>{strings.documents} ({selectedPlanDocuments.length})</span>
-                    </button>
-                    <button
-                      onClick={() => setDetailTab('json')}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                        detailTab === 'json' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <Code className="w-3.5 h-3.5" />
-                      <span>GeoJSON</span>
-                    </button>
-                  </div>
+              {/* Floating Map Overlay Controls */}
+              <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-24px)]">
+                <div className="flex items-center bg-black/80 backdrop-blur-md rounded-xl px-2.5 py-1.5 border border-white/10 shadow-xl gap-2 text-xs">
+                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider hidden sm:inline-flex items-center gap-1 shrink-0">
+                    <Layers className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Taustakartta:</span>
+                  </span>
+                  <select
+                    value={tileStyle}
+                    onChange={(e) => setTileStyle(e.target.value as TileStyle)}
+                    className="bg-transparent text-white font-semibold text-xs focus:outline-none cursor-pointer py-0.5 pr-1 border-0"
+                  >
+                    <optgroup label="CARTO">
+                      <option value="dark" className="bg-[#09090B] text-slate-200">Carto Tumma</option>
+                      <option value="light" className="bg-[#09090B] text-slate-200">Carto Vaalea</option>
+                    </optgroup>
+                    <optgroup label="Maanmittauslaitos (WMTS)">
+                      <option value="mml_taustakartta" className="bg-[#09090B] text-slate-200" >MML Taustakartta</option>
+                      <option value="mml_maastokartta" className="bg-[#09090B] text-slate-200">MML Maastokartta</option>
+                      <option value="mml_selkokartta" className="bg-[#09090B] text-slate-200">MML Selkokartta</option>
+                      <option value="mml_ortokuva" className="bg-[#09090B] text-slate-200">MML Ortokuva (ilmakuva)</option>
+                    </optgroup>
+                  </select>
                 </div>
 
-                {/* Tab Content Body (constrained height container with subtab scrolling) */}
-                <div className="flex-1 min-h-0 relative overflow-hidden">
-                  {detailTab === 'info' && (
-                    <div className="h-full w-full overflow-y-auto custom-scrollbar p-4 sm:p-5">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Basic Fields Table */}
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
-                            {strings.basicInfo}
-                          </h4>
-                          
-                          <div className="flex flex-col gap-2.5 text-xs">
-                            <div className="flex justify-between border-b border-white/5 pb-1.5">
-                              <span className="text-slate-400">{strings.municipality}:</span>
-                              <span className="font-semibold text-white">{getPlanMunicipalityNames(selectedPlan)}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/5 pb-1.5">
-                              <span className="text-slate-400">{strings.permanentId}:</span>
-                              <span className="font-mono text-amber-300">{selectedPlan.properties?.permanent_plan_identifier || '-'}</span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/5 pb-1.5">
-                              <span className="text-slate-400">{strings.producerId}:</span>
-                              <span className="font-mono text-slate-200">{selectedPlan.properties?.producer_plan_identifier || '-'}</span>
-                            </div>
-                          </div>
-                        </div>
+                {currentMunicipalityFeature && (
+                  <button
+                    onClick={() => setShowMunicipalityBoundaries(!showMunicipalityBoundaries)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
+                      showMunicipalityBoundaries
+                        ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
+                        : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
+                    }`}
+                  >
+                    <Layers className={`w-3.5 h-3.5`} />
+                    <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showMunicipalityBoundaries ? 'text-black' : ''}`}>{strings.municipalityBoundary}</span>
+                  </button>
+                )}
 
-                        {/* Dates & Timeline */}
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
-                            {strings.timeline}
-                          </h4>
+                {detailedPlans.length > 0 && (
+                  <button
+                    onClick={() => setShowDetailedPlanLayer(!showDetailedPlanLayer)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
+                      showDetailedPlanLayer
+                        ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
+                        : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span className={`w-2.5 h-2.5 rounded-full ${showDetailedPlanLayer ? 'bg-orange-400' : 'bg-slate-500'}`} />
+                    <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showDetailedPlanLayer ? 'text-black' : ''}`}>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
+                  </button>
+                )}
 
-                          <div className="flex flex-col gap-2.5 text-xs">
-                            <div className="flex justify-between border-b border-white/5 pb-1.5">
-                              <span className="text-slate-400">{strings.initiationDate}:</span>
-                              <span className="font-semibold text-slate-300">
-                                {formatPlanDate(selectedPlan.properties?.time_of_initiation)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/5 pb-1.5">
-                              <span className="text-slate-400">{strings.approvalDate}:</span>
-                              <span className="font-semibold text-white">
-                                {formatPlanDate(selectedPlan.properties?.approval_date)}
-                              </span>
-                            </div>
-                            <div className="flex justify-between border-b border-white/5 pb-1.5">
-                              <span className="text-slate-400">{strings.validityDate}:</span>
-                              <span className="font-semibold text-white">
-                               {(() => {
-                                  const begin = formatPlanDate(selectedPlan.properties?.date_of_validity || selectedPlan.properties?.period_of_validity_begin, '');
-                                  const end = formatPlanDate(selectedPlan.properties?.period_of_validity_end, '');
-                                  if (begin && end) return `${begin} – ${end}`;
-                                  if (begin) return begin;
-                                  if (end) return `– ${end}`;
-                                  return '-';
-                                })()}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
+                {masterPlans.length > 0 && (
+                  <button
+                    onClick={() => setShowMasterPlanLayer(!showMasterPlanLayer)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
+                      showMasterPlanLayer
+                        ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                        : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
+                    }`}
+                  >
+                    <span className={`w-2.5 h-2.5 rounded-full ${showMasterPlanLayer ? 'bg-purple-400' : 'bg-slate-500'}`} />
+                    <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showMasterPlanLayer ? 'text-black' : ''}`}>{strings.masterPlanLayer} ({masterPlans.length})</span>
+                  </button>
+                )}
+              </div>
 
-                        {/* Description Panel */}
-                        {selectedPlan.properties?.description_fin && (
-                          <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-2">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
-                              {strings.description}
-                            </h4>
-                            <p className="text-xs text-slate-300 leading-relaxed font-sans whitespace-pre-wrap">
-                              {selectedPlan.properties.description_fin}
-                            </p>
-                          </div>
+              {/* Map Zoom Actions */}
+              <div className="absolute bottom-5 right-3 z-10 flex items-center gap-2">
+                {currentMunicipalityFeature && (
+                  <button
+                    onClick={handleZoomToMunicipality}
+                    className="bg-black/80 backdrop-blur-md border border-sky-500/40 text-sky-300 hover:text-white hover:bg-sky-500/20 px-3 py-1.5 rounded-xl text-xs font-semibold shadow-xl flex items-center gap-1.5 transition-colors"
+                    title={strings.zoomToMunicipality}
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-sky-400" />
+                    <span>{currentMunicipalityFeature.properties?.NAMEFIN || strings.municipality}</span>
+                  </button>
+                )}
+
+                {selectedPlan && (
+                  <button
+                    onClick={handleZoomToPlan}
+                    className="bg-amber-500 text-black hover:bg-amber-400 px-3 py-1.5 rounded-xl text-xs font-bold shadow-2xl flex items-center gap-1.5 transition-transform hover:scale-105"
+                  >
+                    <MapIcon className="w-3.5 h-3.5" />
+                    <span>{strings.zoomToPlan}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Half: Plan Details Panel (fixed size container to prevent map layout shifts) */}
+            <div className="w-full h-[250px] shrink-0 bg-[#09090B] flex flex-col border-t border-white/10 overflow-hidden">
+              {selectedPlan ? (
+                <div className="flex flex-col h-full min-h-0 overflow-hidden">
+                  {/* Details Header & Tabs */}
+                  <div className="px-4 sm:px-6 py-3 border-b border-white/10 bg-[#0D0D11] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                          {selectedPlan.properties?.plan_type_name_fin || strings.defaultPlanName}
+                        </span>
+                        {selectedPlan.properties?.digital_origin && getDigitalOriginName(selectedPlan.properties.digital_origin, digitalOriginMap) && (
+                          <span className="text-xs text-slate-300">
+                            {getDigitalOriginName(selectedPlan.properties.digital_origin, digitalOriginMap)}
+                          </span>
                         )}
                       </div>
+                      <h2 className="text-base font-bold text-white mt-1 line-clamp-1">
+                        {selectedPlan.properties?.name_fin || selectedPlan.properties?.name_swe || strings.defaultPlanName}
+                      </h2>
                     </div>
-                  )}
 
-                  {detailTab === 'documents' && (
-                    <div className="h-full w-full overflow-y-auto custom-scrollbar p-4 sm:p-5 flex flex-col gap-3">
-                      {selectedPlanDocuments.length === 0 ? (
-                        <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 border border-white/10 rounded-2xl bg-white/5 h-full">
-                          <FileText className="w-8 h-8 text-slate-600 mb-1" />
-                          <h4 className="text-sm font-bold text-slate-300">{strings.noDocuments}</h4>
-                          <p className="text-xs text-slate-500 max-w-sm">
-                            {strings.noDocumentsDesc}
-                          </p>
-                        </div>
-                      ) : (
-                        selectedPlanDocuments.map((doc, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-amber-500/40 transition-colors"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
-                                <FileText className="w-5 h-5" />
+                    {/* Detail Subtabs */}
+                    <div className="flex items-center bg-white/5 rounded-xl p-1 border border-white/10 shrink-0">
+                      <button
+                        onClick={() => setDetailTab('info')}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                          detailTab === 'info' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                        <span>{strings.basicInfo}</span>
+                      </button>
+                      <button
+                        onClick={() => setDetailTab('documents')}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                          detailTab === 'documents' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>{strings.documents} ({selectedPlanDocuments.length})</span>
+                      </button>
+                      <button
+                        onClick={() => setDetailTab('json')}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                          detailTab === 'json' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <Code className="w-3.5 h-3.5" />
+                        <span>GeoJSON</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Tab Content Body (constrained height container with subtab scrolling) */}
+                  <div className="flex-1 min-h-0 relative overflow-hidden">
+                    {detailTab === 'info' && (
+                      <div className="h-full w-full overflow-y-auto custom-scrollbar p-4 sm:p-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Basic Fields Table */}
+                          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
+                              {strings.basicInfo}
+                            </h4>
+                            
+                            <div className="flex flex-col gap-2.5 text-xs">
+                              <div className="flex justify-between border-b border-white/5 pb-1.5">
+                                <span className="text-slate-400">{strings.municipality}:</span>
+                                <span className="font-semibold text-white">{getPlanMunicipalityNames(selectedPlan)}</span>
                               </div>
-                              <div>
-                                <h5 className="text-xs font-bold text-white">
-                                  {doc.name_fin || doc.name_swe || `${strings.defaultPlanType}-${strings.documents} ${idx + 1}`}
-                                </h5>
-                                <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                                  {doc.file_content_type || 'application/pdf'}
-                                </div>
+                              <div className="flex justify-between border-b border-white/5 pb-1.5">
+                                <span className="text-slate-400">{strings.permanentId}:</span>
+                                <span className="font-mono text-amber-300">{selectedPlan.properties?.permanent_plan_identifier || '-'}</span>
+                              </div>
+                              <div className="flex justify-between border-b border-white/5 pb-1.5">
+                                <span className="text-slate-400">{strings.producerId}:</span>
+                                <span className="font-mono text-slate-200">{selectedPlan.properties?.producer_plan_identifier || '-'}</span>
                               </div>
                             </div>
-
-                            {doc.uri && (
-                              <a
-                                href={doc.uri}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors shrink-0"
-                              >
-                                <span>{strings.viewDocument}</span>
-                                <ExternalLink className="w-3.5 h-3.5" />
-                              </a>
-                            )}
                           </div>
-                        ))
-                      )}
-                    </div>
-                  )}
 
-                  {detailTab === 'json' && (
-                    <div className="h-full w-full p-4 sm:p-5 flex flex-col gap-3 overflow-hidden">
-                      <div className="flex items-center justify-between shrink-0">
-                        <span className="text-xs text-slate-400 font-mono">OGC Feature ID: {selectedPlan.id}</span>
-                        <a
-                          href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(selectedPlan, null, 2))}`}
-                          download={`${selectedPlan.properties?.permanent_plan_identifier || 'plan'}.geojson`}
-                          className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold transition-colors"
-                        >
-                          <Download className="w-3.5 h-3.5 text-amber-400" />
-                          <span>{strings.downloadGeoJson}</span>
-                        </a>
-                      </div>
+                          {/* Dates & Timeline */}
+                          <div className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-3">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
+                              {strings.timeline}
+                            </h4>
 
-                      <div className="flex-1 min-h-0 border border-white/10 rounded-2xl overflow-y-auto custom-scrollbar bg-black">
-                        <LazySyntaxHighlighter
-                          language="json"
-                          PreTag="div"
-                          customStyle={{
-                            margin: 0,
-                            padding: '1.25rem',
-                            fontSize: '12px',
-                            fontFamily: '"JetBrains Mono", monospace',
-                            background: '#000000',
-                          }}
-                        >
-                          {JSON.stringify(selectedPlan, null, 2)}
-                        </LazySyntaxHighlighter>
+                            <div className="flex flex-col gap-2.5 text-xs">
+                              <div className="flex justify-between border-b border-white/5 pb-1.5">
+                                <span className="text-slate-400">{strings.initiationDate}:</span>
+                                <span className="font-semibold text-slate-300">
+                                  {formatPlanDate(selectedPlan.properties?.time_of_initiation)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between border-b border-white/5 pb-1.5">
+                                <span className="text-slate-400">{strings.approvalDate}:</span>
+                                <span className="font-semibold text-white">
+                                  {formatPlanDate(selectedPlan.properties?.approval_date)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between border-b border-white/5 pb-1.5">
+                                <span className="text-slate-400">{strings.validityDate}:</span>
+                                <span className="font-semibold text-white">
+                                {(() => {
+                                    const begin = formatPlanDate(selectedPlan.properties?.date_of_validity || selectedPlan.properties?.period_of_validity_begin, '');
+                                    const end = formatPlanDate(selectedPlan.properties?.period_of_validity_end, '');
+                                    if (begin && end) return `${begin} – ${end}`;
+                                    if (begin) return begin;
+                                    if (end) return `– ${end}`;
+                                    return '-';
+                                  })()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Description Panel */}
+                          {selectedPlan.properties?.description_fin && (
+                            <div className="md:col-span-2 bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col gap-2">
+                              <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
+                                {strings.description}
+                              </h4>
+                              <p className="text-xs text-slate-300 leading-relaxed font-sans whitespace-pre-wrap">
+                                {selectedPlan.properties.description_fin}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+
+                    {detailTab === 'documents' && (
+                      <div className="h-full w-full overflow-y-auto custom-scrollbar p-4 sm:p-5 flex flex-col gap-3">
+                        {selectedPlanDocuments.length === 0 ? (
+                          <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 border border-white/10 rounded-2xl bg-white/5 h-full">
+                            <FileText className="w-8 h-8 text-slate-600 mb-1" />
+                            <h4 className="text-sm font-bold text-slate-300">{strings.noDocuments}</h4>
+                            <p className="text-xs text-slate-500 max-w-sm">
+                              {strings.noDocumentsDesc}
+                            </p>
+                          </div>
+                        ) : (
+                          selectedPlanDocuments.map((doc, idx) => (
+                            <div
+                              key={idx}
+                              className="bg-white/5 border border-white/10 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-amber-500/40 transition-colors"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+                                  <FileText className="w-5 h-5" />
+                                </div>
+                                <div>
+                                  <h5 className="text-xs font-bold text-white">
+                                    {doc.name_fin || doc.name_swe || `${strings.defaultPlanType}-${strings.documents} ${idx + 1}`}
+                                  </h5>
+                                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                                    {doc.file_content_type || 'application/pdf'}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {doc.uri && (
+                                <a
+                                  href={doc.uri}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs px-3 py-2 rounded-xl flex items-center justify-center gap-1.5 transition-colors shrink-0"
+                                >
+                                  <span>{strings.viewDocument}</span>
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              )}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+
+                    {detailTab === 'json' && (
+                      <div className="h-full w-full p-4 sm:p-5 flex flex-col gap-3 overflow-hidden">
+                        <div className="flex items-center justify-between shrink-0">
+                          <span className="text-xs text-slate-400 font-mono">OGC Feature ID: {selectedPlan.id}</span>
+                          <a
+                            href={`data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(selectedPlan, null, 2))}`}
+                            download={`${selectedPlan.properties?.permanent_plan_identifier || 'plan'}.geojson`}
+                            className="text-xs bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 font-semibold transition-colors"
+                          >
+                            <Download className="w-3.5 h-3.5 text-amber-400" />
+                            <span>{strings.downloadGeoJson}</span>
+                          </a>
+                        </div>
+
+                        <div className="flex-1 min-h-0 border border-white/10 rounded-2xl overflow-y-auto custom-scrollbar bg-black">
+                          <LazySyntaxHighlighter
+                            language="json"
+                            PreTag="div"
+                            customStyle={{
+                              margin: 0,
+                              padding: '1.25rem',
+                              fontSize: '12px',
+                              fontFamily: '"JetBrains Mono", monospace',
+                              background: '#000000',
+                            }}
+                          >
+                            {JSON.stringify(selectedPlan, null, 2)}
+                          </LazySyntaxHighlighter>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="h-full flex-1 p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 my-auto">
-                <MapIcon className="w-10 h-10 text-slate-600 mb-1" />
-                <h3 className="text-base font-bold text-slate-300">{strings.selectPlanPrompt}</h3>
-                <p className="text-xs text-slate-500 max-w-sm">{strings.selectPlanPromptDesc}</p>
-              </div>
-            )}
+              ) : (
+                <div className="h-full flex-1 p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 my-auto">
+                  <MapIcon className="w-10 h-10 text-slate-600 mb-1" />
+                  <h3 className="text-base font-bold text-slate-300">{strings.selectPlanPrompt}</h3>
+                  <p className="text-xs text-slate-500 max-w-sm">{strings.selectPlanPromptDesc}</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
+        </div>
+        
       </div>
-      
     </div>
   );
 
@@ -1740,9 +1753,11 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   }
 
   return (
-    <div className="w-full px-2 sm:px-4 md:px-6 py-4 md:py-6">
+    <div className="w-full px-0 sm:px-2 md:px-4 py-2 md:py-4">
       {mainView}
-      <CallToActionBlock code={ctaProps} />
+      <div className="mt-6 px-4 sm:px-6">
+        <CallToActionBlock code={ctaProps} />
+      </div>
     </div>
   );
 }
