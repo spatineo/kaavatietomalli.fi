@@ -27,6 +27,7 @@ import { getTranslations, Language } from '../i18n';
 import { CallToActionBlock } from './CodeBlock';
 import { getMunicipalityList, MunicipalityInfo } from '../lib/blog';
 import { CodeItem } from '../lib/data-model-types';
+import { getTracker } from '../services/analytics';
 
 interface RegionInfo {
   codeValue: string;
@@ -421,6 +422,10 @@ export function ValidateView({ onBack }: ValidateViewProps) {
     return () => { ignore = true; };
   }, []);
 
+  useEffect(() => {
+    getTracker().trackToolEvent('validateView','aa_select',areaId);
+  }, [areaId]);
+
   // Sorted list of all municipalities for dropdown
   const municipalityOptions = useMemo(() => {
     return municipalities
@@ -559,12 +564,15 @@ export function ValidateView({ onBack }: ValidateViewProps) {
       if (response.status === 200) {
         // Success case
         setErrorMsg(null);
+        getTracker().trackToolEvent('validateView','validate','success');
       } else if (response.status === 400 || response.status === 422) {
         // Validation failed or bad structure
         setErrorMsg(null);
+        getTracker().trackToolEvent('validateView','validate','fail');
       } else {
         // General server error
         setErrorMsg(`API returned status ${response.status}: ${data?.title || data?.message || 'Error occurred'}`);
+        getTracker().trackToolEvent('validateView','validate','error');
       }
     } catch (err: any) {
       console.error(err);
@@ -731,7 +739,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
   const ctaProps:string = JSON.stringify({
     "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
     "buttonText": "Kysy lisää",
-    "title":"Haasteita Ryhti-toteutuksen kanssa? Spatineo toteutti tämän palvelun ja osaamme auttaa sinuakin.",
+    "title":"Haasteita Ryhti-toteutuksen kanssa? Spatineo toteutti tämän palvelun - osaamme auttaa sinuakin.",
     "partner": "spatineo",
     "mode": "thin"
   });

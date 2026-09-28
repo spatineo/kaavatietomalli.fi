@@ -15,6 +15,7 @@ import { getTranslations, Language } from '../i18n';
 import { transpileDataModelSnippetToMermaid } from '../lib/data-model-diagram-generator';
 import { getStatusLabel } from '../lib/data-model-utils';
 import { fetchJsonCached } from '../lib/fetch-cache';
+import { getTracker } from '../services/analytics';
 
 // Sub-components
 import { ClassCodelistSelector } from './ClassCodelistSelector';
@@ -326,6 +327,7 @@ lang: ${dataLang}`;
     const [type, name] = val.split(':');
     const newElement = { type: type as 'class' | 'codelist', name };
     setSelectedElement(newElement);
+    getTracker().trackToolEvent('dataModelView','item_select',name);
     updateUrlParams(selectedVersion, newElement, dataLang);
   };
 
