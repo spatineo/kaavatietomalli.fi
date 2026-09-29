@@ -102,6 +102,7 @@ function AppContent() {
     isDataReady,
     contentNotFound,
     searchString,
+    tagPage,
   });
 
 

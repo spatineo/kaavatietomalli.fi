@@ -19,6 +19,7 @@ export interface UseMetadataSyncProps {
   isDataReady: boolean;
   contentNotFound: boolean;
   searchString?: string;
+  tagPage?: PageData;
 }
 
 export function useMetadataSync({
@@ -29,6 +30,7 @@ export function useMetadataSync({
   isDataReady,
   contentNotFound,
   searchString,
+  tagPage,
 }: UseMetadataSyncProps) {
   const t = getTranslations(CONFIG.language as Language);
   const lastTrackedRef = useRef<string | null>(null);
@@ -122,8 +124,12 @@ export function useMetadataSync({
     } else if (activeView.type === 'author' && currentAuthor) {
       title = `${currentAuthor.name} | Kaavatietomalli.fi`;
       description = currentAuthor.shortBio || description;
-    } else if (activeView.type === 'tag' && activeView.slug) {
-      title = `#${activeView.slug} | Kaavatietomalli.fi`;
+    } else if (activeView.type === 'tag') {
+      if (tagPage) {
+        title = `${tagPage.title} | Kaavatietomalli.fi`;
+      } else if (activeView.slug) {
+        title = `#${activeView.slug} | Kaavatietomalli.fi`;
+      }
       description = `${t.blog.relatedArticles}: #${activeView.slug}`;
     } else if (activeView.type === 'validate') {
       title = `${t.validation.title} | Kaavatietomalli.fi`;
