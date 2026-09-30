@@ -546,3 +546,50 @@ code *,
 }
 
 
+/* Container to enable responsive horizontal scrolling on small screens */
+.markdown-table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Base table styling */
+.markdown-table-container table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 2em;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #f0f6fc;
+}
+
+/* Headers and cells padding & alignment */
+.markdown-table-container table th,
+.markdown-table-container table td {
+  padding: 6px 13px;
+  border: 1px solid #30363d;
+  text-align: left;
+}
+
+/* Header row styling */
+.markdown-table-container table th {
+  font-weight: 600;
+  background-color: #161b22;
+}
+
+.markdown-table-container table thead th {
+  background-color: #2c3736;
+}
+
+/* Alternating row color (zebra striping) */
+.markdown-table-container table tr:nth-child(2n) {
+  background-color: #13171e;
+}
+
+/* White background for odd rows to maintain contrast */
+.markdown-table-container table tr:nth-child(2n+1) {
+  background-color: #0d1117;
+}
+
+

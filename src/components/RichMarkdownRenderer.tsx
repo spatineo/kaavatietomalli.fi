@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { resolveImageUrl } from '../lib/utils';
@@ -125,7 +126,7 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
         <ReactMarkdown
         urlTransform={(url) => resolveImageUrl(url)}
         remarkPlugins={[remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[rehypeKatex, remarkGfm]}
         components={{
             blockquote({ children }: any) {
                 const callout = extractCallout(children);
@@ -271,6 +272,9 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
                     {children}
                 </CodeBlock>
             );
+            },
+            table({node, children, ...props }: any) {
+                return <div className="markdown-table-container"><table{...props}>{children}</table></div>
             },
         }}
         >
