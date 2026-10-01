@@ -304,6 +304,10 @@ export interface Translations {
     deserializationFailure: string;
     rootDeserializationFailure: string;
     showAllIssues: string;
+    suggestion: string;
+    explanation: string;
+    originalApiMessage: string;
+    allIssues: string;
     environmentTest: string;
     environmentProduction: string;
   };

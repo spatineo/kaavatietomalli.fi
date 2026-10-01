@@ -20,7 +20,8 @@ import {
   EyeOff,
   ArrowLeft,
   Trash,
-  Upload
+  Upload,
+  Lightbulb
 } from 'lucide-react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
@@ -224,128 +225,24 @@ const PLAN_TYPES = [
   { code: '35', label: 'Maanalaisten tilojen asemakaava' }
 ];
 
-// JSON Path Line Parser Helper
-interface PathNode {
-  key: string;
-  type: 'object' | 'array';
-  index: number;
-}
+// Re-export plan validator utilities from library
+export {
+  parseJsonToLines,
+  normalizePath,
+  getParentPath,
+  buildJsonIndex,
+  resolveErrorLocation,
+  formatFriendlyErrorMessage,
+  filterValidationErrors
+} from '../lib/plan-validator-utils';
 
-export function parseJsonToLines(jsonStr: string): { text: string; path: string; lineNum: number }[] {
-  const lines = jsonStr.split('\n');
-  const stack: PathNode[] = [];
-  const result: { text: string; path: string; lineNum: number }[] = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
-    const lineNum = i + 1;
-
-    if (!trimmed) {
-      result.push({ text: line, path: '', lineNum });
-      continue;
-    }
-
-    // Determine current indentation level (2 spaces per level)
-    const indent = line.search(/\S/);
-    const level = Math.max(0, Math.floor(indent / 2));
-
-    // Pop the stack to match the current level
-    while (stack.length > level) {
-      stack.pop();
-    }
-
-    const keyMatch = trimmed.match(/"([^"]+)"\s*:/);
-    const key = keyMatch ? keyMatch[1] : '';
-
-    const startsObject = trimmed.endsWith('{') || trimmed.endsWith('{,') || trimmed.includes('{') || trimmed.includes(':{');
-    const startsArray = trimmed.endsWith('[') || trimmed.endsWith('[,') || trimmed.includes('[') || trimmed.includes(':[');
-
-    // If the parent in stack is an array, handle index increments
-    const parentNode = stack[stack.length - 1];
-    if (parentNode && parentNode.type === 'array') {
-      const isNewItem = trimmed.startsWith('{') || trimmed.startsWith('[') || (!trimmed.startsWith('}') && !trimmed.startsWith(']'));
-      if (isNewItem) {
-        if (stack.length === level) {
-          parentNode.index++;
-        }
-      }
-    }
-
-    // Determine path for this line
-    let pathParts: string[] = [];
-    for (let j = 0; j < stack.length; j++) {
-      const node = stack[j];
-      let part = '';
-      if (node.key) {
-        part = node.key;
-      }
-      if (node.index >= 0) {
-        part += `[${node.index}]`;
-      }
-      if (part) {
-        pathParts.push(part);
-      }
-    }
-
-    let currentLinePath = pathParts.join('.');
-    if (key && !startsObject && !startsArray) {
-      if (currentLinePath) {
-        currentLinePath += '.' + key;
-      } else {
-        currentLinePath = key;
-      }
-    }
-
-    result.push({
-      text: line,
-      path: currentLinePath,
-      lineNum
-    });
-
-    // Push new node if starting a structure
-    if (startsObject || startsArray) {
-      stack.push({
-        key,
-        type: startsArray ? 'array' : 'object',
-        index: -1
-      });
-    }
-  }
-
-  return result;
-}
-
-// Normalize path strings to match regardless of leading "plan." prefix
-export function normalizePath(p: string): string {
-  if (!p) return '';
-  let cleaned = p.trim();
-  if (cleaned.startsWith('plan.')) {
-    cleaned = cleaned.slice(5);
-  } else if (cleaned === 'plan') {
-    cleaned = '';
-  }
-  return cleaned;
-}
-
-// Get the parent path by stripping the last property or array index
-export function getParentPath(path: string): string {
-  if (!path) return '';
-  
-  if (path.endsWith(']')) {
-    const lastOpenBracket = path.lastIndexOf('[');
-    if (lastOpenBracket !== -1) {
-      return path.slice(0, lastOpenBracket);
-    }
-  }
-  
-  const lastDot = path.lastIndexOf('.');
-  if (lastDot !== -1) {
-    return path.slice(0, lastDot);
-  }
-  
-  return '';
-}
+import {
+  buildJsonIndex,
+  resolveErrorLocation,
+  formatFriendlyErrorMessage,
+  filterValidationErrors,
+  EnrichedValidationError
+} from '../lib/plan-validator-utils';
 
 interface ValidateViewProps {
   onBack: () => void;
@@ -536,14 +433,15 @@ export function ValidateView({ onBack }: ValidateViewProps) {
     const url = `${baseUrl}?planType=${planType}&administrativeAreaIdentifiers=${encodeURIComponent(areaId.trim())}`;
 
     try {
+      const headers: Record<string, string> = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Ocp-Apim-Subscription-Key': env === 'prod' ? VALIDATOR_API_KEY_PROD : VALIDATOR_API_KEY_TEST
+      };
+
       const response = await fetch(url, {
         method: 'POST',
-        headers: {
-          'User-Agent': CONFIG.remoteFetchOptions.headers['User-Agent'],
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': env === 'prod' ? VALIDATOR_API_KEY_PROD : VALIDATOR_API_KEY_TEST
-        },
+        headers,
         body: JSON.stringify(jsonDoc)
       });
 
@@ -582,31 +480,27 @@ export function ValidateView({ onBack }: ValidateViewProps) {
     }
   };
 
-  // Helper to safely format error list
-  const getValidationErrors = (): { ruleId?: string; field: string; message: string; severity: 'Error' | 'Warning' }[] => {
+  // Index JSON document lines, properties, and paths
+  const jsonIndex = useMemo(() => buildJsonIndex(jsonInput), [jsonInput]);
+  const docLines = jsonIndex.lines;
+
+  // Helper to safely format and filter error list
+  const getValidationErrors = (): any[] => {
     if (!rawResponse) return [];
 
-    const details: { ruleId?: string; field: string; message: string; severity: 'Error' | 'Warning' }[] = [];
+    let rawList: any[] = [];
 
     // 1. If errors is an array (the Syke Ryhti format)
     if (Array.isArray(rawResponse.errors)) {
-      rawResponse.errors.forEach((err: any) => {
-        const localizedMsg = err.localizedMessage?.fi || err.localizedMessage?.en || err.message;
-        details.push({
-          ruleId: err.ruleId,
-          field: err.instance || strings.generalFallback,
-          message: localizedMsg || strings.unknownError,
-          severity: 'Error'
-        });
-      });
+      rawList.push(...rawResponse.errors);
     } 
     // 2. If errors is a dictionary (the standard ASP.NET model validation format)
     else if (rawResponse.errors && typeof rawResponse.errors === 'object') {
       Object.entries(rawResponse.errors).forEach(([field, messages]) => {
         const msgs = Array.isArray(messages) ? messages : [String(messages)];
         msgs.forEach((m) => {
-          details.push({
-            field,
+          rawList.push({
+            instance: field,
             message: m,
             severity: 'Error'
           });
@@ -614,12 +508,26 @@ export function ValidateView({ onBack }: ValidateViewProps) {
       });
     }
 
+    // Filter secondary cascade errors (like redundant planDto error)
+    const filteredErrors = filterValidationErrors(rawList);
+
+    const details: any[] = [];
+    filteredErrors.forEach(err => {
+      const localizedMsg = err.localizedMessage?.fi || err.localizedMessage?.en || err.message;
+      details.push({
+        ...err,
+        field: err.instance || strings.generalFallback,
+        message: localizedMsg || strings.unknownError,
+        severity: 'Error'
+      });
+    });
+
     // 3. If there are warnings as an array (Syke Ryhti format)
     if (Array.isArray(rawResponse.warnings)) {
       rawResponse.warnings.forEach((warn: any) => {
         const localizedMsg = warn.localizedMessage?.fi || warn.localizedMessage?.en || warn.message;
         details.push({
-          ruleId: warn.ruleId,
+          ...warn,
           field: warn.instance || strings.generalFallback,
           message: localizedMsg || strings.unknownWarning,
           severity: 'Warning'
@@ -641,9 +549,6 @@ export function ValidateView({ onBack }: ValidateViewProps) {
 
   const validationErrors = getValidationErrors();
 
-  // Generate parsed JSON line structures for interactive preview
-  const docLines = parseJsonToLines(jsonInput);
-
   // Parse counts of objects/groups for high fidelity audit reports
   let planObjectsCount = 0;
   let planRegulationGroupsCount = 0;
@@ -659,45 +564,32 @@ export function ValidateView({ onBack }: ValidateViewProps) {
     }
   } catch {}
 
-  // Enrich validation errors with resolved line numbers in the actual document (including parent-fallback for missing properties)
-  const enrichedErrors = validationErrors.map(err => {
-    let currentPath = normalizePath(err.field);
-    let resolvedLineNum = 1; // Default fallback to line 1 (root object)
-    let isFallback = false;
+  // Enrich validation errors with precise resolved line numbers, plain-language text, and suggestions
+  const enrichedErrors: EnrichedValidationError[] = useMemo(() => {
+    let parsedDoc: any = null;
+    try {
+      parsedDoc = JSON.parse(jsonInput);
+    } catch {}
 
-    // Check if the exact path exists in the document
-    const exactMatch = docLines.find(line => normalizePath(line.path) === currentPath);
-    if (exactMatch) {
-      resolvedLineNum = exactMatch.lineNum;
-    } else {
-      isFallback = true;
-      // Trace parent paths recursively until we find one that exists in the document
-      let parentPath = getParentPath(currentPath);
-      let found = false;
-      while (parentPath !== '') {
-        const parentMatch = docLines.find(line => normalizePath(line.path) === parentPath);
-        if (parentMatch) {
-          resolvedLineNum = parentMatch.lineNum;
-          currentPath = parentPath;
-          found = true;
-          break;
-        }
-        parentPath = getParentPath(parentPath);
-      }
-      if (!found) {
-        // Fall back to root object (line 1)
-        resolvedLineNum = 1;
-        currentPath = '';
-      }
-    }
+    return validationErrors.map(err => {
+      const loc = resolveErrorLocation(err, jsonIndex, parsedDoc);
+      const friendly = formatFriendlyErrorMessage(err, loc.field, jsonIndex, parsedDoc);
 
-    return {
-      ...err,
-      resolvedLineNum,
-      resolvedField: currentPath,
-      isFallback
-    };
-  });
+      return {
+        ruleId: err.ruleId,
+        field: err.field || err.instance || strings.generalFallback,
+        message: err.message,
+        friendlyMessage: friendly.friendlyMessage,
+        explanation: friendly.explanation,
+        suggestion: friendly.suggestion,
+        severity: err.severity || 'Error',
+        resolvedLineNum: loc.lineNum,
+        resolvedField: loc.field,
+        isFallback: loc.isFallback,
+        originalMessage: err.message
+      };
+    });
+  }, [validationErrors, jsonIndex, jsonInput, strings.generalFallback]);
 
   // Handles selecting/focusing an issue line in the editor
   const handleHighlightError = (lineNum: number) => {
@@ -804,7 +696,11 @@ export function ValidateView({ onBack }: ValidateViewProps) {
             </label>
             <select
               value={areaId}
-              onChange={(e) => setAreaId(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value) {
+                  setAreaId(e.target.value);
+                }
+              }}
               className="bg-white/5 border border-white/10 text-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#FFAF00] transition-colors custom-scrollbar font-medium"
             >
               <optgroup label={strings.municipalities}>
@@ -1004,6 +900,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
           {/* Run Validation Trigger Button */}
           <button
             type="button"
+            data-testid="run-validate-btn"
             disabled={isValidating}
             onClick={handleValidate}
             className="w-full bg-brand-accent text-black font-extrabold text-sm py-4 rounded-xl hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none cursor-pointer shadow-lg"
@@ -1160,95 +1057,109 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                               {strings.line} {selectedLineNum} {clickedLinePath && `(${clickedLinePath})`}
                             </span>
                           </div>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                            clickedLineErrors.some(e => e.severity === 'Error') 
-                              ? 'bg-red-500/10 text-red-400 border border-red-500/20' 
-                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          }`}>
-                            {clickedLineErrors.length} {clickedLineErrors.length === 1 ? strings.issue : strings.issues}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+                              clickedLineErrors.some(e => e.severity === 'Error') 
+                                ? 'bg-red-500/10 text-red-400 border border-red-500/20' 
+                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            }`}>
+                              {clickedLineErrors.length} {clickedLineErrors.length === 1 ? strings.issue : strings.issues}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedLineNum(null)}
+                              className="text-[11px] font-semibold text-brand-accent hover:text-white transition-colors bg-brand-accent/5 border border-brand-accent/20 hover:border-brand-accent/40 px-2 py-1 rounded-lg"
+                              title={strings.showAllIssues}
+                            >
+                              {strings.showAllIssues}
+                            </button>
+                          </div>
                         </div>
 
-                        <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto pr-1">
+                        <div className="flex flex-col gap-3 max-h-[360px] overflow-y-auto pr-1 custom-scrollbar">
                           {clickedLineErrors.map((err, idx) => (
                             <div
                               key={idx}
-                              className={`border rounded-xl p-3 text-xs flex flex-col gap-2 ${
+                              className={`border rounded-xl p-3.5 text-xs flex flex-col gap-2.5 transition-all ${
                                 err.severity === 'Warning' 
-                                  ? 'bg-amber-950/10 border-amber-500/20 text-amber-200/90' 
-                                  : 'bg-red-950/10 border-red-500/20 text-red-200/90'
+                                  ? 'bg-amber-950/15 border-amber-500/25 text-amber-200/90' 
+                                  : 'bg-red-950/15 border-red-500/25 text-red-200/90'
                               }`}
                             >
-                              <div className="flex items-center gap-2">
-                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                                  err.severity === 'Warning' 
-                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
-                                    : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                                }`}>
-                                  {err.severity === 'Warning' ? strings.warning : strings.error}
-                                </span>
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                                    err.severity === 'Warning' 
+                                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                                      : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                                  }`}>
+                                    {err.severity === 'Warning' ? strings.warning : strings.error}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleHighlightError(err.resolvedLineNum)}
+                                    className="text-[10px] font-mono font-bold bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded border border-white/10 text-brand-accent transition-colors"
+                                  >
+                                    {strings.line} {err.resolvedLineNum}
+                                  </button>
+                                </div>
                                 {err.ruleId && (
-                                  <span className="font-mono text-[9px] text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded border border-white/5 truncate">
+                                  <span className="font-mono text-[9px] text-slate-400 bg-black/40 px-1.5 py-0.5 rounded border border-white/5 truncate max-w-[200px]" title={err.ruleId}>
                                     {err.ruleId}
                                   </span>
                                 )}
                               </div>
-                              <p className="text-slate-200 leading-relaxed font-medium">
-                                {err.message}
+
+                              <p className="text-white font-bold text-sm leading-snug">
+                                {err.friendlyMessage}
                               </p>
-                              {err.ruleId === 'quality__req_json_deserialization_failure' ? (
-                                <div className="text-[10px] font-medium text-slate-400 bg-black/40 border border-white/5 rounded px-2.5 py-1.5 flex flex-col gap-1 mt-1 animate-fade-in">
-                                  <span className="uppercase text-brand-accent tracking-wider text-[8px] font-black">
-                                    {err.field === 'planDto' ? 'Juuriobjektin muodostusvirhe' : 'Objektin muodostusvirhe'}
-                                  </span>
-                                  <p className="text-slate-300 mt-1 leading-normal">
-                                    {err.field === 'planDto' 
-                                      ? strings.rootDeserializationFailure 
-                                      : strings.deserializationFailure.replace('{{dto}}', err.field)}
+
+                              {err.explanation && err.explanation !== err.friendlyMessage && (
+                                <p className="text-slate-300 text-xs leading-relaxed">
+                                  {err.explanation}
+                                </p>
+                              )}
+
+                              {err.suggestion && (
+                                <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg p-2.5 text-amber-200 text-xs leading-relaxed">
+                                  <Lightbulb size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                                  <div>
+                                    <span className="font-bold text-amber-300 block text-[10px] uppercase tracking-wider mb-0.5">
+                                      {strings.suggestion}
+                                    </span>
+                                    <span>{err.suggestion}</span>
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 font-mono bg-black/30 border border-white/5 rounded px-2 py-1">
+                                <span className="text-slate-500 font-sans font-bold">{strings.targetProperty}:</span>
+                                <span className="text-brand-accent truncate">{err.resolvedField || err.field}</span>
+                              </div>
+
+                              {err.originalMessage && err.originalMessage !== err.friendlyMessage && (
+                                <details className="text-[10px] text-slate-500 group">
+                                  <summary className="cursor-pointer hover:text-slate-300 transition-colors select-none font-medium">
+                                    {strings.originalApiMessage}
+                                  </summary>
+                                  <p className="mt-1 font-mono text-[9px] text-slate-400 bg-black/50 p-2 rounded border border-white/5 whitespace-pre-wrap break-all leading-normal">
+                                    {err.originalMessage}
                                   </p>
-                                </div>
-                              ) : (err.isFallback || err.ruleId === 'quality__req_json_unknown_property') && (
-                                <div className="text-[10px] font-medium text-slate-400 bg-black/40 border border-white/5 rounded px-2.5 py-1.5 flex flex-col gap-1 mt-1 animate-fade-in">
-                                  <span className="uppercase text-brand-accent tracking-wider text-[8px] font-black">
-                                    {strings.targetProperty}
-                                  </span>
-                                  <span className="font-mono break-all text-slate-300">{err.field}</span>
-                                </div>
+                                </details>
                               )}
                             </div>
                           ))}
-                        <button className="text-[11px] font-semibold text-brand-accent hover:text-white transition-colors bg-brand-accent/5 border border-brand-accent/20 hover:border-brand-accent/40 px-2.5 py-1 rounded-lg mt-6"
-                            onClick={() => setSelectedLineNum(null)}
-                        >
-                            {strings.showAllIssues}
-                        </button>
                         </div>
                       </div>
                     ) : (
-                      <div className="my-auto py-8 text-center flex flex-col items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-white/5 border border-white/5 flex items-center justify-center text-slate-400">
-                          <Info size={18} className="text-brand-accent/80" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-slate-300">
-                            {selectedLineNum 
-                              ? strings.noIssuesOnLine.replace('{{line}}', String(selectedLineNum)) 
-                              : strings.clickLineToSeeDetails}
-                          </p>
-                          <p className="text-[11px] text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
-                            {selectedLineNum 
-                              ? strings.selectAnotherLineDesc 
-                              : strings.clickHighlightedLineDesc}
-                          </p>
-                        </div>
-
-                        {/* List of shortcut buttons for lines with errors */}
+                      <div className="flex flex-col gap-4 animate-fade-in">
+                        {/* Lines shortcut buttons */}
                         {docLines.some(line => enrichedErrors.some(err => err.resolvedLineNum === line.lineNum)) && (
-                          <div className="mt-4 flex flex-col gap-2 w-full max-w-sm text-left">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">
+                          <div className="flex flex-col gap-2">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
                               {strings.linesWithIssues}
                             </span>
-                            <div className="flex flex-wrap gap-1.5 justify-start max-h-[160px] overflow-y-auto p-1 border border-white/5 rounded-xl bg-black/20">
+                            <div className="flex flex-wrap gap-1.5 justify-start max-h-[100px] overflow-y-auto p-1 border border-white/5 rounded-xl bg-black/20 custom-scrollbar">
                               {docLines
                                 .filter(line => enrichedErrors.some(err => err.resolvedLineNum === line.lineNum))
                                 .map((line) => {
@@ -1273,6 +1184,79 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                             </div>
                           </div>
                         )}
+
+                        {/* List of all detected issues */}
+                        <div className="flex flex-col gap-3">
+                          <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                              {strings.allIssues} ({enrichedErrors.length})
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              {strings.clickHighlightedLineDesc}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col gap-3 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
+                            {enrichedErrors.map((err, idx) => (
+                              <div
+                                key={idx}
+                                onClick={() => handleHighlightError(err.resolvedLineNum)}
+                                className={`border rounded-xl p-3.5 text-xs flex flex-col gap-2.5 transition-all cursor-pointer hover:border-brand-accent/50 ${
+                                  err.severity === 'Warning' 
+                                    ? 'bg-amber-950/15 border-amber-500/25 text-amber-200/90 hover:bg-amber-950/25' 
+                                    : 'bg-red-950/15 border-red-500/25 text-red-200/90 hover:bg-red-950/25'
+                                }`}
+                              >
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                                      err.severity === 'Warning' 
+                                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                                        : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                                    }`}>
+                                      {err.severity === 'Warning' ? strings.warning : strings.error}
+                                    </span>
+                                    <span className="text-[10px] font-mono font-bold bg-white/5 px-2 py-0.5 rounded border border-white/10 text-brand-accent">
+                                      {strings.line} {err.resolvedLineNum}
+                                    </span>
+                                  </div>
+                                  {err.ruleId && (
+                                    <span className="font-mono text-[9px] text-slate-400 bg-black/40 px-1.5 py-0.5 rounded border border-white/5 truncate max-w-[180px]" title={err.ruleId}>
+                                      {err.ruleId}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <p className="text-white font-bold text-sm leading-snug">
+                                  {err.friendlyMessage}
+                                </p>
+
+                                {err.explanation && err.explanation !== err.friendlyMessage && (
+                                  <p className="text-slate-300 text-xs leading-relaxed">
+                                    {err.explanation}
+                                  </p>
+                                )}
+
+                                {err.suggestion && (
+                                  <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg p-2 text-amber-200 text-xs leading-relaxed">
+                                    <Lightbulb size={13} className="text-amber-400 shrink-0 mt-0.5" />
+                                    <div>
+                                      <span className="font-bold text-amber-300 block text-[9px] uppercase tracking-wider">
+                                        {strings.suggestion}
+                                      </span>
+                                      <span>{err.suggestion}</span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-400 font-mono bg-black/30 border border-white/5 rounded px-2 py-1">
+                                  <span className="text-slate-500 font-sans font-bold">{strings.targetProperty}:</span>
+                                  <span className="text-brand-accent truncate">{err.resolvedField || err.field}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>

@@ -306,6 +306,10 @@ export const fi: Translations = {
     deserializationFailure: 'Palvelu ei voinut muodostaa tietorakennetta ({{dto}}). Tämä tarkoittaa yleensä, että kohteesta puuttuu pakollisia tietoja, siinä on tuntemattomia kenttiä tai sisällön muoto on väärä.',
     rootDeserializationFailure: 'Koko kaavadokumentin (plan / planDto) muodostaminen epäonnistui. Varmista, että juuritason pakolliset kentät ovat oikein ja ylimääräisiä kenttiä ei ole.',
     showAllIssues: 'Näytä kaikki huomiot',
+    suggestion: 'Ehdotus',
+    explanation: 'Selitys',
+    originalApiMessage: 'Alkuperäinen API-virheviesti',
+    allIssues: 'Kaikki havaitut virheet ja huomiot',
     environmentProduction: 'Tuotanto',
     environmentTest: 'Testi'
   },

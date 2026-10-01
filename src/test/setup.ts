@@ -4,11 +4,26 @@
  */
 
 import { vi, beforeAll, afterEach } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 
 // Stub global/window properties that are used by the components but not fully implemented in happy-dom
 beforeAll(() => {
   if (typeof window !== 'undefined') {
     window.scrollTo = vi.fn();
+    
+    // Intercept click events to prevent external navigations in tests (which triggers happy-dom page fetching)
+    window.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement)?.closest('a');
+      if (target && target.href) {
+        const urlStr = target.href;
+        if (urlStr.startsWith('http://') || urlStr.startsWith('https://')) {
+          if (!urlStr.includes('localhost') && !urlStr.includes('127.0.0.1')) {
+            e.preventDefault();
+          }
+        }
+      }
+    }, true);
     
     // Mock IntersectionObserver if ever utilized
     class MockIntersectionObserver {
@@ -23,18 +38,75 @@ beforeAll(() => {
       (navigator as any).sendBeacon = vi.fn(() => true);
     }
 
-    // Intercept fetch to block outbound analytics / tracker requests
+    // Intercept fetch to block outbound analytics, serve local files from test-public/public, and mock external JS/CDNs
     const originalFetch = globalThis.fetch;
     if (originalFetch) {
       globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
         const urlStr = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
+        
+        // 1. Block analytics & metrics
         if (/(googletagmanager|google-analytics|analytics|telemetry|tracker|metrics)/i.test(urlStr)) {
-          console.warn(`[Vitest Block] Blocked outbound fetch analytics request to: ${urlStr}`);
           return new Response(JSON.stringify({ blocked: true, status: 'Analytics request blocked in test environment' }), {
             status: 200,
             statusText: 'OK'
           });
         }
+
+        // 2. Mock external JS / CDN scripts to avoid network fetch errors in happy-dom
+        if (
+          urlStr.includes('unpkg.com') ||
+          urlStr.includes('cdnjs.cloudflare.com') ||
+          urlStr.includes('cdn.jsdelivr.net') ||
+          urlStr.includes('kaavatietomalli.fi/js') ||
+          urlStr.endsWith('.js')
+        ) {
+          return new Response('// Mocked CDN / Javascript resource', {
+            status: 200,
+            headers: { 'Content-Type': 'application/javascript' }
+          });
+        }
+
+        // 3. Serve local documents / assets from the filesystem
+        let pathname = '';
+        if (urlStr.startsWith('http://') || urlStr.startsWith('https://')) {
+          try {
+            const parsedUrl = new URL(urlStr);
+            if (parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1' || parsedUrl.hostname.includes('kaavatietomalli.fi')) {
+              pathname = parsedUrl.pathname;
+            }
+          } catch {}
+        } else if (urlStr.startsWith('/')) {
+          pathname = urlStr.split('?')[0];
+        } else if (!urlStr.includes('://')) {
+          pathname = '/' + urlStr.split('?')[0];
+        }
+
+        if (pathname) {
+          const cleanPath = pathname.replace(/^\/+/, '');
+          const possiblePaths = [
+            path.join(process.cwd(), 'test-public', cleanPath),
+            path.join(process.cwd(), 'public', cleanPath),
+            path.resolve('/app/applet/test-public', cleanPath),
+            path.resolve('/app/applet/public', cleanPath),
+          ];
+
+          for (const filePath of possiblePaths) {
+            if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+              try {
+                const fileContent = fs.readFileSync(filePath);
+                return new Response(fileContent, {
+                  status: 200,
+                  headers: {
+                    'Content-Type': filePath.endsWith('.json') ? 'application/json' : 'text/plain'
+                  }
+                });
+              } catch (err) {
+                console.error(`[Vitest Local Fetch] Error reading local file ${filePath}:`, err);
+              }
+            }
+          }
+        }
+
         return originalFetch(input, init);
       };
     }
