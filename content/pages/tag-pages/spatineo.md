@@ -1,9 +1,8 @@
 ---
 title: "Spatineo Oy"
-tags:
+tags: ["spatineo"]
 partner: "Spatineo Oy"
 ---
 
-# Spatineo Oy
 
 

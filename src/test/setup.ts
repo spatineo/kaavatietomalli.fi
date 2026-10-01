@@ -41,7 +41,7 @@ beforeAll(() => {
     // Intercept fetch to block outbound analytics, serve local files from test-public/public, and mock external JS/CDNs
     const originalFetch = globalThis.fetch;
     if (originalFetch) {
-      globalThis.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      const interceptedFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
         const urlStr = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
         
         // 1. Block analytics & metrics
@@ -109,6 +109,11 @@ beforeAll(() => {
 
         return originalFetch(input, init);
       };
+
+      globalThis.fetch = interceptedFetch;
+      if (typeof window !== 'undefined') {
+        window.fetch = interceptedFetch;
+      }
     }
 
     // Intercept XMLHttpRequest to block outbound analytics / tracker requests

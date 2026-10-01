@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xl="http://www.w3.org/1999/xlink" viewBox="42.850187 228.6797 1102.9389 462.41406" width="1102.9389" height="462.41406">
+  <defs>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="SharpArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-3 -3 7 6" markerWidth="7" markerHeight="6" color="#aaa">
+      <g>
+        <path d="M 3 0 L -1.8 -1.8 L 0 0 L 0 0 L -1.8 1.8 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+    <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="SharpArrow_Marker_2" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-4 -3 7 6" markerWidth="7" markerHeight="6" color="#aaa">
+      <g>
+        <path d="M -3 0 L 1.8 1.8 L 0 0 L 0 0 L 1.8 -1.8 Z" fill="currentColor" stroke="currentColor" stroke-width="1"/>
+      </g>
+    </marker>
+  </defs>
+  <g id="Canvas_1" stroke-dasharray="none" stroke-opacity="1" stroke="none" fill="none" fill-opacity="1">
+    <title>Canvas 1</title>
+    <g id="Canvas_1_Layer_1">
+      <title>Layer 1</title>
+      <g id="Graphic_3">
+        <path d="M 929.2812 415.3242 L 1129.789 415.3242 C 1133.1028 415.3242 1135.789 418.0105 1135.789 421.3242 L 1135.789 498.4492 C 1135.789 501.7629 1133.1028 504.4492 1129.789 504.4492 L 929.2812 504.4492 C 925.9675 504.4492 923.2812 501.7629 923.2812 498.4492 L 923.2812 421.3242 C 923.2812 418.0105 925.9675 415.3242 929.2812 415.3242 Z" fill="#67cef9"/>
+        <text transform="translate(928.2812 450.6627)" fill="#221e1f">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="41.397906" y="15" xml:space="preserve">Ryhti-järjestelmä</tspan>
+        </text>
+      </g>
+      <g id="Graphic_5">
+        <path d="M 665.25 415.3242 L 865.7578 415.3242 C 869.0715 415.3242 871.7578 418.0105 871.7578 421.3242 L 871.7578 498.4492 C 871.7578 501.7629 869.0715 504.4492 865.7578 504.4492 L 665.25 504.4492 C 661.9363 504.4492 659.25 501.7629 659.25 498.4492 L 659.25 421.3242 C 659.25 418.0105 661.9363 415.3242 665.25 415.3242 Z" fill="#009193"/>
+        <text transform="translate(664.25 442.4667)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="24.357906" y="15" xml:space="preserve">Liityntäpalvelin (Syke)</tspan>
+          <tspan font-family="Helvetica Neue" font-size="14" fill="#d6d6d6" x="27.886906" y="31.447998" xml:space="preserve">X-Road Security Server</tspan>
+        </text>
+      </g>
+      <g id="Graphic_6">
+        <path d="M 351.45703 238.6797 L 551.96484 238.6797 C 555.27855 238.6797 557.96484 241.36598 557.96484 244.6797 L 557.96484 321.8047 C 557.96484 325.1184 555.27855 327.8047 551.96484 327.8047 L 351.45703 327.8047 C 348.14332 327.8047 345.45703 325.1184 345.45703 321.8047 L 345.45703 244.6797 C 345.45703 241.36598 348.14332 238.6797 351.45703 238.6797 Z" fill="#009193"/>
+        <text transform="translate(350.45703 265.8222)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="22.125906" y="15" xml:space="preserve">Liityntäpalvelin (kunta)</tspan>
+          <tspan font-family="Helvetica Neue" font-size="14" fill="#d6d6d6" x="27.886906" y="31.447998" xml:space="preserve">X-Road Security Server</tspan>
+        </text>
+      </g>
+      <g id="Graphic_7">
+        <path d="M 351.45703 591.96875 L 551.96484 591.96875 C 555.27855 591.96875 557.96484 594.65504 557.96484 597.96875 L 557.96484 675.09375 C 557.96484 678.40746 555.27855 681.09375 551.96484 681.09375 L 351.45703 681.09375 C 348.14332 681.09375 345.45703 678.40746 345.45703 675.09375 L 345.45703 597.96875 C 345.45703 594.65504 348.14332 591.96875 351.45703 591.96875 Z" fill="#009193"/>
+        <text transform="translate(350.45703 609.88725)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="48.357906" y="15" xml:space="preserve">Liityntäpalvelin </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="45.557906" y="33.448" xml:space="preserve">(palvelutarjoaja)</tspan>
+          <tspan font-family="Helvetica Neue" font-size="14" fill="#d6d6d6" x="27.886906" y="49.895996" xml:space="preserve">X-Road Security Server</tspan>
+        </text>
+      </g>
+      <g id="Graphic_8">
+        <path d="M 62.078125 415.3242 L 262.58594 415.3242 C 265.89965 415.3242 268.58594 418.0105 268.58594 421.3242 L 268.58594 498.4492 C 268.58594 501.7629 265.89965 504.4492 262.58594 504.4492 L 62.078125 504.4492 C 58.76442 504.4492 56.078125 501.7629 56.078125 498.4492 L 56.078125 421.3242 C 56.078125 418.0105 58.76442 415.3242 62.078125 415.3242 Z" fill="#67cef9"/>
+        <text transform="translate(61.078125 441.4387)" fill="#221e1f">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="1.6939063" y="15" xml:space="preserve">Kaavarekisterijärjestelmä tai </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#221e1f" x="25.525906" y="33.448" xml:space="preserve">suunnitteluohjelmisto</tspan>
+        </text>
+      </g>
+      <g id="Graphic_9">
+        <path d="M 351.45703 415.3242 L 551.96484 415.3242 C 555.27855 415.3242 557.96484 418.0105 557.96484 421.3242 L 557.96484 498.4492 C 557.96484 501.7629 555.27855 504.4492 551.96484 504.4492 L 351.45703 504.4492 C 348.14332 504.4492 345.45703 501.7629 345.45703 498.4492 L 345.45703 421.3242 C 345.45703 418.0105 348.14332 415.3242 351.45703 415.3242 Z" fill="#929292"/>
+        <text transform="translate(350.45703 433.2427)" fill="white">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="52.661906" y="15" xml:space="preserve">Palveluväylän </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="white" x="27.909906" y="33.448" xml:space="preserve">Keskuspalvelu (DVV)</tspan>
+          <tspan font-family="Helvetica Neue" font-size="14" fill="#d6d6d6" x="30.868906" y="49.895996" xml:space="preserve">X-Road Central Server</tspan>
+        </text>
+      </g>
+      <g id="Line_10">
+        <path d="M 162.33203 406.0242 L 162.33203 283.2422 L 336.15703 283.2422" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_11">
+        <line x1="451.71094" y1="337.1047" x2="451.71094" y2="406.0242" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2.0,8.0" stroke-width="2"/>
+      </g>
+      <g id="Line_12">
+        <line x1="451.71094" y1="513.7492" x2="451.71094" y2="582.66875" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2.0,8.0" stroke-width="2"/>
+      </g>
+      <g id="Line_13">
+        <line x1="567.26484" y1="459.8867" x2="649.95" y2="459.8867" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2.0,8.0" stroke-width="2"/>
+      </g>
+      <g id="Line_14">
+        <path d="M 567.26484 283.2422 L 765.5039 283.2422 L 765.5039 406.0242" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_15">
+        <path d="M 765.5039 513.7492 L 765.5039 636.53125 L 567.26484 636.53125" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_16">
+        <line x1="881.0578" y1="459.8867" x2="913.9812" y2="459.8867" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Line_17">
+        <path d="M 162.33203 513.7492 L 162.33203 636.53125 L 336.15703 636.53125" marker-end="url(#SharpArrow_Marker)" marker-start="url(#SharpArrow_Marker_2)" stroke="#aaa" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      </g>
+      <g id="Graphic_19">
+        <text transform="translate(808.2315 255.5702)" fill="#ebebeb">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="33.237906" y="15" xml:space="preserve">Palomuuriavaukset</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="40.933906" y="33.448" xml:space="preserve">vaaditaan kunkin</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="17.989906" y="51.895996" xml:space="preserve">liityntäpalvelimen välillä</tspan>
+        </text>
+      </g>
+      <g id="Graphic_20">
+        <text transform="translate(808.2315 608.85925)" fill="#ebebeb">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="4.485906" y="15" xml:space="preserve">Pyynnöt lähtetään avoimen </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x=".04590625" y="33.448" xml:space="preserve">Internetin kautta salattuna ja </tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="47.325906" y="51.895996" xml:space="preserve">allekirjoitettuna</tspan>
+        </text>
+      </g>
+      <g id="Graphic_21">
+        <rect x="54.75644" y="259.7942" width="222.784" height="46.895996" fill="black"/>
+        <text transform="translate(59.756435 264.7942)" fill="#ebebeb">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="28.144" y="15" xml:space="preserve">mTLS-suojattu yhteys</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="0" y="33.448" xml:space="preserve">(molemmipuoliset sertifikaatit)</tspan>
+        </text>
+      </g>
+      <g id="Graphic_22">
+        <rect x="52.85019" y="613.08325" width="222.784" height="46.895996" fill="black"/>
+        <text transform="translate(57.850185 618.08325)" fill="#ebebeb">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="28.144" y="15" xml:space="preserve">mTLS-suojattu yhteys</tspan>
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="0" y="33.448" xml:space="preserve">(molemmipuoliset sertifikaatit)</tspan>
+        </text>
+      </g>
+      <g id="Graphic_23">
+        <rect x="600.3514" y="269.0182" width="146.016" height="28.447998" fill="black"/>
+        <text transform="translate(605.3514 274.0182)" fill="#ebebeb">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="0" y="15" xml:space="preserve">X-Road -protokolla</tspan>
+        </text>
+      </g>
+      <g id="Graphic_24">
+        <rect x="606.449" y="622.30725" width="146.016" height="28.447998" fill="black"/>
+        <text transform="translate(611.449 627.30725)" fill="#ebebeb">
+          <tspan font-family="Helvetica Neue" font-size="16" fill="#ebebeb" x="0" y="15" xml:space="preserve">X-Road -protokolla</tspan>
+        </text>
+      </g>
+    </g>
+  </g>
+</svg>

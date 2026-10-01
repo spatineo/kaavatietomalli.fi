@@ -2,14 +2,14 @@
   "nav": [
     { "label": "Blogi", "type": "blog" },
     { 
-      "label": "Määrittelyt", 
+      "label": "Yhteentoimivuus", 
       "type": "menu",
       "subitems": [
         { "label": "Lait ja asetukset", "type": "page", "slug": "lainsaadanto" },
         { "label": "Kaavatietomalli", "type": "page", "slug": "kaavatietomalli" },
         { "label": "Ryhti-järjestelmä", "type": "page", "slug": "ryhti-jarjestelma" },
-        { "label": "Kaavatieto kuntajärjestelmissä", "type": "page", "slug": "kuntajarjestelmat" },
-        { "label": "Kansainväliset standardit", "type": "page", "slug": "kv-standardit" }
+        { "label": "Kuntajärjestelmät", "type": "page", "slug": "kuntajarjestelmat"},
+        { "label": "Rakennetun ympäristön tiedon yhteentoimivuus", "type": "tag", "slug": "ry-yhteentoimivuus"}
       ]
     },
     {
@@ -27,8 +27,9 @@
       "type": "menu",
       "subitems": [
         { "label": "Tietomallisparraukset ja koulutukset", "type": "tag", "slug": "sparraus" },
-        { "label": "Markkinaselvitykset", "type": "tag", "slug": "markkinaselvitys" },
-        { "label": "Spatineo Oy", "type": "page", "slug": "spatineo" },
+        { "label": "Markkinaselvitykset ja kilpailutuksen tuki", "type": "tag", "slug": "markkinaselvitys" },
+        { "label": "Suunnitteluohjelmistot", "type": "tag", "slug": "ohjelmistot" },
+        { "label": "Kumppani: Spatineo Oy", "type": "tag", "slug": "spatineo" },
         { "label": "Kumppaniksi?", "type": "page", "slug": "kumppaniksi"} 
 
       ]

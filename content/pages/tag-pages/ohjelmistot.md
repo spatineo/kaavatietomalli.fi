@@ -3,8 +3,6 @@ title: "Ohjelmistoratkaisut"
 tags: ["ohjelmistot"]
 ---
 
-# Ohjelmistoratkaisut tietomallimuotoisen kaavatiedon hallintaan
-
 Vuoden 2026 lopulla tietomallimuotoisen kaavoituksen laadintaan käytettäviä ohjelmistotuotteita on Suomen markkinoilla tarjolla varsin runsaasti, 10 kappaletta (aakkosjärjestyksessä):
 
 * Arho (QGIS-pohjainen, Gispo Oy)
@@ -18,3 +16,9 @@ Vuoden 2026 lopulla tietomallimuotoisen kaavoituksen laadintaan käytettäviä o
 * Ubihub Kaava (Ubigu Oy)
 * YTCAD (Autodesk AutoCAD -pohjainen, Sweco Oy)
 
+```call-to-action
+    url: /kumppaniksi
+    description: Kaavatietomalli.fi-sivuston kumppanina saat kohdistettua asiakasnäkyvyyttä ohjelmistoillesi
+    title: Tarjoatko Ryhti-yhteensopivia ohjelmistoratkaisuja?
+    buttonText: Lue lisää kumppanuudesta
+```
