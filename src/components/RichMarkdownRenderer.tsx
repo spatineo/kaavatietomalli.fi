@@ -265,7 +265,6 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
             return (
                 <CodeBlock
                     className={className}
-                    filePath={`src/${slug}.md`}
                     placeholderHeight="h-64"
                     {...props}
                 >
