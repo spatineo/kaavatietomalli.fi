@@ -7,9 +7,7 @@
       "subitems": [
         { "label": "Lait ja asetukset", "type": "page", "slug": "lainsaadanto" },
         { "label": "Kaavatietomalli", "type": "page", "slug": "kaavatietomalli" },
-        { "label": "Ryhti-järjestelmä", "type": "page", "slug": "ryhti-jarjestelma" },
-        { "label": "Kuntajärjestelmät", "type": "page", "slug": "kuntajarjestelmat"},
-        { "label": "Rakennetun ympäristön tiedon yhteentoimivuus", "type": "tag", "slug": "ry-yhteentoimivuus"}
+        { "label": "Ryhti-järjestelmä", "type": "page", "slug": "ryhti-jarjestelma" }
       ]
     },
     {
@@ -28,6 +26,7 @@
       "subitems": [
         { "label": "Tietomallisparraukset ja koulutukset", "type": "tag", "slug": "sparraus" },
         { "label": "Markkinaselvitykset ja kilpailutuksen tuki", "type": "tag", "slug": "markkinaselvitys" },
+        { "label": "Kuntajärjestelmien yhteentoimivuus", "type": "tag", "slug": "kuntajarjestelmat"},
         { "label": "Suunnitteluohjelmistot", "type": "tag", "slug": "ohjelmistot" },
         { "label": "Kumppani: Spatineo Oy", "type": "tag", "slug": "spatineo" },
         { "label": "Kumppaniksi?", "type": "page", "slug": "kumppaniksi"} 
