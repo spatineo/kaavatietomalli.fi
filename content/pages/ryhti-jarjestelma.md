@@ -204,7 +204,24 @@ Vuoden 2026 lopulla rajapintojen kautta on saatavilla kaavaindeksitietoa, eli vo
 
 ## Ryhdin kaavasuunnitelman JSON-muoto (ns. Kaava-JSON)
 
-Ryhti-järjestelmän tiedontuottajan rajapintapalveluissa ([avoin kaavatiedon validointirajapinta](#avoin-kaavatiedon-validointirajapinta) ja [Suomi.fi-palveluväylän Ryhti-palvelut](#suomifi-palveluväylän-ryhti-palvelut)) on osana API-kuvausta määritelty kaavasuunnitelman tiedot sisältävä JSON-tietorakenne (JSON-skeeman Plan-komponentti). Tämä niin sanottu Kaava-JSON -tietorakenne on tarkoitettu rajapinnan teknisen kuvauksen osaksi, joko Ryhti-järjestelmään syötettävän tai sieltä palautettavan tiedon rakenteen kuvaamiseen. Sitä kuitenkin käytetään paremman puutteessa myös muiden tietojärjestelmien välillä.
+Ryhti-järjestelmän tiedontuottajan rajapintapalveluissa ([avoin kaavatiedon validointirajapinta](#avoin-kaavatiedon-validointirajapinta) ja [Suomi.fi-palveluväylän Ryhti-palvelut](#suomifi-palveluväylän-ryhti-palvelut)) on osana API-kuvausta määritelty kaavasuunnitelman tiedot sisältävä JSON-tietorakenne (JSON-skeeman Plan-komponentti). Tämä niin sanottu Kaava-JSON -tietorakenne on tarkoitettu rajapinnan teknisen kuvauksen osaksi, joko Ryhti-järjestelmään syötettävän tai sieltä palautettavan tiedon rakenteen kuvaamiseen. Sitä kuitenkin käytetään paremman puutteessa myös muiden tietojärjestelmien välillä. Ryhti-rajapintamääritysten kuvaama tietomalli ei varsinaisesti ole [GeoJSON-standardin](https://www.rfc-editor.org/info/rfc7946/) mukaista paikkatietoa, vaikka asia näin usein esitetään: JSON-rakenteissa on kyllä toteutettu geometria-ominaisuuksien rakenteet (ainakin pääosin) GeoJSON-tyyppisesti, mutta paikkatietokohteita ei ole kuvattu GeoJSON-kohteina (Feature) ja kohdekokoelmina (Feature Collection). Tämä tarkoittaa, että Ryhti-muotoisia JSON-dokumentteja tai niiden sisältämään paikkatietosisältöä ei sellaisenaan ole mahdollista käsitellä tallentaa GeoJSON-paikkatietokohteina, vaan esimerkiksi kaavakohteiden ja kaavan aluerajausten tiedot on muunnettava paikkatietokohdemuotoon. Itse geometriatieto on kuitenkin poimittavissa suoraan Ryhdin vaatimasta JSON-tiedosta.
+
+GeoJSON-standardi (IETF RFC 7946) ei sisällä normaiivista tukea muille kuin WGS84-koordinaatiston esittämiselle ja käytölle: Standardin mukainen GeoJSON-tieto ei sisällä lainkaan käytetyn koordinaatiston ilmaisemiseen käytettyjä tietoja, ja oletuksena kaikki kooridinaatit voidaan tulkita annetun WGS84-koordinaatiston mukaisina. Tietojärjestelmät (ja niiden käyttäjät) voivat kuitenkin keskinäisellä sopimuksella käyttää muitakin koordinaatistoja, mutta tällöin tieto käytetystä koordinaatistosta tulee ilmaista varsinaisen GeoJSON-tietorakenteen ulkopuolella tai sitä laajentaen. Ryhti-järjestelmän JSON-skeemoissa tämä on ratkaisu määrittelemällä GeoJSON-geometriatiedolle kuoriobjekti, jossa GeoJSON-koordinaateissa käytetty koordinaatiston tunnus on kuvattu `srid`-ominaisuuden avulla:
+
+```json
+"geographicalArea": {
+    "srid": "3880",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+     ...
+      ]
+```
+
+Rakennusten ulkokuoren osalta Ryhdin JSON-skeemat mahdollistavat myös 3-ulotteisten geometrioiden käyttämisen, tällöin geometrian formaattina on OGC-standardoitu Well Known Text (WKT), ja oletettavasti sen `Polyhedron Z` -tietotyyppi.
+
+GeoJSON on hvyin yleisesti käytetty, melko yksinkertainen paikkatietokohteiden kuvausformaatti, mutta käytössä kaavojen paikkatiedon ilmaisemiseen on omat ongelmansa. Näistä keskeisimpiä jo mainitun standardoidun koodinaatistotiedon puutteen lisäksi kaarevien ja 3-ulotteisten geometrioiden puute. Näihin puutteisiin on olemassa standardoitu GeoJSON-laajennus [OGC Features and Geometries JSON (JSON-FG)](https://www.ogc.org/standards/json-fg/). Siirtymällä kuvamaan kaavatietokohteet JSON-FG -standardin mukaisesti voitaisiin parantaa kaavatiedon JSON-tietomuotojen yhteentoimivuutta.
 
 ### Kaava-JSON -dokumentin rakenne ja tiedot
 
@@ -248,7 +265,7 @@ Seuraavassa taulukossa on kuvattu Palveluväylän hieman laajemman `Plan`-kompon
 
 *) Suomenkielistä nimeä ei ole annettu dokumentaatiossa.
 
-JSON-rakenteen mallinnuksessa on toteutettu sekä Kaavatietomallin Kaava-luokan attribuutit että assosiaatiot upottamalla niiden arvot suoraan ominaisuuksien alle hierarkiaksi. Tämä toimii kohtuullisen hyvin, kun kahden luokan välisen assosiaation kardinaliteetti, eli mahdollisten yhteyksien lukumäärä, on joko `1..1`, `1..0`tai `1..*`. Tietomallissa on kuitenkin myös `*..n` ja `*..1` -assosiaatioita, joiden osalta ajaudutaan hankaluuksiin: Esimerkiksi monen suhde moneen assosiaatio Kaavakohde (PlanObject) - Kaavamääräysryhmä (PlanRegulationGroup) on jouduttu toteuttamaan erillisellä tunnusten vastaavuustaulukolla (`planRegulationGroupRelations`), joka haiskahtaa vahvasti relataatiotietokannan assosiaatiotaululta. Ratkaisu on toki teknisesti toimiva, muttei kovin elegantti.
+JSON-rakenteen mallinnuksessa on toteutettu sekä Kaavatietomallin Kaava-luokan attribuutit että assosiaatiot upottamalla niiden arvot suoraan ominaisuuksien alle hierarkiaksi. Tämä toimii kohtuullisen hyvin, kun kahden luokan välisen assosiaation kardinaliteetti, eli mahdollisten yhteyksien lukumäärä, on joko `1..1`, `1..0`tai `1..*`. Tietomallissa on kuitenkin myös `*..*` ja `*..1` -assosiaatioita, joiden osalta ajaudutaan hankaluuksiin: Esimerkiksi monen-suhde-moneen -assosiaatio Kaavakohde (PlanObject) - Kaavamääräysryhmä (PlanRegulationGroup) on jouduttu toteuttamaan erillisellä tunnusten vastaavuustaulukolla (`planRegulationGroupRelations`), joka haiskahtaa vahvasti relataatiotietokannan assosiaatiotaululta. Ratkaisu on toki teknisesti toimiva, muttei kovin elegantti.
 
 Plan-rakenteessa, kuten laajemminkin Ryhti-rajapintojen JSON-skeemoissa, on selvästi pyritty välttämään luokkien välisten assosiaatioiden kuvaamista objektien pysyviin tunnuksiin perustuvien linkkien avulla. Edellä mainittu kaavakohteiden ja kaavamääräysryhmien välinen assosiaatio olisi voitu toteuttaa myös linkittämällä PlanObject-rakenne PlanRegulationGroup-rakenteeseen ja toisinpäin toistensa pysyvillä tunnuksilla, kuten seuraavassa on havainnollistettu.
 
@@ -323,7 +340,7 @@ Voidaan ajatella, ettei eleganssi ole järjestelmien välisen tiedonvaihdon yhte
 
 ### Käyttö kuntajärjestelmien välisessä tiedonvaihdossa
 
-Ryhti-järjestelmän rajapintakäyttöön tarkoitetun Kaava-JSON -rakenteen käyttö on tahattomasti lipsahtanut Ryhti-rajapintakäyttöä laajemmaksi. Sitä käytetään kaavasuunnitelmien siirtämiseen eri kaavasuunnitteluohjelmistojen ja kaavarekisterijärjestelmien välillä, vaikka se ei itse asiaassa kovin siihen sovellu. Plan-komponentin rakenne on suunniteltu Ryhti-rajapinnassa osaksi laajempaa kokonaisuutta, eikä se sisällä tietoa muun muassa käytetystä kaavalajista (onko kyseessä asema- yleis- vai maakuntakaava), eikä kaavan hallinnollisesta alueesta (kunta tai maakunta).
+Ryhti-järjestelmän rajapintakäyttöön tarkoitetun Kaava-JSON -rakenteen käyttö on tahattomasti lipsahtanut Ryhti-rajapintakäyttöä laajemmaksi. Sitä käytetään kaavasuunnitelmien siirtämiseen eri kaavasuunnitteluohjelmistojen ja kaavarekisterijärjestelmien välillä, vaikka se ei itse asiassa kovin siihen sovellu. Plan-komponentin rakenne on suunniteltu Ryhti-rajapinnassa osaksi laajempaa kokonaisuutta, eikä se sisällä tietoa muun muassa käytetystä kaavalajista (onko kyseessä asema- yleis- vai maakuntakaava), eikä kaavan hallinnollisesta alueesta (kunta tai maakunta).
 
 Tällä Kaava-JSON -nimellä kulkevalla määrityksellä ei ole mitään teknisistä Ryhti-rajapintakuvauksista itsenäistä määritystä tai hallintamallia, ja sen sisältöelementit vaihtelevat hieman riippuen käytetystä rajapinnasta (validointi tai tiedon vienti). Tästä tulee ongelma, kun tätä "Ryhti-JSON"- tai "Kaava-JSON"-yhteensopivuutta ryhdytään vaatimaan kuntien ja maakuntien tietojärjestelmien hankintojen vaatimusmäärittelyissä. Ryhti-järjestelmän kehityksessä on myös tärkeää voida tarvittaessa muuttaa rajapintakuvauksia järjestelmien kehittymisen myötä, ja niitä onkin muutettu useampaan kertaan.
 

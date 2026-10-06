@@ -726,6 +726,35 @@ describe('Modular Sub-pipelines', () => {
         const pages = loadAndParsePages('pages');
         expect(pages).toHaveLength(1);
         expect(pages[0].title).toBe('G1');
+        expect(pages[0].comments).toBe(false);
+      } finally {
+        existsSpy.mockRestore();
+        readdirSpy.mockRestore();
+        readSpy.mockRestore();
+        statSpy.mockRestore();
+      }
+    });
+
+    it('should parse comments: true frontmatter flag as boolean true', () => {
+      const mockFiles: Record<string, string> = {
+        'pages/feedback.md': '---\ntitle: "Feedback"\ncomments: true\n---\nLeave your comments below.',
+      };
+
+      const existsSpy = vi.spyOn(fs, 'existsSync').mockReturnValue(true);
+      const readdirSpy = vi.spyOn(fs, 'readdirSync').mockReturnValue(['feedback.md'] as any);
+      const readSpy = vi.spyOn(fs, 'readFileSync').mockImplementation((p: any) => {
+        const filename = String(p).split('/').pop() || '';
+        return mockFiles[`pages/${filename}`] || '';
+      });
+      const statSpy = vi.spyOn(fs, 'statSync').mockReturnValue({
+        isDirectory: () => false,
+      } as any);
+
+      try {
+        const pages = loadAndParsePages('pages');
+        expect(pages).toHaveLength(1);
+        expect(pages[0].title).toBe('Feedback');
+        expect(pages[0].comments).toBe(true);
       } finally {
         existsSpy.mockRestore();
         readdirSpy.mockRestore();

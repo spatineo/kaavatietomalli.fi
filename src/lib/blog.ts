@@ -30,6 +30,7 @@ export interface PageData {
   tags: string[];
   file?: string;
   partner?: string;
+  comments?: boolean;
 }
 
 export interface AuthorData {

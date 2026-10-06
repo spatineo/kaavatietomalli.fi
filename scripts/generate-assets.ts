@@ -143,6 +143,7 @@ export function loadAndParsePages(pagesDir: string): PageData[] {
       draft: data.draft === true || data.draft === 'true',
       file: file.replace(/\\/g, '/'),
       partner: data.partner || undefined,
+      comments: data.comments === true || data.comments === 'true',
       content: textContent,
     } as PageData;
   });
