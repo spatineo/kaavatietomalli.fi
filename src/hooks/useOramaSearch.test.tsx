@@ -183,7 +183,7 @@ describe('useOramaSearch hook', () => {
     expect(searchResults).toEqual([]);
   });
 
-  it('correctly propagates Finnish/Swedish special characters and configures tolerance for fuzzy matching', async () => {
+  it('correctly propagates Finnish/Swedish special characters and executes exact search with fuzzy fallback', async () => {
     const { result } = renderHook(() => useOramaSearch());
 
     await waitFor(() => {
@@ -194,10 +194,26 @@ describe('useOramaSearch hook', () => {
     const fiTerm = 'Ääkkösiä ja Öitä';
     await result.current.performSearch(fiTerm);
 
-    expect(search).toHaveBeenLastCalledWith({ id: 'mock-db' }, expect.objectContaining({
+    expect(search).toHaveBeenCalledWith({ id: 'mock-db' }, expect.objectContaining({
       term: fiTerm,
-      tolerance: 1, // verifies partial/fuzzy matching tolerance config is correct
     }));
+
+    // Test fallback to tolerance: 1 when initial search returns 0 hits
+    vi.mocked(search)
+      .mockResolvedValueOnce({ hits: [] } as any)
+      .mockResolvedValueOnce({ hits: [] } as any)
+      .mockResolvedValueOnce({ hits: [] } as any)
+      .mockResolvedValueOnce({ hits: [{ id: 'fuzzy1', score: 0.5, document: { type: 'page', title: 'Fuzzy Match', slug: 'fuzzy' } }] } as any)
+      .mockResolvedValueOnce({ hits: [] } as any)
+      .mockResolvedValueOnce({ hits: [] } as any);
+
+    const typoTerm = 'typoquery';
+    const fuzzyResults = await result.current.performSearch(typoTerm);
+    expect(search).toHaveBeenCalledWith({ id: 'mock-db' }, expect.objectContaining({
+      term: typoTerm,
+      tolerance: 1,
+    }));
+    expect(fuzzyResults).toHaveLength(1);
 
     // Test specific product/brand term common to Spatineo Kaavatietomalli
     const spatineoTerm = 'Spatineo Kaavatietomalli';
