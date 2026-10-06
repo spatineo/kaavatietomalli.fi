@@ -215,7 +215,6 @@ export function useOramaSearch() {
           company: 1.5,
           tags: 1.5,
         },
-        tolerance: 1,
         limit: options?.limit || 1000,
       };
 
@@ -223,15 +222,29 @@ export function useOramaSearch() {
         searchConfig.where = options.where;
       }
 
+      // 1. Primary search using exact prefix / stemmed tokens (avoids Orama tolerance:1 non-ASCII pruning bug)
       const [resFi, resSv, resEn] = await Promise.all([
         search(dbs.fi, searchConfig),
         search(dbs.sv, searchConfig),
         search(dbs.en, searchConfig),
       ]);
 
-      const hitsFi = (resFi.hits || []) as SearchResult[];
-      const hitsSv = (resSv.hits || []) as SearchResult[];
-      const hitsEn = (resEn.hits || []) as SearchResult[];
+      let hitsFi = (resFi.hits || []) as SearchResult[];
+      let hitsSv = (resSv.hits || []) as SearchResult[];
+      let hitsEn = (resEn.hits || []) as SearchResult[];
+
+      // 2. If no exact/stemmed matches found, fallback to fuzzy search with tolerance: 1
+      if (hitsFi.length === 0 && hitsSv.length === 0 && hitsEn.length === 0) {
+        const fuzzyConfig = { ...searchConfig, tolerance: 1 };
+        const [fuzzyFi, fuzzySv, fuzzyEn] = await Promise.all([
+          search(dbs.fi, fuzzyConfig),
+          search(dbs.sv, fuzzyConfig),
+          search(dbs.en, fuzzyConfig),
+        ]);
+        hitsFi = (fuzzyFi.hits || []) as SearchResult[];
+        hitsSv = (fuzzySv.hits || []) as SearchResult[];
+        hitsEn = (fuzzyEn.hits || []) as SearchResult[];
+      }
 
       // Score-based merge using the maximum adjusted relevance score across language indices
       const mergedScores: Record<string, { item: SearchResult; score: number }> = {};
