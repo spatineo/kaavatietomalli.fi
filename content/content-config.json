@@ -38,7 +38,6 @@
       "type": "menu",
       "subitems": [
         { "label": "Kaavatietomalli.fi", "type": "page", "slug": "tietoa" },
-        { "label": "Toimituskunta", "type": "page", "slug": "toimituskunta" },
         { "label": "Palaute", "type": "page", "slug": "palaute" },
         { "label": "Tietosuoja", "type": "page", "slug": "tietosuoja" }
       ]

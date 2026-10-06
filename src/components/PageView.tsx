@@ -1,6 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ContentFooter } from './ContentFooter';
 import { PageData } from '../lib/blog';
 import { CONFIG } from '../config';
@@ -8,6 +8,7 @@ import { getTranslations, Language } from '../i18n';
 import { useHeadings, getUniqueHeadings, HeadingRegistryProvider, assignHeadingPrefixes } from './MarkdownHeading';
 import { TableOfContents } from './TableOfContents';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
+import { PostComments } from './PostComments';
 
 interface PageViewProps {
   page: PageData;
@@ -17,6 +18,7 @@ interface PageViewProps {
 
 export function PageView({ page, onBack, inline = false }: PageViewProps) {
   const t = getTranslations(CONFIG.language as Language);
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const headings = useHeadings(page.content);
   const combinedHeadings = useMemo(() => {
     const raw = getUniqueHeadings(page.title, headings);
@@ -116,7 +118,17 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
           </div>
         </div>
 
-        <ContentFooter onBack={onBack} className="mt-40" />
+        {page.comments && (
+          <PostComments
+            postSlug={page.slug}
+            onToggleOpen={setIsCommentsOpen}
+          />
+        )}
+
+        <ContentFooter
+          onBack={onBack}
+          className={page.comments ? (isCommentsOpen ? 'mt-40' : 'mt-12') : 'mt-40'}
+        />
       </HeadingRegistryProvider>
     </motion.article>
   );

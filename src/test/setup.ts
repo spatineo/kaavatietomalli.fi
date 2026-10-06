@@ -68,20 +68,31 @@ beforeAll(() => {
 
         // 3. Serve local documents / assets from the filesystem
         let pathname = '';
+        let isLocalHostOrDomain = false;
         if (urlStr.startsWith('http://') || urlStr.startsWith('https://')) {
           try {
             const parsedUrl = new URL(urlStr);
             if (parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1' || parsedUrl.hostname.includes('kaavatietomalli.fi')) {
               pathname = parsedUrl.pathname;
+              isLocalHostOrDomain = true;
             }
           } catch {}
         } else if (urlStr.startsWith('/')) {
           pathname = urlStr.split('?')[0];
+          isLocalHostOrDomain = true;
         } else if (!urlStr.includes('://')) {
           pathname = '/' + urlStr.split('?')[0];
+          isLocalHostOrDomain = true;
         }
 
         if (pathname) {
+          if (pathname.endsWith('giscus-stats.json')) {
+            return new Response(JSON.stringify({}), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+
           const cleanPath = pathname.replace(/^\/+/, '');
           const possiblePaths = [
             path.join(process.cwd(), 'test-public', cleanPath),
@@ -104,6 +115,15 @@ beforeAll(() => {
                 console.error(`[Vitest Local Fetch] Error reading local file ${filePath}:`, err);
               }
             }
+          }
+
+          if (isLocalHostOrDomain) {
+            // In unit tests, never attempt TCP socket connection to localhost/127.0.0.1
+            return new Response(JSON.stringify({ error: `Not found: ${cleanPath}` }), {
+              status: 404,
+              statusText: 'Not Found',
+              headers: { 'Content-Type': cleanPath.endsWith('.json') ? 'application/json' : 'text/plain' }
+            });
           }
         }
 
