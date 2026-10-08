@@ -13,6 +13,7 @@ import { PostComments } from './PostComments';
 import { useHeadings, getUniqueHeadings, HeadingRegistryProvider, assignHeadingPrefixes } from './MarkdownHeading';
 import { TableOfContents } from './TableOfContents';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
+import AIUsageLabel from './AIUsageLabel';
 
 interface PostViewProps {
   post: PostData;
@@ -255,6 +256,12 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
                   ))}
                 </div>
               </>
+            )}
+            {(post.aiAssisted && !post.aiGenerated) && (
+              <AIUsageLabel type='assisted' height={35} className='ai-assisted' aria-label={`${t.post.aiAssisted}`} />
+            )}
+            {post.aiGenerated && (
+              <AIUsageLabel type='generated' height={35} className='ai-assisted' aria-label={`${t.post.aiGenerated}`} />
             )}
           </div>
         </header>

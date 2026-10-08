@@ -16,6 +16,8 @@ export interface PostMetadata {
   promotional?: boolean;
   partner?: string;
   callToAction?: string;
+  aiAssisted?: boolean;
+  aiGenerated?: boolean;
 }
 
 export interface PostData extends PostMetadata {
