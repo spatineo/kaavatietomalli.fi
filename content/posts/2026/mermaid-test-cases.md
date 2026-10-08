@@ -136,7 +136,7 @@ classDiagram
 Instanssikaavio on toteutettu muuntamalla koodi flowchart LR kaaviotyypin ymmärtämään muotoon ja hyödyntämällä sen kustomoitavaa HTML-sisältöä:
 
 ```instance
-
+instanceDiagram
   instance alice : User {
     id = 101
     role = "ADMIN"

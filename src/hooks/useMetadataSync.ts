@@ -199,8 +199,11 @@ export function useMetadataSync({
     // Generate accurate path for canonical & og:url
     let currentPath = '';
     if (activeView.type !== 'home' && activeView.slug) {
-      currentPath = `${activeView.type}/${encodeURIComponent(activeView.slug)}`;
-      if (activeView.type === 'model') {
+      if (activeView.type === 'post') {
+        currentPath = `blog/${encodeURIComponent(activeView.slug)}`;
+      } else if (activeView.type === 'page') {
+        currentPath = `${encodeURIComponent(activeView.slug)}`;
+      } else if (activeView.type === 'model') {
         const version = params.get('version');
         const cls = params.get('class');
         const codelist = params.get('codelist');
@@ -214,6 +217,9 @@ export function useMetadataSync({
         if (parts.length > 0) {
           currentPath += `?${parts.join('&')}`;
         }
+      }
+      else {
+        currentPath = `${activeView.type}/${encodeURIComponent(activeView.slug)}`;
       }
     }
     const canonicalUrl = `${CONFIG.baseUrl}${CONFIG.basePath}${currentPath}`;
@@ -301,11 +307,11 @@ export function useMetadataSync({
 
       let resolvedFile = `${slug}.md`;
       if (type === 'post' && currentPost && currentPost.slug === slug) {
-        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/content/posts/${slug}.md`;
+        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/blog/${slug}.md`;
       } else if (type === 'page' && currentPage && currentPage.slug === slug) {
-        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/content/pages/${slug}.md`;
+        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/${slug}.md`;
       } else if (type === 'author' && currentAuthor && currentAuthor.slug === slug) {
-        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/content/authors/${slug}.md`;
+        resolvedFile = `${CONFIG.basePath.replace(/\/$/, '')}/author/${slug}.md`;
       }
       dcLink.setAttribute('href', resolvedFile);
     };

@@ -94,6 +94,8 @@ export interface Translations {
     aboutCommercialCooperationText: string;
     readMoreCooperation: string;
     callToActionLabel: string;
+    aiAssisted: string;
+    aiGenerated: string;
   };
   page: {
     tableOfContents: string;

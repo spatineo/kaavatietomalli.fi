@@ -96,6 +96,8 @@ export const fi: Translations = {
     aboutCommercialCooperationText: 'Tämä kirjoitus on osa kaupallista yhteistyötä Kaavatietomalli.fi-sivuston ja {{partner}} välillä. Kaikki yhteistyösisällöt valitaan huolella ja ne palvelevat lukijoitamme syventämällä ymmärrystä digitalisoituvasta maankäytön suunnittelusta. Haluatko yrityksesi asiantuntijuuden esille sivustollemme? Ota yhteyttä!',
     readMoreCooperation: 'Lue lisää yhteistyöstä',
     callToActionLabel: 'Tutustu tarkemmin',
+    aiAssisted: 'Sisällön tuottamisessa on hyödynnetty tekoälytyökaluja',
+    aiGenerated: 'Sisältö on luotu tekoälyn avulla ilman ihmisen tekemää tarkistusta'
   },
   page: {
     tableOfContents: 'Sisällysluettelo',

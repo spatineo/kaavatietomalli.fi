@@ -12,6 +12,7 @@ import { convertDataModelDiagramsToMermaid } from '../src/lib/data-model-diagram
 import { parseModelId } from '../src/lib/data-model-utils.js';
 import { PostData, PageData, AuthorData } from '@/src/lib/blog.js';
 import { parseInteractiveImageBlock } from '../src/lib/interactive-image-parser.js';
+import { Translations } from '@/src/i18n/types.js';
 
 dotenv.config();
 
@@ -112,6 +113,8 @@ export function loadAndParsePosts(postsDir: string, now: Date = new Date()): Pos
       partner: data.partner || (typeof data.promotional === 'string' && data.promotional !== 'true' && data.promotional !== 'false' ? data.promotional : undefined),
       callToAction: data.callToAction || undefined,
       content: textContent,
+      aiAssisted: data.aiAssisted === true || data.aiAssisted === 'true',
+      aiGenerated: data.aiGenerated === true || data.aiGenerated === 'true',
     } as PostData;
   });
 
@@ -269,7 +272,8 @@ export async function generateIndividualContentFiles(
   pages: PageData[],
   authors: AuthorData[],
   contentOutDir: string,
-  dataAccess: LocalFileDataModelAccess
+  dataAccess: LocalFileDataModelAccess,
+  t: Translations
 ): Promise<void> {
   const POST_JSON_OUT_DIR = path.join(contentOutDir, 'posts');
   const PAGE_JSON_OUT_DIR = path.join(contentOutDir, 'pages');
@@ -302,6 +306,11 @@ export async function generateIndividualContentFiles(
 
     const markdownOutPath = path.join(POST_ALT_OUT_DIR, `${post.slug}.md`);
     let markdownContent = '# ' + post.title + '\n\n';
+    if (post.aiGenerated) {
+      markdownContent += `[${t.post.aiGenerated}] \n\n`;
+    } else if (post.aiAssisted) {
+      markdownContent += `[${t.post.aiAssisted}] \n\n`;
+    }
     markdownContent += post.content;
     fs.writeFileSync(
       markdownOutPath,
@@ -596,7 +605,7 @@ export function updateIndexHtmlRobots(indexPath: string): void {
   }
 }
 
-export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDir: string, baseUrl: string, t: any): void {
+export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDir: string, baseUrl: string, t: Translations): void {
   // Generate llms.txt
   let llmsTxt = '';
   if (CONFIG.prelaunch) {
@@ -616,6 +625,11 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
     let line = `- [${post.title}](${baseUrl}/blog/${post.slug}) - [Raw Markdown](${baseUrl}/blog/${post.slug}.md)`;
     if (post.promotional) {
       line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.partner || ''}]`;
+    }
+    if (post.aiGenerated) {
+      line += ` [${t.post.aiGenerated}]`;
+    } else if (post.aiAssisted) {
+      line += ` [${t.post.aiAssisted}]`;
     }
     llmsTxt += line + '\n';
   });
@@ -647,6 +661,11 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
     let line = `- [${post.title}](${baseUrl}/blog/${post.slug}) - [Raw Markdown](${baseUrl}/blog/${post.slug}.md)`;
     if (post.promotional) {
       line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.partner || ''}]`;
+    }
+    if (post.aiGenerated) {
+      line += ` [${t.post.aiGenerated}]`;
+    } else if (post.aiAssisted) {
+      line += ` [${t.post.aiAssisted}]`;
     }
     llmsFullTxt += line + '\n';
   });
@@ -864,7 +883,7 @@ export function runGenerators(
   pages: PageData[],
   authors: AuthorData[],
   historyMap: Record<string, any>,
-  t: any
+  t: Translations
 ): void {
   generateSitemaps(posts, pages, PUBLIC_DIR, CONFIG.baseUrl);
 
@@ -903,7 +922,7 @@ export async function generateAssets() {
   copyContentConfig(CONTENT_DIR, CONTENT_OUT_DIR);
 
   const dataAccess = new LocalFileDataModelAccess();
-  await generateIndividualContentFiles(posts, pages, authors, CONTENT_OUT_DIR, dataAccess);
+  await generateIndividualContentFiles(posts, pages, authors, CONTENT_OUT_DIR, dataAccess,t);
 
   console.log('Generated JSON index and individual JSON and Markdown files');
 
