@@ -16,6 +16,7 @@ async function getMermaid() {
     mermaidInstance.initialize({
       startOnLoad: false,
       theme: 'base',
+      look: 'classic',
       securityLevel: 'loose',
       fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
       fontSize: 16,
@@ -229,7 +230,8 @@ async function getMermaid() {
         clusterBkg: '#1A1C23',
         clusterBorder: '#4B5563',
         titleColor: '#FFFFFF',
-        edgeLabelBackground: '#20242E',
+        defaultLinkColor: '#ffffff',
+        edgeLabelBackground: '#182225',
         nodeTextColor: '#FFFFFF',
 
         // Sequence Diagram variables
