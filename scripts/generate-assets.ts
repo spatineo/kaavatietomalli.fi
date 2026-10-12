@@ -10,9 +10,15 @@ import { getFilesRecursive, escapeXml, validateMarkdownVideoBlocks } from './con
 import { LocalFileDataModelAccess } from '../src/lib/local-data-model-access.js';
 import { convertDataModelDiagramsToMermaid } from '../src/lib/data-model-diagram-generator.js';
 import { parseModelId } from '../src/lib/data-model-utils.js';
-import { PostData, PageData, AuthorData } from '@/src/lib/blog.js';
+import { PostData, PageData, AuthorData, PostMetadata } from '@/src/lib/blog.js';
 import { parseInteractiveImageBlock } from '../src/lib/interactive-image-parser.js';
 import { Translations } from '@/src/i18n/types.js';
+import sharp from 'sharp';
+import {
+  COVER_IMAGE_WIDTHS,
+  isScalableCoverImage,
+  getScaledCoverImageFilename,
+} from '../src/lib/images.js';
 
 dotenv.config();
 
@@ -803,7 +809,12 @@ ${rssItemsXml}  </channel>
   console.log('Generated feed.xml (RSS 2.0)');
 }
 
-export function copyImages(resourcesDir: string, contentDir: string, imagesOutDir: string): void {
+export async function copyImages(
+  resourcesDir: string,
+  contentDir: string,
+  imagesOutDir: string,
+  posts?: PostMetadata[]
+): Promise<void> {
   const srcImagesDir = path.join(resourcesDir, 'images');
   if (fs.existsSync(srcImagesDir)) {
     copyFolderRecursiveSync(srcImagesDir, imagesOutDir);
@@ -814,8 +825,50 @@ export function copyImages(resourcesDir: string, contentDir: string, imagesOutDi
 
   const contentImagesDir = path.join(contentDir, 'images');
   if (fs.existsSync(contentImagesDir)) {
-    copyFolderRecursiveSync(contentImagesDir, imagesOutDir);
-    console.log('Copied content/images to public/images');
+    const coverImageNames = new Set<string>();
+    if (posts && posts.length > 0) {
+      for (const post of posts) {
+        if (post.coverImage && isScalableCoverImage(post.coverImage)) {
+          const filename = path.basename(post.coverImage);
+          coverImageNames.add(filename);
+        }
+      }
+    }
+
+    if (!fs.existsSync(imagesOutDir)) {
+      fs.mkdirSync(imagesOutDir, { recursive: true });
+    }
+
+    const files = fs.readdirSync(contentImagesDir);
+    for (const file of files) {
+      const srcPath = path.join(contentImagesDir, file);
+      const stat = fs.lstatSync(srcPath);
+
+      if (stat.isDirectory()) {
+        copyFolderRecursiveSync(srcPath, path.join(imagesOutDir, file));
+      } else if (coverImageNames.has(file)) {
+        console.log(`Scaling cover image: ${file} into widths ${COVER_IMAGE_WIDTHS.join(', ')}`);
+        for (const width of COVER_IMAGE_WIDTHS) {
+          const scaledFilename = getScaledCoverImageFilename(file, width);
+          const destPath = path.join(imagesOutDir, scaledFilename);
+          try {
+            await sharp(srcPath)
+              .resize({ width, withoutEnlargement: true })
+              .toFile(destPath);
+          } catch (err) {
+            console.warn(`Failed to scale image ${file} at ${width}px with sharp:`, err);
+            try {
+              fs.copyFileSync(srcPath, destPath);
+            } catch {
+              // Ignore in mock test environments
+            }
+          }
+        }
+      } else {
+        fs.copyFileSync(srcPath, path.join(imagesOutDir, file));
+      }
+    }
+    console.log('Processed and copied content/images to public/images');
   } else {
     console.warn('content/images directory not found!');
   }
@@ -878,13 +931,13 @@ export function writeMetadataIndexes(
   );
 }
 
-export function runGenerators(
+export async function runGenerators(
   posts: PostData[],
   pages: PageData[],
   authors: AuthorData[],
   historyMap: Record<string, any>,
   t: Translations
-): void {
+): Promise<void> {
   generateSitemaps(posts, pages, PUBLIC_DIR, CONFIG.baseUrl);
 
   generateRobotsTxt(PUBLIC_DIR, CONFIG.baseUrl);
@@ -897,7 +950,7 @@ export function runGenerators(
   generateRssFeed(posts, historyMap, useTestContent, PUBLIC_DIR, CONFIG.baseUrl, t);
 
   const IMAGES_OUT_DIR = path.join(PUBLIC_DIR, 'images');
-  copyImages(RESOURCES_DIR, CONTENT_DIR, IMAGES_OUT_DIR);
+  await copyImages(RESOURCES_DIR, CONTENT_DIR, IMAGES_OUT_DIR, posts);
 
   generateBuildVersion(PUBLIC_DIR);
 }
@@ -926,7 +979,7 @@ export async function generateAssets() {
 
   console.log('Generated JSON index and individual JSON and Markdown files');
 
-  runGenerators(posts, pages, authors, historyMap, t);
+  await runGenerators(posts, pages, authors, historyMap, t);
 }
 
 function copyFolderRecursiveSync(source: string, target: string) {

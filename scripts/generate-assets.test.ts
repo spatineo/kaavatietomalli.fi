@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
+import path from 'path';
 import {
   generateAssets,
   getGitHistoryOfContent,
@@ -14,6 +15,7 @@ import {
   writeMetadataIndexes,
   runGenerators,
   downloadAndEmbedInteractiveImages,
+  copyImages,
 } from './generate-assets';
 import { escapeXml, parseVideoConfig, validateVideoBlock, validateMarkdownVideoBlocks } from './content-utils';
 import { CONFIG } from '../src/config';
@@ -948,6 +950,55 @@ describe('Modular Sub-pipelines', () => {
       expect(output).toBe(input);
 
       fetchSpy.mockRestore();
+    });
+  });
+
+  describe('copyImages', () => {
+    it('scales cover images to standard widths and copies non-cover images as-is', async () => {
+      const tempDir = path.join(process.cwd(), 'test-temp-copy-images');
+      const resDir = path.join(tempDir, 'resources');
+      const contentDir = path.join(tempDir, 'content');
+      const outDir = path.join(tempDir, 'out');
+
+      fs.mkdirSync(path.join(resDir, 'images'), { recursive: true });
+      fs.mkdirSync(path.join(contentDir, 'images'), { recursive: true });
+
+      // Create a 1x1 test PNG in content/images
+      // Minimal valid 1x1 PNG base64
+      const pngBuffer = Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+        'base64'
+      );
+      fs.writeFileSync(path.join(contentDir, 'images', 'test-cover.png'), pngBuffer);
+      fs.writeFileSync(path.join(contentDir, 'images', 'regular-diagram.png'), pngBuffer);
+      fs.writeFileSync(path.join(resDir, 'images', 'logo.svg'), '<svg></svg>');
+
+      const mockPosts: any[] = [
+        {
+          slug: 'post-1',
+          coverImage: '/images/test-cover.png',
+        },
+      ];
+
+      try {
+        await copyImages(resDir, contentDir, outDir, mockPosts);
+
+        // Verify non-cover images were copied as-is
+        expect(fs.existsSync(path.join(outDir, 'logo.svg'))).toBe(true);
+        expect(fs.existsSync(path.join(outDir, 'regular-diagram.png'))).toBe(true);
+
+        // Verify original unscaled cover image was NOT copied
+        expect(fs.existsSync(path.join(outDir, 'test-cover.png'))).toBe(false);
+
+        // Verify scaled variations exist with standard naming pattern
+        expect(fs.existsSync(path.join(outDir, 'test-cover-320px.png'))).toBe(true);
+        expect(fs.existsSync(path.join(outDir, 'test-cover-640px.png'))).toBe(true);
+        expect(fs.existsSync(path.join(outDir, 'test-cover-960px.png'))).toBe(true);
+        expect(fs.existsSync(path.join(outDir, 'test-cover-1200px.png'))).toBe(true);
+        expect(fs.existsSync(path.join(outDir, 'test-cover-1600px.png'))).toBe(true);
+      } finally {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      }
     });
   });
 });

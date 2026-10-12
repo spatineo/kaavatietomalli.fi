@@ -6,6 +6,7 @@ import { PostData, PostMetadata, getRelatedPostSlugs, getAllPostMetadata, getAut
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { resolveImageUrl } from '../lib/utils';
+import { getCoverImageSrc, getCoverImageSrcSet } from '../lib/images';
 import { getTracker } from '../services/analytics';
 import { RelatedPosts } from './RelatedPosts';
 import { ContentFooter } from './ContentFooter';
@@ -212,7 +213,9 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
           {post.coverImage && (
             <div className={`relative aspect-[21/9] overflow-hidden rounded-3xl mb-8 shadow-2xl ${isSponsored ? 'border border-amber-400/15' : ''}`}>
               <img
-                src={resolveImageUrl(post.coverImage)}
+                src={getCoverImageSrc(post.coverImage, 1200)}
+                srcSet={getCoverImageSrcSet(post.coverImage)}
+                sizes="(min-width: 1024px) 840px, (min-width: 768px) 720px, calc(100vw - 48px)"
                 alt={`${t.post.illustrationAlt}: ${post.title}`}
                 className="w-full h-full object-cover"
               />
