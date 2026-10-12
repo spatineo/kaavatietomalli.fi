@@ -132,6 +132,8 @@ export function HomeView({
                     <img
                       src={resolveImageUrl(editor.image)}
                       alt={editor.name}
+                      fetchPriority="high"
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover/profile:scale-110"
                     />
                   </div>
