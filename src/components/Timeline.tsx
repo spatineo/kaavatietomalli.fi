@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { ArrowRight, Award } from 'lucide-react';
 import { PostMetadata } from '../lib/blog';
 import { resolveImageUrl } from '../lib/utils';
+import { getCoverImageSrc, getCoverImageSrcSet } from '../lib/images';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 
@@ -134,9 +135,12 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                     className={`group relative block w-full aspect-[16/8] overflow-hidden rounded-2xl bg-white/5 transition-all duration-700 shadow-2xl ${isSponsored ? 'border border-amber-400/15 hover:border-amber-400/40' : ''}`}
                   >
                     <img
-                      src={resolveImageUrl(post.coverImage)}
+                      src={getCoverImageSrc(post.coverImage, 640)}
+                      srcSet={getCoverImageSrcSet(post.coverImage)}
+                      sizes="(min-width: 1280px) 580px, (min-width: 768px) 48vw, calc(100vw - 80px)"
                       alt={`${t.post.illustrationAlt}: ${post.title}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000"
+                      loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>

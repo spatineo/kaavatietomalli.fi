@@ -9,6 +9,7 @@ import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 import { getTracker } from '../services/analytics';
 import { resolveImageUrl } from '../lib/utils';
+import { getCoverImageSrc } from '../lib/images';
 import { fetchJsonCached } from '../lib/fetch-cache';
 
 export interface UseMetadataSyncProps {
@@ -272,9 +273,15 @@ export function useMetadataSync({
     // Image updates
     let imageUrl = `${CONFIG.baseUrl}/images/og-image.png`;
     if (activeView.type === 'post' && currentPost?.coverImage) {
-      imageUrl = resolveImageUrl(currentPost.coverImage);
+      imageUrl = getCoverImageSrc(currentPost.coverImage, 1200);
+      if (imageUrl.startsWith('/')) {
+        imageUrl = `${CONFIG.baseUrl.replace(/\/$/, '')}${imageUrl}`;
+      }
     } else if (activeView.type === 'author' && currentAuthor?.image) {
       imageUrl = resolveImageUrl(currentAuthor.image);
+      if (imageUrl.startsWith('/')) {
+        imageUrl = `${CONFIG.baseUrl.replace(/\/$/, '')}${imageUrl}`;
+      }
     }
     updateMeta('meta[property="og:image"]', imageUrl);
     updateMeta('meta[property="twitter:image"]', imageUrl);

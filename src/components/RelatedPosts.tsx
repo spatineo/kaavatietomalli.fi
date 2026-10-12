@@ -2,6 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { motion } from 'motion/react';
 import { PostMetadata } from '../lib/blog';
 import { resolveImageUrl } from '../lib/utils';
+import { getCoverImageSrc, getCoverImageSrcSet } from '../lib/images';
 import { Calendar, ArrowRight } from 'lucide-react';
 
 interface RelatedPostsProps {
@@ -25,10 +26,13 @@ export function RelatedPosts({ posts, onSelectPost }: RelatedPostsProps) {
           <div className="relative w-24 h-24 sm:w-32 sm:h-24 flex-shrink-0 overflow-hidden rounded-xl bg-slate-800">
             {post.coverImage ? (
               <img
-                src={resolveImageUrl(post.coverImage)}
+                src={getCoverImageSrc(post.coverImage, 320)}
+                srcSet={getCoverImageSrcSet(post.coverImage)}
+                sizes="(min-width: 640px) 128px, 96px"
                 alt={post.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 referrerPolicy="no-referrer"
+                loading="lazy"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center opacity-20">
