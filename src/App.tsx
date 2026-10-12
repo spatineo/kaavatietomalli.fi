@@ -3,10 +3,18 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { PostView } from './components/PostView';
+import { PageView } from './components/PageView';
 import { Header, Footer } from './components/Navigation';
+import { AuthorView } from './components/AuthorView';
+import { NotFoundView } from './components/NotFoundView';
 import { HomeView } from './components/HomeView';
+import { TagView } from './components/TagView';
+import { DataModelView } from './components/DataModelView';
+import { ValidateView } from './components/ValidateView';
+import { PlanExplorerView } from './components/PlanExplorerView';
 import { CookieConsent } from './components/CookieConsent';
 import { getAllPostMetadata, getAuthorBySlug, PostMetadata, AuthorData } from './lib/blog';
 import { CONFIG } from './config';
@@ -18,28 +26,6 @@ import { useMetadataSync } from './hooks/useMetadataSync';
 import { useContentLoader } from './hooks/useContentLoader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { FetchDataModelAccess } from './lib/fetch-data-model-access';
-
-// Code-split heavy views to prevent render-blocking on the homepage
-const PostView = lazy(() => import('./components/PostView').then(m => ({ default: m.PostView })));
-const PageView = lazy(() => import('./components/PageView').then(m => ({ default: m.PageView })));
-const AuthorView = lazy(() => import('./components/AuthorView').then(m => ({ default: m.AuthorView })));
-const NotFoundView = lazy(() => import('./components/NotFoundView').then(m => ({ default: m.NotFoundView })));
-const TagView = lazy(() => import('./components/TagView').then(m => ({ default: m.TagView })));
-const DataModelView = lazy(() => import('./components/DataModelView').then(m => ({ default: m.DataModelView })));
-const ValidateView = lazy(() => import('./components/ValidateView').then(m => ({ default: m.ValidateView })));
-const PlanExplorerView = lazy(() => import('./components/PlanExplorerView').then(m => ({ default: m.PlanExplorerView })));
-
-function ViewFallback() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="flex gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-      </div>
-    </div>
-  );
-}
 
 export default function App() {
   return (
@@ -199,8 +185,7 @@ function AppContent() {
         
         <main id="main-content" className="flex-grow">
           <ErrorBoundary onReset={onHome}>
-            <Suspense fallback={<ViewFallback />}>
-              <AnimatePresence>
+            <AnimatePresence>
               {contentNotFound ? (
               <motion.div
                 key="not-found"
@@ -364,7 +349,6 @@ function AppContent() {
               />
             )}
             </AnimatePresence>
-          </Suspense>
           </ErrorBoundary>
         </main>
   
