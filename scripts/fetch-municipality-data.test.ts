@@ -110,7 +110,7 @@ describe('fetch-municipality-data script', () => {
   });
 
   describe('fetchAndTransformMunicipalities', () => {
-    const testOutputDir = path.join(process.cwd(), 'test-public', 'data', 'nls.fi');
+    const testOutputDir = path.join(process.cwd(), 'test-public', 'data', 'nls.fi-test-temp');
 
     beforeEach(() => {
       if (fs.existsSync(testOutputDir)) {
