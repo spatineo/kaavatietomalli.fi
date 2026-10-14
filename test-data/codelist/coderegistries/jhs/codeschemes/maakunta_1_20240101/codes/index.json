@@ -1,0 +1,408 @@
+{
+  "meta" : {
+    "code" : 200,
+    "from" : 0,
+    "resultCount" : 19,
+    "totalResults" : 19
+  },
+  "results" : [ {
+    "id" : "479eaae8-69f1-4a6b-945a-66d1c3cdda1a",
+    "codeValue" : "01",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/01",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/01",
+    "status" : "VALID",
+    "order" : 1,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Uusimaa",
+      "fi" : "Uusimaa",
+      "sv" : "Nyland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/01/members/"
+  }, {
+    "id" : "edfb0aa5-dba1-4bb3-9c19-ea1780e59798",
+    "codeValue" : "02",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/02",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/02",
+    "status" : "VALID",
+    "order" : 2,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Southwest Finland",
+      "fi" : "Varsinais-Suomi",
+      "sv" : "Egentliga Finland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/02/members/"
+  }, {
+    "id" : "b3f4a137-ce44-42ee-9817-c33862696ded",
+    "codeValue" : "04",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/04",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/04",
+    "status" : "VALID",
+    "order" : 3,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Satakunta",
+      "fi" : "Satakunta",
+      "sv" : "Satakunta"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/04/members/"
+  }, {
+    "id" : "a97bff13-4791-4936-ae60-c3bd39cf29a4",
+    "codeValue" : "05",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/05",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/05",
+    "status" : "VALID",
+    "order" : 4,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Kanta-Häme",
+      "fi" : "Kanta-Häme",
+      "sv" : "Egentliga Tavastland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/05/members/"
+  }, {
+    "id" : "e2799d36-2b16-4f3e-bb57-8e73990fad9b",
+    "codeValue" : "06",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/06",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/06",
+    "status" : "VALID",
+    "order" : 5,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Pirkanmaa",
+      "fi" : "Pirkanmaa",
+      "sv" : "Birkaland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/06/members/"
+  }, {
+    "id" : "d204a6cc-2b1c-4af0-b89b-349972ca0249",
+    "codeValue" : "07",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/07",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/07",
+    "status" : "VALID",
+    "order" : 6,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Päijät-Häme",
+      "fi" : "Päijät-Häme",
+      "sv" : "Päijänne-Tavastland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/07/members/"
+  }, {
+    "id" : "935b092c-11d6-4be9-ba28-cac4d8536261",
+    "codeValue" : "08",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/08",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/08",
+    "status" : "VALID",
+    "order" : 7,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Kymenlaakso",
+      "fi" : "Kymenlaakso",
+      "sv" : "Kymmenedalen"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/08/members/"
+  }, {
+    "id" : "d98a9778-a412-4a42-8a7e-80055d4a3a27",
+    "codeValue" : "09",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/09",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/09",
+    "status" : "VALID",
+    "order" : 8,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "South Karelia",
+      "fi" : "Etelä-Karjala",
+      "sv" : "Södra Karelen"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/09/members/"
+  }, {
+    "id" : "f2d8bc9a-0f25-4495-8410-21c257520fee",
+    "codeValue" : "10",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/10",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/10",
+    "status" : "VALID",
+    "order" : 9,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "South Savo",
+      "fi" : "Etelä-Savo",
+      "sv" : "Södra Savolax"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/10/members/"
+  }, {
+    "id" : "eef1da33-2bd8-4c2b-857d-47e8e650ab10",
+    "codeValue" : "11",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/11",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/11",
+    "status" : "VALID",
+    "order" : 10,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "North Savo",
+      "fi" : "Pohjois-Savo",
+      "sv" : "Norra Savolax"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/11/members/"
+  }, {
+    "id" : "fdaa9e58-20e2-4b9b-bbc2-7ff07625d0f6",
+    "codeValue" : "12",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/12",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/12",
+    "status" : "VALID",
+    "order" : 11,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "North Karelia",
+      "fi" : "Pohjois-Karjala",
+      "sv" : "Norra Karelen"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/12/members/"
+  }, {
+    "id" : "91128a1a-d606-46ac-89f7-cb70779a691e",
+    "codeValue" : "13",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/13",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/13",
+    "status" : "VALID",
+    "order" : 12,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Central Finland",
+      "fi" : "Keski-Suomi",
+      "sv" : "Mellersta Finland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/13/members/"
+  }, {
+    "id" : "c8967861-ce00-4cc6-9e3e-93205ff9e665",
+    "codeValue" : "14",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/14",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/14",
+    "status" : "VALID",
+    "order" : 13,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "South Ostrobothnia",
+      "fi" : "Etelä-Pohjanmaa",
+      "sv" : "Södra Österbotten"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/14/members/"
+  }, {
+    "id" : "75cf70df-b07e-4b91-8300-44681fbc78ca",
+    "codeValue" : "15",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/15",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/15",
+    "status" : "VALID",
+    "order" : 14,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Ostrobothnia",
+      "fi" : "Pohjanmaa",
+      "sv" : "Österbotten"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/15/members/"
+  }, {
+    "id" : "e5fbd780-fe0d-4b9c-963c-9c7f23353286",
+    "codeValue" : "16",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/16",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/16",
+    "status" : "VALID",
+    "order" : 15,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Central Ostrobothnia",
+      "fi" : "Keski-Pohjanmaa",
+      "sv" : "Mellersta Österbotten"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/16/members/"
+  }, {
+    "id" : "ffd3ded6-d38f-4e01-96f8-4afeae9bdb6a",
+    "codeValue" : "17",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/17",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/17",
+    "status" : "VALID",
+    "order" : 16,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "North Ostrobothnia",
+      "fi" : "Pohjois-Pohjanmaa",
+      "sv" : "Norra Österbotten"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/17/members/"
+  }, {
+    "id" : "00c7c072-44e6-48a4-8f93-0b2b318ca2e7",
+    "codeValue" : "18",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/18",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/18",
+    "status" : "VALID",
+    "order" : 17,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Kainuu",
+      "fi" : "Kainuu",
+      "sv" : "Kajanaland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/18/members/"
+  }, {
+    "id" : "0266eee9-cb18-41e3-a650-40587bb6d598",
+    "codeValue" : "19",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/19",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/19",
+    "status" : "VALID",
+    "order" : 18,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Lapland",
+      "fi" : "Lappi",
+      "sv" : "Lappland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/19/members/"
+  }, {
+    "id" : "668d1c55-8d78-4f5a-81b3-25dc309a4bbc",
+    "codeValue" : "21",
+    "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101/code/21",
+    "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/21",
+    "status" : "VALID",
+    "order" : 19,
+    "hierarchyLevel" : 1,
+    "startDate" : "2020-01-01",
+    "created" : "2026-01-22T11:32:39.152Z",
+    "modified" : "2026-01-22T11:32:39.152Z",
+    "prefLabel" : {
+      "en" : "Åland",
+      "fi" : "Ahvenanmaa",
+      "sv" : "Åland"
+    },
+    "codeScheme" : {
+      "uri" : "http://uri.suomi.fi/codelist/jhs/maakunta_1_20260101",
+      "url" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101"
+    },
+    "membersUrl" : "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/jhs/codeschemes/maakunta_1_20260101/codes/21/members/"
+  } ]
+}
