@@ -4,6 +4,17 @@ import { TableOfContents } from './TableOfContents';
 import { HeaderItem, assignHeadingPrefixes } from './MarkdownHeading';
 import React from 'react';
 
+// Mock motion/react to prevent animation lifecycle cancellation errors (AbortError) in HappyDOM
+vi.mock('motion/react', () => ({
+  motion: {
+    div: ({ children, ...props }: any) => {
+      const { transition, animate, initial, exit, ...rest } = props;
+      return <div {...rest}>{children}</div>;
+    },
+  },
+  AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
+
 describe('TableOfContents Component', () => {
   const mockHeadings: HeaderItem[] = [
     { level: 1, text: 'Pääotsikko', id: 'paaotsikko' },

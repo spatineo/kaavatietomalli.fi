@@ -15,9 +15,21 @@ describe('ValidateView Component', () => {
   beforeEach(() => {
     clearFetchCache();
   });
-  it('renders titles and initial inputs correctly', () => {
+
+  const renderValidateView = async (props: { onBack?: () => void } = {}) => {
+    const onBack = props.onBack || vi.fn();
+    const result = render(<ValidateView onBack={onBack} />);
+    // Wait for initial async data loading (municipalities and regions) to settle within act()
+    await waitFor(() => {
+      const select = result.container.querySelector('select');
+      expect(select?.querySelectorAll('option').length).toBeGreaterThan(0);
+    });
+    return result;
+  };
+
+  it('renders titles and initial inputs correctly', async () => {
     const handleBack = vi.fn();
-    render(<ValidateView onBack={handleBack} />);
+    await renderValidateView({ onBack: handleBack });
 
     // Verify Title exists
     const title = screen.queryByText(new RegExp(t.validation.title));
@@ -30,8 +42,8 @@ describe('ValidateView Component', () => {
     expect(handleBack).toHaveBeenCalledTimes(1);
   });
 
-  it('supports environment and input modifications', () => {
-    render(<ValidateView onBack={vi.fn()} />);
+  it('supports environment and input modifications', async () => {
+    await renderValidateView();
 
     // Toggle test / prod
     const testToggle = screen.getByText(t.validation.environmentTest);
@@ -50,8 +62,8 @@ describe('ValidateView Component', () => {
     fireEvent.click(formatBtn);
   });
 
-  it('validates JSON structure', () => {
-    render(<ValidateView onBack={vi.fn()} />);
+  it('validates JSON structure', async () => {
+    await renderValidateView();
 
     const textarea = screen.getByPlaceholderText('{}');
     expect(textarea).toBeDefined();
@@ -69,7 +81,7 @@ describe('ValidateView Component', () => {
   });
 
   it('loads a local JSON file into the JSON editor', async () => {
-    render(<ValidateView onBack={vi.fn()} />);
+    await renderValidateView();
 
     const loadFileBtn = screen.getByText(new RegExp(t.validation.buttonLoadFile));
     expect(loadFileBtn).toBeDefined();

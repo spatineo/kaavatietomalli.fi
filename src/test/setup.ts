@@ -25,6 +25,17 @@ beforeAll(() => {
       }
     }, true);
     
+    // Suppress Web Animation cancellations (AbortError: The animation was canceled) in simulated HappyDOM environment
+    window.addEventListener('unhandledrejection', (event) => {
+      const reason = event.reason;
+      if (
+        reason?.name === 'AbortError' ||
+        (typeof reason?.message === 'string' && reason.message.includes('The animation was canceled'))
+      ) {
+        event.preventDefault();
+      }
+    });
+
     // Mock IntersectionObserver if ever utilized
     class MockIntersectionObserver {
       observe = vi.fn();
