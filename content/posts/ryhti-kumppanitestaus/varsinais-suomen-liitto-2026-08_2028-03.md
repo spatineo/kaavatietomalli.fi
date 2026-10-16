@@ -1,0 +1,12 @@
+---
+title: "Maltti 2"
+date: "2028-03-01"
+author: "Ilkka Rinne"
+authorSlug: "ilkka-rinne"
+excerpt: ""
+tags: ["kumppanitestaus","loppuraportti"]
+category: "journal"
+aiAssisted: true
+coverImage: ""
+draft: true
+---
