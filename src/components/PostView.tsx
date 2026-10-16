@@ -15,6 +15,7 @@ import { useHeadings, getUniqueHeadings, HeadingRegistryProvider, assignHeadingP
 import { TableOfContents } from './TableOfContents';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
 import AIUsageLabel from './AIUsageLabel';
+import { fi } from 'date-fns/locale';
 
 interface PostViewProps {
   post: PostData;
@@ -240,7 +241,11 @@ export function PostView({ post, onBack, nextPost, prevPost, onNavigate, onNavig
               ? "text-[10px] font-bold uppercase tracking-[0.2em] text-amber-400 bg-amber-400/10 px-2.5 py-1 rounded-md"
               : "text-[10px] font-bold uppercase tracking-[0.2em] text-brand-accent bg-brand-accent/10 px-2.5 py-1 rounded-md"
             }>
-              {!post.dateLabel ? (format(parseISO(post.date), 'd.M.yyyy')) : (post.dateLabel)}
+              {!post.dateLabel && post.date ? (
+                <>{format(parseISO(post.date), 'd MMMM yyyy', {locale:fi})}</>
+              ) : (
+                <>{post.dateLabel}</>
+              )}
             </span>
           
 

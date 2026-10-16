@@ -2,7 +2,7 @@ import { format, parseISO } from 'date-fns';
 import { motion } from 'motion/react';
 import { ArrowRight, Award } from 'lucide-react';
 import { PostMetadata } from '../lib/blog';
-import { resolveImageUrl } from '../lib/utils';
+import { fi } from 'date-fns/locale';
 import { getCoverImageSrc, getCoverImageSrcSet } from '../lib/images';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
@@ -72,13 +72,21 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold tracking-widest text-brand-accent uppercase bg-brand-accent/10 px-2 py-1 rounded-md">
-                          {format(parseISO(post.date), 'dd.MM.yyyy')}
+                          {!post.dateLabel && post.date ? (
+                            <>{format(parseISO(post.date), 'd MMMM yyyy', {locale:fi})}</>
+                          ) : (
+                            <>{post.dateLabel}</>
+                          )}
                         </span>
                       )}
                       
                       {isSponsored && (
                         <span className="text-[10px] font-bold tracking-widest text-amber-300/40 uppercase bg-white/5 px-2 py-1 rounded-md">
-                          {format(parseISO(post.date), 'dd.MM.yyyy')}
+                          {!post.dateLabel && post.date ? (
+                            <>{format(parseISO(post.date), 'ddd MMM yyyy', {locale:fi})}</>
+                          ) : (
+                            <>{post.dateLabel}</>
+                          )}
                         </span>
                       )}
 

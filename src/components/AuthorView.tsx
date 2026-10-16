@@ -56,12 +56,12 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
       </button>
 
       <div className="grid md:grid-cols-[1fr_2fr] gap-16 md:gap-24">
-        <aside className="flex flex-col gap-10">
-          <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-white/5">
+        <aside className="flex flex-col gap-10 items-center">
+          <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-white/5 flex flewx-row items-center">
             <img 
               src={resolveImageUrl(author.image)} 
               alt={author.name} 
-              className="w-full h-full object-cover"
+              className=""
             />
           </div>
 
