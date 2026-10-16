@@ -15,7 +15,12 @@ export function parseFrontmatter(fileContent: string): FrontmatterResult {
   const normalized = str.replace(/\r\n/g, '\n');
   
   if (normalized.startsWith('---\n')) {
-    const secondSeparatorIndex = normalized.indexOf('\n---\n', 4);
+    let secondSeparatorIndex = normalized.indexOf('\n---\n', 4);
+    if (secondSeparatorIndex === -1) {
+      if (/\n---$/.test(normalized)) { // ends with line '---' without newline
+        secondSeparatorIndex = normalized.length - 4;
+      }
+    }
     if (secondSeparatorIndex !== -1) {
       const yamlStr = normalized.slice(4, secondSeparatorIndex);
       const content = normalized.slice(secondSeparatorIndex + 5);

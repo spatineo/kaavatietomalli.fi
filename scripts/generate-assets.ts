@@ -98,8 +98,9 @@ export function loadAndParsePosts(postsDir: string, now: Date = new Date()): Pos
     const content = fs.readFileSync(path.join(postsDir, file), 'utf-8');
     validateMarkdownVideoBlocks(path.join(postsDir, file), content);
     const { data, content: textContent } = parseFrontmatter(content);
-    if (!data.title) {
-      console.warn(`Warning: Post in "${file}" has missing or empty "title" metadata.`);
+    if (!data.title || !data.date) {
+      console.warn(`Warning: Post in "${file}" has missing or empty "title" or "date/dateLabel" metadata, will skip this`);
+      return {} as PostData;
     }
     return {
       slug,
@@ -126,6 +127,7 @@ export function loadAndParsePosts(postsDir: string, now: Date = new Date()): Pos
 
   return allPosts.filter(post => {
     if (post.draft) return false;
+    if (!post.title || (!post.date && !post.dateLabel)) return false;
     if (!post.publishDate) return true;
     return now >= new Date(post.publishDate);
   });
