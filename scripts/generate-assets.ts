@@ -155,6 +155,7 @@ export function loadAndParsePages(pagesDir: string): PageData[] {
       file: file.replace(/\\/g, '/'),
       partner: data.partner || undefined,
       comments: data.comments === true || data.comments === 'true',
+      coverImage: data.coverImage || '',
       content: textContent,
     } as PageData;
   });
@@ -815,7 +816,8 @@ export async function copyImages(
   resourcesDir: string,
   contentDir: string,
   imagesOutDir: string,
-  posts?: PostMetadata[]
+  posts?: PostMetadata[],
+  pages?: PageData[]
 ): Promise<void> {
   const srcImagesDir = path.join(resourcesDir, 'images');
   if (fs.existsSync(srcImagesDir)) {
@@ -832,6 +834,14 @@ export async function copyImages(
       for (const post of posts) {
         if (post.coverImage && isScalableCoverImage(post.coverImage)) {
           const filename = path.basename(post.coverImage);
+          coverImageNames.add(filename);
+        }
+      }
+    }
+    if (pages && pages.length > 0) {
+      for (const page of pages) {
+        if (page.coverImage && isScalableCoverImage(page.coverImage)) {
+          const filename = path.basename(page.coverImage);
           coverImageNames.add(filename);
         }
       }
@@ -952,7 +962,7 @@ export async function runGenerators(
   generateRssFeed(posts, historyMap, useTestContent, PUBLIC_DIR, CONFIG.baseUrl, t);
 
   const IMAGES_OUT_DIR = path.join(PUBLIC_DIR, 'images');
-  await copyImages(RESOURCES_DIR, CONTENT_DIR, IMAGES_OUT_DIR, posts);
+  await copyImages(RESOURCES_DIR, CONTENT_DIR, IMAGES_OUT_DIR, posts, pages);
 
   generateBuildVersion(PUBLIC_DIR);
 }

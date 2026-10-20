@@ -63,4 +63,27 @@ describe('PageView Component', () => {
     expect(screen.queryByText(fi.common.backToHome)).toBeNull();
     expect(container.querySelector('article')).toBeNull();
   });
+
+  it('renders cover image with responsive srcSet when page.coverImage is provided', () => {
+    const onBack = vi.fn();
+    const pageWithCover = {
+      ...mockPage,
+      coverImage: 'nasa-Q1p7bh3SHj8-unsplash.jpg',
+    };
+    render(<PageView page={pageWithCover} onBack={onBack} />);
+
+    const img = screen.getByRole('img');
+    expect(img).toBeDefined();
+    expect(img.getAttribute('src')).toContain('nasa-Q1p7bh3SHj8-unsplash-1200px.jpg');
+    expect(img.getAttribute('srcset')).toContain('nasa-Q1p7bh3SHj8-unsplash-320px.jpg 320w');
+    expect(img.getAttribute('srcset')).toContain('nasa-Q1p7bh3SHj8-unsplash-1600px.jpg 1600w');
+    expect(img.getAttribute('alt')).toBe(`${fi.post.illustrationAlt}: Tietoa palvelusta`);
+  });
+
+  it('does not render cover image when page.coverImage is not provided', () => {
+    const onBack = vi.fn();
+    render(<PageView page={mockPage} onBack={onBack} />);
+
+    expect(screen.queryByRole('img')).toBeNull();
+  });
 });
