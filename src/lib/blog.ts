@@ -30,6 +30,7 @@ export interface PageData {
   content: string;
   draft?: boolean;
   tags: string[];
+  coverImage?: string;
   file?: string;
   partner?: string;
   comments?: boolean;
