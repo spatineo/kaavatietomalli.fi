@@ -4,7 +4,7 @@
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { cn, resolveImageUrl, fetchServerVersion, checkBackendVersion, scrollToAnchor, formatPlanDate } from './utils';
+import { cn, resolveImageUrl, fetchServerVersion, checkBackendVersion, isChunkLoadError, scrollToAnchor, formatPlanDate } from './utils';
 import { CONFIG } from '../config';
 
 describe('utils library', () => {
@@ -77,6 +77,39 @@ describe('utils library', () => {
       vi.stubEnv('DEV', true);
       const res = await checkBackendVersion();
       expect(res).toBe(true);
+    });
+  });
+
+  describe('isChunkLoadError()', () => {
+    it('returns false for null or undefined or empty', () => {
+      expect(isChunkLoadError(null)).toBe(false);
+      expect(isChunkLoadError(undefined)).toBe(false);
+      expect(isChunkLoadError('')).toBe(false);
+    });
+
+    it('returns false for unrelated errors', () => {
+      expect(isChunkLoadError(new Error('Network connection timeout'))).toBe(false);
+      expect(isChunkLoadError('Some other error message')).toBe(false);
+    });
+
+    it('identifies Chrome dynamic import failures', () => {
+      expect(isChunkLoadError(new Error('Failed to fetch dynamically imported module: https://example.com/assets/Mermaid-abc.js'))).toBe(true);
+      expect(isChunkLoadError('Failed to fetch dynamically imported module')).toBe(true);
+    });
+
+    it('identifies Safari / WebKit dynamic module failures', () => {
+      expect(isChunkLoadError(new Error('Importing a module script failed.'))).toBe(true);
+      expect(isChunkLoadError('Importing a module script failed.')).toBe(true);
+    });
+
+    it('identifies Firefox dynamic module failures', () => {
+      expect(isChunkLoadError(new Error('error loading dynamically imported module: https://example.com/assets/Mermaid.js'))).toBe(true);
+    });
+
+    it('identifies generic chunk loading failures', () => {
+      expect(isChunkLoadError(new Error('Loading chunk 42 failed'))).toBe(true);
+      expect(isChunkLoadError({ name: 'ChunkLoadError' })).toBe(true);
+      expect(isChunkLoadError(new Error('failed to load module script'))).toBe(true);
     });
   });
 

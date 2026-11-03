@@ -34,7 +34,8 @@
     "ci:validate": "tsc --noEmit && vite build --outDir /tmp/vite-check && rm -rf /tmp/vite-check",
     "check-markdown-language": "tsx scripts/check-markdown-language.ts --dir=content",
     "verify-app-version": "tsx scripts/check-and-update-app-version.ts",
-    "update-app-version": "UPDATE_APP_VERSION=1 tsx scripts/check-and-update-app-version.ts"
+    "update-app-version": "UPDATE_APP_VERSION=1 tsx scripts/check-and-update-app-version.ts",
+    "prune-s3-assets": "tsx scripts/prune-s3-assets.ts"
   },
   "dependencies": {
     "@giscus/react": "^3.1.0",

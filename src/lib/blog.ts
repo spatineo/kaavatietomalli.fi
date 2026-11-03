@@ -75,34 +75,12 @@ export interface ContentConfig {
   themes: ThemeItem[];
 }
 
-let fetchedVersion: string | null = null;
-let versionPromise: Promise<string> | null = null;
+export function getClientBuildVersion(): string {
+  return import.meta.env.VITE_APP_BUILD_VERSION || CONFIG.appVersion || '1';
+}
 
 export async function getBuildVersion(): Promise<string> {
-  if (fetchedVersion) {
-    return fetchedVersion;
-  }
-  if (import.meta.env.DEV) {
-    fetchedVersion = CONFIG.appVersion || '1';
-    return fetchedVersion;
-  }
-  if (versionPromise) {
-    return versionPromise;
-  }
-  versionPromise = (async () => {
-    try {
-      const data = await fetchJSON(`${CONFIG.basePath.replace(/\/$/, '')}/version.json`, true);
-      fetchedVersion = data?.version || CONFIG.appVersion || '1';
-      return fetchedVersion;
-    } catch (error) {
-      console.warn('Failed to load version.json, using fallback:', error);
-      fetchedVersion = CONFIG.appVersion || '1';
-      return fetchedVersion;
-    } finally {
-      versionPromise = null;
-    }
-  })();
-  return versionPromise;
+  return getClientBuildVersion();
 }
 
 let cachedContentConfig: ContentConfig | null = null;

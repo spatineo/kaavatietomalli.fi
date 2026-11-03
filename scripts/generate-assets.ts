@@ -876,10 +876,11 @@ export async function copyImages(
   }
 }
 
-export function generateBuildVersion(publicDir: string): void {
-  const buildVersion = Date.now().toString();
+export function generateBuildVersion(publicDir: string): string {
+  const buildVersion = process.env.VITE_APP_BUILD_VERSION || process.env.BUILD_VERSION || Date.now().toString();
   fs.writeFileSync(path.join(publicDir, 'version.json'), JSON.stringify({ version: buildVersion }, null, 2), 'utf-8');
   console.log(`Generated build version: ${buildVersion}`);
+  return buildVersion;
 }
 
 export interface LoadedContent {
