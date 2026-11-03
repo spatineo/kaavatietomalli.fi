@@ -277,6 +277,16 @@ export function useMetadataSync({
       if (imageUrl.startsWith('/')) {
         imageUrl = `${CONFIG.baseUrl.replace(/\/$/, '')}${imageUrl}`;
       }
+    } else if (activeView.type === 'page' && currentPage?.coverImage) {
+      imageUrl = getCoverImageSrc(currentPage.coverImage, 1200);
+      if (imageUrl.startsWith('/')) {
+        imageUrl = `${CONFIG.baseUrl.replace(/\/$/, '')}${imageUrl}`;
+      }
+    } else if (activeView.type === 'tag' && tagPage?.coverImage) {
+      imageUrl = getCoverImageSrc(tagPage.coverImage, 1200);
+      if (imageUrl.startsWith('/')) {
+        imageUrl = `${CONFIG.baseUrl.replace(/\/$/, '')}${imageUrl}`;
+      }
     } else if (activeView.type === 'author' && currentAuthor?.image) {
       imageUrl = resolveImageUrl(currentAuthor.image);
       if (imageUrl.startsWith('/')) {

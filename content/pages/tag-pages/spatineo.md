@@ -13,3 +13,4 @@ Spatineo on ollut mukana alueiden käytön suunnittelun digitalisaation kanssa v
 
 Spatineo on ollut paikkatiedon kansainvälisen standardointijärjestön Open Geospatial Consortiumin (OGC) jäsen vuodesta 2016 lähtien, ja näemme päivittäin, kuinka teollisuuslähtöinen standardointi edistää globaalia yhteentoimivuutta. Spatineon perustaja ja yhteentoimivuusarkkitehti Ilkka Rinne on toiminut muun muassa ISO- ja OGC-standardin Observations, measurements and samples -standardin (ISO 19156:2023) päivittäneen kansainvälisen työryhmän puheenjohtajana vuosina 2019-24.
 
+

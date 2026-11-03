@@ -1,5 +1,6 @@
 ---
 title: "Valtakunnallinen kaavatietomalli"
+coverImage: "Gemini_Generated_Image_uynh0suynh0suynh.jpeg"
 ---
 
 ## Kaavatietomalli: perusteiden alkeet

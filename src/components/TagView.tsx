@@ -11,6 +11,7 @@ import { ContentFooter } from './ContentFooter';
 import { PostMetadata, PageData } from '../lib/blog';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
+import { getCoverImageSrc, getCoverImageSrcSet } from '../lib/images';
 
 interface TagViewProps {
   tagSlug: string;
@@ -111,6 +112,18 @@ export function TagView({
           </h1>
           <div className="h-1.5 w-24 bg-brand-accent rounded-full" />
         </header>
+
+        {tagPage?.coverImage && (
+          <div className="relative aspect-[21/9] overflow-hidden rounded-3xl mb-12 shadow-2xl">
+            <img
+              src={getCoverImageSrc(tagPage.coverImage, 1200)}
+              srcSet={getCoverImageSrcSet(tagPage.coverImage)}
+              sizes="(min-width: 1024px) 840px, (min-width: 768px) 720px, calc(100vw - 48px)"
+              alt={`${t.post.illustrationAlt}: ${tagPage.title}`}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
         {tagPage && (
           <div className="markdown-body prose prose-stone prose-invert max-w-none border-b border-white/10 pb-20 mb-20">
