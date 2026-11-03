@@ -29,6 +29,17 @@ vi.mock('../lib/blog', async (importOriginal) => {
   };
 });
 
+// Mock motion/react to prevent animation lifecycle cancellation errors and act() warnings
+vi.mock('motion/react', () => ({
+  motion: {
+    div: ({ children, ...props }: any) => {
+      const { transition, animate, initial, exit, ...rest } = props;
+      return <div {...rest}>{children}</div>;
+    },
+  },
+  AnimatePresence: ({ children }: any) => <>{children}</>,
+}));
+
 describe('VersionMismatchPrompt component', () => {
   let originalLocation: any;
 
