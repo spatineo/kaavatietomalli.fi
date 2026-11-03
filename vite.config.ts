@@ -1,16 +1,37 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 import {defineConfig, loadEnv} from 'vite';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
   const basePath = env.VITE_BASE_PATH || process.env.VITE_BASE_PATH || '/';
+  const publicDir = process.env.CONTENT_MODE === 'test' ? 'test-public' : 'public';
+
+  let buildVersion = process.env.VITE_APP_BUILD_VERSION || process.env.BUILD_VERSION || '';
+  if (!buildVersion) {
+    try {
+      const versionJsonPath = path.resolve(__dirname, publicDir, 'version.json');
+      if (fs.existsSync(versionJsonPath)) {
+        const data = JSON.parse(fs.readFileSync(versionJsonPath, 'utf-8'));
+        buildVersion = data.version || '';
+      }
+    } catch {
+      // Fallback if file cannot be read
+    }
+  }
+  if (!buildVersion) {
+    buildVersion = Date.now().toString();
+  }
   
   return {
     base: basePath,
     plugins: [react(), tailwindcss()],
-    publicDir: process.env.CONTENT_MODE === 'test' ? 'test-public' : 'public',
+    publicDir,
+    define: {
+      'import.meta.env.VITE_APP_BUILD_VERSION': JSON.stringify(buildVersion),
+    },
     optimizeDeps: {
       include: ['mermaid', '@orama/orama'],
     },

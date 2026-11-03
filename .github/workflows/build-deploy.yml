@@ -260,7 +260,6 @@ jobs:
         if: '!cancelled()'
         run: |
           aws s3 sync dist/ s3://${{ env.BUCKET_NAME }} \
-            --delete \
             --size-only \
             --cache-control "public, max-age=31536000, immutable" \
             --include "assets/*"
@@ -272,6 +271,13 @@ jobs:
             --delete \
             --cache-control "no-cache, no-store, must-revalidate" \
             --exclude "assets/*"
+
+      - name: Prune Obsolete S3 Assets (Older than 7 days)
+        if: '!cancelled()'
+        run: npm run prune-s3-assets
+        env:
+          BUCKET_NAME: ${{ env.BUCKET_NAME }}
+          AWS_REGION: eu-north-1
 
       - name: Invalidate CloudFront Cache
         if: '!cancelled()'

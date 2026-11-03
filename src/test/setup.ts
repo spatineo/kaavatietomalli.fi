@@ -26,6 +26,14 @@ beforeAll(() => {
     }, true);
     
     // Suppress Web Animation cancellations (AbortError: The animation was canceled) in simulated HappyDOM environment
+    if (typeof (window as any).Animation !== 'undefined' && (window as any).Animation.prototype?.cancel) {
+      const origCancel = (window as any).Animation.prototype.cancel;
+      (window as any).Animation.prototype.cancel = function (this: any, ...args: any[]) {
+        this.finished?.catch(() => {});
+        return origCancel.apply(this, args);
+      };
+    }
+
     window.addEventListener('unhandledrejection', (event) => {
       const reason = event.reason;
       if (

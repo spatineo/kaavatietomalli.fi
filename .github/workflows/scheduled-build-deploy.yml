@@ -122,7 +122,6 @@ jobs:
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
         run: |
           aws s3 sync dist/ s3://${{ steps.describe-stack.outputs.bucket_name }} \
-            --delete \
             --size-only \
             --cache-control "public, max-age=31536000, immutable" \
             --include "assets/*"
@@ -134,6 +133,13 @@ jobs:
             --delete \
             --cache-control "no-cache, no-store, must-revalidate" \
             --exclude "assets/*"
+
+      - name: Prune Obsolete S3 Assets (Older than 7 days)
+        if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'
+        run: npm run prune-s3-assets
+        env:
+          BUCKET_NAME: ${{ steps.describe-stack.outputs.bucket_name }}
+          AWS_REGION: eu-north-1
 
       - name: Invalidate CloudFront Cache
         if: steps.check.outputs.should_rebuild == 'true' || steps.fetch-data.outputs.data_changed == 'true'

@@ -4,7 +4,7 @@ date: "2024-01-02"
 author: "Testi Henkilö"
 authorSlug: "ilkka-rinne"
 excerpt: "Tämä on automaattisesti generoitu testipostaus numero 2. Sen tarkoituksena on auttaa testaamaan infinite scroll -toiminnallisuutta."
-tags: ["testi","lataus","suorituskyky"]
+tags: ["testi","lataus","suorituskyky", "spatineo"]
 category: "journal"
 promotional: true 
 partner: "Spatineo Oy"

@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getBuildVersion } from '../lib/blog';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
-import { fetchServerVersion } from '../lib/utils';
+import { fetchServerVersion, isChunkLoadError } from '../lib/utils';
 
 export function VersionMismatchPrompt() {
   const [hasMismatch, setHasMismatch] = useState(false);
@@ -12,14 +12,24 @@ export function VersionMismatchPrompt() {
   const [detectedVersion, setDetectedVersion] = useState<string | null>(null);
   const t = getTranslations(CONFIG.language as Language);
 
-  const performCheck = async () => {
+  const performCheck = useCallback(async () => {
     const sVer = await fetchServerVersion();
     const buildVersion = await getBuildVersion();
     if (sVer && sVer !== buildVersion) {
       setDetectedVersion(sVer);
       setHasMismatch(true);
     }
-  };
+  }, []);
+
+  const triggerChunkError = useCallback((err?: unknown) => {
+    console.warn('Chunk/module loading error detected, prompting version reload:', err);
+    setHasMismatch(true);
+    fetchServerVersion().then((sVer) => {
+      if (sVer) {
+        setDetectedVersion(sVer);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     // Clean up version query parameter from the URL after successful reloading
@@ -63,9 +73,7 @@ export function VersionMismatchPrompt() {
 
     const checkAndSchedule = () => {
       const isVisible = document.visibilityState === 'visible';
-      const isFocused = document.hasFocus();
-      
-      if (isVisible && isFocused) {
+      if (isVisible) {
         performCheck();
         startInterval();
       } else {
@@ -73,7 +81,7 @@ export function VersionMismatchPrompt() {
       }
     };
 
-    // Listen to visibility and focus/blur changes
+    // Listen to visibility and focus changes
     const handleVisibilityChange = () => {
       checkAndSchedule();
     };
@@ -82,37 +90,35 @@ export function VersionMismatchPrompt() {
       checkAndSchedule();
     };
 
-    const handleBlur = () => {
-      checkAndSchedule();
-    };
-
     window.addEventListener('focus', handleFocus);
-    window.addEventListener('blur', handleBlur);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // 4. Catch ChunkLoadErrors and blank-page triggers instantly
+    // 1. Catch Vite dynamic chunk preload errors
+    const handlePreloadError = (event: Event) => {
+      triggerChunkError(event);
+    };
+
+    // 2. Catch custom chunk load errors (e.g. dispatched from ErrorBoundary)
+    const handleAppChunkError = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      triggerChunkError(customEvent.detail?.error);
+    };
+
+    // 3. Catch ChunkLoadErrors and blank-page triggers instantly across browsers (Chrome, Safari, Firefox)
     const handleError = (event: ErrorEvent) => {
-      const msg = (event.message || '').toLowerCase();
-      if (
-        msg.includes('chunk') || 
-        msg.includes('loading chunk') || 
-        msg.includes('dynamically imported') || 
-        msg.includes('failed to fetch dynamically')
-      ) {
-        performCheck();
+      if (isChunkLoadError(event.error || event.message)) {
+        triggerChunkError(event.error || event.message);
       }
     };
 
     const handleRejection = (event: PromiseRejectionEvent) => {
-      const reason = event.reason;
-      if (reason && reason instanceof Error) {
-        const msg = reason.message.toLowerCase();
-        if (msg.includes('chunk') || msg.includes('loading') || msg.includes('fetch')) {
-          performCheck();
-        }
+      if (isChunkLoadError(event.reason)) {
+        triggerChunkError(event.reason);
       }
     };
 
+    window.addEventListener('vite:preloadError', handlePreloadError);
+    window.addEventListener('app:chunkLoadError', handleAppChunkError);
     window.addEventListener('error', handleError);
     window.addEventListener('unhandledrejection', handleRejection);
 
@@ -122,12 +128,13 @@ export function VersionMismatchPrompt() {
     return () => {
       stopInterval();
       window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('blur', handleBlur);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('vite:preloadError', handlePreloadError);
+      window.removeEventListener('app:chunkLoadError', handleAppChunkError);
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleRejection);
     };
-  }, []);
+  }, [performCheck, triggerChunkError]);
 
   const handleReload = () => {
     const url = new URL(window.location.href);

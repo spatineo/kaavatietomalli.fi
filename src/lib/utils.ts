@@ -59,6 +59,29 @@ export async function checkBackendVersion(): Promise<boolean> {
 }
 
 /**
+ * Checks whether an error or error event message represents a dynamic import or chunk loading failure
+ * across all major browser engines (Chromium, WebKit / Safari, Firefox).
+ */
+export function isChunkLoadError(error: unknown): boolean {
+  if (!error) return false;
+  const msg = (
+    typeof error === 'string'
+      ? error
+      : (error as any)?.message || (error as any)?.name || (error as any)?.reason?.message || ''
+  ).toLowerCase();
+
+  return (
+    msg.includes('chunk') ||
+    msg.includes('loading chunk') ||
+    msg.includes('dynamically imported') ||
+    msg.includes('failed to fetch dynamically') ||
+    msg.includes('importing a module script failed') ||
+    msg.includes('error loading dynamically imported module') ||
+    msg.includes('failed to load module script')
+  );
+}
+
+/**
  * Smoothly scrolls to an element by its ID and updates the URL hash
  * without triggering the browser's default instant jump scroll.
  */
