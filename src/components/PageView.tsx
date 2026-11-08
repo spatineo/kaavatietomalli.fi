@@ -9,7 +9,7 @@ import { useHeadings, getUniqueHeadings, HeadingRegistryProvider, assignHeadingP
 import { TableOfContents } from './TableOfContents';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
 import { PostComments } from './PostComments';
-import { getCoverImageSrc, getCoverImageSrcSet } from '../lib/images';
+import { CoverImage } from './CoverImage';
 
 interface PageViewProps {
   page: PageData;
@@ -107,15 +107,12 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
         </header>
 
         {page.coverImage && (
-          <div className="relative aspect-[21/9] overflow-hidden rounded-3xl mb-12 shadow-2xl">
-            <img
-              src={getCoverImageSrc(page.coverImage, 1200)}
-              srcSet={getCoverImageSrcSet(page.coverImage)}
-              sizes="(min-width: 1024px) 840px, (min-width: 768px) 720px, calc(100vw - 48px)"
-              alt={`${t.post.illustrationAlt}: ${page.title}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <CoverImage
+            src={page.coverImage}
+            alt={`${t.post.illustrationAlt}: ${page.title}`}
+            title={page.title}
+            className="mb-12"
+          />
         )}
 
         <div className="relative">

@@ -70,7 +70,19 @@ describe('TagView Component', () => {
     expect(img.getAttribute('src')).toContain('nasa-Q1p7bh3SHj8-unsplash-1200px.jpg');
     expect(img.getAttribute('srcset')).toContain('nasa-Q1p7bh3SHj8-unsplash-320px.jpg 320w');
     expect(img.getAttribute('srcset')).toContain('nasa-Q1p7bh3SHj8-unsplash-1600px.jpg 1600w');
+    expect(img.getAttribute('srcset')).toContain('nasa-Q1p7bh3SHj8-unsplash-2048px.jpg 2048w');
     expect(img.getAttribute('alt')).toBe(`${fi.post.illustrationAlt}: Spatineo Oy`);
+
+    // Verify clicking opens lightbox with full 2048px image
+    const trigger = screen.getByTestId('cover-image-trigger');
+    fireEvent.click(trigger);
+    expect(screen.getByTestId('image-lightbox-backdrop')).toBeDefined();
+    const lightboxImg = screen.getByTestId('image-lightbox-img');
+    expect(lightboxImg.getAttribute('src')).toContain('nasa-Q1p7bh3SHj8-unsplash-2048px.jpg');
+
+    // Verify clicking enlarged image closes lightbox
+    fireEvent.click(lightboxImg);
+    expect(screen.queryByTestId('image-lightbox-backdrop')).toBeNull();
   });
 
   it('renders hashtag when tagPage is null and does not render cover image', () => {

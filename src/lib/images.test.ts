@@ -1,16 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import {
   COVER_IMAGE_WIDTHS,
+  LIGHTBOX_IMAGE_WIDTH,
   isScalableCoverImage,
   getScaledCoverImageFilename,
   getCoverImageSrc,
+  getLightboxImageSrc,
   getCoverImageSrcSet,
 } from './images';
 
 describe('images utility', () => {
   describe('COVER_IMAGE_WIDTHS', () => {
-    it('contains standard breakpoints matching layout requirements', () => {
-      expect(COVER_IMAGE_WIDTHS).toEqual([320, 640, 960, 1200, 1600]);
+    it('contains standard breakpoints matching layout requirements including lightbox', () => {
+      expect(COVER_IMAGE_WIDTHS).toEqual([320, 640, 960, 1200, 1600, 2048]);
+    });
+
+    it('defines LIGHTBOX_IMAGE_WIDTH as 2048', () => {
+      expect(LIGHTBOX_IMAGE_WIDTH).toBe(2048);
     });
   });
 
@@ -78,6 +84,23 @@ describe('images utility', () => {
     });
   });
 
+  describe('getLightboxImageSrc', () => {
+    it('returns empty string for missing input', () => {
+      expect(getLightboxImageSrc(undefined)).toBe('');
+      expect(getLightboxImageSrc('')).toBe('');
+    });
+
+    it('returns original URL for external or vector images', () => {
+      const externalUrl = 'https://example.com/cover.jpg';
+      expect(getLightboxImageSrc(externalUrl)).toBe(externalUrl);
+      expect(getLightboxImageSrc('/images/diagram.svg')).toBe('/images/diagram.svg');
+    });
+
+    it('returns 2048px scaled image URL for local raster images', () => {
+      expect(getLightboxImageSrc('/images/matti.png')).toBe('/images/matti-2048px.png');
+    });
+  });
+
   describe('getCoverImageSrcSet', () => {
     it('returns undefined for non-scalable images', () => {
       expect(getCoverImageSrcSet(undefined)).toBeUndefined();
@@ -93,6 +116,7 @@ describe('images utility', () => {
       expect(srcSet).toContain('/images/matti-960px.png 960w');
       expect(srcSet).toContain('/images/matti-1200px.png 1200w');
       expect(srcSet).toContain('/images/matti-1600px.png 1600w');
+      expect(srcSet).toContain('/images/matti-2048px.png 2048w');
     });
   });
 });
