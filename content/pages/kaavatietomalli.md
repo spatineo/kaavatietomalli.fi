@@ -1,6 +1,6 @@
 ---
 title: "Valtakunnallinen kaavatietomalli"
-coverImage: "Gemini_Generated_Image_uynh0suynh0suynh.jpeg"
+coverImage: "IOR_2180.png"
 ---
 
 ## Kaavatietomalli: perusteiden alkeet

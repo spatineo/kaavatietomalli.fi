@@ -19,3 +19,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+--------------------------------------------------------------------------------
+EXCEPTIONS & RESERVATIONS:
+
+The images and media files located under the `content/images/` directory are NOT
+licensed under this MIT License. They are proprietary and copyrighted by Ilkka Rinne
+(or their respective original authors) with All Rights Reserved. Re-use,
+re-publishing, creation of derivative works, and automated AI/machine learning
+data ingestion of those files are strictly forbidden without prior written
+permission from Ilkka Rinne. For specific licensing terms, see:
+  content/images/LICENSE.md
+--------------------------------------------------------------------------------

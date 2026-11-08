@@ -1,6 +1,6 @@
 ---
 title: "Tietomallimuotoista kaavatietoa koskevat lait ja asetukset"
-coverImage: "Gemini_Generated_Image_5u3cvb5u3cvb5u3c.jpeg"
+coverImage: "IOR_2060.png"
 ---
 
 Tietomallimuotoisen kaavatiedon tuottamista ja sen kokoamista kansalliseen alueidenkäytön tietovarantoon Ryhti-järjestelmässä ohjataan seuraavien lakien ja asetusten avulla:
