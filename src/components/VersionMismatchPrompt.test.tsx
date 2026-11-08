@@ -4,7 +4,7 @@
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { VersionMismatchPrompt } from './VersionMismatchPrompt';
 import { getTranslations } from '../i18n';
 
@@ -42,9 +42,11 @@ vi.mock('motion/react', () => ({
 
 describe('VersionMismatchPrompt component', () => {
   let originalLocation: any;
+  let consoleWarnSpy: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
     mockGetBuildVersion.mockResolvedValue('1000');
     mockFetchServerVersion.mockResolvedValue('1000');
 
@@ -59,6 +61,7 @@ describe('VersionMismatchPrompt component', () => {
   });
 
   afterEach(() => {
+    consoleWarnSpy?.mockRestore();
     window.location = originalLocation;
   });
 
@@ -101,7 +104,9 @@ describe('VersionMismatchPrompt component', () => {
 
     expect(screen.queryByText(t.versionMismatch.title)).toBeNull();
 
-    window.dispatchEvent(new Event('vite:preloadError'));
+    act(() => {
+      window.dispatchEvent(new Event('vite:preloadError'));
+    });
 
     await waitFor(() => {
       expect(screen.getByText(t.versionMismatch.title)).toBeDefined();
@@ -116,9 +121,11 @@ describe('VersionMismatchPrompt component', () => {
 
     expect(screen.queryByText(t.versionMismatch.title)).toBeNull();
 
-    window.dispatchEvent(new CustomEvent('app:chunkLoadError', {
-      detail: { error: new Error('Failed to fetch dynamically imported module: /assets/Mermaid.js') }
-    }));
+    act(() => {
+      window.dispatchEvent(new CustomEvent('app:chunkLoadError', {
+        detail: { error: new Error('Failed to fetch dynamically imported module: /assets/Mermaid.js') }
+      }));
+    });
 
     await waitFor(() => {
       expect(screen.getByText(t.versionMismatch.title)).toBeDefined();
@@ -137,7 +144,9 @@ describe('VersionMismatchPrompt component', () => {
       message: 'Importing a module script failed.',
       error: new TypeError('Importing a module script failed.')
     });
-    window.dispatchEvent(safariErrorEvent);
+    act(() => {
+      window.dispatchEvent(safariErrorEvent);
+    });
 
     await waitFor(() => {
       expect(screen.getByText(t.versionMismatch.title)).toBeDefined();
@@ -154,7 +163,9 @@ describe('VersionMismatchPrompt component', () => {
 
     const rejectionEvent = new CustomEvent('unhandledrejection') as any;
     rejectionEvent.reason = new Error('error loading dynamically imported module: /assets/index.js');
-    window.dispatchEvent(rejectionEvent);
+    act(() => {
+      window.dispatchEvent(rejectionEvent);
+    });
 
     await waitFor(() => {
       expect(screen.getByText(t.versionMismatch.title)).toBeDefined();

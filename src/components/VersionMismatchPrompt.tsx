@@ -22,7 +22,10 @@ export function VersionMismatchPrompt() {
   }, []);
 
   const triggerChunkError = useCallback((err?: unknown) => {
-    console.warn('Chunk/module loading error detected, prompting version reload:', err);
+    const errorDetails = err instanceof Error
+      ? err.message
+      : (err instanceof Event ? `[Event: ${err.type}]` : err);
+    console.warn('Chunk/module loading error detected, prompting version reload:', errorDetails);
     setHasMismatch(true);
     fetchServerVersion().then((sVer) => {
       if (sVer) {
