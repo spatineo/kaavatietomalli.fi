@@ -1127,3 +1127,10 @@ npm run cdk:deploy
 # Tear down all provisioned AWS CDK infrastructure stacks and resources
 npm run cdk:destroy
 ```
+
+---
+
+## License
+
+- **Source Code & Documentation**: Licensed under the [MIT License](LICENSE).
+- **Images & Visual Assets**: The photographs, diagrams, and visual media located under [`content/images/`](content/images/) are **NOT** covered by the MIT License. They are proprietary and copyrighted by **Ilkka Rinne** (All Rights Reserved). Re-use, re-publishing, creation of derivative works, and automated AI/machine learning data mining or ingestion of these images are strictly prohibited without prior written permission from Ilkka Rinne. See [`content/images/LICENSE.md`](content/images/LICENSE.md) for full terms.

@@ -1,7 +1,8 @@
 import { resolveImageUrl } from './utils';
 
-export const COVER_IMAGE_WIDTHS = [320, 640, 960, 1200, 1600] as const;
+export const COVER_IMAGE_WIDTHS = [320, 640, 960, 1200, 1600, 2048] as const;
 export type CoverImageWidth = (typeof COVER_IMAGE_WIDTHS)[number];
+export const LIGHTBOX_IMAGE_WIDTH = 2048;
 
 /**
  * Checks whether the given image URL is an eligible local raster cover image
@@ -44,6 +45,13 @@ export function getCoverImageSrc(url: string | undefined, targetWidth: number = 
   }
   const scaledFilename = getScaledCoverImageFilename(url, targetWidth);
   return resolveImageUrl(`/images/${scaledFilename}`);
+}
+
+/**
+ * Returns the resolved image source URL for displaying a full-resolution cover image in a lightbox (max 2048px).
+ */
+export function getLightboxImageSrc(url: string | undefined): string {
+  return getCoverImageSrc(url, LIGHTBOX_IMAGE_WIDTH);
 }
 
 /**

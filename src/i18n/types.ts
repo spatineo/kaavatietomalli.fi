@@ -68,6 +68,10 @@ export interface Translations {
     zoomToFit: string;
     close: string;
   };
+  lightbox: {
+    openImage: string;
+    close: string;
+  };
   mermaid: {
     renderError: string;
   };

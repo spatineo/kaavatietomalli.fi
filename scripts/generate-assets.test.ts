@@ -996,6 +996,7 @@ describe('Modular Sub-pipelines', () => {
         expect(fs.existsSync(path.join(outDir, 'test-cover-960px.png'))).toBe(true);
         expect(fs.existsSync(path.join(outDir, 'test-cover-1200px.png'))).toBe(true);
         expect(fs.existsSync(path.join(outDir, 'test-cover-1600px.png'))).toBe(true);
+        expect(fs.existsSync(path.join(outDir, 'test-cover-2048px.png'))).toBe(true);
       } finally {
         fs.rmSync(tempDir, { recursive: true, force: true });
       }

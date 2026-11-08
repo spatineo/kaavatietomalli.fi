@@ -1,6 +1,6 @@
 ---
 title: "Ryhti-järjestelmä"
-coverImage: "Gemini_Generated_Image_d7iiskd7iiskd7ii.jpeg"
+coverImage: "IOR_1178.png"
 ---
 
 ## Rakennetun ympäristön tietojärjestelmä (Ryhti)

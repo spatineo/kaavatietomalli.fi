@@ -70,6 +70,10 @@ export const fi: Translations = {
     zoomToFit: 'Mahduta',
     close: 'Sulje',
   },
+  lightbox: {
+    openImage: 'Avaa kuva suurempana',
+    close: 'Sulje kuva',
+  },
   mermaid: {
     renderError: 'Mermaid-kaavion piirto epäonnistui',
   },
