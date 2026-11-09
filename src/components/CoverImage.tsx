@@ -8,7 +8,7 @@ import { CONFIG } from '../config';
 export interface CoverImageProps {
   src: string;
   alt: string;
-  title?: string;
+  caption?: string;
   isSponsored?: boolean;
   className?: string;
   aspectRatioClassName?: string;
@@ -17,7 +17,7 @@ export interface CoverImageProps {
 export function CoverImage({
   src,
   alt,
-  title,
+  caption,
   isSponsored = false,
   className = '',
   aspectRatioClassName = 'aspect-[21/9]',
@@ -30,7 +30,7 @@ export function CoverImage({
       <div
         role="button"
         tabIndex={0}
-        aria-label={`${t.lightbox.openImage}: ${title || alt}`}
+        aria-label={`${t.lightbox.openImage}: ${caption || alt}`}
         onClick={() => setIsLightboxOpen(true)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -47,7 +47,7 @@ export function CoverImage({
           srcSet={getCoverImageSrcSet(src)}
           sizes="(min-width: 1024px) 840px, (min-width: 768px) 720px, calc(100vw - 48px)"
           alt={alt}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          className="w-full h-full object-cover"
         />
 
       </div>
@@ -57,7 +57,7 @@ export function CoverImage({
         onClose={() => setIsLightboxOpen(false)}
         src={src}
         alt={alt}
-        title={title}
+        caption={caption}
       />
     </>
   );

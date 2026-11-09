@@ -1,6 +1,7 @@
 ---
 title: "Valtakunnallinen kaavatietomalli"
 coverImage: "IOR_2180.png"
+coverImageCaption: "Trip heijaa. Valokuva Ilkka Rinne"
 ---
 
 ## Kaavatietomalli: perusteiden alkeet

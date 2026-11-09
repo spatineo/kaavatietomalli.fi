@@ -1,6 +1,7 @@
 ---
 title: "Ryhti-järjestelmä"
 coverImage: "IOR_1178.png"
+coverImageCaption: "Gnagg Booster, Alvar Gullichsen, Bonk-museo. Valokuva Ilkka Rinne"
 ---
 
 ## Rakennetun ympäristön tietojärjestelmä (Ryhti)
