@@ -1,6 +1,7 @@
 ---
 title: "Tietomallimuotoista kaavatietoa koskevat lait ja asetukset"
 coverImage: "IOR_2060.png"
+coverImageCaption: "Vallan kova. Valokuva Ilkka Rinne"
 ---
 
 Tietomallimuotoisen kaavatiedon tuottamista ja sen kokoamista kansalliseen alueidenkäytön tietovarantoon Ryhti-järjestelmässä ohjataan seuraavien lakien ja asetusten avulla:

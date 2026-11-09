@@ -7,7 +7,8 @@ excerpt: "Varsinais-Suomen liiton vetämässä hankkeessa vahvistui, että maaku
 tags: ["kumppanitestaus","loppuraportti", "esri-finland", "gispo"]
 category: "journal"
 aiAssisted: true
-coverImage: "/images/Gemini_Generated_Image_qnwgtaqnwgtaqnwg.jpeg"
+coverImage: "IOR_1192.png"
+coverImageCaption: "Satamasta. Valokuva Ilkka Rinne"
 ---
 
 # Maakuntakaavoituksessa joudutaan luopumaan HAME-tietokannasta
