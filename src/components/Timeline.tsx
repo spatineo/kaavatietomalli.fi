@@ -38,9 +38,8 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className={`relative flex items-start flex-col md:flex-row ${
-                index % 2 === 0 ? 'md:flex-row-reverse' : ''
-              }`}
+              className={`relative flex items-start flex-col md:flex-row ${index % 2 === 0 ? 'md:flex-row-reverse' : ''
+                }`}
               role="listitem"
             >
               {/* Center Node */}
@@ -73,17 +72,17 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                       ) : (
                         <span className="text-[10px] font-bold tracking-widest text-brand-accent uppercase bg-brand-accent/10 px-2 py-1 rounded-md">
                           {!post.dateLabel && post.date ? (
-                            <>{format(parseISO(post.date), 'd MMMM yyyy', {locale:fi})}</>
+                            <>{format(parseISO(post.date), 'd MMMM yyyy', { locale: fi })}</>
                           ) : (
                             <>{post.dateLabel}</>
                           )}
                         </span>
                       )}
-                      
+
                       {isSponsored && (
                         <span className="text-[10px] font-bold tracking-widest text-amber-300/40 uppercase bg-white/5 px-2 py-1 rounded-md">
                           {!post.dateLabel && post.date ? (
-                            <>{format(parseISO(post.date), 'ddd MMM yyyy', {locale:fi})}</>
+                            <>{format(parseISO(post.date), 'd MMMM yyyy', { locale: fi })}</>
                           ) : (
                             <>{post.dateLabel}</>
                           )}
@@ -94,11 +93,11 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{post.author}</span>
                       )}
                     </div>
-                    
+
                     <h3 className={`text-3xl md:text-4xl group-hover:text-amber-400 transition-colors leading-[1.1] mb-5 ${isSponsored ? 'text-amber-50/95 font-sans font-extrabold tracking-normal' : 'text-white font-serif font-medium'}`}>
                       {post.title}
                     </h3>
-                    
+
                     <p className={`text-slate-400 text-lg font-medium leading-relaxed mb-6 line-clamp-3 ${isSponsored ? 'font-sans text-slate-300/90' : 'font-serif'}`}>
                       {post.excerpt}
                     </p>
@@ -126,7 +125,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                   <div className="flex flex-wrap gap-4 items-center">
                     <button
                       onClick={() => onSelectPost(post.slug)}
-                      className={isSponsored 
+                      className={isSponsored
                         ? "group inline-flex items-center gap-4 bg-amber-400/10 text-amber-400 border border-amber-400/25 hover:bg-amber-400 hover:text-black rounded-xl px-6 py-2.5 transition-all duration-300 shadow-xl shadow-amber-400/5 font-extrabold text-[10px]"
                         : "group inline-flex items-center gap-4 bg-black text-white border border-white/10 rounded-xl px-8 py-3 transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20"
                       }

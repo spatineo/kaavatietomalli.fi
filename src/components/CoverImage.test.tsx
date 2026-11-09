@@ -18,7 +18,7 @@ describe('CoverImage Component', () => {
   const defaultProps = {
     src: 'images/nasa-Q1p7bh3SHj8-unsplash.png',
     alt: 'Test Cover Alt',
-    title: 'Test Cover Title',
+    caption: 'Test Cover Title',
   };
 
   it('renders inline cover image with responsive srcSet and 1200px fallback src', () => {
@@ -48,7 +48,7 @@ describe('CoverImage Component', () => {
     const lightboxImg = screen.getByTestId('image-lightbox-img');
     expect(lightboxImg.getAttribute('src')).toContain('nasa-Q1p7bh3SHj8-unsplash-2048px.png');
     expect(lightboxImg.getAttribute('srcset')).toContain('nasa-Q1p7bh3SHj8-unsplash-2048px.png 2048w');
-    expect(screen.getByTestId('image-lightbox-title').textContent).toBe(defaultProps.title);
+    expect(screen.getByTestId('image-lightbox-caption').textContent).toBe(defaultProps.caption);
   });
 
   it('opens lightbox on keyboard Enter and Space', () => {

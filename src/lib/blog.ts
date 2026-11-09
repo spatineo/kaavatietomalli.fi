@@ -9,6 +9,7 @@ export interface PostMetadata {
   excerpt: string;
   tags: string[];
   coverImage?: string;
+  coverImageCaption?: string;
   category?: string;
   publishDate?: string;
   draft?: boolean;
@@ -31,6 +32,7 @@ export interface PageData {
   draft?: boolean;
   tags: string[];
   coverImage?: string;
+  coverImageCaption?: string;
   file?: string;
   partner?: string;
   comments?: boolean;
@@ -231,12 +233,12 @@ export async function getPostsByTag(tag: string, offset: number = 0, limit: numb
   const normalizedTag = tag.toLowerCase().trim();
   const index = await getTagIndex();
   const entry = index[normalizedTag];
-  
+
   if (!entry || !entry.posts.length) return [];
-  
+
   const allPosts = await getAllPostMetadata();
   const taggedSlugs = new Set(entry.posts);
-  
+
   return allPosts
     .filter(p => taggedSlugs.has(p.slug))
     .slice(offset, offset + limit);
@@ -252,11 +254,11 @@ export async function getTagPageSlugs(tag: string): Promise<string[]> {
 export async function getRelatedPostSlugs(currentSlug: string, count: number = 3): Promise<string[]> {
   const allPosts = await getAllPostMetadata();
   const currentPost = allPosts.find(p => p.slug === currentSlug);
-  
+
   if (!currentPost || !currentPost.tags || currentPost.tags.length === 0) return [];
-  
+
   const currentTags = new Set(currentPost.tags.map(t => t.toLowerCase().trim()));
-  
+
   const related = allPosts
     .filter(p => p.slug !== currentSlug)
     .map(p => {
@@ -267,7 +269,7 @@ export async function getRelatedPostSlugs(currentSlug: string, count: number = 3
     .sort((a, b) => b.commonTags - a.commonTags || b.date - a.date)
     .slice(0, count)
     .map(item => item.slug);
-    
+
   return related;
 }
 

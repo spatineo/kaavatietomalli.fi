@@ -117,14 +117,14 @@ export function TagView({
           <CoverImage
             src={tagPage.coverImage}
             alt={`${t.post.illustrationAlt}: ${tagPage.title}`}
-            title={tagPage.title}
+            caption={tagPage.coverImageCaption}
             className="mb-12"
           />
         )}
 
         {tagPage && (
           <div className="markdown-body prose prose-stone prose-invert max-w-none border-b border-white/10 pb-20 mb-20">
-            <PageView page={tagPage} onBack={() => {}} inline />
+            <PageView page={tagPage} onBack={() => { }} inline />
           </div>
         )}
 

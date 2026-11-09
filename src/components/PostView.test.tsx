@@ -56,6 +56,7 @@ describe('PostView Component', () => {
     tags: ['testi'],
     content: '## Otsikko\n\nArtikkelin leipätekstiä.',
     coverImage: 'images/Gemini_Generated_Image_5u3cvb5u3cvb5u3c.jpeg',
+    coverImageCaption: 'Testiartikkelin kuvan kuvateksti.'
   };
 
   it('renders cover image with responsive srcSet including 2048px', () => {
@@ -106,7 +107,7 @@ describe('PostView Component', () => {
     expect(screen.getByTestId('image-lightbox-backdrop')).toBeDefined();
     const lightboxImg = screen.getByTestId('image-lightbox-img');
     expect(lightboxImg.getAttribute('src')).toContain('Gemini_Generated_Image_5u3cvb5u3cvb5u3c-2048px.jpeg');
-    expect(screen.getByTestId('image-lightbox-title').textContent).toBe(mockPost.title);
+    expect(screen.getByTestId('image-lightbox-caption').textContent).toBe(mockPost.coverImageCaption);
 
     // Clicking enlarged image closes lightbox
     fireEvent.click(lightboxImg);

@@ -11,7 +11,7 @@ export interface ImageLightboxProps {
   onClose: () => void;
   src: string;
   alt?: string;
-  title?: string;
+  caption?: string;
 }
 
 export function ImageLightbox({
@@ -19,7 +19,7 @@ export function ImageLightbox({
   onClose,
   src,
   alt,
-  title,
+  caption,
 }: ImageLightboxProps) {
   const t = getTranslations(CONFIG.language as Language);
 
@@ -57,7 +57,7 @@ export function ImageLightbox({
           transition={{ duration: 0.2 }}
           role="dialog"
           aria-modal="true"
-          aria-label={title || alt || t.lightbox.openImage}
+          aria-label={caption || alt || t.lightbox.openImage}
           data-testid="image-lightbox-backdrop"
           onClick={onClose}
           className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8 cursor-pointer select-none"
@@ -93,16 +93,16 @@ export function ImageLightbox({
               src={getLightboxImageSrc(src)}
               srcSet={getCoverImageSrcSet(src)}
               sizes="(min-width: 2048px) 2048px, 100vw"
-              alt={alt || title || ''}
+              alt={alt || caption || ''}
               data-testid="image-lightbox-img"
               className="max-w-full max-h-[85vh] md:max-h-[90vh] w-auto h-auto object-contain rounded-2xl shadow-2xl border border-white/10 hover:opacity-95 transition-opacity"
             />
-            {title && (
+            {caption && (
               <p
-                data-testid="image-lightbox-title"
+                data-testid="image-lightbox-caption"
                 className="mt-4 text-center text-sm md:text-base text-slate-300 font-medium max-w-3xl line-clamp-2 drop-shadow-md px-4"
               >
-                {title}
+                {caption}
               </p>
             )}
           </motion.div>

@@ -28,7 +28,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
   const titleId = combinedHeadings[0].id;
 
   // Scroll to hash on load or page content update
-  
+
   useEffect(() => {
     const scrollToHash = (smooth: boolean = true) => {
       if (window.location.hash) {
@@ -37,9 +37,9 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
           const element = document.getElementById(hash);
           if (element) {
             if (smooth) {
-              element.scrollIntoView({ behavior: 'smooth'});
+              element.scrollIntoView({ behavior: 'smooth' });
             } else {
-              element.scrollIntoView({ behavior: 'instant'});
+              element.scrollIntoView({ behavior: 'instant' });
             }
           }
         }
@@ -51,7 +51,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
 
     window.addEventListener('hashchange', handleHashChange);
     window.addEventListener('mermaid-render-complete', handleMermaidRender);
-    
+
     // Initial scroll trigger on mount/content change
     let timer: number | null = null;
     if (window.location.hash) {
@@ -71,11 +71,11 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
     return (
       <HeadingRegistryProvider uniqueHeadings={combinedHeadings}>
         <div className="markdown-body prose prose-xl prose-stone">
-          <MarkdownRenderer 
-              markdownContent={page.content}
-              slug={page.slug}
-            >
-            </MarkdownRenderer>
+          <MarkdownRenderer
+            markdownContent={page.content}
+            slug={page.slug}
+          >
+          </MarkdownRenderer>
         </div>
       </HeadingRegistryProvider>
     );
@@ -110,7 +110,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
           <CoverImage
             src={page.coverImage}
             alt={`${t.post.illustrationAlt}: ${page.title}`}
-            title={page.title}
+            caption={page.coverImageCaption}
             className="mb-12"
           />
         )}
@@ -120,7 +120,7 @@ export function PageView({ page, onBack, inline = false }: PageViewProps) {
             <TableOfContents headings={combinedHeadings} />
           )}
           <div className="markdown-body prose prose-xl prose-stone">
-            <MarkdownRenderer 
+            <MarkdownRenderer
               markdownContent={page.content}
               slug={page.slug}
             >

@@ -113,6 +113,7 @@ export function loadAndParsePosts(postsDir: string, now: Date = new Date()): Pos
       authorSlug: data.authorSlug || '',
       tags: data.tags || [],
       coverImage: data.coverImage || '',
+      coverImageCaption: data.coverImageCaption || '',
       publishDate: data.publishDate || null,
       draft: data.draft === true || data.draft === 'true',
       file: file.replace(/\\/g, '/'),
@@ -156,6 +157,7 @@ export function loadAndParsePages(pagesDir: string): PageData[] {
       partner: data.partner || undefined,
       comments: data.comments === true || data.comments === 'true',
       coverImage: data.coverImage || '',
+      coverImageCaption: data.coverImageCaption || '',
       content: textContent,
     } as PageData;
   });
@@ -304,7 +306,7 @@ export async function generateIndividualContentFiles(
     if (prerenderedPost.content && prerenderedPost.content.includes('```interactive-image')) {
       prerenderedPost.content = await downloadAndEmbedInteractiveImages(prerenderedPost.content);
     }
-    
+
     const outPath = path.join(POST_JSON_OUT_DIR, `${post.slug}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(
@@ -595,7 +597,7 @@ export function updateIndexHtmlRobots(indexPath: string): void {
     let indexHtml = fs.readFileSync(indexPath, 'utf-8');
     const robotsPrelaunch = '<meta name="robots" content="noindex, nofollow" />';
     const robotsPublic = '<meta name="robots" content="index, follow" />';
-    
+
     if (CONFIG.prelaunch) {
       if (indexHtml.includes(robotsPublic)) {
         indexHtml = indexHtml.replace(robotsPublic, robotsPrelaunch);
@@ -623,11 +625,11 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
   llmsTxt += `# ${t.common.footerTitle}\n\n`;
   llmsTxt += `${t.llms.note}\n\n`;
   llmsTxt += `${t.hero.description}.\n\n`;
-  
+
   llmsTxt += `## ${t.llms.links}\n`;
   llmsTxt += `- [${t.navigation.githubRepo}](https://github.com/${REPO_OWNER}/${REPO_NAME})\n`;
   llmsTxt += `- [Sitemap](${baseUrl}/sitemap.xml)\n\n`;
-  
+
   llmsTxt += `## ${t.llms.articlesFeatured}\n`;
   const featuredPosts = posts.slice(0, 5);
   featuredPosts.forEach(post => {
@@ -643,19 +645,19 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
     llmsTxt += line + '\n';
   });
   llmsTxt += `\n`;
-  
+
   llmsTxt += `## ${t.llms.pages}\n`;
   pages.forEach(page => {
     llmsTxt += `- [${page.title}](${baseUrl}/${page.slug}) - [Raw Markdown](${baseUrl}/${page.slug}.md)\n`;
   });
   llmsTxt += `\n`;
-  
+
   llmsTxt += `## ${t.llms.optional}\n`;
   llmsTxt += `${t.llms.fullIndexNote.replace('${baseUrl}', baseUrl)}\n`;
-  
+
   fs.writeFileSync(path.join(publicDir, 'llms.txt'), llmsTxt, 'utf-8');
   console.log('Generated llms.txt');
-  
+
   // Generate llms-full.txt
   let llmsFullTxt = '';
   if (CONFIG.prelaunch) {
@@ -664,7 +666,7 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
   llmsFullTxt += `# ${t.common.footerTitle} - ${t.llms.fullIndexTitle}\n\n`;
   llmsFullTxt += `${t.llms.note}\n\n`;
   llmsFullTxt += `${t.llms.fullIndexDescription}\n\n`;
-  
+
   llmsFullTxt += `## ${t.llms.articles}\n`;
   posts.forEach(post => {
     let line = `- [${post.title}](${baseUrl}/blog/${post.slug}) - [Raw Markdown](${baseUrl}/blog/${post.slug}.md)`;
@@ -679,7 +681,7 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
     llmsFullTxt += line + '\n';
   });
   llmsFullTxt += `\n`;
-  
+
   llmsFullTxt += `## ${t.llms.pages}\n`;
   pages.forEach(page => {
     llmsFullTxt += `- [${page.title}](${baseUrl}/${page.slug}) - [Raw Markdown](${baseUrl}/${page.slug}.md)\n`;
@@ -932,13 +934,13 @@ export function writeMetadataIndexes(
   );
 
   fs.writeFileSync(
-    path.join(contentOutDir, 'posts.json'), 
+    path.join(contentOutDir, 'posts.json'),
     JSON.stringify(posts.map(({ content, ...rest }) => rest), null, 2),
     'utf-8'
   );
-  
+
   fs.writeFileSync(
-    path.join(contentOutDir, 'pages.json'), 
+    path.join(contentOutDir, 'pages.json'),
     JSON.stringify(pages.map(({ content, ...rest }) => rest), null, 2),
     'utf-8'
   );
@@ -988,7 +990,7 @@ export async function generateAssets() {
   copyContentConfig(CONTENT_DIR, CONTENT_OUT_DIR);
 
   const dataAccess = new LocalFileDataModelAccess();
-  await generateIndividualContentFiles(posts, pages, authors, CONTENT_OUT_DIR, dataAccess,t);
+  await generateIndividualContentFiles(posts, pages, authors, CONTENT_OUT_DIR, dataAccess, t);
 
   console.log('Generated JSON index and individual JSON and Markdown files');
 
