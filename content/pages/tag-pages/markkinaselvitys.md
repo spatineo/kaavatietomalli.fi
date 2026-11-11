@@ -3,5 +3,3 @@ title: "Tietomallimuotoisen kaavatiedon hallintaan liittyvät markkinaselvitykse
 tags: ["markkinaselvitys"]
 ---
 
-# Tietomallimuotoisen kaavatiedon hallintaan liittyvät markkinaselvitykset ja -kartoitukset
-
