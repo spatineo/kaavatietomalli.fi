@@ -1,52 +1,129 @@
 {
   "nav": [
-    { "label": "Blogi", "type": "blog" },
-    { 
-      "label": "Yhteentoimivuus", 
+    {
+      "label": "Blogi",
+      "type": "blog"
+    },
+    {
+      "label": "Yhteentoimivuus",
       "type": "menu",
       "subitems": [
-        { "label": "Lait ja asetukset", "type": "page", "slug": "lainsaadanto" },
-        { "label": "Kaavatietomalli", "type": "page", "slug": "kaavatietomalli" },
-        { "label": "Ryhti-järjestelmä", "type": "page", "slug": "ryhti-jarjestelma" }
+        {
+          "label": "Lait ja asetukset",
+          "type": "page",
+          "slug": "lainsaadanto"
+        },
+        {
+          "label": "Kaavatietomalli",
+          "type": "page",
+          "slug": "kaavatietomalli"
+        },
+        {
+          "label": "Ryhti-järjestelmä",
+          "type": "page",
+          "slug": "ryhti-jarjestelma"
+        }
       ]
     },
     {
       "label": "Työkalut",
       "type": "menu",
       "subitems": [
-        { "label": "Tietomalliselain: Kaavatietomalli", "type": "model", "slug": "rytj-kaava"},
-        { "label": "Tietomalliselain: Sitova tonttijako", "type": "model", "slug": "ryhti-tont"},
-        { "label": "Validaattori: Kaavasuunnitelma", "type": "validate", "slug": "spatialPlan" },
-        { "label": "Kaavaselain", "type": "planExplorer", "slug": "index" }
+        {
+          "label": "Tietomalliselain: Kaavatietomalli",
+          "type": "model",
+          "slug": "rytj-kaava"
+        },
+        {
+          "label": "Tietomalliselain: Sitova tonttijako",
+          "type": "model",
+          "slug": "ryhti-tont"
+        },
+        {
+          "label": "Validaattori: Kaavasuunnitelma",
+          "type": "validate",
+          "slug": "spatialPlan"
+        },
+        {
+          "label": "Kaavaselain",
+          "type": "planExplorer",
+          "slug": "index"
+        }
       ]
     },
-    { 
+    {
       "label": "Ratkaisut",
       "type": "menu",
       "subitems": [
-        { "label": "Tietomallisparraukset ja koulutukset", "type": "tag", "slug": "sparraus" },
-        { "label": "Markkinaselvitykset ja kilpailutuksen tuki", "type": "tag", "slug": "markkinaselvitys" },
-        { "label": "Kuntajärjestelmien yhteentoimivuus", "type": "tag", "slug": "kuntajarjestelmat"},
-        { "label": "Suunnitteluohjelmistot", "type": "tag", "slug": "ohjelmistot" },
-        { "label": "Kumppani: Spatineo Oy", "type": "tag", "slug": "spatineo" },
-        { "label": "Kumppaniksi?", "type": "page", "slug": "kumppaniksi"} 
-
+        {
+          "label": "Tietomallisparraukset ja koulutukset",
+          "type": "tag",
+          "slug": "sparraus"
+        },
+        {
+          "label": "Markkinaselvitykset ja kilpailutuksen tuki",
+          "type": "tag",
+          "slug": "markkinaselvitys"
+        },
+        {
+          "label": "Kuntajärjestelmien yhteentoimivuus",
+          "type": "tag",
+          "slug": "kuntajarjestelmat"
+        },
+        {
+          "label": "Suunnitteluohjelmistot",
+          "type": "tag",
+          "slug": "ohjelmistot"
+        },
+        {
+          "label": "Kumppani: Spatineo Oy",
+          "type": "tag",
+          "slug": "spatineo"
+        },
+        {
+          "label": "Kumppaniksi?",
+          "type": "page",
+          "slug": "kumppaniksi"
+        }
       ]
     },
-    { 
+    {
       "label": "Meistä",
       "type": "menu",
       "subitems": [
-        { "label": "Kaavatietomalli.fi", "type": "page", "slug": "tietoa" },
-        { "label": "Palaute", "type": "page", "slug": "palaute" },
-        { "label": "Tietosuoja", "type": "page", "slug": "tietosuoja" }
+        {
+          "label": "Kaavatietomalli.fi",
+          "type": "page",
+          "slug": "tietoa"
+        },
+        {
+          "label": "Palaute",
+          "type": "page",
+          "slug": "palaute"
+        },
+        {
+          "label": "Tietosuoja",
+          "type": "page",
+          "slug": "tietosuoja"
+        }
       ]
     }
   ],
   "themes": [
-    { "id": "lainsaadanto", "label": "Lainsäädäntö", "tag": "lainsaadanto" },
-    { "id": "tietomallit", "label": "Tietomallit", "tag": "tietomallit" },
-    { "id": "kehitysidea", "label": "Kehitysideat", "tag": "kehitysidea" },
-    { "id": "kokemukset", "label": "Kokemukset", "tag": "kokemukset" }
+    {
+      "id": "lainsaadanto",
+      "label": "Lainsäädäntö",
+      "tag": "lainsaadanto"
+    },
+    {
+      "id": "ohjelmistot",
+      "label": "Suunnitteluohjelmistot",
+      "tag": "ohjelmistot"
+    },
+    {
+      "id": "kumppanitestaus",
+      "label": "Kumppanitestaus",
+      "tag": "kumppanitestaus"
+    }
   ]
 }
