@@ -21,7 +21,9 @@ export function VideoEmbed({ platform, config }: VideoEmbedProps) {
   useEffect(() => {
     const handleConsentUpdate = (e: Event) => {
       const customEvent = e as CustomEvent;
-      if (customEvent.detail && typeof customEvent.detail.analytics === 'boolean') {
+      if (customEvent.detail?.consent) {
+        setHasConsent(customEvent.detail.consent.analyticsStorage === 'granted');
+      } else if (customEvent.detail && typeof customEvent.detail.analytics === 'boolean') {
         setHasConsent(customEvent.detail.analytics);
       }
     };

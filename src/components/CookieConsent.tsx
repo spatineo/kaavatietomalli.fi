@@ -8,16 +8,15 @@ import { getConsentState, setConsent, ConsentProperties, GRANT_ANALYTICS_ONLY, D
 export function CookieConsent() {
   const [isVisible, setIsVisible] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [analyticsConsent, setAnalyticsConsent] = useState<ConsentProperties | null>(null);
+  const [analyticsConsent, setAnalyticsConsent] = useState<ConsentProperties>(GRANT_ANALYTICS_ONLY);
 
   const t = getTranslations(CONFIG.language as Language);
 
   useEffect(() => {
     const handleOpenConsent = () => {
       const current = getConsentState();
-      if (current) {
-        const consent = current.consent;
-        setAnalyticsConsent(consent);
+      if (current?.consent) {
+        setAnalyticsConsent(current.consent);
       }
       setIsVisible(false); // Reset to trigger AnimatePresence if it was already open
       setTimeout(() => {
@@ -38,7 +37,8 @@ export function CookieConsent() {
     // Add global fallback
     (window as any).openCookieSettings = handleOpenConsent;
 
-    const consent = getConsentState().consent;
+    const consentState = getConsentState();
+    const consent = consentState?.consent;
     if (consent) {
       setAnalyticsConsent(consent);
     } else {
@@ -48,6 +48,7 @@ export function CookieConsent() {
         clearTimeout(timer);
         window.removeEventListener('open_cookie_consent', handleOpenConsent);
         window.removeEventListener('cookie_consent_updated', handleConsentUpdate);
+        delete (window as any).openCookieSettings;
       };
     }
 
@@ -61,7 +62,7 @@ export function CookieConsent() {
   useEffect(() => {
     if (isVisible) {
       const consentState = getConsentState();
-      if (consentState) {
+      if (consentState?.consent) {
         setAnalyticsConsent(consentState.consent);
       }
     }
@@ -78,17 +79,12 @@ export function CookieConsent() {
   };
 
   const handleSavePreferences = () => {
-    setConsent(analyticsConsent);
+    setConsent(analyticsConsent || GRANT_ANALYTICS_ONLY);
     setIsVisible(false);
   };
 
   const toggleAnalyticsEnabled = () => {
-    let newState: ConsentProperties = null;
-    if (analyticsConsent && 'granted' == analyticsConsent.analyticsStorage) {
-      newState = DENY_ALL;
-    } else {
-      newState = GRANT_ANALYTICS_ONLY;
-    }
+    const newState = analyticsConsent?.analyticsStorage === 'granted' ? DENY_ALL : GRANT_ANALYTICS_ONLY;
     setAnalyticsConsent(newState);
   };
 

@@ -143,7 +143,7 @@ test.describe('Kaavatietomalli E2E Critical User Flows', () => {
     // Check localStorage state is correct (analytics off)
     let consent = await page.evaluate(() => localStorage.getItem('cookie_consent_settings'));
     expect(consent).not.toBeNull();
-    expect(JSON.parse(consent!).analytics).toBe(false);
+    expect(JSON.parse(consent!).consent?.analyticsStorage).toBe('denied');
 
     // Verify clicking manual settings icon floating at bottom triggers banner opening
     const consentIconBtn = page.locator('button:has(svg.lucide-cookie)').first();
@@ -163,7 +163,7 @@ test.describe('Kaavatietomalli E2E Critical User Flows', () => {
 
     // Verify localStorage updated to true
     consent = await page.evaluate(() => localStorage.getItem('cookie_consent_settings'));
-    expect(JSON.parse(consent!).analytics).toBe(true);
+    expect(JSON.parse(consent!).consent?.analyticsStorage).toBe('granted');
   });
 
   test('4. Mobile Navigation Drawer: Small viewport toggles navigation anchors and maintains scroll position', async ({ page }) => {
@@ -172,7 +172,15 @@ test.describe('Kaavatietomalli E2E Critical User Flows', () => {
 
     // Pre-seed consent to true to avoid banner occlusion during mobile gestures
     await page.evaluate(() => {
-      localStorage.setItem('cookie_consent_settings', JSON.stringify({ analytics: true, timestamp: Date.now() }));
+      localStorage.setItem('cookie_consent_settings', JSON.stringify({
+        consent: {
+          analyticsStorage: 'granted',
+          adUserData: 'denied',
+          adStorage: 'denied',
+          addPersonalization: 'denied'
+        },
+        timestamp: new Date().toISOString()
+      }));
     });
     await page.reload();
 

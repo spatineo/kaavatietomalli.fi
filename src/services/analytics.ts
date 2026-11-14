@@ -96,7 +96,7 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
     (window as any).gtag = gtag;
 
     const consentState = getConsentState();
-    if (consentState.consent) {
+    if (consentState?.consent) {
       const consent = consentState.consent;
       gtag('consent', 'default', this.toGAConsent(consent));
     } else {
