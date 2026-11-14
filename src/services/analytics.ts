@@ -1,5 +1,5 @@
 import { CONFIG } from '../config';
-import { getConsent } from './consent';
+import { getConsentState, ConsentProperties, DENY_ALL } from './consent';
 
 export enum AnalyticsEvent {
   PAGE_VIEW = 'page_view',
@@ -52,7 +52,7 @@ class NullTracker implements AnalyticsTracker {
     trackEventSpy(AnalyticsEvent.CTA_CLICK, { label, url, context, partner });
   }
   trackToolEvent(tool: string, type: string, context?: string): void {
-    trackEventSpy(AnalyticsEvent.TOOL_EVENT, { tool, type, context});
+    trackEventSpy(AnalyticsEvent.TOOL_EVENT, { tool, type, context });
   }
 }
 
@@ -63,7 +63,7 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
   constructor(measurementId: string) {
     this.measurementId = measurementId;
     this.init();
-    
+
     // Replay last tracked view if it happened before consent was granted
     if (lastTrackedPostView) {
       this.trackPostView(lastTrackedPostView.slug, lastTrackedPostView.title, lastTrackedPostView.tags, lastTrackedPostView.partner);
@@ -75,29 +75,46 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
     }
   }
 
+  private toGAConsent = ({
+    adStorage, adUserData, addPersonalization, analyticsStorage
+  }: ConsentProperties) => ({
+    'ad_storage': adStorage,
+    'ad_user_data': adUserData,
+    'ad_personalization': addPersonalization,
+    'analytics_storage': analyticsStorage
+  });
+
   private init() {
     if (typeof window === 'undefined' || this.initialized) return;
 
     (window as any).dataLayer = (window as any).dataLayer || [];
-    
-    const gtag = function(...args: any[]) {
-      (window as any).dataLayer.push(arguments); 
+
+    const gtag = function (...args: any[]) {
+      (window as any).dataLayer.push(arguments);
     };
-    
+
     (window as any).gtag = gtag;
+
+    const consentState = getConsentState();
+    if (consentState?.consent) {
+      const consent = consentState.consent;
+      gtag('consent', 'default', this.toGAConsent(consent));
+    } else {
+      gtag('consent', 'default', this.toGAConsent(DENY_ALL));
+    }
 
     gtag('js', new Date());
     gtag('config', this.measurementId, {
       send_page_view: false // Correctly handled manually later
     });
-    
+
     const isVitest = typeof window !== 'undefined' && ((window as any).__VITEST__ || (typeof process !== 'undefined' && process.env?.VITEST));
-    
-    const isE2E = 
+
+    const isE2E =
       typeof window !== 'undefined' && !isVitest && (
-        (window as any).__E2E_TEST__ || 
-        (window as any)._isE2E || 
-        (window as any)._isTest || 
+        (window as any).__E2E_TEST__ ||
+        (window as any)._isE2E ||
+        (window as any)._isTest ||
         navigator.webdriver
       );
 
@@ -192,24 +209,27 @@ class GoogleAnalyticsTracker implements AnalyticsTracker {
 }
 
 let activeTracker: AnalyticsTracker | null = null;
-let currentConsent: boolean | null = null;
+let currentConsent: ConsentProperties | null = null;
 
 export function getTracker(): AnalyticsTracker {
-  const consent = getConsent();
-  const consentGranted = consent?.analytics || false;
+  const consentState = getConsentState();
+  const consent = consentState?.consent;
+
+  const oldState = JSON.stringify(currentConsent);
+  const newState = JSON.stringify(consent);
 
   // If consent changed, we might need to swap the tracker
-  if (currentConsent !== consentGranted) {
+  if (oldState !== newState) {
     activeTracker = null;
-    currentConsent = consentGranted;
-    
+    currentConsent = consent;
+
     // Handle GA-specific unloading/disabling
     const gaId = (CONFIG as any).analytics?.gaTrackingId;
     if (gaId && typeof window !== 'undefined') {
-      if (!consentGranted) {
-        (window as any)[`ga-disable-${gaId}`] = true;
-      } else {
+      if (consent && consent.analyticsStorage == 'granted') {
         (window as any)[`ga-disable-${gaId}`] = false;
+      } else {
+        (window as any)[`ga-disable-${gaId}`] = true;
       }
     }
   }
@@ -217,8 +237,8 @@ export function getTracker(): AnalyticsTracker {
   if (activeTracker) return activeTracker;
 
   const gaId = (CONFIG as any).analytics?.gaTrackingId;
-  
-  if (gaId && consentGranted) {
+
+  if (gaId && consent && consent.analyticsStorage == 'granted') {
     activeTracker = new GoogleAnalyticsTracker(gaId);
   } else {
     activeTracker = new NullTracker();
