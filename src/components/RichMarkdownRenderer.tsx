@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -124,7 +124,12 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
 
     return (
         <ReactMarkdown
-        urlTransform={(url) => resolveImageUrl(url)}
+        urlTransform={(url, key) => {
+            if (key === 'src') {
+                return resolveImageUrl(url);
+            }
+            return defaultUrlTransform(url);
+        }}
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex, remarkGfm]}
         components={{
@@ -164,11 +169,16 @@ export function MarkdownRenderer({ markdownContent, slug }: MarkdownRendererProp
                         return;
                     }
 
+                    // Native protocols (mailto:, tel:, sms:, etc.) should not be intercepted by SPA routing
+                    if (/^(mailto:|tel:|sms:|[a-zA-Z][a-zA-Z0-9+.-]*:)/i.test(href) && !href.startsWith('http://') && !href.startsWith('https://')) {
+                        return;
+                    }
+
                     const isInternal = 
                         href.startsWith('?') || 
                         href.startsWith('/') || 
                         href.startsWith(window.location.origin) ||
-                        !href.includes('://');
+                        (!href.includes('://') && !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(href));
 
                     const hasTargetBlank = props.target === '_blank';
 

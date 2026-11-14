@@ -43,6 +43,12 @@ describe('utils library', () => {
       expect(resolveImageUrl('data:image/png;base64,12345')).toBe('data:image/png;base64,12345');
     });
 
+    it('returns protocol URLs (mailto, tel, etc.) and anchor hashes as is without prepending basePath', () => {
+      expect(resolveImageUrl('mailto:toimitus-kaavatietomalli@kaavatietomalli.fi')).toBe('mailto:toimitus-kaavatietomalli@kaavatietomalli.fi');
+      expect(resolveImageUrl('tel:+35812345678')).toBe('tel:+35812345678');
+      expect(resolveImageUrl('#section-anchor')).toBe('#section-anchor');
+    });
+
     it('resolves relative URLs against CONFIG.basePath', () => {
       const originalBasePath = CONFIG.basePath;
       CONFIG.basePath = '/testbase';
