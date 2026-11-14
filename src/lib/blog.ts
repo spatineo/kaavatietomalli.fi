@@ -19,6 +19,7 @@ export interface PostMetadata {
   callToAction?: string;
   aiAssisted?: boolean;
   aiGenerated?: boolean;
+  placeholder?: boolean;
 }
 
 export interface PostData extends PostMetadata {

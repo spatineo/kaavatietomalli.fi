@@ -7,6 +7,7 @@ authorSlug: "ilkka-rinne"
 excerpt: ""
 tags: [ ]
 category: "history"
+placeholder: true
 ---
 
 

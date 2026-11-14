@@ -49,6 +49,7 @@ export const fi: Translations = {
     titleOlta: 'oltu?',
     description: 'Poimintoja tietomallimuotoisen kaavoituksen kehittämisen elinkaarelta.',
     exploreData: 'Tutustu',
+    comingSoon: 'Tulossa pian',
   },
   search: {
     title: 'Haku',
@@ -101,7 +102,8 @@ export const fi: Translations = {
     readMoreCooperation: 'Lue lisää yhteistyöstä',
     callToActionLabel: 'Tutustu tarkemmin',
     aiAssisted: 'Sisällön tuottamisessa on hyödynnetty tekoälytyökaluja',
-    aiGenerated: 'Sisältö on luotu tekoälyn avulla ilman ihmisen tekemää tarkistusta'
+    aiGenerated: 'Sisältö on luotu tekoälyn avulla ilman ihmisen tekemää tarkistusta',
+    upcoming: 'Tulossa pian',
   },
   page: {
     tableOfContents: 'Sisällysluettelo',

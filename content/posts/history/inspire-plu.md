@@ -7,6 +7,7 @@ authorSlug: "ilkka-rinne"
 excerpt: "EU-direktiivin tuoma vaatimus maankäyttötietojen (Planned Land Use) raportoinnille."
 tags: ["INSPIRE", "PLU", "TWG LU", "TWG Land Use", "EU", "tietomalli", "maankäyttö" ]
 category: "history"
+placeholder: true
 ---
 
 Mistä kirjoitetaan: EU-direktiivin tuoma vaatimus maankäyttötietojen (Planned Land Use) raportoinnille ja sen herättämä arkkitehtonis-kognitiivinen shokki.

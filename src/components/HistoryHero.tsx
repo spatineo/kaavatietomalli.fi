@@ -15,7 +15,7 @@ interface HistoryHeroProps {
 export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
   const t = getTranslations(CONFIG.language as Language);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  
+
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -27,15 +27,15 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
     if (scrollContainerRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
       const isScrollable = scrollWidth > clientWidth;
-      
+
       const children = Array.from(scrollContainerRef.current.children) as HTMLElement[];
       const itemElements = children.filter(child => child.classList.contains('snap-start'));
-      
+
       if (isScrollable && itemElements.length > 0) {
         // Can scroll left if we are not at absolute left edge and there is an item to the left
         const hasItemLeft = itemElements.some(el => el.offsetLeft < scrollLeft - 10);
         setCanScrollLeft(scrollLeft > 5 && hasItemLeft);
-        
+
         // Can scroll right if we are not at absolute right edge and there is an item to the right
         const hasItemRight = itemElements.some(el => el.offsetLeft > scrollLeft + 10);
         setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5 && hasItemRight);
@@ -43,7 +43,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
         setCanScrollLeft(false);
         setCanScrollRight(false);
       }
-      
+
       const maxScroll = scrollWidth - clientWidth;
       if (maxScroll > 0) {
         setScrollProgress((scrollLeft / maxScroll) * 100);
@@ -59,10 +59,10 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       container.addEventListener('scroll', checkScroll);
       // Initial check
       checkScroll();
-      
+
       const observer = new ResizeObserver(checkScroll);
       observer.observe(container);
-      
+
       return () => {
         container.removeEventListener('scroll', checkScroll);
         observer.disconnect();
@@ -75,11 +75,11 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       const container = scrollContainerRef.current;
       const children = Array.from(container.children) as HTMLElement[];
       const itemElements = children.filter(child => child.classList.contains('snap-start'));
-      
+
       if (itemElements.length === 0) return;
-      
+
       const currentScrollLeft = container.scrollLeft;
-      
+
       if (direction === 'right') {
         const nextElement = itemElements.find(
           el => el.offsetLeft > currentScrollLeft + 10
@@ -130,7 +130,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
             {t.history.titleMain} <span className="text-brand-accent">{t.history.titleAccent}</span> <span className="text-white/30">{t.history.titleOlta}</span>
           </h2>
           <p className="text-slate-400 text-lg max-w-3xl leading-relaxed">
-            {t.history.description} 
+            {t.history.description}
           </p>
         </div>
       </div>
@@ -141,11 +141,10 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
         <button
           onClick={() => handleScroll('left')}
           disabled={!canScrollLeft}
-          className={`absolute left-2 top-[calc(50%-24px)] -translate-y-1/2 w-10 h-28 z-30 flex items-center justify-center rounded-xl bg-black/50 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent transition-all shadow-2xl focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:outline-none ${
-            canScrollLeft 
-              ? 'opacity-100 pointer-events-auto cursor-pointer' 
-              : 'opacity-0 pointer-events-none'
-          }`}
+          className={`absolute left-2 top-[calc(50%-24px)] -translate-y-1/2 w-10 h-28 z-30 flex items-center justify-center rounded-xl bg-black/50 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent transition-all shadow-2xl focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:outline-none ${canScrollLeft
+            ? 'opacity-100 pointer-events-auto cursor-pointer'
+            : 'opacity-0 pointer-events-none'
+            }`}
           aria-label={t.post.previous}
         >
           <ChevronLeft size={20} />
@@ -156,70 +155,74 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
         <button
           onClick={() => handleScroll('right')}
           disabled={!canScrollRight}
-          className={`absolute right-2 top-[calc(50%-24px)] -translate-y-1/2 w-10 h-28 z-30 flex items-center justify-center rounded-xl bg-black/50 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent transition-all shadow-2xl focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:outline-none ${
-            canScrollRight 
-              ? 'opacity-100 pointer-events-auto cursor-pointer' 
-              : 'opacity-0 pointer-events-none'
-          }`}
+          className={`absolute right-2 top-[calc(50%-24px)] -translate-y-1/2 w-10 h-28 z-30 flex items-center justify-center rounded-xl bg-black/50 hover:bg-brand-accent hover:text-brand-primary border border-white/10 hover:border-brand-accent transition-all shadow-2xl focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:outline-none ${canScrollRight
+            ? 'opacity-100 pointer-events-auto cursor-pointer'
+            : 'opacity-0 pointer-events-none'
+            }`}
           aria-label={t.post.next}
         >
           <ChevronRight size={20} />
         </button>
 
-        <div 
+        <div
           ref={scrollContainerRef}
-          className="flex gap-8 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10 snap-x snap-mandatory" 
+          className="flex gap-8 pb-12 pt-4 overflow-x-auto no-scrollbar scroll-smooth relative z-10 snap-x snap-mandatory"
           role="list"
         >
-        
+
           {/* The Time Line */}
           {chronologicalPosts.length > 1 && (
-            <div 
-              className="absolute h-[2px] bg-white/35 top-[70px] z-0 pointer-events-none" 
+            <div
+              className="absolute h-[2px] bg-white/35 top-[70px] z-0 pointer-events-none"
               style={{
-                left:0,
+                left: 0,
                 width: `${(chronologicalPosts.length - 1) * 450}px`
               }}
             />
           )}
-          
-          {chronologicalPosts.map((post, idx) => (
-            <motion.button
-              key={post.slug}
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1, duration: 0.3 }}
-              className="flex-shrink-0 w-80 group text-left mx-5 outline-none cursor-pointer snap-start"
-              onClick={() => onSelectPost(post.slug)}
-              role="listitem"
-              aria-label={`${t.post.readMore}: ${post.title}`}
-            >
-              <div className="relative mb-8 flex flex-col items-center">
-                <span className="text-2xl font-extrabold text-brand-accent mb-4 transition-transform group-hover:-translate-y-2 group-focus-visible:-translate-y-2">
+
+          {chronologicalPosts.map((post, idx) => {
+            const isPlaceholder = !!post.placeholder;
+
+            return (
+              <motion.button
+                key={post.slug}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1, duration: 0.3 }}
+                className={`flex-shrink-0 w-80 group text-left mx-5 outline-none snap-start ${!isPlaceholder ? 'cursor-pointer' : ''}`}
+                onClick={() => { if (isPlaceholder) { return; } else { onSelectPost(post.slug); } }}
+                role="listitem"
+                aria-label={`${t.post.readMore}: ${post.title}`}
+              >
+                <div className="relative mb-8 flex flex-col items-center">
+                  <span className="text-2xl font-extrabold text-brand-accent mb-4 transition-transform group-hover:-translate-y-2 group-focus-visible:-translate-y-2">
                     {!post.dateLabel && post.date ? (
-                      <>{format(parseISO(post.date), 'MMM yyyy', {locale:fi})}</>
+                      <>{format(parseISO(post.date), 'MMM yyyy', { locale: fi })}</>
                     ) : (
                       <>{post.dateLabel}</>
                     )}
-                </span>
-                <div className="w-3 h-3 rounded-full bg-black border-4 border-brand-accent group-hover:scale-125 group-focus-visible:scale-125 transition-transform" />
-              </div>
-
-              <div className="bg-white/5 p-8 border border-white/10 rounded-2xl group-hover:border-brand-accent/50 group-focus-visible:border-brand-accent transition-all backdrop-blur-sm shadow-2xl min-h-[16em] max-h-[16em]">
-                <h3 className="text-xl font-bold leading-tight mb-4 group-hover:text-brand-accent transition-colors">
-                  {post.title}
-                </h3>
-                <p className="text-slate-400 text-sm font-medium line-clamp-3 mb-4 leading-relaxed">
-                  {post.excerpt}
-                </p>
-                <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-brand-accent transition-opacity">
-                  {t.history.exploreData} <ArrowRight size={12} />
+                  </span>
+                  <div className="w-3 h-3 rounded-full bg-black border-4 border-brand-accent group-hover:scale-125 group-focus-visible:scale-125 transition-transform" />
                 </div>
-              </div>
-            </motion.button>
-          ))}
-          
+
+                <div className="bg-white/5 p-8 border border-white/10 rounded-2xl group-hover:border-brand-accent/50 group-focus-visible:border-brand-accent transition-all backdrop-blur-sm shadow-2xl min-h-[16em] max-h-[16em]">
+                  <h3 className="text-xl font-bold leading-tight mb-4 group-hover:text-brand-accent transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm font-medium line-clamp-3 mb-4 leading-relaxed">
+                    {post.excerpt}
+                  </p>
+                  <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-brand-accent transition-opacity">
+                    {isPlaceholder ? t.history.comingSoon : t.history.exploreData} {isPlaceholder ? <></> : <ArrowRight size={12} />}
+                  </div>
+                </div>
+              </motion.button>
+            )
+          }
+          )}
+
           {/* End cap padding */}
           <div className="w-20 flex-shrink-0" />
         </div>
@@ -229,7 +232,7 @@ export function HistoryHero({ posts, onSelectPost }: HistoryHeroProps) {
       <div className="max-w-7xl mx-auto px-6 mt-8">
         {/* Progress Line */}
         <div className="h-[2px] bg-white/10 rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-brand-accent transition-all duration-300 ease-out rounded-full"
             style={{ width: `${scrollProgress}%` }}
           />
