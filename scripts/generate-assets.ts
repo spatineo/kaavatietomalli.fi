@@ -123,6 +123,7 @@ export function loadAndParsePosts(postsDir: string, now: Date = new Date()): Pos
       content: textContent,
       aiAssisted: data.aiAssisted === true || data.aiAssisted === 'true',
       aiGenerated: data.aiGenerated === true || data.aiGenerated === 'true',
+      placeholder: data.placeholder === true || data.placeholder === 'true',
     } as PostData;
   });
 
@@ -298,6 +299,7 @@ export async function generateIndividualContentFiles(
   });
 
   for (const post of posts) {
+    if (post.placeholder) continue; // Skip placeholder posts
     if (post.content && post.content.includes('```data-model-snippet')) {
       post.content = await convertDataModelDiagramsToMermaid(post.content, dataAccess);
     }
@@ -404,7 +406,7 @@ ${pages.map(page => `  <url>
     <loc>${baseUrl}/${page.slug}</loc>
     <priority>0.8</priority>
   </url>`).join('\n')}
-${posts.map(post => `  <url>
+${posts.filter(post => !post.placeholder).map(post => `  <url>
     <loc>${baseUrl}/blog/${post.slug}</loc>
     <lastmod>${post.date ? new Date(post.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]}</lastmod>
     <priority>0.6</priority>
@@ -631,7 +633,7 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
   llmsTxt += `- [Sitemap](${baseUrl}/sitemap.xml)\n\n`;
 
   llmsTxt += `## ${t.llms.articlesFeatured}\n`;
-  const featuredPosts = posts.slice(0, 5);
+  const featuredPosts = posts.filter(post => !post.placeholder).slice(0, 5);
   featuredPosts.forEach(post => {
     let line = `- [${post.title}](${baseUrl}/blog/${post.slug}) - [Raw Markdown](${baseUrl}/blog/${post.slug}.md)`;
     if (post.promotional) {
@@ -668,7 +670,7 @@ export function generateLlmsFiles(posts: PostData[], pages: PageData[], publicDi
   llmsFullTxt += `${t.llms.fullIndexDescription}\n\n`;
 
   llmsFullTxt += `## ${t.llms.articles}\n`;
-  posts.forEach(post => {
+  posts.filter(post => !post.placeholder).forEach(post => {
     let line = `- [${post.title}](${baseUrl}/blog/${post.slug}) - [Raw Markdown](${baseUrl}/blog/${post.slug}.md)`;
     if (post.promotional) {
       line += ` [PROMOTIONAL / KAUPALLINEN YHTEISTYÖ: ${post.partner || ''}]`;
@@ -702,7 +704,7 @@ export function generateRssFeed(
   // Generate RSS 2.0 Feed for the 50 latest created or updated journal (blog) posts.
   const journalPostsOnly = posts.filter(post => post.category === 'journal');
 
-  const postsWithGitDates = journalPostsOnly.map(post => {
+  const postsWithGitDates = journalPostsOnly.filter(post => !post.placeholder).map(post => {
     const filePath = `${useTestContent ? 'test-content' : 'content'}/posts/${post.file}`;
     const fileCommits = historyMap[filePath] || [];
 

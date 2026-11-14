@@ -60,6 +60,7 @@ export interface Translations {
     titleOlta: string;
     description: string;
     exploreData: string;
+    comingSoon: string;
   };
   interactiveImage: {
     expand: string;
@@ -100,6 +101,7 @@ export interface Translations {
     callToActionLabel: string;
     aiAssisted: string;
     aiGenerated: string;
+    upcoming: string;
   };
   page: {
     tableOfContents: string;

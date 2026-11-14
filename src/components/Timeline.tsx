@@ -30,6 +30,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
         {posts.map((post, index) => {
           const isSponsored = !!post.promotional;
           const partnerName = post.partner ? formatPartnerName(post.partner) : '';
+          const isPlaceholder = !!post.placeholder;
 
           return (
             <motion.div
@@ -59,7 +60,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
                   )}
 
                   <button
-                    onClick={() => onSelectPost(post.slug)}
+                    onClick={() => { if (isPlaceholder) { return; } else { onSelectPost(post.slug); } }}
                     className="group w-full text-left transition-all duration-500 outline-none"
                     aria-label={`${t.post.ariaLabel}: ${post.title}`}
                   >
@@ -124,13 +125,15 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
 
                   <div className="flex flex-wrap gap-4 items-center">
                     <button
-                      onClick={() => onSelectPost(post.slug)}
+                      onClick={() => { if (isPlaceholder) { return; } else { onSelectPost(post.slug); } }}
                       className={isSponsored
                         ? "group inline-flex items-center gap-4 bg-amber-400/10 text-amber-400 border border-amber-400/25 hover:bg-amber-400 hover:text-black rounded-xl px-6 py-2.5 transition-all duration-300 shadow-xl shadow-amber-400/5 font-extrabold text-[10px]"
                         : "group inline-flex items-center gap-4 bg-black text-white border border-white/10 rounded-xl px-8 py-3 transition-all duration-300 hover:bg-brand-bg hover:border-brand-accent hover:text-brand-accent shadow-xl shadow-black/20"
                       }
                     >
-                      <span className="uppercase font-bold tracking-widest text-[10px]">{t.post.readMore}</span>
+                      <span className="uppercase font-bold tracking-widest text-[10px]">
+                        {post.placeholder ? t.post.upcoming : t.post.readMore}
+                      </span>
                       <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                   </div>
@@ -138,7 +141,7 @@ export function Timeline({ posts, onSelectPost, onSelectTag }: TimelineProps) {
 
                 {post.coverImage && (
                   <button
-                    onClick={() => onSelectPost(post.slug)}
+                    onClick={() => { if (isPlaceholder) { return; } else { onSelectPost(post.slug); } }}
                     className={`group relative block w-full aspect-[16/8] overflow-hidden rounded-2xl bg-white/5 transition-all duration-700 shadow-2xl ${isSponsored ? 'border border-amber-400/15 hover:border-amber-400/40' : ''}`}
                   >
                     <img

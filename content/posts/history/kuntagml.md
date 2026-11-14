@@ -7,6 +7,7 @@ authorSlug: "ilkka-rinne"
 excerpt: "KuntaGML kehitetään"
 tags: ["KuntaGML" ]
 category: "history"
+placeholder: true
 ---
 
 Mistä kirjoitetaan: Kuntaliiton koordinoiman, Tekes-rahoitteisen KuntaGML-projektin synty.

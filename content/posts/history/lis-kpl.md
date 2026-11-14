@@ -7,6 +7,7 @@ authorSlug: "ilkka-rinne"
 excerpt: "Vuosien 1985–1991 Maankäyttötietojen yhteiskäyttöprojekti (LIS, Land Information System) ja Kuntaliiton 1990-luvun Kunnan paikkatietojen luokittelu (KPL) -suositus."
 tags: ["LIS", "standardit", "KPL", "Land Information System", "Maanmittaushallitus", "Kuntaliitto"]
 category: "history"
+placeholder: true
 ---
 
 Mistä kirjoitetaan: Alkupiste, jossa ymmärrettiin, että aluesuunnittelun tietoja ei voida hallinnoida vain paperilla, mutta välineet olivat kankeita.
