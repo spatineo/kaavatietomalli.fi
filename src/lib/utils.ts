@@ -9,13 +9,13 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Resolves an image URL, handling relative paths by prefixing them with the base path.
- * Supports absolute URLs (http, https, /) and data URLs.
+ * Supports absolute URLs (http, https, /), data URLs, protocol schemes (mailto:, tel:, etc.), and anchors (#).
  */
 export function resolveImageUrl(url: string | undefined): string {
   if (!url) return '';
   
-  // If it's already an absolute URL (http, https, /) or data URL, return it as is
-  if (/^(https?:\/\/|\/|data:)/.test(url)) {
+  // If it's already an absolute URL (http, https, /), data URL, anchor (#), or has a protocol scheme, return it as is
+  if (/^(https?:\/\/|\/|data:|#|[a-zA-Z][a-zA-Z0-9+.-]*:)/.test(url)) {
     return url;
   }
   

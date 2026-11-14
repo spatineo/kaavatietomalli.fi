@@ -1,12 +1,15 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
+
+const mockNavigate = vi.fn();
+const mockOnHome = vi.fn();
 
 // Mock getTranslations and useAppRouter to avoid dependency failures
 vi.mock('../hooks/useRouter', () => ({
   useAppRouter: () => ({
-    navigate: vi.fn(),
-    onHome: vi.fn(),
+    navigate: mockNavigate,
+    onHome: mockOnHome,
   }),
 }));
 
@@ -135,5 +138,50 @@ describe('MarkdownRenderer Callout Blocks', () => {
     expect(title?.textContent).toBe('Historiallinen huomio');
     expect(blockquote.textContent).not.toContain('[Note::Historiallinen huomio]');
     expect(blockquote.textContent).toContain('Kehityksen alkuvaiheessa arveltiin, että tämä riittää.');
+  });
+});
+
+describe('MarkdownRenderer Link and Image URLs', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear();
+    mockOnHome.mockClear();
+  });
+
+  it('renders autolinked email addresses as clean mailto: links without prepending relative base paths', () => {
+    const markdown = 'Ota yhteyttä toimitus-kaavatietomalli@kaavatietomalli.fi lisätietoja varten.';
+    render(<MarkdownRenderer markdownContent={markdown} slug="palaute" />);
+
+    const link = screen.getByRole('link', { name: 'toimitus-kaavatietomalli@kaavatietomalli.fi' });
+    expect(link).toBeDefined();
+    expect(link.getAttribute('href')).toBe('mailto:toimitus-kaavatietomalli@kaavatietomalli.fi');
+  });
+
+  it('renders explicit markdown mailto links cleanly without prepending base paths', () => {
+    const markdown = 'Lähetä viesti [toimitukselle](mailto:toimitus-kaavatietomalli@kaavatietomalli.fi).';
+    render(<MarkdownRenderer markdownContent={markdown} slug="palaute" />);
+
+    const link = screen.getByRole('link', { name: 'toimitukselle' });
+    expect(link).toBeDefined();
+    expect(link.getAttribute('href')).toBe('mailto:toimitus-kaavatietomalli@kaavatietomalli.fi');
+  });
+
+  it('does not intercept mailto: link clicks with SPA router navigation', () => {
+    const markdown = '[Ota yhteyttä](mailto:toimitus-kaavatietomalli@kaavatietomalli.fi)';
+    render(<MarkdownRenderer markdownContent={markdown} slug="palaute" />);
+
+    const link = screen.getByRole('link', { name: 'Ota yhteyttä' });
+    fireEvent.click(link);
+
+    expect(mockNavigate).not.toHaveBeenCalled();
+    expect(mockOnHome).not.toHaveBeenCalled();
+  });
+
+  it('still resolves image src URLs with resolveImageUrl', () => {
+    const markdown = '![Kaavakartta](images/kaavakartta.png)';
+    const { container } = render(<MarkdownRenderer markdownContent={markdown} slug="test-post" />);
+
+    const img = container.querySelector('img');
+    expect(img).toBeDefined();
+    expect(img?.getAttribute('src')).toMatch(/\/images\/kaavakartta\.png$/);
   });
 });
