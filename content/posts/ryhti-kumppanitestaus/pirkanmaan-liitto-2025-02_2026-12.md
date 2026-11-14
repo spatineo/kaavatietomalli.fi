@@ -4,7 +4,7 @@ date: "2026-12-01"
 author: "Ilkka Rinne"
 authorSlug: "ilkka-rinne"
 excerpt: ""
-tags: ["kumppanitestaus","loppuraportti"]
+tags: ["kumppanitestaus","loppuraportti", "pirkanmaan-liitto"]
 category: "journal"
 aiAssisted: true
 coverImage: ""

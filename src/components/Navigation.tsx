@@ -54,7 +54,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
 
   const onItemClick = (item: NavItem, index: number) => {
     const isSubmenu = (item.subitems && item.subitems.length > 0) || item.type === 'menu';
-    
+
     if (isSubmenu) {
       setOpenSubmenuIndex(openSubmenuIndex === index ? null : index);
     } else {
@@ -111,20 +111,20 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
       const isSubmenu = (item.subitems && item.subitems.length > 0) || item.type === 'menu';
       const isOpen = openSubmenuIndex === index;
       const label = item.label || item.slug || (item.type === 'blog' ? t.navigation.blog : '');
-      
+
       if (isMobile) {
         return (
           <div key={index} className="flex flex-col gap-4">
-            <button 
-              onClick={() => onItemClick(item, index)} 
+            <button
+              onClick={() => onItemClick(item, index)}
               className="flex items-center justify-between hover:text-brand-accent transition-colors text-left"
             >
               {label}
               <div className="flex items-center gap-3">
                 {isSubmenu && (
-                  <ChevronDown 
-                    size={20} 
-                    className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} 
+                  <ChevronDown
+                    size={20}
+                    className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
                   />
                 )}
                 <div className={`w-2 h-2 rounded-full ${index === 0 ? 'bg-brand-accent' : 'bg-brand-accent/40'}`} />
@@ -166,15 +166,15 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
 
       return (
         <div key={index} className="relative">
-          <button 
-            onClick={() => onItemClick(item, index)} 
+          <button
+            onClick={() => onItemClick(item, index)}
             className={`flex items-center gap-1.5 hover:text-brand-accent transition-colors whitespace-nowrap ${isOpen ? 'text-brand-accent' : ''}`}
           >
             {label}
             {isSubmenu && (
-              <ChevronDown 
-                size={14} 
-                className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} 
+              <ChevronDown
+                size={14}
+                className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
               />
             )}
           </button>
@@ -217,7 +217,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
   };
 
   return (
-    <header 
+    <header
       ref={headerRef}
       data-testid="header"
       className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5"
@@ -225,9 +225,9 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
       <div className="mx-auto max-w-7xl">
         <div className="max-w-7xl ml-5 mr-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-12">
-            <button 
+            <button
               onClick={onHome}
-              className="text-lg md:text-xl font-black tracking-tight text-white hover:text-brand-accent transition-colors flex items-center gap-3"
+              className="text-lg md:text-xl font-bold tracking-tight text-white hover:text-brand-accent transition-colors flex items-center gap-3"
               aria-label={`${t.navigation.home} - Kaavatietomalli.fi`}
             >
               <div className="relative w-8 h-8 lg:w-10 lg:h-10 flex items-center justify-center">
@@ -237,7 +237,7 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
               <span className="hidden lg:inline">Kaavatietomalli.fi</span>
               <span className="sm:hidden text-brand-accent">Kaavatietomalli.fi</span>
             </button>
-            
+
             <nav className="hidden md:flex gap-10 text-sm font-semibold text-slate-400" aria-label={t.navigation.mainNav}>
               {renderNavItems()}
             </nav>
@@ -247,20 +247,20 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
             <div className="hidden sm:flex items-center gap-6">
               <SearchWidget onNavigate={handleSearchNavigate} />
               <div className="w-[1px] h-4 bg-white/10" />
-              <a 
-                href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="text-slate-400 hover:text-white transition-colors" 
+              <a
+                href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-white transition-colors"
                 aria-label={t.navigation.githubRepo}
                 onClick={() => getTracker().trackCTA('GitHub Repo', `https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`, 'header')}
               >
                 <Github size={20} strokeWidth={1.5} />
               </a>
             </div>
-            
+
             {/* Mobile Menu Button */}
-            <button 
+            <button
               className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
               onClick={toggleMenu}
               aria-label={isMenuOpen ? t.navigation.closeMenu : t.navigation.openMenu}
@@ -284,12 +284,12 @@ export function Header({ onNavigatePage, onNavigateTag, onNavigatePost, onNaviga
                   <SearchWidget onNavigate={handleSearchNavigate} isMobile />
                 </div>
                 {renderNavItems(true)}
-                
+
                 <div className="flex gap-6 pt-6 border-t border-white/5 mt-2">
-                  <a 
-                    href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
+                  <a
+                    href={`https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-slate-400 hover:text-white flex items-center gap-2 text-sm font-medium"
                     onClick={() => getTracker().trackCTA('GitHub Repo', `https://github.com/${CONFIG.repoOwner}/${CONFIG.repoName}`, 'mobile_nav')}
                   >
@@ -320,7 +320,7 @@ export function Footer() {
         const year = new Date(versionNum).getFullYear();
         if (!isNaN(year) && year > 1970) return year.toString();
       }
-    } catch (e) {}
+    } catch (e) { }
     return new Date().getFullYear().toString();
   })();
 
