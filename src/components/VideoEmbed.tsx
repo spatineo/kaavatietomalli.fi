@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Play, EyeOff, ShieldAlert } from 'lucide-react';
-import { getConsent, setConsent } from '../services/consent';
+import { getConsentState, setConsent, GRANT_ANALYTICS_ONLY } from '../services/consent';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
 
@@ -12,8 +12,8 @@ interface VideoEmbedProps {
 export function VideoEmbed({ platform, config }: VideoEmbedProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasConsent, setHasConsent] = useState(() => {
-    const consent = getConsent();
-    return consent ? consent.analytics : false;
+    const consentState = getConsentState();
+    return consentState && consentState.consent ? consentState.consent.analyticsStorage == 'granted' : false;
   });
 
   const t = getTranslations(CONFIG.language as Language);
@@ -308,7 +308,7 @@ export function VideoEmbed({ platform, config }: VideoEmbedProps) {
             <div className="flex flex-col sm:flex-row gap-3 items-center">
               <button
                 type="button"
-                onClick={() => setConsent(true)}
+                onClick={() => setConsent(GRANT_ANALYTICS_ONLY)}
                 className="px-5 py-2.5 rounded-lg bg-brand-accent text-slate-950 hover:bg-opacity-90 font-semibold text-xs tracking-wider uppercase transition-all duration-200 shadow-md cursor-pointer"
               >
                 {t.video.enableAnalytics}

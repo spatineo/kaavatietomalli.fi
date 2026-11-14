@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getConsent, setConsent } from './consent';
+import { getConsentState, setConsent, GRANT_ANALYTICS_ONLY, DENY_ALL } from './consent';
 import { getTracker, trackEventSpy, AnalyticsEvent } from './analytics';
 import { CONFIG } from '../config';
 
@@ -16,54 +16,58 @@ describe('Cookie Consent Service', () => {
   });
 
   it('should return null when no consent has been configured', () => {
-    expect(getConsent()).toBeNull();
+    expect(getConsentState()).toBeNull();
   });
 
   it('should persist consent analytics granted to localStorage with a timestamp', () => {
-    setConsent(true);
+    setConsent(GRANT_ANALYTICS_ONLY);
     const stored = localStorage.getItem(CONSENT_KEY);
     expect(stored).not.toBeNull();
 
     const parsed = JSON.parse(stored!);
-    expect(parsed.analytics).toBe(true);
+    expect(parsed.consent?.analyticsStorage).toBe('granted');
     expect(parsed.timestamp).toBeDefined();
     expect(new Date(parsed.timestamp).getTime()).not.toBeNaN();
 
-    const consent = getConsent();
-    expect(consent).not.toBeNull();
-    expect(consent!.analytics).toBe(true);
+    const consentState = getConsentState();
+    expect(consentState).not.toBeNull();
+    expect(consentState!.consent).not.toBeNull();
+    expect(consentState!.consent!.analyticsStorage).toBe('granted');
   });
 
   it('should persist consent analytics rejected to localStorage with a timestamp', () => {
-    setConsent(false);
+    setConsent(DENY_ALL);
     const stored = localStorage.getItem(CONSENT_KEY);
     expect(stored).not.toBeNull();
 
     const parsed = JSON.parse(stored!);
-    expect(parsed.analytics).toBe(false);
+    expect(parsed.consent?.analyticsStorage).toBe('denied');
     expect(parsed.timestamp).toBeDefined();
+    expect(new Date(parsed.timestamp).getTime()).not.toBeNaN();
 
-    const consent = getConsent();
-    expect(consent).not.toBeNull();
-    expect(consent!.analytics).toBe(false);
+    const consentState = getConsentState();
+    expect(consentState).not.toBeNull();
+    expect(consentState!.consent).not.toBeNull();
+    expect(consentState!.consent!.analyticsStorage).toBe('denied');
   });
 
   it('should return null if the stored value is malformed JSON', () => {
     localStorage.setItem(CONSENT_KEY, '{invalid_json}');
-    expect(getConsent()).toBeNull();
+    expect(getConsentState()).toBeNull();
   });
 
   it('should dispatch cookie_consent_updated window custom event on consent update', () => {
     const dispatchSpy = vi.fn();
     vi.stubGlobal('dispatchEvent', dispatchSpy);
 
-    setConsent(true);
+    setConsent(GRANT_ANALYTICS_ONLY);
 
     expect(dispatchSpy).toHaveBeenCalledTimes(1);
     const dispatchedEvent = dispatchSpy.mock.calls[0][0];
     expect(dispatchedEvent.type).toBe('cookie_consent_updated');
     expect(dispatchedEvent.detail).toBeDefined();
-    expect(dispatchedEvent.detail.analytics).toBe(true);
+    expect(dispatchedEvent.detail!.consent).toBeDefined();
+    expect(dispatchedEvent.detail!.consent!.analyticsStorage).toBe('granted');
   });
 });
 
@@ -132,20 +136,20 @@ describe('Analytics Tracking Service and Blocking Integrity', () => {
 
   it('upon explicit rejection, completely disables Google Analytics tracking and marks ga-disable global flag', () => {
     // 1. Grant consent first to initialize
-    setConsent(true);
+    setConsent(GRANT_ANALYTICS_ONLY);
     let tracker = getTracker();
     expect(tracker).toBeDefined();
-    
+
     // Google Analytics should be enabled
     expect((window as any)[`ga-disable-${gaId}`]).toBe(false);
     expect((window as any).gtag).toBeDefined();
 
     // 2. Reject consent
-    setConsent(false);
-    
+    setConsent(DENY_ALL);
+
     // Triggers global event listener which resets or toggles tracker
     tracker = getTracker();
-    
+
     // Check ga-disable tracking global override flag is true
     expect((window as any)[`ga-disable-${gaId}`]).toBe(true);
 
@@ -158,7 +162,7 @@ describe('Analytics Tracking Service and Blocking Integrity', () => {
   });
 
   it('when consent is granted, constructs GoogleAnalyticsTracker, appends GTM scripts and passes correct event tags', () => {
-    setConsent(true);
+    setConsent(GRANT_ANALYTICS_ONLY);
     const tracker = getTracker();
     expect(tracker).toBeDefined();
 
@@ -226,7 +230,7 @@ describe('Analytics Tracking Service and Blocking Integrity', () => {
   });
 
   it('correctly forwards the partner metadata field when provided to track metrics', () => {
-    setConsent(true);
+    setConsent(GRANT_ANALYTICS_ONLY);
     const tracker = getTracker();
     expect(tracker).toBeDefined();
 
