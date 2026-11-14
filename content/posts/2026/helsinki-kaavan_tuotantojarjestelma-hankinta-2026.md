@@ -3,8 +3,8 @@ title: "Helsingin kaupunki kilpailuttaa kaavan tuotantojärjestelmän"
 date: "2026-10-23"
 author: "Ilkka Rinne"
 authorSlug: "ilkka-rinne"
-excerpt: "Helsinkgin kaupunki hankkii kaavan tuotantojärjestelmän, jolla voidaan tuottaa Ryhti-vaatimukset täyttäviä, tietomallimuotoisia asema- ja yleiskaavoja."
-tags: ["ohjelmistot", "hankinta", "asemakaava", "yleiskaava"]
+excerpt: "Helsingin kaupunki hankkii kaavan tuotantojärjestelmän, jolla voidaan tuottaa Ryhti-vaatimukset täyttäviä, tietomallimuotoisia asema- ja yleiskaavoja."
+tags: ["ohjelmistot", "hankinta", "asemakaava", "yleiskaava", "helsinki"]
 category: "journal"
 coverImage: "IOR_2082.png"
 coverImageCaption: "Kohta kirskuu, valokuva Ilkka Rinne"

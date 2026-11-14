@@ -4,7 +4,7 @@ date: "2026-05-21"
 author: "Ilkka Rinne"
 authorSlug: "ilkka-rinne"
 excerpt: "Tampereen kaupungin asema- ja yleiskaavoitus sekä kiinteistönmuodostus ovat hankkimassa yhteistä Ryhti-yhteensopivaa suunnitteluohjelmistoa."
-tags: ["ohjelmistot", "hankinta", "yhteensopivuus"]
+tags: ["ohjelmistot", "hankinta", "yhteensopivuus", "tampere", "yleiskaava", "asemakaava", "kiinteistönmuodostus"]
 category: "journal"
 coverImage: "IORL0066.png"
 coverImageCaption: "Museokeskus Vapriikki, valokuva Ilkka Rinne"

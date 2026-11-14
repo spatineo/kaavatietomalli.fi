@@ -4,7 +4,7 @@ date: "2025-03-01"
 author: "Ilkka Rinne"
 authorSlug: "ilkka-rinne"
 excerpt: "Varsinais-Suomen liiton vetämässä hankkeessa vahvistui, että maakuntakaavojen ylläpito HAME-skeeman mukaisessa PostGIS-tietokannassa ei enää onnistu ohjelmistoriippumattomasti."
-tags: ["kumppanitestaus","loppuraportti", "esri-finland", "gispo"]
+tags: ["kumppanitestaus","loppuraportti", "esri-finland", "gispo", "varsinais-suomen-liitto"]
 category: "journal"
 aiAssisted: true
 coverImage: "IOR_1192.png"
