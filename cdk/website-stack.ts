@@ -305,10 +305,10 @@ export class WebsiteStack extends cdk.Stack {
         },
         storageDescriptor: {
           location: `s3://${logBucket.bucketName}/raw-logs/`,
-          inputFormat: 'org.SPDX-License-Identifier: MIT.hadoop.mapred.TextInputFormat',
-          outputFormat: 'org.SPDX-License-Identifier: MIT.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',
+          inputFormat: 'org.apache.hadoop.mapred.TextInputFormat',
+          outputFormat: 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat',
           serdeInfo: {
-            serializationLibrary: 'org.SPDX-License-Identifier: MIT.hadoop.hive.serde2.lazy.LazySimpleSerDe',
+            serializationLibrary: 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe',
             parameters: {
               'field.delim': '\t',
               'serialization.format': '\t',
