@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { slugify, getTextContent, MarkdownHeading, useHeadings } from './MarkdownHeading';
@@ -36,7 +40,7 @@ describe('MarkdownHeading getTextContent helper', () => {
 describe('MarkdownHeading Component', () => {
   it('renders heading element with correct id and anchors', () => {
     render(<MarkdownHeading level={2}>Käyttöliittymä & Suunnittelu</MarkdownHeading>);
-    
+
     const heading = screen.getByRole('heading', { level: 2 });
     expect(heading).toBeDefined();
     expect(heading.id).toBe('kayttoliittyma-suunnittelu');

@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -27,7 +27,7 @@ describe('LocalFileDataModelAccess', () => {
     it('returns cached model if available', async () => {
       const access = new LocalFileDataModelAccess('/mock/dir');
       const mockData = { id: 'cached-model' };
-      
+
       existsSyncSpy.mockReturnValue(true);
       readFileSyncSpy.mockReturnValue(JSON.stringify(mockData));
 

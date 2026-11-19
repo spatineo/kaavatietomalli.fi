@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Maximize2, ZoomIn, ZoomOut, Maximize, Expand, AlertTriangle } from 'lucide-react';
@@ -37,7 +41,7 @@ interface InteractiveImageProps {
 function parseStyleStringToDict(styleStr: string | undefined): React.CSSProperties {
   if (!styleStr) return {};
   const dict: Record<string, string> = {};
-  
+
   let cleanStr = styleStr.trim();
   if (cleanStr.includes('{') && cleanStr.includes('}')) {
     const startIdx = cleanStr.indexOf('{');
@@ -65,7 +69,7 @@ function parseStyleStringToDict(styleStr: string | undefined): React.CSSProperti
     const camelProp = prop.replace(/-([a-z])/gi, (g) => g[1].toUpperCase());
     dict[camelProp] = val;
   }
-  
+
   return dict as React.CSSProperties;
 }
 
@@ -154,14 +158,14 @@ export function InteractiveImage({
   useEffect(() => {
     if (svgContent && ref.current) {
       ref.current.innerHTML = svgContent;
-      
+
       const svgEl = ref.current.querySelector('svg');
       if (svgEl) {
         // Ensure the SVG has a viewBox to allow responsive resizing
         const widthAttr = svgEl.getAttribute('width');
         const heightAttr = svgEl.getAttribute('height');
         const viewBoxAttr = svgEl.getAttribute('viewBox');
-        
+
         if (!viewBoxAttr && widthAttr && heightAttr) {
           const w = parseFloat(widthAttr);
           const h = parseFloat(heightAttr);
@@ -169,11 +173,11 @@ export function InteractiveImage({
             svgEl.setAttribute('viewBox', `0 0 ${w} ${h}`);
           }
         }
-        
+
         // Remove hardcoded absolute sizing and replace with percentage attributes
         svgEl.setAttribute('width', '100%');
         svgEl.setAttribute('height', '100%');
-        
+
         // Apply styling to ensure it is bounded nicely
         svgEl.style.width = '100%';
         svgEl.style.height = 'auto';
@@ -181,7 +185,7 @@ export function InteractiveImage({
         svgEl.style.maxHeight = '550px';
         svgEl.style.display = 'block';
       }
-      
+
       if (bindFunctions) {
         bindFunctions(ref.current);
       }
@@ -214,11 +218,11 @@ export function InteractiveImage({
 
   const extractSvgDimensions = (svgEl: SVGElement | null): { width: number; height: number } => {
     if (!svgEl) return { width: 0, height: 0 };
-    
+
     const viewBox = svgEl.getAttribute('viewBox');
     let width = 0;
     let height = 0;
-    
+
     if (viewBox) {
       const parts = viewBox.trim().split(/\s+/).map(Number);
       if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
@@ -226,7 +230,7 @@ export function InteractiveImage({
         height = parts[3];
       }
     }
-    
+
     if (width === 0 || height === 0) {
       const widthAttr = parseFloat(svgEl.getAttribute('width') || '0');
       const heightAttr = parseFloat(svgEl.getAttribute('height') || '0');
@@ -245,7 +249,7 @@ export function InteractiveImage({
         }
       }
     }
-    
+
     return { width, height };
   };
 
@@ -272,7 +276,7 @@ export function InteractiveImage({
 
     let scaleX = availableWidth / size.width;
     let scaleY = availableHeight / size.height;
-    
+
     return Math.min(scaleX, scaleY);
   };
 
@@ -293,7 +297,7 @@ export function InteractiveImage({
   const updateTransform = (nextZoom: number, nextPos: { x: number; y: number }) => {
     zoomRef.current = nextZoom;
     positionRef.current = nextPos;
-    
+
     pendingUpdateRef.current = { zoom: nextZoom, position: nextPos };
     if (rafIdRef.current === null) {
       rafIdRef.current = requestAnimationFrame(() => {
@@ -359,15 +363,15 @@ export function InteractiveImage({
     const onWheelEvent = (e: WheelEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      
+
       const isPinch = e.ctrlKey;
       const threshold = isPinch ? 15 : 80;
-      
+
       wheelAccumulatorRef.current += e.deltaY;
-      
+
       const currentZoom = zoomRef.current;
       const currentIdx = ZOOM_STEPS.indexOf(currentZoom);
-      
+
       let tempContinuousZoom = currentZoom;
       const progress = -wheelAccumulatorRef.current / threshold;
       if (progress > 0 && currentIdx < ZOOM_STEPS.length - 1) {
@@ -377,12 +381,12 @@ export function InteractiveImage({
         const prevZoom = ZOOM_STEPS[currentIdx - 1];
         tempContinuousZoom = currentZoom + Math.abs(progress) * (prevZoom - currentZoom);
       }
-      
+
       triggerZoomFeedback(tempContinuousZoom);
-      
+
       if (Math.abs(wheelAccumulatorRef.current) >= threshold) {
         const zoomIn = wheelAccumulatorRef.current < 0;
-        
+
         let nextZoom;
         if (zoomIn) {
           nextZoom = ZOOM_STEPS.find(s => s > currentZoom + 0.001) || 10.0;
@@ -390,24 +394,24 @@ export function InteractiveImage({
           const reversedSteps = [...ZOOM_STEPS].reverse();
           nextZoom = reversedSteps.find(s => s < currentZoom - 0.001) || 0.05;
         }
-        
+
         wheelAccumulatorRef.current = 0;
-        
+
         if (nextZoom === currentZoom) return;
-        
+
         const scaleChange = nextZoom / currentZoom;
         const currentPos = positionRef.current;
-        
+
         const rect = el.getBoundingClientRect();
         const C_orig_x = rect.left + rect.width / 2;
         const C_orig_y = rect.top + rect.height / 2;
-        
+
         const mouseX = e.clientX;
         const mouseY = e.clientY;
-        
+
         const nextX = (mouseX - C_orig_x) * (1 - scaleChange) + currentPos.x * scaleChange;
         const nextY = (mouseY - C_orig_y) * (1 - scaleChange) + currentPos.y * scaleChange;
-        
+
         updateTransform(nextZoom, { x: nextX, y: nextY });
         triggerZoomFeedback(nextZoom);
       }
@@ -425,29 +429,29 @@ export function InteractiveImage({
       if (gestureStartZoomRef.current !== null) {
         const adjustedScale = 1 + (e.scale - 1) * 1.5;
         const targetZoom = Math.min(Math.max(gestureStartZoomRef.current * adjustedScale, 0.05), 10);
-        
+
         triggerZoomFeedback(targetZoom);
-        
-        const nextZoom = ZOOM_STEPS.reduce((prev, curr) => 
+
+        const nextZoom = ZOOM_STEPS.reduce((prev, curr) =>
           Math.abs(curr - targetZoom) < Math.abs(prev - targetZoom) ? curr : prev
         );
-        
+
         const currentZoom = zoomRef.current;
         if (nextZoom === currentZoom) return;
-        
+
         const currentPos = positionRef.current;
         const scaleChange = nextZoom / currentZoom;
-        
+
         const rect = el.getBoundingClientRect();
         const C_orig_x = rect.left + rect.width / 2;
         const C_orig_y = rect.top + rect.height / 2;
-        
+
         const mouseX = e.clientX !== undefined ? e.clientX : C_orig_x;
         const mouseY = e.clientY !== undefined ? e.clientY : C_orig_y;
-        
+
         const nextX = (mouseX - C_orig_x) * (1 - scaleChange) + currentPos.x * scaleChange;
         const nextY = (mouseY - C_orig_y) * (1 - scaleChange) + currentPos.y * scaleChange;
-        
+
         updateTransform(nextZoom, { x: nextX, y: nextY });
       }
     };
@@ -580,13 +584,13 @@ export function InteractiveImage({
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.button !== 0) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     setIsDragging(true);
     hasMovedRef.current = false;
-    
+
     dragStartPosRef.current = { x: e.clientX, y: e.clientY };
     setDragStart({ x: e.clientX - positionRef.current.x, y: e.clientY - positionRef.current.y });
   };
@@ -599,14 +603,14 @@ export function InteractiveImage({
         setIsDragging(false);
         return;
       }
-      
+
       const dx = e.clientX - dragStartPosRef.current.x;
       const dy = e.clientY - dragStartPosRef.current.y;
-      
+
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
         hasMovedRef.current = true;
       }
-      
+
       const nextX = e.clientX - dragStart.x;
       const nextY = e.clientY - dragStart.y;
       updateTransform(zoomRef.current, { x: nextX, y: nextY });
@@ -630,7 +634,7 @@ export function InteractiveImage({
 
   const handleTouchStart = (e: React.TouchEvent) => {
     e.stopPropagation();
-    
+
     const count = e.touches.length;
     if (count === 1) {
       const touch = e.touches[0];
@@ -638,7 +642,7 @@ export function InteractiveImage({
       setDragStart({ x: touch.clientX - positionRef.current.x, y: touch.clientY - positionRef.current.y });
       touchIsDraggingRef.current = true;
       touchHasMovedRef.current = false;
-      
+
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
       setInitialPinchPosition(null);
@@ -662,17 +666,17 @@ export function InteractiveImage({
     e.stopPropagation();
 
     const count = e.touches.length;
-    
+
     if (count === 1 && touchIsDraggingRef.current) {
       const touch = e.touches[0];
-      
+
       const dx = touch.clientX - (touchStartRef.current?.x ?? touch.clientX);
       const dy = touch.clientY - (touchStartRef.current?.y ?? touch.clientY);
-      
+
       if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
         touchHasMovedRef.current = true;
       }
-      
+
       const nextX = touch.clientX - dragStart.x;
       const nextY = touch.clientY - dragStart.y;
       updateTransform(zoomRef.current, { x: nextX, y: nextY });
@@ -682,33 +686,33 @@ export function InteractiveImage({
       const dist = Math.hypot(touch1.clientX - touch2.clientX, touch1.clientY - touch2.clientY);
       const factor = dist / initialPinchDistance;
       const targetZoom = Math.min(Math.max(initialPinchZoom * factor, 0.05), 10);
-      
+
       triggerZoomFeedback(targetZoom);
 
-      const nextZoom = ZOOM_STEPS.reduce((prev, curr) => 
+      const nextZoom = ZOOM_STEPS.reduce((prev, curr) =>
         Math.abs(curr - targetZoom) < Math.abs(prev - targetZoom) ? curr : prev
       );
-      
+
       if (nextZoom === zoomRef.current) {
         return;
       }
-      
+
       const currentMidX = (touch1.clientX + touch2.clientX) / 2;
       const currentMidY = (touch1.clientY + touch2.clientY) / 2;
-      
+
       const el = modalRef.current;
       if (el) {
         const rect = el.getBoundingClientRect();
         const C_orig_x = rect.left + rect.width / 2;
         const C_orig_y = rect.top + rect.height / 2;
-        
+
         const relativeScale = nextZoom / initialPinchZoom;
         const dx = initialPinchMidpoint.x - C_orig_x;
         const dy = initialPinchMidpoint.y - C_orig_y;
-        
+
         const nextX = (currentMidX - C_orig_x) - relativeScale * (dx - initialPinchPosition.x);
         const nextY = (currentMidY - C_orig_y) - relativeScale * (dy - initialPinchPosition.y);
-        
+
         updateTransform(nextZoom, { x: nextX, y: nextY });
       }
     }
@@ -717,7 +721,7 @@ export function InteractiveImage({
   const handleTouchEnd = (e: React.TouchEvent) => {
     e.stopPropagation();
     const count = e.touches.length;
-    
+
     if (count === 0) {
       if (touchIsDraggingRef.current && !touchHasMovedRef.current && touchStartRef.current) {
         const duration = Date.now() - touchStartRef.current.time;
@@ -725,7 +729,7 @@ export function InteractiveImage({
           handlePointerClick(touchStartRef.current.x, touchStartRef.current.y);
         }
       }
-      
+
       touchIsDraggingRef.current = false;
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
@@ -737,7 +741,7 @@ export function InteractiveImage({
       setDragStart({ x: touch.clientX - positionRef.current.x, y: touch.clientY - positionRef.current.y });
       touchIsDraggingRef.current = true;
       touchHasMovedRef.current = false;
-      
+
       setInitialPinchDistance(null);
       setInitialPinchZoom(null);
       setInitialPinchPosition(null);
@@ -774,7 +778,7 @@ export function InteractiveImage({
 
   return (
     <>
-      <div 
+      <div
         data-testid={`${dataTestId}-container`}
         className={`${className} flex flex-col justify-center my-12 bg-black/40 backdrop-blur-sm p-10 rounded-3xl border border-white/10 overflow-hidden shadow-2xl group cursor-pointer relative min-h-[200px]`}
         role="button"
@@ -783,7 +787,7 @@ export function InteractiveImage({
       >
         <AnimatePresence>
           {isLoading && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -798,7 +802,7 @@ export function InteractiveImage({
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <div className="absolute top-4 right-4 p-2 bg-white/5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20">
           <Maximize2 size={16} className="text-brand-accent" />
         </div>
@@ -809,9 +813,9 @@ export function InteractiveImage({
           </div>
         )}
 
-        <div 
-          ref={ref} 
-          className="interactive-image-content w-full flex justify-center transition-transform duration-500 group-hover:scale-[1.01]" 
+        <div
+          ref={ref}
+          className="interactive-image-content w-full flex justify-center transition-transform duration-500 group-hover:scale-[1.01]"
           aria-label={alt || title}
           style={customStyles}
         />
@@ -839,32 +843,32 @@ export function InteractiveImage({
                 <span className="text-xs text-white/95 font-bold tracking-wider px-2 select-none border-r border-white/10 pr-3 font-mono">
                   {Math.round(zoom * 100)}%
                 </span>
-                <button 
+                <button
                   onClick={handleZoomOut}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
                   title={t.interactiveImage.zoomOut}
                 >
                   <ZoomOut size={18} className="text-white/70" />
                 </button>
-                <button 
+                <button
                   onClick={handleZoomToFit}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
                   title={t.interactiveImage.zoomToFit}
                 >
                   <Maximize size={18} className="text-white/70">
-                    <Expand size={12} x={6} y={6} className="text-white/70"/>
+                    <Expand size={12} x={6} y={6} className="text-white/70" />
                   </Maximize>
                 </button>
-                <button 
+                <button
                   onClick={handleZoomIn}
                   className="p-2 hover:bg-white/10 rounded-full transition-colors transition-transform active:scale-95"
                   title={t.interactiveImage.zoomIn}
                 >
                   <ZoomIn size={18} className="text-white/70" />
-                </button>                
+                </button>
               </div>
 
-              <button 
+              <button
                 onClick={toggleModal}
                 className="bg-white/10 border border-white/10 text-white p-3 backdrop-blur-md rounded-full hover:bg-white/20 transition-colors shadow-2xl active:scale-95 group/close"
                 aria-label={t.interactiveImage.close}
@@ -884,10 +888,10 @@ export function InteractiveImage({
                   <span className="text-[10px] font-black uppercase tracking-[0.15em] text-white mb-3 ml-3 text-center min-w-[11em]">
                     ZOOM {Math.round(zoom * 100)}%
                   </span>
-                  
+
                   <div className="relative h-48 w-6 flex items-center justify-center mr-4">
                     <div className="absolute inset-y-0 w-0.5 bg-white/15 rounded-full" />
-                    
+
                     {ZOOM_STEPS.map((step, idx) => {
                       const isKey = idx === 0 || idx === 5 || idx === 8 || idx === 14 || idx === 19;
                       return (
@@ -896,14 +900,13 @@ export function InteractiveImage({
                           className="absolute left-1/2 -translate-x-1/2 flex items-center justify-center"
                           style={{ bottom: `${(idx / 19) * 100}%` }}
                         >
-                          <div 
-                            className={`h-[2px] transition-all rounded-full ${
-                              idx === currentStepIdx 
-                                ? 'w-3.5 bg-brand-accent' 
-                                : isKey 
-                                  ? 'w-2 bg-white/45' 
+                          <div
+                            className={`h-[2px] transition-all rounded-full ${idx === currentStepIdx
+                                ? 'w-3.5 bg-brand-accent'
+                                : isKey
+                                  ? 'w-2 bg-white/45'
                                   : 'w-1 bg-white/20'
-                            }`} 
+                              }`}
                           />
                           {isKey && (
                             <span className="absolute left-4 text-[8px] font-bold text-white/40 tracking-wider min-w-[4em]">
@@ -930,14 +933,14 @@ export function InteractiveImage({
               )}
             </AnimatePresence>
 
-            <div 
+            <div
               className="relative w-full h-full overflow-hidden flex items-center justify-center touch-none"
               onClick={(e) => e.stopPropagation()}
             >
-              <div 
+              <div
                 ref={setModalContainerRef}
                 className={`${className} modal-container select-none flex items-center justify-center shrink-0`}
-                style={{ 
+                style={{
                   width: naturalSize.width ? `${naturalSize.width}px` : '100%',
                   height: naturalSize.height ? `${naturalSize.height}px` : '100%',
                   transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})`,

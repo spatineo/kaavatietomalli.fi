@@ -1,7 +1,10 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { format, parseISO } from 'date-fns';
 import { motion } from 'motion/react';
 import { PostMetadata } from '../lib/blog';
-import { resolveImageUrl } from '../lib/utils';
 import { getCoverImageSrc, getCoverImageSrcSet } from '../lib/images';
 import { Calendar, ArrowRight } from 'lucide-react';
 
@@ -50,7 +53,7 @@ export function RelatedPosts({ posts, onSelectPost }: RelatedPostsProps) {
                 {post.dateLabel || format(parseISO(post.date), 'dd.MM.yyyy')}
               </span>
             </div>
-            
+
             <h4 className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors mb-2">
               {post.title}
             </h4>

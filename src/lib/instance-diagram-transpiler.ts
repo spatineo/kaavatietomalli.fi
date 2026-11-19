@@ -4,6 +4,9 @@
  *
  * @param code The Instance DSL code string.
  * @returns The transpiled standard Mermaid code string.
+ * 
+ * @license
+ * SPDX-License-Identifier: MIT
  */
 export function transpileInstanceToMermaid(code: string): string {
   const lines = code.split('\n');
@@ -42,8 +45,8 @@ export function transpileInstanceToMermaid(code: string): string {
   const flushObject = () => {
     if (!currentId || !currentClass) return;
     let instanceContent = `${currentId}["<b>${currentId} : ${currentClass}</b><hr/>`
-    
-    for (const attr of currentAttrs){
+
+    for (const attr of currentAttrs) {
       instanceContent += `<span>${attr}</span><br/>`;
     }
     instanceContent += '"]';
@@ -77,7 +80,7 @@ export function transpileInstanceToMermaid(code: string): string {
       const attrMatch = line.match(attrRegex);
       if (attrMatch) {
         const key = attrMatch[1].trim();
-        const val = attrMatch[2].replace(/"/g, '&quot;'); 
+        const val = attrMatch[2].replace(/"/g, '&quot;');
         currentAttrs.push(`${key} = ${val}`);
       }
       continue;

@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState } from 'react';
 import { Maximize2 } from 'lucide-react';
 import { getCoverImageSrc, getCoverImageSrcSet } from '../lib/images';

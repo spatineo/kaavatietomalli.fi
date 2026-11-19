@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DualFeatureWfsReader, WFSResultFeature, WFSService } from './dual-feature-wfs-reader';
 import { PlanFeature } from '../services/plan-api';
@@ -321,7 +325,7 @@ describe('DualFeatureWfsReader', () => {
       })
     };
 
-    const reader = new DualFeatureWfsReader<CustomFeature>(customService,'custom:layer_a', 'custom:layer_b');
+    const reader = new DualFeatureWfsReader<CustomFeature>(customService, 'custom:layer_a', 'custom:layer_b');
     const result = await reader.next();
 
     expect(customService.fetchChunk).toHaveBeenCalled();

@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { CONFIG } from '../config';
 import { getConsentState, ConsentProperties, DENY_ALL } from './consent';
 

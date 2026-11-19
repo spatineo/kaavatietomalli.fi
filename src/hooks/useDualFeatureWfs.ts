@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { DualFeatureWfsReader } from '../lib/dual-feature-wfs-reader';
 import {

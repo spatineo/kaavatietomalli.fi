@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect } from 'vitest';
@@ -54,9 +54,9 @@ describe('ClassInfoPanel component', () => {
         getTypeNavigation={vi.fn().mockReturnValue(null)}
         t={t}
         model={{
-            id: '',
-            version: '',
-            classes: []
+          id: '',
+          version: '',
+          classes: []
         }}
       />
     );
@@ -77,9 +77,9 @@ describe('ClassInfoPanel component', () => {
         getTypeNavigation={vi.fn().mockReturnValue(null)}
         t={t}
         model={{
-            id: '',
-            version: '',
-            classes: []
+          id: '',
+          version: '',
+          classes: []
         }}
       />
     );
@@ -104,9 +104,9 @@ describe('ClassInfoPanel component', () => {
         getTypeNavigation={getTypeNavigation}
         t={t}
         model={{
-            id: '',
-            version: '',
-            classes: []
+          id: '',
+          version: '',
+          classes: []
         }}
       />
     );
@@ -133,9 +133,9 @@ describe('ClassInfoPanel component', () => {
         getTypeNavigation={vi.fn().mockReturnValue(null)}
         t={t}
         model={{
-            id: '',
-            version: '',
-            classes: []
+          id: '',
+          version: '',
+          classes: []
         }}
       />
     );

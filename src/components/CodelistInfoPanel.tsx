@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect } from 'react';
 import { Info, FileText, ExternalLink, Layers, Check, Copy, Search, X } from 'lucide-react';
 import { Translations } from '../i18n/types';
@@ -109,7 +113,7 @@ export function CodelistInfoPanel({
             <div className="font-bold text-sm text-white bg-red-950 px-1.5 py-0.5 rounded"> {getStatusLabel(codelistDetail.status)}</div>
           )}
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-slate-400">
           <div className="flex gap-2">
             <span className="text-slate-500">{t.dataModel.technicalName}</span>
@@ -117,8 +121,8 @@ export function CodelistInfoPanel({
           </div>
           <div className="flex gap-2">
             <span className="text-slate-500">{t.dataModel.uri}</span>
-            <span 
-              className="text-slate-300 select-all overflow-hidden text-ellipsis whitespace-nowrap" 
+            <span
+              className="text-slate-300 select-all overflow-hidden text-ellipsis whitespace-nowrap"
               title={codelistDetail.uri}
             >
               {codelistDetail.uri}
@@ -157,9 +161,9 @@ export function CodelistInfoPanel({
           </div>
         )}
         {codelistDetail.documentationUrl && (
-          <a 
-            href={codelistDetail.documentationUrl} 
-            target="_blank" 
+          <a
+            href={codelistDetail.documentationUrl}
+            target="_blank"
             rel="noopener noreferrer"
             className="ml-auto inline-flex items-center gap-1.5 text-brand-accent hover:underline font-semibold"
           >
@@ -224,12 +228,12 @@ export function CodelistInfoPanel({
                 {displayedCodes.length > 0 ? (
                   displayedCodes.map((code: CodeItem) => {
                     let hasIndent: number | boolean = false;
-                    let indentStyle = {}; 
+                    let indentStyle = {};
                     if (code.hierarchyLevel) {
-                        hasIndent = code.hierarchyLevel && code.hierarchyLevel > 1;
-                        if (hasIndent) {
-                            indentStyle = { paddingLeft: `${(code.hierarchyLevel - 1) * 1.5 + 1.5}rem` };
-                        }
+                      hasIndent = code.hierarchyLevel && code.hierarchyLevel > 1;
+                      if (hasIndent) {
+                        indentStyle = { paddingLeft: `${(code.hierarchyLevel - 1) * 1.5 + 1.5}rem` };
+                      }
                     }
                     return (
                       <tr key={code.uri} className="hover:bg-white/[0.02] transition-colors">
@@ -245,11 +249,10 @@ export function CodelistInfoPanel({
                           <span title={getLocalized(code.description)}>{getLocalized(code.name) || (Object.values(code.name || {})[0] as any)}</span>
                         </td>
                         <td className="px-6 py-4 text-xs font-mono">
-                          <span className={`whitespace-nowrap px-2 py-0.5 rounded ${
-                            code.status === 'VALID' 
-                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10' 
+                          <span className={`whitespace-nowrap px-2 py-0.5 rounded ${code.status === 'VALID'
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/10'
                               : 'bg-amber-500/10 text-amber-400 border border-amber-500/10'
-                          }`}>
+                            }`}>
                             {getStatusLabel(code.status)}
                           </span>
                         </td>

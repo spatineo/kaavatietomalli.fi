@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { describe, it, expect } from 'vitest';
 import {
   buildWfsUrl,
@@ -199,7 +203,7 @@ describe('plan-api service', () => {
         typeA: WFS_TYPE_DETAILED_PLAN,
         typeB: null
       });
-     
+
     });
 
     it('returns master plan type only for Yleiskaava codes or URIs (21, 22, 23, etc.)', () => {
@@ -211,7 +215,7 @@ describe('plan-api service', () => {
         typeA: null,
         typeB: WFS_TYPE_MASTER_PLAN
       });
-      
+
     });
   });
 

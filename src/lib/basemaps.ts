@@ -1,6 +1,8 @@
 /**
- * Basemap Configuration for Leaflet Map Components (PlanExplorerView & GeoJSONMapViewer)
- * Supports CARTO basemaps and Maanmittauslaitos (NLS.fi) WMTS raster basemaps.
+  * Basemap Configuration for Leaflet Map Components (PlanExplorerView & GeoJSONMapViewer)
+  * Supports CARTO basemaps and Maanmittauslaitos (NLS.fi) WMTS raster basemaps.
+  * @license
+  * SPDX-License-Identifier: MIT 
  */
 
 export type TileStyle =

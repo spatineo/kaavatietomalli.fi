@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getConsentState, setConsent, GRANT_ANALYTICS_ONLY, DENY_ALL } from './consent';
 import { getTracker, trackEventSpy, AnalyticsEvent } from './analytics';

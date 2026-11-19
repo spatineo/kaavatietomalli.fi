@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -12,12 +12,12 @@ import { DataModelAccess } from '../lib/data-model-types';
 const t = getTranslations();
 
 const mockDataModelAccess: DataModelAccess = {
-      getDataModel(modelId: string) {
-        return Promise.resolve(mockModelSchema);
-      },
-      getCodelist(codelistUriOrId: string) {
-        return Promise.resolve(mockCodelistDetail);
-      }
+  getDataModel(modelId: string) {
+    return Promise.resolve(mockModelSchema);
+  },
+  getCodelist(codelistUriOrId: string) {
+    return Promise.resolve(mockCodelistDetail);
+  }
 };
 
 const { mockModelSchema, mockCodelistDetail } = vi.hoisted(() => {

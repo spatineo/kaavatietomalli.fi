@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useEffect } from 'react';
 import { Home } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -14,7 +18,7 @@ interface NotFoundViewProps {
 
 export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewProps) {
   const t = getTranslations(CONFIG.language as Language);
-  
+
   // Format initial search query from missingSlug
   const initialQuery = missingSlug ? missingSlug.replace(/[-_]/g, ' ') : '';
 
@@ -24,14 +28,14 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
   };
 
   return (
-    <div 
+    <div
       data-testid="not-found-view"
       className="min-h-screen flex flex-col items-center justify-start px-6 pt-32 pb-40 bg-brand-bg relative overflow-hidden"
     >
       {/* Decorative background elements */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-brand-accent/5 rounded-full blur-[120px] pointer-events-none" />
-      
-      <motion.div 
+
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
@@ -46,14 +50,14 @@ export function NotFoundView({ missingSlug, onNavigate, onHome }: NotFoundViewPr
         <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-tight">
           {t.notFound.title}
         </h1>
-        
+
         <p className="text-xl text-slate-400 font-medium mb-12 max-w-2xl mx-auto leading-relaxed">
           {t.notFound.message}
         </p>
 
         <div className="relative mb-[450px] group/search">
           <div className="absolute -inset-1 bg-gradient-to-r from-brand-accent/20 to-brand-accent/5 rounded-full blur opacity-25 group-focus-within/search:opacity-100 transition duration-1000 group-focus-within/search:duration-200" />
-          <SearchBox 
+          <SearchBox
             size="lg"
             onNavigate={handleNavigate}
             initialQuery={initialQuery}

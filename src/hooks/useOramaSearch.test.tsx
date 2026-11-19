@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -78,9 +78,9 @@ describe('useOramaSearch hook', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Silence expected console.error outputs
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     // Default mock setup for successful search index loading
     const mockResponse = {
@@ -89,7 +89,7 @@ describe('useOramaSearch hook', () => {
     };
     fetchMock = vi.fn().mockResolvedValue(mockResponse);
     vi.stubGlobal('fetch', fetchMock);
-    
+
     // Stub import.meta.env
     vi.stubEnv('BASE_URL', '/');
   });

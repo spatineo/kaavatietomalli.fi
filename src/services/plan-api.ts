@@ -1,5 +1,8 @@
 /**
  * WFS 2.0 API Service for Ryhti Plan Data
+ *
+ * @license
+ * SPDX-License-Identifier: MIT
  */
 
 import { WFSResultFeature, WFSService } from '../lib/dual-feature-wfs-reader';

@@ -1,6 +1,9 @@
 /**
  * Generic WFS feature representation.
  * Custom feature types (like PlanFeature) implement or extend this interface.
+ * 
+ * @license
+ * SPDX-License-Identifier: MIT
  */
 export interface WFSResultFeature {
   id: string | number;

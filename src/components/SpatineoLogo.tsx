@@ -1,3 +1,7 @@
+/**
+ * @license
+ * Copyright Spatineo 2026, All rights reserved
+ */
 import React, { SVGProps } from 'react';
 
 // Extending SVGProps allows the component to accept all standard SVG attributes
@@ -6,10 +10,10 @@ interface LogoProps extends SVGProps<SVGSVGElement> {
   height?: string | number;
 }
 
-const SpatineoLogo: React.FC<LogoProps> = ({ 
-  width = "2133.3333", 
-  height = "800", 
-  ...props 
+const SpatineoLogo: React.FC<LogoProps> = ({
+  width = "2133.3333",
+  height = "800",
+  ...props
 }) => {
   return (
     <svg

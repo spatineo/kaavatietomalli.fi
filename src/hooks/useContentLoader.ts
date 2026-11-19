@@ -1,19 +1,19 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import { 
-  getPostBySlug, 
-  getPageBySlug, 
-  getAuthorBySlug, 
-  getPostsByTag, 
-  getTagPageSlugs, 
-  PostMetadata, 
-  PostData, 
-  PageData, 
-  AuthorData 
+import {
+  getPostBySlug,
+  getPageBySlug,
+  getAuthorBySlug,
+  getPostsByTag,
+  getTagPageSlugs,
+  PostMetadata,
+  PostData,
+  PageData,
+  AuthorData
 } from '../lib/blog';
 import { CONFIG } from '../config';
 
@@ -37,7 +37,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
   useEffect(() => {
     let isStale = false;
     setContentNotFound(false);
- 
+
     // Immediate cleanup of "other" detail states to avoid stale renders during transitions
     if (activeView.type !== 'post') {
       setCurrentPost(null);
@@ -56,7 +56,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
       setTagPage(null);
       setActiveTagSlug(null);
     }
- 
+
     // Also clear the current view's state if the slug changed, to ensure isDataReady becomes false immediately
     if (activeView.type === 'post' && currentPost?.slug !== activeView.slug) {
       setCurrentPost(null);
@@ -75,7 +75,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
       setTagPage(null);
       setActiveTagSlug(null);
     }
- 
+
     const loadData = async () => {
       if (activeView.type === 'post' && activeView.slug) {
         if (currentPost?.slug !== activeView.slug) {
@@ -136,14 +136,14 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
               getPostsByTag(activeView.slug, 0, 100),
               getTagPageSlugs(activeView.slug)
             ]);
-            
+
             if (!isStale) {
               if (taggedPosts.length > 0 || pageSlugs.length > 0) {
                 let fetchedPage: PageData | null = null;
                 if (pageSlugs.length > 0) {
                   fetchedPage = await getPageBySlug(pageSlugs[0]);
                 }
-                
+
                 if (!isStale) {
                   setTagPosts(taggedPosts);
                   setTagPage(fetchedPage);
@@ -185,10 +185,10 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
         }
       }
     };
- 
+
     loadData();
-    return () => { 
-      isStale = true; 
+    return () => {
+      isStale = true;
     };
   }, [activeView.type, activeView.slug, posts.length, verifiedModelSlug]);
 
@@ -205,7 +205,7 @@ export function useContentLoader({ activeView, posts }: UseContentLoaderProps) {
     else if (activeView.type === 'tag') {
       ready = activeTagSlug === activeView.slug && (tagPosts.length > 0 || !!tagPage);
     }
-    
+
     return ready;
   }, [activeView, currentPost, currentPage, currentAuthor, tagPosts, tagPage, activeTagSlug]);
 

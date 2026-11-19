@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -30,7 +30,7 @@ describe('InteractiveImage component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     fetchSpy = vi.spyOn(window, 'fetch');
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   afterEach(() => {
@@ -44,7 +44,7 @@ describe('InteractiveImage component', () => {
 
     expect(screen.getByText('Testikaavio')).toBeDefined();
     expect(screen.getByTestId('interactive-image-container')).toBeDefined();
-    
+
     await waitFor(() => {
       const html = screen.getByTestId('interactive-image-container').innerHTML;
       expect(html).toContain('inline-svg');
@@ -101,12 +101,12 @@ describe('InteractiveImage component', () => {
   it('applies custom inline styles directly to the immediate container element of the SVG and ignores non-CSS parameters like note', () => {
     const svgStr = '<svg><circle cx="50" cy="50" r="40" /></svg>';
     const customStyle = 'background-color: rgb(255, 175, 0); border-radius: 8px; note: "some copyright note";';
-    
+
     render(<InteractiveImage svgContent={svgStr} style={customStyle} />);
 
     const container = screen.getByTestId('interactive-image-container');
     const contentDiv = container.querySelector('.interactive-image-content') as HTMLDivElement;
-    
+
     expect(contentDiv).toBeDefined();
     expect(contentDiv.style.backgroundColor).toBe('rgb(255, 175, 0)');
     expect(contentDiv.style.borderRadius).toBe('8px');

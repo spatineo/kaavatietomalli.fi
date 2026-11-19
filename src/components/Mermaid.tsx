@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useEffect, useRef, useState } from 'react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
@@ -11,7 +15,7 @@ async function getMermaid() {
   if (mermaidInstance) return mermaidInstance;
   const m = await import('../lib/mermaid');
   mermaidInstance = m.default;
-  
+
   if (!isInitialized) {
     mermaidInstance.initialize({
       startOnLoad: false,
@@ -298,13 +302,13 @@ export function Mermaid({ chart }: MermaidProps) {
         setError(null);
         try {
           const mermaid = await getMermaid();
-          
+
           if ('fonts' in document) {
             await document.fonts.ready;
           }
-          
+
           const id = `mermaid-${Math.random().toString(36).substring(2, 11)}`;
-          
+
           const tempDiv = document.createElement('div');
           tempDiv.className = 'mermaid';
           tempDiv.style.position = 'absolute';
@@ -312,7 +316,7 @@ export function Mermaid({ chart }: MermaidProps) {
           tempDiv.style.top = '-9999px';
           tempDiv.style.visibility = 'hidden';
           document.body.appendChild(tempDiv);
-          
+
           try {
             const { svg, bindFunctions } = await mermaid.render(id, chart, tempDiv);
             setSvgContent(svg);

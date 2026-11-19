@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { format, parseISO } from 'date-fns';
 import { motion } from 'motion/react';
 import { ArrowRight, Award } from 'lucide-react';

@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';

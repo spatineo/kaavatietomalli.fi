@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { lazy, Suspense } from 'react';
 import { Compass, Layers } from 'lucide-react';
 import { Translations } from '../i18n/types';
@@ -29,17 +33,17 @@ export function ClassInfoPanel({
   t,
   model
 }: ClassInfoPanelProps) {
-  
-    let classDocumentationUrl = null;
-    const modelMetadata = model?.metadata || undefined;
-    if (model && model.metadata?.documentationUrl) {
-        classDocumentationUrl = modelMetadata?.documentationUrl?.split('?')[0];
-        if (!classDocumentationUrl?.endsWith('/')) {
-            classDocumentationUrl += '/';
-        }
-        classDocumentationUrl += `class/${selectedClassObj.technicalName}?ver=${model.version}`;
+
+  let classDocumentationUrl = null;
+  const modelMetadata = model?.metadata || undefined;
+  if (model && model.metadata?.documentationUrl) {
+    classDocumentationUrl = modelMetadata?.documentationUrl?.split('?')[0];
+    if (!classDocumentationUrl?.endsWith('/')) {
+      classDocumentationUrl += '/';
     }
-    return (
+    classDocumentationUrl += `class/${selectedClassObj.technicalName}?ver=${model.version}`;
+  }
+  return (
     <div className="p-8 md:p-10 flex flex-col gap-8">
       {/* Header Info */}
       <div className="flex flex-col gap-4 border-b border-white/5 pb-6">
@@ -53,7 +57,7 @@ export function ClassInfoPanel({
             <div className="font-bold text-sm text-white bg-red-950 px-1.5 py-0.5 rounded"> {getStatusLabel(modelMetadata?.status)}</div>
           )}
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono text-slate-400">
           <div className="flex gap-2">
             <span className="text-slate-500">{t.dataModel.technicalName}</span>
@@ -61,25 +65,25 @@ export function ClassInfoPanel({
           </div>
           <div className="flex gap-2">
             <span className="text-slate-500">{t.dataModel.uri}</span>
-            { classDocumentationUrl ? (
-                <div>
+            {classDocumentationUrl ? (
+              <div>
                 <a
-                href={classDocumentationUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-500 flex items-center gap-1.5 hover:underline font-semibold"
+                  href={classDocumentationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-500 flex items-center gap-1.5 hover:underline font-semibold"
                 >
-                    <span className="text-brand-accent">{selectedClassObj.id}</span>
-                    <ExternalLink size={12} />
+                  <span className="text-brand-accent">{selectedClassObj.id}</span>
+                  <ExternalLink size={12} />
                 </a>
               </div>
             ) : (
-                <span 
-                className="text-slate-300 select-all overflow-hidden text-ellipsis whitespace-nowrap" 
+              <span
+                className="text-slate-300 select-all overflow-hidden text-ellipsis whitespace-nowrap"
                 title={selectedClassObj.id}
-                >
+              >
                 {selectedClassObj.id}
-                </span>
+              </span>
             )}
           </div>
         </div>

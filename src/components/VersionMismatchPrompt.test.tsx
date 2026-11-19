@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -46,7 +46,7 @@ describe('VersionMismatchPrompt component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
     mockGetBuildVersion.mockResolvedValue('1000');
     mockFetchServerVersion.mockResolvedValue('1000');
 

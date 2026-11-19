@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { resolveImageUrl } from './utils';
 
 export const COVER_IMAGE_WIDTHS = [320, 640, 960, 1200, 1600, 2048] as const;

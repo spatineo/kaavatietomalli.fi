@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect } from 'react';
 import { Play, EyeOff, ShieldAlert } from 'lucide-react';
 import { getConsentState, setConsent, GRANT_ANALYTICS_ONLY } from '../services/consent';

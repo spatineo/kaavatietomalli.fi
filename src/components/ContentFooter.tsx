@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { ArrowLeft } from 'lucide-react';
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';

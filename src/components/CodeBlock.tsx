@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
@@ -77,10 +81,10 @@ function parseCtaBlock(code: string): {
   mode?: string;
 } {
   const config = parseVideoProperties(code);
-  
+
   // Find case-insensitive or synonymous keys
   const keys = Object.keys(config);
-  
+
   const findVal = (possibleKeys: string[]) => {
     const foundKey = keys.find(k => possibleKeys.includes(k.toLowerCase()));
     return foundKey ? String(config[foundKey]).trim() : undefined;
@@ -105,7 +109,7 @@ interface CTAProps {
   url: string,
   buttonText: string,
   title?: string,
-  description?:string,
+  description?: string,
   partner?: string,
   mode?: string
 }
@@ -117,7 +121,7 @@ export function CallToAction({
   description,
   partner,
   mode
-}:CTAProps) {
+}: CTAProps) {
   const { activeView } = useAppRouter();
 
   // Determine context string based on the active view type and slug
@@ -130,13 +134,13 @@ export function CallToAction({
   if (mode === 'thin') {
     return (
       <div className="cta-block my-2 px-5 py-2 rounded-xl bg-[#09090B] border border-white/10 shadow-2xl relative overflow-hidden text-right flex" data-testid="cta-block">
-        
+
         {title && (
           <span className="text-amber-400 flex-grow align-middle inline-block" data-testid="cta-title">
             {title}
           </span>
         )}
-        
+
         <a
           href={url}
           target="_blank"
@@ -153,22 +157,22 @@ export function CallToAction({
   } else {
     return (
       <div className="cta-block my-10 p-8 md:p-10 rounded-3xl bg-gradient-to-br from-brand-muted to-[#17171a] border border-white/10 shadow-2xl relative overflow-hidden text-left max-w-xl" data-testid="cta-block">
-    
+
         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-        
+
         {title && (
           <h4 className="text-xl md:text-2xl font-black text-white mb-4 mt-0 tracking-tight leading-tight" data-testid="cta-title">
             {title}
           </h4>
         )}
-        
+
         {description && (
           <p className="cta-content text-slate-300 mb-8 text-sm md:text-base leading-relaxed font-sans font-normal max-w-xl" data-testid="cta-description">
             {description}
           </p>
         )}
-        
-        
+
+
         <a
           href={url}
           target="_blank"
@@ -192,7 +196,7 @@ export function CallToActionBlock({ code }: { code: string }) {
       properties.mode = 'normal';
     }
     return CallToAction(properties);
-  } catch(error) {
+  } catch (error) {
     return (
       <div className="my-6 p-6 rounded-2xl border border-amber-500/20 bg-amber-950/10 text-left">
         <p className="text-xs text-amber-400">
@@ -336,7 +340,7 @@ export function CodeBlock({
   if (language === 'mermaid' || language === 'instance' || language === 'mermaid-instance') {
     const isCustomInstance = language === 'instance' || language === 'mermaid-instance';
     const chartData = isCustomInstance ? transpileInstanceToMermaid(codeContent) : codeContent;
-    
+
     const fallbackHeightClass = placeholderHeight === 'h-48' ? 'h-48' : placeholderHeight === 'h-56' ? 'h-56' : 'h-64';
     return (
       <ErrorBoundary fallback={<BlockFallback language={language} code={codeContent} />}>

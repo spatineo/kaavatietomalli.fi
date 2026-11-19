@@ -1,8 +1,11 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { TableOfContents } from './TableOfContents';
 import { HeaderItem, assignHeadingPrefixes } from './MarkdownHeading';
-import React from 'react';
 
 // Mock motion/react to prevent animation lifecycle cancellation errors (AbortError) in HappyDOM
 vi.mock('motion/react', () => ({
@@ -32,7 +35,7 @@ describe('TableOfContents Component', () => {
   it('opens and closes popup when clicked and lists headings with indentations', async () => {
     render(<TableOfContents headings={mockHeadings} />);
     const trigger = screen.getByTestId('toc-trigger');
-    
+
     // Closed initially
     expect(screen.queryByTestId('toc-popup')).toBeNull();
 
@@ -60,12 +63,12 @@ describe('TableOfContents Component', () => {
     const getElementSpy = vi.spyOn(document, 'getElementById').mockReturnValue(mockElement as any);
 
     render(<TableOfContents headings={mockHeadings} />);
-    
+
     // Open menu
     await act(async () => {
       fireEvent.click(screen.getByTestId('toc-trigger'));
     });
-    
+
     // Click heading item
     const headingBtn = screen.getByText('Alaotsikko 1');
     await act(async () => {

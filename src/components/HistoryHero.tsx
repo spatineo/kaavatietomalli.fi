@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useEffect, useRef, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { fi } from 'date-fns/locale';
