@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 export interface LocalizedText {
   fi?: string;
   sv?: string;

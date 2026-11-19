@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { useEffect, useRef, useState } from 'react';
@@ -149,7 +149,7 @@ export function useMetadataSync({
         const versionItem = versions.find(v => v.version === targetVersion);
 
         const modelLabel = versionItem ? getLocalized(versionItem.name, langParam) : modelName;
-        
+
         const classParam = params.get('class');
         const codelistParam = params.get('codelist');
 
@@ -189,7 +189,7 @@ export function useMetadataSync({
             description = `Teknisk beskrivning och koodisto för datamodellen ${modelLabel} (version ${targetVersion}).`;
           }
         }
-      
+
       } else {
         title = `${modelName} | Kaavatietomalli.fi`;
       }
@@ -231,7 +231,7 @@ export function useMetadataSync({
       modelSubKey = `${params.get('version') || ''}:${params.get('class') || ''}:${params.get('codelist') || ''}:${langParam}`;
     }
     const currentKey = `${activeView.type}:${activeView.slug || ''}:${contentNotFound}:${currentPost?.slug || ''}:${currentPage?.slug || ''}:${currentAuthor?.slug || ''}:${modelSubKey}`;
-    
+
     if (currentKey !== lastTrackedRef.current) {
       lastTrackedRef.current = currentKey;
       if (activeView.type === 'home') {

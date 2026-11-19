@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -24,7 +24,7 @@ describe('ErrorBoundary component', () => {
 
   beforeEach(() => {
     // Suppress console.error inside react/vitest for expected error boundaries
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
 
     // Mock window.location.href assignment to avoid real redirects in test environment
     originalLocation = window.location;
@@ -73,11 +73,11 @@ describe('ErrorBoundary component', () => {
     );
 
     expect(screen.queryByTestId('healthy-child')).toBeNull();
-    
+
     // Check for error card elements
     const errorCard = document.getElementById('error-boundary-card');
     expect(errorCard).not.toBeNull();
-    
+
     // Check for correct translated title and details
     expect(screen.getByText(t.errorBoundary.title)).toBeDefined();
     expect(screen.getByText(t.errorBoundary.description)).toBeDefined();
@@ -91,7 +91,7 @@ describe('ErrorBoundary component', () => {
 
   it('invokes onReset callback and triggers redirection when reset button is clicked', () => {
     const onResetMock = vi.fn();
-    
+
     render(
       <ErrorBoundary onReset={onResetMock}>
         <FaultyComponent shouldThrow={true} />

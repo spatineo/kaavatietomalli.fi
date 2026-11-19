@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { describe, it, expect } from 'vitest';
 import {
   COVER_IMAGE_WIDTHS,

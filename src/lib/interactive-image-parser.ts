@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 export interface InteractiveImageProperties {
   href?: string;
   alt?: string;

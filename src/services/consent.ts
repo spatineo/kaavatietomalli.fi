@@ -1,4 +1,7 @@
-
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 export const GRANT_ANALYTICS_ONLY = {
   analyticsStorage: "granted",
   adUserData: "denied",

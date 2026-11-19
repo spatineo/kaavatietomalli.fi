@@ -1,9 +1,13 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useMemo } from 'react';
-import { 
-  ArrowLeft, 
-  Globe, 
-  ChevronDown, 
-  ExternalLink, 
+import {
+  ArrowLeft,
+  Globe,
+  ChevronDown,
+  ExternalLink,
   Database,
   Info,
   BookOpen
@@ -34,7 +38,7 @@ interface DataModelViewProps {
 
 export function DataModelView({ modelName, onBack, navigate, searchString, dataModelAccess }: DataModelViewProps) {
   const t = getTranslations(CONFIG.language as Language);
-  
+
   // 1. Languages from CONFIG
   const languages = useMemo(() => CONFIG.dataLanguages || [
     { code: 'fi', name: 'Suomi' },
@@ -97,7 +101,7 @@ export function DataModelView({ modelName, onBack, navigate, searchString, dataM
         const params = new URLSearchParams(window.location.search);
         const versionParam = params.get('version');
         const matchedVersion = versions.find((v: ModelIndexItem) => v.version === versionParam);
-        
+
         const initialVersion = matchedVersion ? matchedVersion.version : versions[0].version;
         setSelectedVersion(initialVersion);
       })
@@ -327,7 +331,7 @@ lang: ${dataLang}`;
     const [type, name] = val.split(':');
     const newElement = { type: type as 'class' | 'codelist', name };
     setSelectedElement(newElement);
-    getTracker().trackToolEvent('dataModelView','item_select',name);
+    getTracker().trackToolEvent('dataModelView', 'item_select', name);
     updateUrlParams(selectedVersion, newElement, dataLang);
   };
 
@@ -386,7 +390,7 @@ lang: ${dataLang}`;
     return (
       <div className="max-w-4xl mx-auto px-6 py-20 text-center">
         <h2 className="text-2xl font-bold text-red-500 mb-4">{error}</h2>
-        <button 
+        <button
           onClick={onBack}
           className="inline-flex items-center gap-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white px-5 py-2.5 rounded-full transition-colors text-sm font-semibold"
         >
@@ -399,10 +403,10 @@ lang: ${dataLang}`;
 
   const metadata = modelData?.metadata || {};
 
-  const ctaProps:string = JSON.stringify({
+  const ctaProps: string = JSON.stringify({
     "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
     "buttonText": "Kysy lisää",
-    "title":"Tuntuuko Kaavatietomalli haastavalta? Ei hätää, Spatineon asiantuntijat osaavat auttaa.",
+    "title": "Tuntuuko Kaavatietomalli haastavalta? Ei hätää, Spatineon asiantuntijat osaavat auttaa.",
     "partner": "spatineo",
     "mode": "thin"
   });
@@ -413,7 +417,7 @@ lang: ${dataLang}`;
       <div className="flex flex-col gap-6 border-b border-white/5 pb-8">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between items-start">
           <div className="flex flex-col gap-4">
-            <button 
+            <button
               onClick={onBack}
               className="self-start inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm font-semibold mb-2"
             >
@@ -426,7 +430,7 @@ lang: ${dataLang}`;
               <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
             </div>
             <h1 className="text-4xl font-black tracking-tighter leading-[0.8] text-white">
-                  {getLocalized(metadata.name)}
+              {getLocalized(metadata.name)}
             </h1>
             <a
               href={metadata.modelUri || modelData?.id}
@@ -436,24 +440,24 @@ lang: ${dataLang}`;
             >
               <span className="text-brand-accent">{metadata.modelUri || modelData?.id}</span>
               <ExternalLink size={12} />
-              </a>
+            </a>
             <div className="flex gap-3 flex-wrap items-center">
-            {metadata.lastModified && (
-              <div className="">
+              {metadata.lastModified && (
+                <div className="">
                   <span className="text-slate-500 font-semibold">{t.dataModel.modified}:</span>{' '}
                   <span className="font-semibold text-slate-200">
-                  {new Date(metadata.lastModified).toLocaleDateString(dataLang)}
+                    {new Date(metadata.lastModified).toLocaleDateString(dataLang)}
                   </span>
-              </div>
+                </div>
               )}
-            {metadata.originSyncTime && (
-              <div className="">
+              {metadata.originSyncTime && (
+                <div className="">
                   <span className="text-sm text-slate-500 font-semibold">{t.dataModel.originSyncTimeLabel}</span>{' '}
                   <span className="font-semibold text-slate-200">
-                  {new Date(metadata.originSyncTime).toLocaleDateString(dataLang)}
+                    {new Date(metadata.originSyncTime).toLocaleDateString(dataLang)}
                   </span>
-              </div>
-            )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -467,18 +471,17 @@ lang: ${dataLang}`;
                   <button
                     key={lang.code}
                     onClick={() => handleSelectLanguage(lang.code)}
-                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
-                      dataLang === lang.code 
-                        ? 'bg-brand-accent text-black shadow-md' 
+                    className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${dataLang === lang.code
+                        ? 'bg-brand-accent text-black shadow-md'
                         : 'text-slate-400 hover:text-white hover:bg-white/5'
-                    }`}
+                      }`}
                   >
                     {lang.name}
                   </button>
                 ))}
               </div>
             </div>
-            
+
             {/* Flexible Filler Spacer */}
             <div className="flex grow"></div>
 
@@ -516,9 +519,8 @@ lang: ${dataLang}`;
               </span>
               <ChevronDown
                 size={16}
-                className={`text-slate-500 transition-transform duration-500 group-hover:text-brand-accent ${
-                  isModelInfoOpen ? 'rotate-180' : ''
-                }`}
+                className={`text-slate-500 transition-transform duration-500 group-hover:text-brand-accent ${isModelInfoOpen ? 'rotate-180' : ''
+                  }`}
               />
             </div>
           </button>
@@ -566,44 +568,44 @@ lang: ${dataLang}`;
       {/* Selector and Active Info Panels */}
       <div className="flex flex-col gap-8">
         <div id="data-model-info-panel" className="scroll-mt-24 bg-black/20 border border-white/5 rounded-3xl animate-fade-in">
-        {/* 2. The class or codelist selector */}
-        <ClassCodelistSelector
-          classes={modelData?.classes || []}
-          usedCodelists={usedCodelists}
-          selectedElement={selectedElement}
-          onSelectElement={handleSelectElement}
-          getLocalized={getLocalized}
-          t={t}
-          modelName={modelName}
-          selectedVersion={selectedVersion}
-        />
-        
-        {/* 3. The class info panel */}
-        {selectedElement?.type === 'class' && selectedClassObj && (
-          <ClassInfoPanel
-            selectedClassObj={selectedClassObj}
-            mermaidChart={mermaidChart}
-            dataLang={dataLang}
+          {/* 2. The class or codelist selector */}
+          <ClassCodelistSelector
+            classes={modelData?.classes || []}
+            usedCodelists={usedCodelists}
+            selectedElement={selectedElement}
+            onSelectElement={handleSelectElement}
             getLocalized={getLocalized}
-            onNavigateToType={(type, name) => handleSelectElement(`${type}:${name}`)}
-            getTypeNavigation={getTypeNavigation}
             t={t}
-            model={modelData || undefined}
+            modelName={modelName}
+            selectedVersion={selectedVersion}
           />
-        )}
 
-        {/* 4. The codelist info panel */}
-        {selectedElement?.type === 'codelist' && (
-          <CodelistInfoPanel
-            codelistDetail={codelistDetail}
-            loadingCodelist={loadingCodelist}
-            dataLang={dataLang}
-            getLocalized={getLocalized}
-            copiedCodeUri={copiedCodeUri}
-            onCopy={copyToClipboard}
-            t={t}
-          />
-        )}
+          {/* 3. The class info panel */}
+          {selectedElement?.type === 'class' && selectedClassObj && (
+            <ClassInfoPanel
+              selectedClassObj={selectedClassObj}
+              mermaidChart={mermaidChart}
+              dataLang={dataLang}
+              getLocalized={getLocalized}
+              onNavigateToType={(type, name) => handleSelectElement(`${type}:${name}`)}
+              getTypeNavigation={getTypeNavigation}
+              t={t}
+              model={modelData || undefined}
+            />
+          )}
+
+          {/* 4. The codelist info panel */}
+          {selectedElement?.type === 'codelist' && (
+            <CodelistInfoPanel
+              codelistDetail={codelistDetail}
+              loadingCodelist={loadingCodelist}
+              dataLang={dataLang}
+              getLocalized={getLocalized}
+              copiedCodeUri={copiedCodeUri}
+              onCopy={copyToClipboard}
+              t={t}
+            />
+          )}
         </div>
       </div>
       <CallToActionBlock code={ctaProps} />

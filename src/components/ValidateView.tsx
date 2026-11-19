@@ -1,19 +1,19 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { 
-  Play, 
-  CheckCircle2, 
-  AlertTriangle, 
-  XCircle, 
-  Info, 
-  FileJson, 
-  RefreshCw, 
-  Copy, 
-  Check, 
+import {
+  Play,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Info,
+  FileJson,
+  RefreshCw,
+  Copy,
+  Check,
   HelpCircle,
   ExternalLink,
   Eye,
@@ -32,7 +32,7 @@ import { getTracker } from '../services/analytics';
 
 interface RegionInfo {
   codeValue: string;
-  name: string; 
+  name: string;
 }
 
 const VALIDATOR_API_KEY_TEST = import.meta.env.VITE_SYKE_DEVELOPER_TEST_API_KEY || '';
@@ -257,7 +257,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
   const [planType, setPlanType] = useState('31');
   const [areaId, setAreaId] = useState('601');
   const [jsonInput, setJsonInput] = useState(() => JSON.stringify(EXAMPLE_PLAN, null, 2));
-  
+
   const [selectedLineNum, setSelectedLineNum] = useState<number | null>(null);
   const [showRawResponse, setShowRawResponse] = useState<boolean>(false);
 
@@ -270,7 +270,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
   const [isValidating, setIsValidating] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [jsonError, setJsonError] = useState<string | null>(null);
-  
+
   const [responseStatus, setResponseStatus] = useState<number | null>(null);
   const [rawResponse, setRawResponse] = useState<any>(null);
   const [copied, setCopied] = useState(false);
@@ -320,7 +320,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
   }, []);
 
   useEffect(() => {
-    getTracker().trackToolEvent('validateView','aa_select',areaId);
+    getTracker().trackToolEvent('validateView', 'aa_select', areaId);
   }, [areaId]);
 
   // Sorted list of all municipalities for dropdown
@@ -425,7 +425,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
 
     setIsValidating(true);
 
-    const baseUrl = env === 'test' 
+    const baseUrl = env === 'test'
       ? 'https://api-test.ymparisto.fi/ryhti/plan-public/api/Plan/Validate'
       : 'https://api.ymparisto.fi/ryhti/plan-public/api/Plan/Validate';
 
@@ -462,15 +462,15 @@ export function ValidateView({ onBack }: ValidateViewProps) {
       if (response.status === 200) {
         // Success case
         setErrorMsg(null);
-        getTracker().trackToolEvent('validateView','validate','success');
+        getTracker().trackToolEvent('validateView', 'validate', 'success');
       } else if (response.status === 400 || response.status === 422) {
         // Validation failed or bad structure
         setErrorMsg(null);
-        getTracker().trackToolEvent('validateView','validate','fail');
+        getTracker().trackToolEvent('validateView', 'validate', 'fail');
       } else {
         // General server error
         setErrorMsg(`API returned status ${response.status}: ${data?.title || data?.message || 'Error occurred'}`);
-        getTracker().trackToolEvent('validateView','validate','error');
+        getTracker().trackToolEvent('validateView', 'validate', 'error');
       }
     } catch (err: any) {
       console.error(err);
@@ -493,7 +493,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
     // 1. If errors is an array (the Syke Ryhti format)
     if (Array.isArray(rawResponse.errors)) {
       rawList.push(...rawResponse.errors);
-    } 
+    }
     // 2. If errors is a dictionary (the standard ASP.NET model validation format)
     else if (rawResponse.errors && typeof rawResponse.errors === 'object') {
       Object.entries(rawResponse.errors).forEach(([field, messages]) => {
@@ -562,14 +562,14 @@ export function ValidateView({ onBack }: ValidateViewProps) {
         planRegulationGroupsCount = parsed.planRegulationGroups.length;
       }
     }
-  } catch {}
+  } catch { }
 
   // Enrich validation errors with precise resolved line numbers, plain-language text, and suggestions
   const enrichedErrors: EnrichedValidationError[] = useMemo(() => {
     let parsedDoc: any = null;
     try {
       parsedDoc = JSON.parse(jsonInput);
-    } catch {}
+    } catch { }
 
     return validationErrors.map(err => {
       const loc = resolveErrorLocation(err, jsonIndex, parsedDoc);
@@ -628,10 +628,10 @@ export function ValidateView({ onBack }: ValidateViewProps) {
     ? enrichedErrors.filter(err => err.resolvedLineNum === selectedLineNum)
     : [];
 
-  const ctaProps:string = JSON.stringify({
+  const ctaProps: string = JSON.stringify({
     "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
     "buttonText": "Kysy lisää",
-    "title":"Haasteita Ryhti-toteutuksen kanssa? Spatineo toteutti tämän palvelun - osaamme auttaa sinuakin.",
+    "title": "Haasteita Ryhti-toteutuksen kanssa? Spatineo toteutti tämän palvelun - osaamme auttaa sinuakin.",
     "partner": "spatineo",
     "mode": "thin"
   });
@@ -641,12 +641,12 @@ export function ValidateView({ onBack }: ValidateViewProps) {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-white/10 pb-8 mb-10">
         <div>
           <button
-            onClick={onBack}  
+            onClick={onBack}
             data-testid="back-to-home-btn"
             className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px] mb-6"
             aria-label={t.post.returnToList}
           >
-           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
             {t.common.backToHome}
           </button>
           <span className="text-xs font-bold uppercase tracking-[0.4em] text-brand-accent">
@@ -664,7 +664,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
         <h2 className="text-xs font-black uppercase tracking-widest text-brand-accent flex items-center gap-1.5 border-b border-white/5 pb-2">
           <span>Yhteysasetukset & Kaavan tiedot</span>
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 content-end">
           {/* Environment */}
           <div className="flex flex-col gap-2">
@@ -737,18 +737,18 @@ export function ValidateView({ onBack }: ValidateViewProps) {
               ))}
             </select>
           </div>
-          
-          
+
+
         </div>
       </div>
 
       {/* Direct Side-by-Side Workspace Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch animate-fade-in">
-        
+
         {/* Left Column: JSON Code Editor (Editable, Always Visible) */}
         <div className="lg:col-span-7 flex flex-col gap-4 code-editor">
           <div className="bg-brand-muted/40 border border-white/10 rounded-2xl p-6 flex flex-col gap-4">
-            
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-3">
               <div className="flex items-center gap-2">
                 <FileJson size={16} className="text-brand-accent" />
@@ -756,7 +756,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                   {strings.editorLabel}
                 </span>
               </div>
-              
+
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   type="file"
@@ -793,7 +793,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
             {/* Code editor container with synchronized line numbers gutter & highlights */}
             <div className="relative">
               <div className="relative flex bg-slate-950 rounded-xl border border-white/10 h-[500px] overflow-hidden group focus-within:border-brand-accent/40 transition-colors">
-                
+
                 {/* Line Numbers Gutter */}
                 <div
                   ref={lineCounterRef}
@@ -834,7 +834,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
 
                 {/* Main Textarea and Highlights Overlay */}
                 <div className="relative flex-1 h-full overflow-hidden">
-                  
+
                   {/* Background Highlight Rows */}
                   <div
                     ref={highlightsRef}
@@ -919,7 +919,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
           </button>
 
           <div className="bg-brand-muted/70 backdrop-blur-md rounded-2xl border border-white/10 p-6 min-h-[500px] flex-grow flex flex-col justify-between gap-6">
-            
+
             {/* Initial empty state */}
             {responseStatus === null && !errorMsg && !isValidating && !jsonError && (
               <div className="my-auto text-center py-12 flex flex-col items-center gap-4">
@@ -1045,7 +1045,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                 {/* Error Report Panel Details */}
                 {validationErrors.length > 0 && (
                   <div className="flex-1 flex flex-col gap-4 border-t border-white/5 pt-4">
-                    
+
                     {selectedLineNum && clickedLineErrors.length > 0 ? (
                       <div className="flex flex-col gap-3 animate-fade-in">
                         <div className="flex justify-between items-center bg-black/30 border border-white/5 p-3 rounded-xl">
@@ -1058,11 +1058,10 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
-                              clickedLineErrors.some(e => e.severity === 'Error') 
-                                ? 'bg-red-500/10 text-red-400 border border-red-500/20' 
-                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${clickedLineErrors.some(e => e.severity === 'Error')
+                              ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              }`}>
                               {clickedLineErrors.length} {clickedLineErrors.length === 1 ? strings.issue : strings.issues}
                             </span>
                             <button
@@ -1080,19 +1079,17 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                           {clickedLineErrors.map((err, idx) => (
                             <div
                               key={idx}
-                              className={`border rounded-xl p-3.5 text-xs flex flex-col gap-2.5 transition-all ${
-                                err.severity === 'Warning' 
-                                  ? 'bg-amber-950/15 border-amber-500/25 text-amber-200/90' 
-                                  : 'bg-red-950/15 border-red-500/25 text-red-200/90'
-                              }`}
+                              className={`border rounded-xl p-3.5 text-xs flex flex-col gap-2.5 transition-all ${err.severity === 'Warning'
+                                ? 'bg-amber-950/15 border-amber-500/25 text-amber-200/90'
+                                : 'bg-red-950/15 border-red-500/25 text-red-200/90'
+                                }`}
                             >
                               <div className="flex flex-wrap items-center justify-between gap-2">
                                 <div className="flex items-center gap-2">
-                                  <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                                    err.severity === 'Warning' 
-                                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
-                                      : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                                  }`}>
+                                  <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${err.severity === 'Warning'
+                                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                    : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                                    }`}>
                                     {err.severity === 'Warning' ? strings.warning : strings.error}
                                   </span>
                                   <button
@@ -1170,11 +1167,10 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                                       key={line.lineNum}
                                       type="button"
                                       onClick={() => handleHighlightError(line.lineNum)}
-                                      className={`text-[10px] px-2.5 py-1 rounded-md border font-semibold flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] ${
-                                        isError 
-                                          ? 'bg-red-500/10 border-red-500/20 hover:border-red-500/40 text-red-300'
-                                          : 'bg-amber-500/10 border-amber-500/20 hover:border-amber-500/40 text-amber-300'
-                                      }`}
+                                      className={`text-[10px] px-2.5 py-1 rounded-md border font-semibold flex items-center gap-1.5 transition-all hover:scale-[1.02] active:scale-[0.98] ${isError
+                                        ? 'bg-red-500/10 border-red-500/20 hover:border-red-500/40 text-red-300'
+                                        : 'bg-amber-500/10 border-amber-500/20 hover:border-amber-500/40 text-amber-300'
+                                        }`}
                                     >
                                       <span>{strings.line} {line.lineNum}</span>
                                       <span className="text-[9px] opacity-70">({lineErrors.length})</span>
@@ -1201,19 +1197,17 @@ export function ValidateView({ onBack }: ValidateViewProps) {
                               <div
                                 key={idx}
                                 onClick={() => handleHighlightError(err.resolvedLineNum)}
-                                className={`border rounded-xl p-3.5 text-xs flex flex-col gap-2.5 transition-all cursor-pointer hover:border-brand-accent/50 ${
-                                  err.severity === 'Warning' 
-                                    ? 'bg-amber-950/15 border-amber-500/25 text-amber-200/90 hover:bg-amber-950/25' 
-                                    : 'bg-red-950/15 border-red-500/25 text-red-200/90 hover:bg-red-950/25'
-                                }`}
+                                className={`border rounded-xl p-3.5 text-xs flex flex-col gap-2.5 transition-all cursor-pointer hover:border-brand-accent/50 ${err.severity === 'Warning'
+                                  ? 'bg-amber-950/15 border-amber-500/25 text-amber-200/90 hover:bg-amber-950/25'
+                                  : 'bg-red-950/15 border-red-500/25 text-red-200/90 hover:bg-red-950/25'
+                                  }`}
                               >
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                   <div className="flex items-center gap-2">
-                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
-                                      err.severity === 'Warning' 
-                                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
-                                        : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                                    }`}>
+                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${err.severity === 'Warning'
+                                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                      : 'bg-red-500/20 text-red-300 border border-red-500/30'
+                                      }`}>
                                       {err.severity === 'Warning' ? strings.warning : strings.error}
                                     </span>
                                     <span className="text-[10px] font-mono font-bold bg-white/5 px-2 py-0.5 rounded border border-white/10 text-brand-accent">
@@ -1284,7 +1278,7 @@ export function ValidateView({ onBack }: ValidateViewProps) {
               {showRawResponse ? strings.hide : strings.show}
             </span>
           </button>
-          
+
           {showRawResponse && (
             <div className="mt-4 flex flex-col gap-3 animate-fade-in">
               <div className="flex items-center justify-between bg-black/40 rounded-xl px-4 py-2 text-xs border border-white/5">

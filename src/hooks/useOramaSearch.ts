@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useCallback } from 'react';
 import { create, search, load, components, type AnyOrama } from '@orama/orama';
 import { stemmer as fiStemmer } from '@orama/stemmers/finnish';
@@ -114,12 +118,12 @@ export function useOramaSearch() {
   const init = useCallback(async () => {
     // If we're already initializing, have databases, or have an error, don't try again
     if (dbs || isInitializing || error) return;
-    
+
     setIsInitializing(true);
     try {
       // Use BASE_URL to handle deployments in subdirectories (like GitHub Pages)
-      const baseUrl = import.meta.env.BASE_URL.endsWith('/') 
-        ? import.meta.env.BASE_URL 
+      const baseUrl = import.meta.env.BASE_URL.endsWith('/')
+        ? import.meta.env.BASE_URL
         : `${import.meta.env.BASE_URL}/`;
 
       const languages = ['fi', 'sv', 'en'] as const;
@@ -155,7 +159,7 @@ export function useOramaSearch() {
             throw new Error(`Failed to fetch search index for ${lang}: ${response.statusText} (${targetUrl})`);
           }
           const indexData = await response.json();
-          
+
           const oramaLang = lang === 'fi' ? 'finnish' : lang === 'sv' ? 'swedish' : 'english';
           const customTokenizer = await createCustomTokenizer(oramaLang, stemmers[lang]);
 

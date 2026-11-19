@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -45,7 +45,7 @@ describe('Mermaid component', () => {
       svg: '<svg viewBox="0 0 100 100" data-testid="mock-mermaid-svg"><rect width="100" height="100" fill="red" /></svg>',
       bindFunctions: vi.fn(),
     });
-    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
   });
 
   afterEach(() => {

@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useMemo } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ArrowLeft, ArrowRight, Award } from 'lucide-react';

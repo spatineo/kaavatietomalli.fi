@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect } from 'vitest';
@@ -148,7 +148,7 @@ describe('CodelistInfoPanel component', () => {
     );
 
     const filterInput = document.getElementById('codes-table-filter') as HTMLInputElement;
-    
+
     // Search for nested "Alakoodi"
     fireEvent.change(filterInput, { target: { value: 'Alakoodi' } });
 

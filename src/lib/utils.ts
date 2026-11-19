@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { CONFIG } from '../config';
@@ -13,16 +17,16 @@ export function cn(...inputs: ClassValue[]) {
  */
 export function resolveImageUrl(url: string | undefined): string {
   if (!url) return '';
-  
+
   // If it's already an absolute URL (http, https, /), data URL, anchor (#), or has a protocol scheme, return it as is
   if (/^(https?:\/\/|\/|data:|#|[a-zA-Z][a-zA-Z0-9+.-]*:)/.test(url)) {
     return url;
   }
-  
+
   // Handle relative paths (e.g. ../images/...) 
   // We normalize by removing leading ./ or ../ because our assets are basically at the root of the serving path
   const cleanUrl = url.replace(/^(\.\.?\/)+/, '');
-  
+
   // Ensure basePath ends with / and cleanUrl DOES NOT start with /
   const base = CONFIG.basePath.endsWith('/') ? CONFIG.basePath : `${CONFIG.basePath}/`;
   return `${base}${cleanUrl}`;

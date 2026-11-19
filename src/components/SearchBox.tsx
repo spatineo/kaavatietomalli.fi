@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -9,7 +13,7 @@ import { getTracker } from '../services/analytics';
 
 interface SearchBoxProps {
   size?: 'sm' | 'lg';
-  onNavigate: (type: 'post' | 'page' | 'author' | 'class' | 'codelist' , slug: string) => void;
+  onNavigate: (type: 'post' | 'page' | 'author' | 'class' | 'codelist', slug: string) => void;
   initialQuery?: string;
   autoFocus?: boolean;
   showClose?: boolean;
@@ -19,10 +23,10 @@ interface SearchBoxProps {
   isMobile?: boolean;
 }
 
-export function SearchBox({ 
-  size = 'sm', 
-  onNavigate, 
-  initialQuery = '', 
+export function SearchBox({
+  size = 'sm',
+  onNavigate,
+  initialQuery = '',
   autoFocus = false,
   showClose = false,
   onClose,
@@ -56,7 +60,7 @@ export function SearchBox({
       const searchResults = await performSearch(query);
       setResults(searchResults);
       setIsSearching(false);
-      getTracker().trackToolEvent('searchBox','search',query);
+      getTracker().trackToolEvent('searchBox', 'search', query);
     };
 
     const timeout = setTimeout(handleSearch, 300);
@@ -71,9 +75,8 @@ export function SearchBox({
 
   return (
     <div className={`relative w-full ${className}`}>
-      <div className={`relative flex items-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 px-3 transition-all focus-within:ring-2 focus-within:ring-brand-accent/50 ${
-        isLarge ? 'py-3 px-6' : 'py-1.5 px-3'
-      }`}>
+      <div className={`relative flex items-center bg-white/10 backdrop-blur-md rounded-full border border-white/20 px-3 transition-all focus-within:ring-2 focus-within:ring-brand-accent/50 ${isLarge ? 'py-3 px-6' : 'py-1.5 px-3'
+        }`}>
         <Search size={isLarge ? 24 : 18} className="text-slate-400 shrink-0" />
         <input
           ref={inputRef}
@@ -82,14 +85,13 @@ export function SearchBox({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder || t.search.placeholder}
-          className={`w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-slate-400 px-2 ${
-            isLarge ? 'text-lg h-10' : 'text-sm h-7'
-          }`}
+          className={`w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-slate-400 px-2 ${isLarge ? 'text-lg h-10' : 'text-sm h-7'
+            }`}
         />
         {isSearching || isInitializing ? (
           <Loader2 size={isLarge ? 24 : 16} className="text-slate-400 animate-spin shrink-0" />
         ) : showClose ? (
-          <button 
+          <button
             onClick={() => {
               setQuery('');
               if (onClose) onClose();
@@ -110,11 +112,9 @@ export function SearchBox({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className={`${
-              isMobile ? 'relative mt-2' : isLarge ? 'absolute top-full left-0 right-0 mt-4' : 'absolute top-full right-0 mt-4'
-            } ${
-              isLarge ? 'w-full' : 'w-full sm:min-w-[400px]'
-            } bg-black/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[60]`}
+            className={`${isMobile ? 'relative mt-2' : isLarge ? 'absolute top-full left-0 right-0 mt-4' : 'absolute top-full right-0 mt-4'
+              } ${isLarge ? 'w-full' : 'w-full sm:min-w-[400px]'
+              } bg-black/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[60]`}
           >
             <div className={`overflow-y-auto custom-scrollbar ${isLarge ? 'max-h-[400px]' : 'max-h-[60vh]'}`}>
               {results.length > 0 ? (

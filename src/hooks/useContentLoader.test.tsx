@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach } from 'vitest';
@@ -22,7 +22,7 @@ describe('useContentLoader hook', () => {
   });
 
   it('immediately marks home view as ready with correct empty states', () => {
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useContentLoader({ activeView: { type: 'home', slug: null }, posts: [] })
     );
 
@@ -62,7 +62,7 @@ describe('useContentLoader hook', () => {
   it('handles post loading failure and marks contentNotFound', async () => {
     vi.mocked(blogLib.getPostBySlug).mockResolvedValue(null);
 
-    const { result } = renderHook(() => 
+    const { result } = renderHook(() =>
       useContentLoader({ activeView: { type: 'post', slug: 'not-found-slug' }, posts: [] })
     );
 

@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, beforeAll, afterEach } from 'vitest';
@@ -11,7 +11,7 @@ import path from 'path';
 beforeAll(() => {
   if (typeof window !== 'undefined') {
     window.scrollTo = vi.fn();
-    
+
     // Intercept click events to prevent external navigations in tests (which triggers happy-dom page fetching)
     window.addEventListener('click', (e) => {
       const target = (e.target as HTMLElement)?.closest('a');
@@ -24,12 +24,12 @@ beforeAll(() => {
         }
       }
     }, true);
-    
+
     // Suppress Web Animation cancellations (AbortError: The animation was canceled) in simulated HappyDOM environment
     if (typeof (window as any).Animation !== 'undefined' && (window as any).Animation.prototype?.cancel) {
       const origCancel = (window as any).Animation.prototype.cancel;
       (window as any).Animation.prototype.cancel = function (this: any, ...args: any[]) {
-        this.finished?.catch(() => {});
+        this.finished?.catch(() => { });
         return origCancel.apply(this, args);
       };
     }
@@ -62,7 +62,7 @@ beforeAll(() => {
     if (originalFetch) {
       const interceptedFetch = async (input: RequestInfo | URL, init?: RequestInit) => {
         const urlStr = typeof input === 'string' ? input : (input instanceof URL ? input.toString() : input.url);
-        
+
         // 1. Block analytics & metrics
         if (/(googletagmanager|google-analytics|analytics|telemetry|tracker|metrics)/i.test(urlStr)) {
           return new Response(JSON.stringify({ blocked: true, status: 'Analytics request blocked in test environment' }), {
@@ -95,7 +95,7 @@ beforeAll(() => {
               pathname = parsedUrl.pathname;
               isLocalHostOrDomain = true;
             }
-          } catch {}
+          } catch { }
         } else if (urlStr.startsWith('/')) {
           pathname = urlStr.split('?')[0];
           isLocalHostOrDomain = true;
@@ -159,7 +159,7 @@ beforeAll(() => {
     const OriginalXHR = globalThis.XMLHttpRequest;
     if (OriginalXHR) {
       const originalOpen = OriginalXHR.prototype.open;
-      OriginalXHR.prototype.open = function(method: string, url: string | URL, ...args: any[]) {
+      OriginalXHR.prototype.open = function (method: string, url: string | URL, ...args: any[]) {
         const urlStr = typeof url === 'string' ? url : url.toString();
         if (/(googletagmanager|google-analytics|analytics|telemetry|tracker|metrics)/i.test(urlStr)) {
           console.warn(`[Vitest Block] Blocked outbound XHR analytics request to: ${urlStr}`);

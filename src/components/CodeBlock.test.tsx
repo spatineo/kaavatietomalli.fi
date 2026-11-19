@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { vi, describe, it, expect, beforeEach } from 'vitest';
@@ -60,7 +60,7 @@ partner: Spatineo
     // Check title, description and button text
     expect(screen.getByTestId('cta-title').textContent).toBe('Liity kumppaniksi');
     expect(screen.getByTestId('cta-description').textContent).toBe('Kehitä kanssamme kaavoituksen digitaalista tulevaisuutta.');
-    
+
     const button = screen.getByTestId('cta-button');
     expect(button.textContent).toBe('Ota yhteyttä!');
     expect(button.getAttribute('href')).toBe('https://spatineo.com/contact');
@@ -76,7 +76,7 @@ buttonText: Rekisteröidy
 
     expect(screen.queryByTestId('cta-title')).toBeNull();
     expect(screen.queryByTestId('cta-description')).toBeNull();
-    
+
     const button = screen.getByTestId('cta-button');
     expect(button.textContent).toBe('Rekisteröidy');
     expect(button.getAttribute('href')).toBe('https://example.com/join');

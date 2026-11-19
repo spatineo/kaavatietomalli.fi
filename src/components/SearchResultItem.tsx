@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { BookOpen, FileText, User, ArrowRight, Database, List } from 'lucide-react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
@@ -29,21 +33,19 @@ export function SearchResultItem({ result, size = 'sm', onClick }: SearchResultI
   return (
     <button
       onClick={() => onClick(result.document.type, result.document.slug)}
-      className={`w-full text-left hover:bg-white/5 transition-all group flex items-start ${
-        isLarge ? 'p-4 rounded-2xl gap-4' : 'p-3 rounded-xl gap-3'
-      }`}
+      className={`w-full text-left hover:bg-white/5 transition-all group flex items-start ${isLarge ? 'p-4 rounded-2xl gap-4' : 'p-3 rounded-xl gap-3'
+        }`}
     >
-      <div 
+      <div
         className="mt-1 text-brand-accent group-hover:scale-110 transition-transform shrink-0"
         title={typeName}
       >
         {getIcon(result.document.type)}
       </div>
-      
+
       <div className="flex-1 min-w-0">
-        <div className={`font-bold text-white group-hover:text-brand-accent transition-colors leading-tight truncate ${
-          isLarge ? 'text-xl mb-1' : 'text-sm mb-0.5'
-        }`}>
+        <div className={`font-bold text-white group-hover:text-brand-accent transition-colors leading-tight truncate ${isLarge ? 'text-xl mb-1' : 'text-sm mb-0.5'
+          }`}>
           {(result.document.type === 'author') ? (
             <span>{result.document.name}</span>
           ) : (
@@ -53,13 +55,13 @@ export function SearchResultItem({ result, size = 'sm', onClick }: SearchResultI
             <span> ({result.document.slug.split(':')[0]})</span>
           )}
         </div>
-        
+
         {result.document.type === 'author' && result.document.name && (result.document.title || result.document.company) && (
           <div className={`${isLarge ? 'text-sm mb-1.5' : 'text-[10px] mb-1'} text-slate-400 font-medium line-clamp-1`}>
             {result.document.title}{result.document.company ? `, ${result.document.company}` : ''}
           </div>
         )}
-        
+
         {result.document.excerpt && (
           <div className={`${isLarge ? 'text-base' : 'text-xs'} text-slate-500 line-clamp-1 leading-relaxed`}>
             {result.document.excerpt}
@@ -68,9 +70,9 @@ export function SearchResultItem({ result, size = 'sm', onClick }: SearchResultI
       </div>
 
       <div className="shrink-0 flex items-center justify-end">
-        <ArrowRight 
-          size={isLarge ? 18 : 14} 
-          className="mt-1 text-slate-600 group-hover:text-brand-accent group-hover:translate-x-1 transition-all" 
+        <ArrowRight
+          size={isLarge ? 18 : 14}
+          className="mt-1 text-slate-600 group-hover:text-brand-accent group-hover:translate-x-1 transition-all"
         />
       </div>
     </button>

@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { DataModelAccess, DataModelSnippetConfig, DataModel, ClassModel, Codelist, Attribute, Association } from './data-model-types';
 
 export function parseDataModelSnippetConfig(code: string): DataModelSnippetConfig {

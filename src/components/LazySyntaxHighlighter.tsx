@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect } from 'react';
 import { getTranslations, Language } from '../i18n';
 import { CONFIG } from '../config';
@@ -48,7 +52,7 @@ async function getLanguageDefinition(lang: string) {
   };
 
   const realLang = mapping[lang] || lang;
-  
+
   // These are common ones we could support. 
   // For others, Prism might have them but we need to import them specifically.
   try {
@@ -75,11 +79,11 @@ export function LazySyntaxHighlighter({ language, children, ...props }: LazySynt
 
   useEffect(() => {
     let ignore = false;
-    
+
     async function init() {
       const { SyntaxHighlighter: SH } = await loadSyntaxHighlighter();
       const langDef = await getLanguageDefinition(language);
-      
+
       if (!ignore) {
         if (langDef && !registeredLanguages.has(language)) {
           SH.registerLanguage(language, langDef);

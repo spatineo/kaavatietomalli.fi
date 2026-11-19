@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useEffect } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Linkedin, Twitter, Github, Globe, Mail } from 'lucide-react';
@@ -23,8 +27,8 @@ function ObfuscatedEmailIcon({ email }: { email: string }) {
   };
 
   return (
-    <a 
-      href="#" 
+    <a
+      href="#"
       onClick={handleClick}
       className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
       title={t.author.sendEmail}
@@ -58,9 +62,9 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
       <div className="grid md:grid-cols-[1fr_2fr] gap-16 md:gap-24">
         <aside className="flex flex-col gap-10 items-center">
           <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl border border-white/5 flex flewx-row items-center">
-            <img 
-              src={resolveImageUrl(author.image)} 
-              alt={author.name} 
+            <img
+              src={resolveImageUrl(author.image)}
+              alt={author.name}
               className=""
             />
           </div>
@@ -71,9 +75,9 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
                 <h3 className="text-[10px] uppercase font-bold tracking-widest text-slate-500 mb-3">{t.author.contactInfo}</h3>
                 <div className="flex gap-3">
                   {author.social?.linkedin && (
-                    <a 
-                      href={author.social.linkedin} 
-                      target="_blank" 
+                    <a
+                      href={author.social.linkedin}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
                     >
@@ -81,9 +85,9 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
                     </a>
                   )}
                   {author.social?.twitter && (
-                    <a 
-                      href={author.social.twitter} 
-                      target="_blank" 
+                    <a
+                      href={author.social.twitter}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
                     >
@@ -91,9 +95,9 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
                     </a>
                   )}
                   {author.social?.github && (
-                    <a 
-                      href={author.social.github} 
-                      target="_blank" 
+                    <a
+                      href={author.social.github}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
                     >
@@ -101,9 +105,9 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
                     </a>
                   )}
                   {author.social?.website && (
-                    <a 
-                      href={author.social.website} 
-                      target="_blank" 
+                    <a
+                      href={author.social.website}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-brand-accent/20 transition-all border border-white/5"
                     >
@@ -139,9 +143,9 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
               {author.title}
             </p>
             {author.company &&
-            <p className="text-2xl text-brand-accent font-bold leading-tight">
-              {author.company}
-            </p>
+              <p className="text-2xl text-brand-accent font-bold leading-tight">
+                {author.company}
+              </p>
             }
           </header>
 
@@ -155,7 +159,7 @@ export function AuthorView({ author, onBack }: AuthorViewProps) {
               title={t.author.cooperationTitle}
               description={t.author.cooperationText}
               partner={author.company}
-              />
+            />
           )}
         </section>
       </div>

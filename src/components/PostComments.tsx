@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { MessageSquare, Clock, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -149,9 +153,8 @@ export function PostComments({ postSlug, onToggleOpen }: PostCommentsProps) {
             </span>
             <ChevronDown
               size={16}
-              className={`text-slate-500 transition-transform duration-500 group-hover:text-brand-accent ${
-                isCommentsOpen ? 'rotate-180' : ''
-              }`}
+              className={`text-slate-500 transition-transform duration-500 group-hover:text-brand-accent ${isCommentsOpen ? 'rotate-180' : ''
+                }`}
             />
           </div>
         </div>

@@ -1,3 +1,7 @@
+/**
+ * @license
+ * Copyright Spatineo 2026, All rights reserved
+ */
 import React, { SVGProps } from 'react';
 
 interface LogoProps extends SVGProps<SVGSVGElement> {
@@ -5,10 +9,10 @@ interface LogoProps extends SVGProps<SVGSVGElement> {
   height?: string | number;
 }
 
-const KaavatietomalliLogo: React.FC<LogoProps> = ({ 
-  width = "200", 
-  height = "200", 
-  ...props 
+const KaavatietomalliLogo: React.FC<LogoProps> = ({
+  width = "200",
+  height = "200",
+  ...props
 }) => {
   return (
     <svg

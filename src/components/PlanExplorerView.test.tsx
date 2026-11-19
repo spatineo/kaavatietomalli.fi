@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
@@ -167,15 +171,15 @@ vi.mock('leaflet', () => {
   return {
     default: {
       map: () => ({
-        setView: function() { return this; },
-        remove: function() { return this; },
-        addLayer: function() { return this; },
-        removeLayer: function() { return this; },
-        fitBounds: function() { return this; },
-        on: function() { return this; },
-        off: function() { return this; },
-        invalidateSize: function() { return this; },
-        getBounds: function() {
+        setView: function () { return this; },
+        remove: function () { return this; },
+        addLayer: function () { return this; },
+        removeLayer: function () { return this; },
+        fitBounds: function () { return this; },
+        on: function () { return this; },
+        off: function () { return this; },
+        invalidateSize: function () { return this; },
+        getBounds: function () {
           return {
             isValid: () => true,
             getWest: () => 24.0,
@@ -185,7 +189,7 @@ vi.mock('leaflet', () => {
           };
         },
       }),
-      tileLayer: () => ({ addTo: function() { return this; } }),
+      tileLayer: () => ({ addTo: function () { return this; } }),
       featureGroup: () => ({
         getBounds: () => ({
           isValid: () => false,
@@ -211,7 +215,7 @@ vi.mock('leaflet', () => {
           });
         }
         return {
-          addTo: function() { return this; },
+          addTo: function () { return this; },
           setStyle: vi.fn(),
           bringToBack: vi.fn(),
           bringToFront: vi.fn(),
@@ -582,7 +586,7 @@ describe('PlanExplorerView Component', () => {
       await flushPromises();
 
       await waitFor(() => {
-        const planButtons = screen.getAllByRole('button').filter(b => 
+        const planButtons = screen.getAllByRole('button').filter(b =>
           b.className.includes('text-left') && (b.textContent?.includes('Kaava') || b.textContent?.includes('Yleiskaava') || b.textContent?.includes('Asemakaava'))
         );
         expect(planButtons.length).toBe(3);

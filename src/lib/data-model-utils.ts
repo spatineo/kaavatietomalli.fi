@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { CONFIG } from '../config';
 import { getTranslations, Language } from '../i18n';
 

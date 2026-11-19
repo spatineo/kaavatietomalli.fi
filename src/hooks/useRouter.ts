@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useMemo, useCallback, createContext, useContext, ReactNode, createElement } from 'react';
 import { CONFIG } from '../config';
 
@@ -9,11 +13,11 @@ export interface ActiveView {
 }
 
 export function useRouter() {
-  const [pathname, setPathname] = useState(() => 
+  const [pathname, setPathname] = useState(() =>
     typeof window !== 'undefined' ? window.location.pathname : '/'
   );
 
-  const [searchString, setSearchString] = useState(() => 
+  const [searchString, setSearchString] = useState(() =>
     typeof window !== 'undefined' ? window.location.search : ''
   );
 

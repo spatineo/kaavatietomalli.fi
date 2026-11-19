@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -160,203 +160,203 @@ function AppContent() {
   return (
     <>
       <PasswordGate>
-        <div 
+        <div
           className="min-h-screen flex flex-col bg-brand-bg text-slate-300"
           data-testid="app-layout"
           data-view-type={activeView.type}
           data-view-slug={activeView.slug || ""}
           data-is-ready={isDataReady}
         >
-        <a href="#main-content" className="skip-to-content">
-          {t.common.skipToContent}
-        </a>
-        <Header 
-          onNavigatePage={(slug) => navigate({ type: 'page', slug })} 
-          onNavigateTag={(tag) => navigate({ type: 'tag', slug: tag })}
-          onNavigatePost={(slug) => navigate({ type: 'post', slug })}
-          onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
-          onNavigateModel={(slug, queryParams) => navigate({ type: 'model', slug, queryParams })}
-          onNavigateValidate={(slug) => navigate({ type: 'validate', slug })}
-          onNavigatePlans={(slug) => navigate({ type: 'planExplorer', slug })}
-          onHome={onHome} 
-          onBlog={scrollToBlog} 
-          onSearchNavigate={handleSearchNavigate}
-        />
-        
-        <main id="main-content" className="flex-grow">
-          <ErrorBoundary onReset={onHome}>
-            <AnimatePresence>
-              {contentNotFound ? (
-              <motion.div
-                key="not-found"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <NotFoundView 
-                  missingSlug={activeView.slug || undefined}
-                  onNavigate={handleSearchNavigate}
-                  onHome={onHome}
-                />
-              </motion.div>
-            ) : activeView.type === 'post' ? (
-              isDataReady ? (
-                <motion.div
-                  key={`post-${activeView.slug}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <PostView 
-                    post={currentPost!} 
-                    nextPost={adjacentPosts.next}
-                    prevPost={adjacentPosts.prev}
-                    onBack={onHome} 
-                    onNavigate={(slug) => {
-                      navigate({ type: 'post', slug });
-                    }}
-                    onNavigateAuthor={(slug) => {
-                      navigate({ type: 'author', slug });
-                    }}
-                    onSelectTag={(tag) => {
-                      navigate({ type: 'tag', slug: tag });
-                    }}
+          <a href="#main-content" className="skip-to-content">
+            {t.common.skipToContent}
+          </a>
+          <Header
+            onNavigatePage={(slug) => navigate({ type: 'page', slug })}
+            onNavigateTag={(tag) => navigate({ type: 'tag', slug: tag })}
+            onNavigatePost={(slug) => navigate({ type: 'post', slug })}
+            onNavigateAuthor={(slug) => navigate({ type: 'author', slug })}
+            onNavigateModel={(slug, queryParams) => navigate({ type: 'model', slug, queryParams })}
+            onNavigateValidate={(slug) => navigate({ type: 'validate', slug })}
+            onNavigatePlans={(slug) => navigate({ type: 'planExplorer', slug })}
+            onHome={onHome}
+            onBlog={scrollToBlog}
+            onSearchNavigate={handleSearchNavigate}
+          />
+
+          <main id="main-content" className="flex-grow">
+            <ErrorBoundary onReset={onHome}>
+              <AnimatePresence>
+                {contentNotFound ? (
+                  <motion.div
+                    key="not-found"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <NotFoundView
+                      missingSlug={activeView.slug || undefined}
+                      onNavigate={handleSearchNavigate}
+                      onHome={onHome}
+                    />
+                  </motion.div>
+                ) : activeView.type === 'post' ? (
+                  isDataReady ? (
+                    <motion.div
+                      key={`post-${activeView.slug}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <PostView
+                        post={currentPost!}
+                        nextPost={adjacentPosts.next}
+                        prevPost={adjacentPosts.prev}
+                        onBack={onHome}
+                        onNavigate={(slug) => {
+                          navigate({ type: 'post', slug });
+                        }}
+                        onNavigateAuthor={(slug) => {
+                          navigate({ type: 'author', slug });
+                        }}
+                        onSelectTag={(tag) => {
+                          navigate({ type: 'tag', slug: tag });
+                        }}
+                      />
+                    </motion.div>
+                  ) : showLoader ? (
+                    <motion.div
+                      key="loader-post"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="min-h-screen flex items-center justify-center"
+                    >
+                      <div className="flex gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </motion.div>
+                  ) : <div key="pending-post" />
+                ) : activeView.type === 'page' ? (
+                  isDataReady ? (
+                    <motion.div
+                      key={`page-${activeView.slug}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <PageView
+                        page={currentPage!}
+                        onBack={onHome}
+                      />
+                    </motion.div>
+                  ) : showLoader ? (
+                    <motion.div
+                      key="loader-page"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="min-h-screen flex items-center justify-center"
+                    >
+                      <div className="flex gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </motion.div>
+                  ) : <div key="pending-page" />
+                ) : activeView.type === 'author' ? (
+                  isDataReady ? (
+                    <motion.div
+                      key={`author-${activeView.slug}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <AuthorView
+                        author={currentAuthor!}
+                        onBack={onHome}
+                      />
+                    </motion.div>
+                  ) : showLoader ? (
+                    <motion.div
+                      key="loader-author"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="min-h-screen flex items-center justify-center"
+                    >
+                      <div className="flex gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </motion.div>
+                  ) : <div key="pending-author" />
+                ) : activeView.type === 'model' ? (
+                  <motion.div
+                    key={`model-${activeView.slug}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <DataModelView
+                      modelName={activeView.slug!}
+                      onBack={onHome}
+                      navigate={navigate}
+                      searchString={searchString}
+                      dataModelAccess={dataModelAccess}
+                    />
+                  </motion.div>
+                ) : activeView.type === 'tag' ? (
+                  <TagView
+                    tagSlug={activeView.slug!}
+                    isDataReady={isDataReady}
+                    tagPage={tagPage}
+                    tagPosts={tagPosts}
+                    visibleTagCount={visibleTagCount}
+                    onLoadMore={loadMoreTags}
+                    navigate={navigate}
+                    onHome={onHome}
                   />
-                </motion.div>
-              ) : showLoader ? (
-                <motion.div 
-                  key="loader-post" 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="min-h-screen flex items-center justify-center"
-                >
-                  <div className="flex gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </motion.div>
-              ) : <div key="pending-post" />
-            ) : activeView.type === 'page' ? (
-              isDataReady ? (
-                <motion.div
-                  key={`page-${activeView.slug}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <PageView 
-                    page={currentPage!}
-                    onBack={onHome}
+                ) : activeView.type === 'validate' ? (
+                  <motion.div
+                    key={`validate-${activeView.slug || 'spatialPlan'}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ValidateView onBack={onHome} />
+                  </motion.div>
+                ) : activeView.type === 'planExplorer' ? (
+                  <motion.div
+                    key={`plansIndex-${activeView.slug || 'localDetailedPlans'}`}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <PlanExplorerView onBack={onHome} />
+                  </motion.div>
+                ) : (
+                  <HomeView
+                    posts={posts}
+                    editor={editor}
+                    selectedThemeTag={selectedThemeTag}
+                    setSelectedThemeTag={setSelectedThemeTag}
+                    visibleJournalCount={visibleJournalCount}
+                    onLoadMore={() => setVisibleJournalCount((prev) => prev + 10)}
+                    navigate={navigate}
+                    onBlog={scrollToBlog}
                   />
-                </motion.div>
-              ) : showLoader ? (
-                <motion.div 
-                  key="loader-page" 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="min-h-screen flex items-center justify-center"
-                >
-                  <div className="flex gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </motion.div>
-              ) : <div key="pending-page" />
-            ) : activeView.type === 'author' ? (
-              isDataReady ? (
-                <motion.div
-                  key={`author-${activeView.slug}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <AuthorView 
-                    author={currentAuthor!}
-                    onBack={onHome}
-                  />
-                </motion.div>
-              ) : showLoader ? (
-                <motion.div 
-                  key="loader-author" 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="min-h-screen flex items-center justify-center"
-                >
-                  <div className="flex gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-accent animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </motion.div>
-              ) : <div key="pending-author" />
-            ) : activeView.type === 'model' ? (
-              <motion.div
-                key={`model-${activeView.slug}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <DataModelView
-                  modelName={activeView.slug!}
-                  onBack={onHome}
-                  navigate={navigate}
-                  searchString={searchString}
-                  dataModelAccess={dataModelAccess}
-                />
-              </motion.div>
-            ) : activeView.type === 'tag' ? (
-              <TagView
-                tagSlug={activeView.slug!}
-                isDataReady={isDataReady}
-                tagPage={tagPage}
-                tagPosts={tagPosts}
-                visibleTagCount={visibleTagCount}
-                onLoadMore={loadMoreTags}
-                navigate={navigate}
-                onHome={onHome}
-              />
-            ) : activeView.type === 'validate' ? (
-              <motion.div
-                key={`validate-${activeView.slug || 'spatialPlan'}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ValidateView onBack={onHome} />
-              </motion.div>
-            ) : activeView.type === 'planExplorer' ? (
-              <motion.div
-                key={`plansIndex-${activeView.slug || 'localDetailedPlans'}`}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <PlanExplorerView onBack={onHome} />
-              </motion.div>
-            ) : (
-              <HomeView
-                posts={posts}
-                editor={editor}
-                selectedThemeTag={selectedThemeTag}
-                setSelectedThemeTag={setSelectedThemeTag}
-                visibleJournalCount={visibleJournalCount}
-                onLoadMore={() => setVisibleJournalCount((prev) => prev + 10)}
-                navigate={navigate}
-                onBlog={scrollToBlog}
-              />
-            )}
-            </AnimatePresence>
-          </ErrorBoundary>
-        </main>
-  
-        <Footer />
-        <CookieConsent />
-      </div>
-    </PasswordGate>
-    <VersionMismatchPrompt />
+                )}
+              </AnimatePresence>
+            </ErrorBoundary>
+          </main>
+
+          <Footer />
+          <CookieConsent />
+        </div>
+      </PasswordGate>
+      <VersionMismatchPrompt />
     </>
   );
 }

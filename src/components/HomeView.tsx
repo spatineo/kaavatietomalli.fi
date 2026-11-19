@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -48,7 +48,7 @@ export function HomeView({
 
   // Filter posts
   const historyPosts = useMemo(() => posts.filter(p => p.category === 'history'), [posts]);
-  
+
   const allJournalPosts = useMemo(() => {
     return posts
       .filter(p => p.category === 'journal')
@@ -217,7 +217,7 @@ export function HomeView({
             </div>
           )}
         </div>
-        
+
         <Timeline
           posts={visibleJournalPosts}
           onSelectPost={(slug) => {

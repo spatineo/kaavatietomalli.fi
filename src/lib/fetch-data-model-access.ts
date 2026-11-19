@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { DataModelAccess } from './data-model-types';
 import { parseModelId } from './data-model-utils';
 

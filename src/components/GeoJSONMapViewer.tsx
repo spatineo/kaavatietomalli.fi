@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Map, Code, Maximize2, Minimize2, Info, Layers, AlertCircle } from 'lucide-react';
@@ -57,7 +61,7 @@ function detectCrs(rawCrs: any): string | null {
   }
 
   const normalized = crsStr.toLowerCase();
-  
+
   // Check for CRS84 / WGS84 first
   if (normalized.includes('crs84') || normalized.includes('4326')) {
     return 'EPSG:4326';
@@ -137,7 +141,7 @@ function normalizeGeoJSON(inputStr: string, proj4Instance: any): { data: any; er
             const reprojectedGeom = JSON.parse(JSON.stringify(feature.geometry));
             reprojectedGeom.coordinates = transformCoordinates(reprojectedGeom.coordinates, featureCrs, proj4Instance);
             feature.geometry = reprojectedGeom;
-            
+
             // Store original CRS in properties for UI display in popups
             feature.properties = feature.properties || {};
             feature.properties['_ALKUPERÄINEN_CRS'] = featureCrs;
@@ -274,127 +278,127 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
     try {
       // Initialize map if it doesn't exist
       if (!mapRef.current) {
-      // Default to center of Finland
-      const map = L.map(mapContainerRef.current, {
-        zoomControl: false, // Custom placed zoom controls for clean UI
-        attributionControl: true
-      }).setView([62.0, 26.0], 5);
+        // Default to center of Finland
+        const map = L.map(mapContainerRef.current, {
+          zoomControl: false, // Custom placed zoom controls for clean UI
+          attributionControl: true
+        }).setView([62.0, 26.0], 5);
 
-      // Disable scroll and click event propagation on popup container elements to avoid background scroll leakage
-      map.on('popupopen', (e: any) => {
-        const container = e.popup.getElement();
-        if (container) {
-          L.DomEvent.disableScrollPropagation(container);
-          L.DomEvent.disableClickPropagation(container);
-        }
-      });
+        // Disable scroll and click event propagation on popup container elements to avoid background scroll leakage
+        map.on('popupopen', (e: any) => {
+          const container = e.popup.getElement();
+          if (container) {
+            L.DomEvent.disableScrollPropagation(container);
+            L.DomEvent.disableClickPropagation(container);
+          }
+        });
 
-      mapRef.current = map;
+        mapRef.current = map;
 
-      // Add zoom control in top right
-      L.control.zoom({
-        position: 'topright'
+        // Add zoom control in top right
+        L.control.zoom({
+          position: 'topright'
+        }).addTo(map);
+      }
+
+      const map = mapRef.current;
+
+      // Remove existing tile layer if style changed
+      if (tileLayerRef.current) {
+        map.removeLayer(tileLayerRef.current);
+      }
+
+      // Set map background map tiles
+      const selectedTile = TILE_LAYERS[tileStyle] || TILE_LAYERS.dark;
+      const tileLayer = L.tileLayer(selectedTile.url, {
+        attribution: selectedTile.attribution,
+        maxZoom: selectedTile.maxZoom || 18,
+        tileSize: 256,
+        zoomOffset: 0
       }).addTo(map);
-    }
+      tileLayerRef.current = tileLayer;
 
-    const map = mapRef.current;
+      // Remove old geojson layers
+      if (geojsonLayerRef.current) {
+        map.removeLayer(geojsonLayerRef.current);
+      }
 
-    // Remove existing tile layer if style changed
-    if (tileLayerRef.current) {
-      map.removeLayer(tileLayerRef.current);
-    }
+      // Load and style the GeoJSON
+      if (geojsondata) {
+        try {
+          const isLight = TILE_LAYERS[tileStyle]?.isLight ?? false;
+          // Aesthetic custom brand styles
+          const defaultColor = isLight ? '#E08A00' : '#FFAF00'; // high contrast orange-yellow
 
-    // Set map background map tiles
-    const selectedTile = TILE_LAYERS[tileStyle] || TILE_LAYERS.dark;
-    const tileLayer = L.tileLayer(selectedTile.url, {
-      attribution: selectedTile.attribution,
-      maxZoom: selectedTile.maxZoom || 18,
-      tileSize: 256,
-      zoomOffset: 0
-    }).addTo(map);
-    tileLayerRef.current = tileLayer;
+          // Vibrant color palette matching the modern slate style
+          const PALETTE = [
+            '#FFAF00', // Amber/Gold
+            '#38BDF8', // Sky Blue
+            '#34D399', // Emerald/Mint
+            '#A78BFA', // Violet/Purple
+            '#F472B6', // Pink
+            '#F97316', // Orange
+            '#2DD4BF', // Teal
+            '#FB7185', // Rose
+            '#818CF8', // Indigo
+            '#10B981'  // Green
+          ];
 
-    // Remove old geojson layers
-    if (geojsonLayerRef.current) {
-      map.removeLayer(geojsonLayerRef.current);
-    }
+          const featureTypeToColorMap: Record<string, string> = {};
+          let colorCounter = 0;
 
-    // Load and style the GeoJSON
-    if (geojsondata) {
-      try {
-        const isLight = TILE_LAYERS[tileStyle]?.isLight ?? false;
-        // Aesthetic custom brand styles
-        const defaultColor = isLight ? '#E08A00' : '#FFAF00'; // high contrast orange-yellow
+          const getFeatureColor = (feature: any): string => {
+            const typeVal = feature?.featureType ?? feature?.properties?.featureType;
+            if (typeVal === undefined || typeVal === null) {
+              return defaultColor;
+            }
+            const typeStr = String(typeVal).trim();
+            if (!typeStr) {
+              return defaultColor;
+            }
+            if (!featureTypeToColorMap[typeStr]) {
+              const color = PALETTE[colorCounter % PALETTE.length];
+              featureTypeToColorMap[typeStr] = color;
+              colorCounter++;
+            }
+            return featureTypeToColorMap[typeStr];
+          };
 
-        // Vibrant color palette matching the modern slate style
-        const PALETTE = [
-          '#FFAF00', // Amber/Gold
-          '#38BDF8', // Sky Blue
-          '#34D399', // Emerald/Mint
-          '#A78BFA', // Violet/Purple
-          '#F472B6', // Pink
-          '#F97316', // Orange
-          '#2DD4BF', // Teal
-          '#FB7185', // Rose
-          '#818CF8', // Indigo
-          '#10B981'  // Green
-        ];
+          const geojsonLayer = L.geoJSON(geojsondata, {
+            style: (feature) => {
+              const featColor = getFeatureColor(feature);
+              return {
+                color: featColor,
+                weight: 3,
+                opacity: 0.85,
+                fillColor: featColor,
+                fillOpacity: 0.2
+              };
+            },
+            pointToLayer: (feature, latlng) => {
+              const isDark = tileStyle === 'dark';
+              const featColor = getFeatureColor(feature);
+              const strokeColor = isDark ? '#000000' : '#FFFFFF';
 
-        const featureTypeToColorMap: Record<string, string> = {};
-        let colorCounter = 0;
-
-        const getFeatureColor = (feature: any): string => {
-          const typeVal = feature?.featureType ?? feature?.properties?.featureType;
-          if (typeVal === undefined || typeVal === null) {
-            return defaultColor;
-          }
-          const typeStr = String(typeVal).trim();
-          if (!typeStr) {
-            return defaultColor;
-          }
-          if (!featureTypeToColorMap[typeStr]) {
-            const color = PALETTE[colorCounter % PALETTE.length];
-            featureTypeToColorMap[typeStr] = color;
-            colorCounter++;
-          }
-          return featureTypeToColorMap[typeStr];
-        };
-
-        const geojsonLayer = L.geoJSON(geojsondata, {
-          style: (feature) => {
-            const featColor = getFeatureColor(feature);
-            return {
-              color: featColor,
-              weight: 3,
-              opacity: 0.85,
-              fillColor: featColor,
-              fillOpacity: 0.2
-            };
-          },
-          pointToLayer: (feature, latlng) => {
-            const isDark = tileStyle === 'dark';
-            const featColor = getFeatureColor(feature);
-            const strokeColor = isDark ? '#000000' : '#FFFFFF';
-
-            // High-contrast custom HTML marker with precise pixel coordinates and anchoring
-            const customIcon = L.divIcon({
-              className: 'custom-leaflet-marker',
-              html: `
+              // High-contrast custom HTML marker with precise pixel coordinates and anchoring
+              const customIcon = L.divIcon({
+                className: 'custom-leaflet-marker',
+                html: `
                 <div style="width: 24px; height: 24px; position: relative; display: flex; align-items: center; justify-content: center; margin: 0; padding: 0;">
                   <div class="shadow-md" style="width: 10px; height: 10px; background-color: ${featColor}; border: 1.5px solid ${strokeColor}; border-radius: 9999px; position: relative; z-index: 10;"></div>
                 </div>
               `,
-              iconSize: [24, 24],
-              iconAnchor: [12, 12],
-              popupAnchor: [0, -10]
-            });
-            return L.marker(latlng, { icon: customIcon });
-          },
-          onEachFeature: (feature, layer) => {
-            if (feature.properties) {
-              const entries = Object.entries(feature.properties);
-              if (entries.length > 0) {
-                let html = `
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+                popupAnchor: [0, -10]
+              });
+              return L.marker(latlng, { icon: customIcon });
+            },
+            onEachFeature: (feature, layer) => {
+              if (feature.properties) {
+                const entries = Object.entries(feature.properties);
+                if (entries.length > 0) {
+                  let html = `
                   <div class="p-3 max-h-56 overflow-y-auto custom-scrollbar leading-normal min-w-[200px] font-sans">
                     <div class="font-bold border-b border-white/20 pb-1 mb-2 text-white text-[10px] tracking-wider uppercase">
                       ${t.geojson.propertiesTitle}
@@ -402,70 +406,70 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
                     <table class="w-full border-collapse text-[11px] text-slate-200">
                       <tbody>
                 `;
-                entries.forEach(([key, val]) => {
-                  const valStr = typeof val === 'object' ? JSON.stringify(val) : String(val);
-                  html += `
+                  entries.forEach(([key, val]) => {
+                    const valStr = typeof val === 'object' ? JSON.stringify(val) : String(val);
+                    html += `
                     <tr class="border-b border-white/5 last:border-0 hover:bg-white/5">
                       <td class="font-mono text-amber-400 font-semibold pr-4 py-1 align-top break-all">${key}</td>
                       <td class="break-words py-1 text-white/95 align-top">${valStr}</td>
                     </tr>
                   `;
-                });
-                html += `
+                  });
+                  html += `
                       </tbody>
                     </table>
                   </div>
                 `;
-                layer.bindPopup(html, {
-                  className: 'custom-leaflet-popup',
-                  maxWidth: 320
-                });
+                  layer.bindPopup(html, {
+                    className: 'custom-leaflet-popup',
+                    maxWidth: 320
+                  });
+                }
               }
+
+              // Hover effects
+              layer.on({
+                mouseover: (e: any) => {
+                  const l = e.target;
+                  if (typeof l.setStyle === 'function') {
+                    l.setStyle({
+                      weight: 5,
+                      color: '#FFFFFF',
+                      fillOpacity: 0.35
+                    });
+                  }
+                },
+                mouseout: (e: any) => {
+                  const l = e.target;
+                  if (typeof l.setStyle === 'function') {
+                    const baseAccent = tileStyle === 'dark' ? '#FFAF00' : '#E08A00';
+                    l.setStyle({
+                      color: baseAccent,
+                      weight: 3,
+                      fillOpacity: 0.2
+                    });
+                  }
+                }
+              });
             }
+          }).addTo(map);
 
-            // Hover effects
-            layer.on({
-              mouseover: (e: any) => {
-                const l = e.target;
-                if (typeof l.setStyle === 'function') {
-                  l.setStyle({
-                    weight: 5,
-                    color: '#FFFFFF',
-                    fillOpacity: 0.35
-                  });
-                }
-              },
-              mouseout: (e: any) => {
-                const l = e.target;
-                if (typeof l.setStyle === 'function') {
-                  const baseAccent = tileStyle === 'dark' ? '#FFAF00' : '#E08A00';
-                  l.setStyle({
-                    color: baseAccent,
-                    weight: 3,
-                    fillOpacity: 0.2
-                  });
-                }
-              }
-            });
+          geojsonLayerRef.current = geojsonLayer;
+
+          // Auto fly/fit boundaries
+          const bounds = geojsonLayer.getBounds();
+          if (bounds.isValid()) {
+            // Check if single coordinate/bound
+            if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
+              map.setView(bounds.getNorthEast(), 14);
+            } else {
+              map.fitBounds(bounds, { padding: [30, 30] });
+            }
           }
-        }).addTo(map);
-
-        geojsonLayerRef.current = geojsonLayer;
-
-        // Auto fly/fit boundaries
-        const bounds = geojsonLayer.getBounds();
-        if (bounds.isValid()) {
-          // Check if single coordinate/bound
-          if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
-            map.setView(bounds.getNorthEast(), 14);
-          } else {
-            map.fitBounds(bounds, { padding: [30, 30] });
-          }
+        } catch (err) {
+          console.error('Leaflet parsing of geojson data failed', err);
         }
-      } catch (err) {
-        console.error('Leaflet parsing of geojson data failed', err);
       }
-    }
 
       // Refresh size representation on build
       setTimeout(() => {
@@ -491,14 +495,13 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
-  };  const viewerTitle = language.toUpperCase() === 'JSONFG' ? 'JSON-FG (OGC Features & Geometries)' : 'GeoJSON Map';const viewerContent = (
+  }; const viewerTitle = language.toUpperCase() === 'JSONFG' ? 'JSON-FG (OGC Features & Geometries)' : 'GeoJSON Map'; const viewerContent = (
     <div
       id={`viewer-${viewerTitle.toLowerCase().replace(/\s+/g, '-')}`}
-      className={`geojson-map-viewer border border-white/10 overflow-hidden shadow-2xl bg-black flex flex-col transition-all duration-300 ${
-        isFullscreen
+      className={`geojson-map-viewer border border-white/10 overflow-hidden shadow-2xl bg-black flex flex-col transition-all duration-300 ${isFullscreen
           ? 'fixed inset-0 z-[99999] bg-[#0A0A0C] border-none rounded-none w-screen h-screen m-0 p-0'
           : 'relative my-10 min-h-[480px] w-full rounded-2xl'
-      }`}
+        }`}
     >
       {/* Viewer Header */}
       <div className="bg-[#09090B] px-5 py-4 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 z-10 shrink-0">
@@ -526,22 +529,22 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
                 <span className="text-[11px] text-amber-400 font-semibold tracking-wide uppercase">
                   {(() => {
                     const crsVal = detectedCrs || 'EPSG:4326';
-                    return crsVal === 'EPSG:4326' 
-                      ? 'WGS 84 (EPSG:4326)' 
-                      : crsVal === 'EPSG:3067' 
-                      ? 'ETRS89 / TM35FIN (EPSG:3067)' 
-                      : crsVal === 'EPSG:3857' 
-                      ? 'Web Mercator (EPSG:3857)' 
-                      : crsVal === 'EPSG:3879' 
-                      ? 'ETRS89 / GK25FIN (EPSG:3879)' 
-                      : `${crsVal} (${t.geojson.reprojectedSuffix})`;
+                    return crsVal === 'EPSG:4326'
+                      ? 'WGS 84 (EPSG:4326)'
+                      : crsVal === 'EPSG:3067'
+                        ? 'ETRS89 / TM35FIN (EPSG:3067)'
+                        : crsVal === 'EPSG:3857'
+                          ? 'Web Mercator (EPSG:3857)'
+                          : crsVal === 'EPSG:3879'
+                            ? 'ETRS89 / GK25FIN (EPSG:3879)'
+                            : `${crsVal} (${t.geojson.reprojectedSuffix})`;
                   })()}
                 </span>
               </div>
             </div>
           </div>
         </div>
- 
+
         {/* Action Controls */}
         <div className="flex flex-col items-end gap-2.5 shrink-0">
           <div className="flex items-center gap-2">
@@ -551,13 +554,11 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
                 id="btn-view-map"
                 type="button"
                 disabled={!!parseError}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all ${
-                  parseError ? 'opacity-30 cursor-not-allowed' : ''
-                } ${
-                  activeTab === 'map'
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all ${parseError ? 'opacity-30 cursor-not-allowed' : ''
+                  } ${activeTab === 'map'
                     ? 'bg-white/15 text-white shadow'
                     : 'text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
                 onClick={() => setActiveTab('map')}
               >
                 <Map className="w-3.5 h-3.5 text-[#FFAF00]" />
@@ -566,11 +567,10 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
               <button
                 id="btn-view-code"
                 type="button"
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all ${
-                  activeTab === 'code'
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold flex items-center gap-2 transition-all ${activeTab === 'code'
                     ? 'bg-white/15 text-white shadow'
                     : 'text-slate-400 hover:text-slate-200'
-                }`}
+                  }`}
                 onClick={() => setActiveTab('code')}
               >
                 <Code className="w-3.5 h-3.5" />
@@ -620,7 +620,7 @@ export function GeoJsonMapViewer({ code, language = 'geojson' }: GeoJsonMapViewe
       <div className="relative flex-1 min-h-0 bg-black flex flex-col">
         {activeTab === 'map' && !parseError ? (
           libsError ? (
-            <div 
+            <div
               data-testid="geojson-map-viewer-fallback"
               className="flex-1 flex flex-col items-center justify-center bg-slate-950 p-8 text-center min-h-[360px]"
             >

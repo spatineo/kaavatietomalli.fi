@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import React, { useMemo, createContext, useContext, useRef } from 'react';
 import { Link } from 'lucide-react';
 import { scrollToAnchor } from '../lib/utils';
@@ -38,16 +42,16 @@ export const HeadingRegistryContext = createContext<{
 
 export function HeadingRegistryProvider({ children, uniqueHeadings }: { children: React.ReactNode; uniqueHeadings: HeaderItem[] }) {
   const countsRef = useRef<Record<string, number>>({});
-  
+
   // Reset the counts on every render pass of this provider
   countsRef.current = {};
-  
+
   const registerHeading = (level: number, text: string): string => {
     const textSlug = slugify(text);
     const key = `${level}|${textSlug}`;
     const currentCount = countsRef.current[key] || 0;
     countsRef.current[key] = currentCount + 1;
-    
+
     // Find the currentCount-th heading in uniqueHeadings that matches level and slugified text
     let matchIndex = 0;
     const matchedHeading = uniqueHeadings.find(h => {
@@ -59,11 +63,11 @@ export function HeadingRegistryProvider({ children, uniqueHeadings }: { children
       }
       return false;
     });
-    
+
     if (matchedHeading) {
       return matchedHeading.id;
     }
-    
+
     // Fallback if not found: generate a slug on the fly
     const fallbackId = textSlug;
     return currentCount > 0 ? `${fallbackId}-${currentCount}` : fallbackId;
@@ -85,7 +89,7 @@ export function MarkdownHeading({ level, children }: HeadingProps) {
   const t = getTranslations(CONFIG.language as Language);
   const text = getTextContent(children);
   const registry = useContext(HeadingRegistryContext);
-  
+
   const id = useMemo(() => {
     if (registry) {
       return registry.registerHeading(level, text);
@@ -132,7 +136,7 @@ export interface HeaderItem {
 
 export function getUniqueHeadings(title: string, headings: { level: number; text: string }[]): HeaderItem[] {
   const seen: Record<string, number> = {};
-  
+
   // Deduplicate title first (always level 1)
   const titleBaseId = slugify(title);
   seen[titleBaseId] = 0;
@@ -141,7 +145,7 @@ export function getUniqueHeadings(title: string, headings: { level: number; text
     text: title,
     id: titleBaseId
   };
-  
+
   const uniqueHeadings = headings.map(h => {
     const baseId = slugify(h.text);
     let id = baseId;
@@ -157,7 +161,7 @@ export function getUniqueHeadings(title: string, headings: { level: number; text
       id
     };
   });
-  
+
   return [titleItem, ...uniqueHeadings];
 }
 

@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -29,7 +33,7 @@ export function SearchWidget({ onNavigate, isMobile }: SearchWidgetProps) {
   }, [isOpen]);
 
   const handleNavigate = (type: string, slug: string) => {
-    getTracker().trackToolEvent('searchWidget', 'select_result',`${type}:${slug}`);
+    getTracker().trackToolEvent('searchWidget', 'select_result', `${type}:${slug}`);
     onNavigate(type, slug);
     setIsOpen(false);
   };
@@ -46,12 +50,12 @@ export function SearchWidget({ onNavigate, isMobile }: SearchWidgetProps) {
           {isMobile && <span>{t.search.title}</span>}
         </button>
       ) : (
-        <motion.div 
+        <motion.div
           initial={isMobile ? {} : { width: 40, opacity: 0 }}
           animate={isMobile ? {} : { width: 300, opacity: 1 }}
           className={`${isMobile ? 'w-full' : 'absolute right-0 top-1/2 -translate-y-1/2 z-50'}`}
         >
-          <SearchBox 
+          <SearchBox
             onNavigate={handleNavigate}
             showClose={true}
             onClose={() => setIsOpen(false)}

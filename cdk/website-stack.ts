@@ -123,7 +123,7 @@ export class WebsiteStack extends cdk.Stack {
       console.warn('[CDK Warning] MML_API_KEY is not set in environment during CDK synthesis. CloudFront Function will omit Authorization header and NLS proxy will return 401 Unauthorized.');
     }
     const mmlAuthHeader = props.mmlAPIKey ? `Basic ${Buffer.from(`${props.mmlAPIKey}:`).toString('base64')}` : '';
-    
+
     const mmlOrigin = new origins.HttpOrigin('avoin-karttakuva.maanmittauslaitos.fi', {
       protocolPolicy: cloudfront.OriginProtocolPolicy.HTTPS_ONLY,
     });
@@ -218,24 +218,24 @@ export class WebsiteStack extends cdk.Stack {
       recordName: 'map',
       target: RecordTarget.fromAlias(new CloudFrontTarget(tilesDistribution)),
     });
- 
-    new ARecord(this, 'IPV4AliasRecord',{
+
+    new ARecord(this, 'IPV4AliasRecord', {
       zone: props.hostedZone,
       target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
     });
 
-    new AaaaRecord(this, 'IPv6AliasRecord',{
+    new AaaaRecord(this, 'IPv6AliasRecord', {
       zone: props.hostedZone,
       target: RecordTarget.fromAlias(new CloudFrontTarget(distribution))
     });
 
-    new TxtRecord(this,'GMailVerificationAndSPFRecord',{
+    new TxtRecord(this, 'GMailVerificationAndSPFRecord', {
       zone: props.hostedZone,
-      values:[
+      values: [
         "google-site-verification=6yENEbHZiRLShueV0Jri4Fm9vBakNltACNaor0pwZmY",
         "v=spf1 include:_spf.google.com ~all"
       ],
-      ttl: cdk.Duration.minutes(5)  
+      ttl: cdk.Duration.minutes(5)
     });
 
     new MxRecord(this, 'GMailMXRecord', {
@@ -255,7 +255,7 @@ export class WebsiteStack extends cdk.Stack {
       values: [
         "v=DKIM1;k=rsa;p=MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiy8MPNRwH8/YqQ4ZRtTnvHzI5EWfMZReu92sOMXhkcW8camrydjkD+5y0wAqyMc0HsglO8Qherxw/7TEXVcGRB50bjOxCXxYVpHTE4bZJquhUrkJAY5a3VFbTcxLbkaBWZ4RMBMOhyf3ggFjjAaHP1QPFzt11/qZ2b1rLuXO1qgNBGSz4s8lI/B/JE4uHYC6hWmPgmOmI3cOAiuKNkJwIixdK/UFRGRLqI8H71BhqWCLVEjtnlc46KPdRuCUzM6wrn+ZPgUmTW+6NseB2nE0mdPSNbtajlf0yVks2kiB+3W8fvCnopjY+H3M7WXTSduws1taxxBeeygEX/sz+f7gYQIDAQAB"
       ],
-      ttl: cdk.Duration.minutes(5) 
+      ttl: cdk.Duration.minutes(5)
     });
 
     // For extra safety: certificate creation allowed only by AWS 
@@ -408,7 +408,7 @@ export class WebsiteStack extends cdk.Stack {
     aIMachineReadableEndpointTotalActivityQuery.addResourceDependency(workgroup);
     aIMachineReadableEndpointTotalActivityQuery.addResourceDependency(cloudfrontLogsTable);
 
-    const specificAIHarvestersSearchCrawlersQuery = new athena.CfnNamedQuery(this, 'SpecificAIHarvestersSearchCrawlersQuery' , {
+    const specificAIHarvestersSearchCrawlersQuery = new athena.CfnNamedQuery(this, 'SpecificAIHarvestersSearchCrawlersQuery', {
       database: 'website_access_logs_db',
       workGroup: workgroup.name,
       name: 'Identify Specific AI Harvesters & Search Crawlers',
@@ -448,7 +448,7 @@ export class WebsiteStack extends cdk.Stack {
     specificAIHarvestersSearchCrawlersQuery.addResourceDependency(workgroup);
     specificAIHarvestersSearchCrawlersQuery.addResourceDependency(cloudfrontLogsTable);
 
-    const trackLLMSTxtVsSitemapXmlFetchFrequencyQuery = new athena.CfnNamedQuery(this ,'TrackLLMSTxtVsSitemapXmlFetchFrequencyQuery', {
+    const trackLLMSTxtVsSitemapXmlFetchFrequencyQuery = new athena.CfnNamedQuery(this, 'TrackLLMSTxtVsSitemapXmlFetchFrequencyQuery', {
       database: 'website_access_logs_db',
       workGroup: workgroup.name,
       name: 'Track llms.txt vs. sitemap.xml Fetch Frequency',
@@ -502,7 +502,7 @@ export class WebsiteStack extends cdk.Stack {
       url: 'https://token.actions.githubusercontent.com',
       clientIds: ['sts.amazonaws.com'],
     });
-    
+
     const githubRole = new iam.Role(this, props.deployerRole, {
       roleName: `${this.stackName}-${props.deployerRole}`,
       assumedBy: new iam.FederatedPrincipal(

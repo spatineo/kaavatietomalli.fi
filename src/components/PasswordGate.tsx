@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import React, { useState } from 'react';
 import { Lock } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -47,7 +51,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
 
   return (
     <div className="min-h-screen bg-brand-bg flex items-center justify-center p-6 font-sans">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md w-full bg-white/5 border border-white/10 rounded-3xl p-10 backdrop-blur-xl shadow-2xl"
@@ -56,15 +60,15 @@ export function PasswordGate({ children }: PasswordGateProps) {
           <div className="w-16 h-16 rounded-2xl bg-brand-accent/10 flex items-center justify-center mb-8">
             <Lock className="w-8 h-8 text-brand-accent" />
           </div>
-          
+
           <h1 className="text-3xl font-black tracking-tighter text-white mb-4">
             Kaavatietomalli<span className="text-brand-accent">.fi</span>
           </h1>
-          
+
           <p className="text-slate-400 mb-10 leading-relaxed font-medium">
             Sivusto on vielä työn alla. Syötä salasana jatkaaksesi.
           </p>
-          
+
           <form onSubmit={handleSubmit} className="w-full space-y-6">
             <div className="relative">
               <input
@@ -77,7 +81,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
                 autoFocus
               />
               {error && (
-                <motion.p 
+                <motion.p
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="text-red-400 text-xs font-bold uppercase tracking-widest mt-4"
@@ -86,7 +90,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
                 </motion.p>
               )}
             </div>
-            
+
             <button
               type="submit"
               className="w-full bg-brand-accent text-brand-bg font-black uppercase tracking-widest py-4 rounded-2xl hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-brand-accent/20"
@@ -94,7 +98,7 @@ export function PasswordGate({ children }: PasswordGateProps) {
               Kirjaudu sisään
             </button>
           </form>
-          
+
           <div className="mt-12 pt-8 border-t border-white/5 w-full">
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em]">
               Spatineo Oy

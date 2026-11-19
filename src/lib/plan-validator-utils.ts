@@ -1,6 +1,6 @@
 /**
  * @license
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: MIT
  */
 
 /**
@@ -1230,15 +1230,15 @@ export function formatFriendlyErrorMessage(
   if (codelistValueMatch) {
     const fullUri = codelistValueMatch[1];
     const typeName = codelistValueMatch[2]; // e.g., PlanRegulationAdditionalInfoType
-    
+
     const uriParts = fullUri.split('/');
     const invalidValue = uriParts[uriParts.length - 1] || '';
-    
+
     let codelistName = 'koodisto';
     const codeIdx = uriParts.lastIndexOf('code');
     const codesIdx = uriParts.lastIndexOf('codes');
     const splitIdx = codeIdx !== -1 ? codeIdx : codesIdx;
-    
+
     if (splitIdx !== -1 && splitIdx > 0) {
       codelistName = uriParts[splitIdx - 1];
     } else {

@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
@@ -295,7 +299,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     }
     return null;
   }, [selectedMunicipalityCode, selectedMunicipalityFeature, initialMunicipalities]);
-  
+
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -350,7 +354,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   }, [currentMapBounds, useMapBounds, updateMapBounds]);
 
   useEffect(() => {
-    getTracker().trackToolEvent('planExplorerView','query',debouncedSearchQuery);
+    getTracker().trackToolEvent('planExplorerView', 'query', debouncedSearchQuery);
   }, [debouncedSearchQuery]);
 
   // Selected item
@@ -483,7 +487,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
   useEffect(() => {
     selectedPlanIdRef.current = selectedPlanId;
-    getTracker().trackToolEvent('planExplorerView','select_plan',selectedPlanId);
+    getTracker().trackToolEvent('planExplorerView', 'select_plan', selectedPlanId);
   }, [selectedPlanId]);
 
   const prevPlanIdForLayerRef = useRef<string | null>(null);
@@ -586,7 +590,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
       .catch(err => {
         console.warn(`Could not load municipality feature for ${selectedMunicipalityCode}:`, err);
       });
-      getTracker().trackToolEvent('planExplorerView','aa_select',selectedMunicipalityCode);
+    getTracker().trackToolEvent('planExplorerView', 'aa_select', selectedMunicipalityCode);
     return () => { ignore = true; };
   }, [selectedMunicipalityCode, initialMunicipalities]);
 
@@ -969,7 +973,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
         isInitialMapRenderRef.current = false;
 
         prevMunicipalityCodeRef.current = selectedMunicipalityCode;
-      } 
+      }
       // Priority 2: Municipality selection changed -> Zoom to municipality bbox when matching feature is ready
       else if (selectedMunicipalityCode && lastZoomedMuniCodeRef.current !== selectedMunicipalityCode) {
         if (isMuniFeatureMatching && currentMunicipalityFeature && currentMunicipalityFeature.geometry) {
@@ -1101,10 +1105,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
     return () => observer.disconnect();
   }, [libs]);
 
-  const ctaProps:string = JSON.stringify({
+  const ctaProps: string = JSON.stringify({
     "url": "mailto:myynti@spatineo.com?subject=Asiantuntija-apua kaavatiedon hallintaan",
     "buttonText": "Kysy lisää",
-    "title":"Tarvitseeko organisaatiosi kaavatietoa? Spatineo toteutti tämän palvelun - osaamme auttaa sinuakin.",
+    "title": "Tarvitseeko organisaatiosi kaavatietoa? Spatineo toteutti tämän palvelun - osaamme auttaa sinuakin.",
     "partner": "spatineo",
     "mode": "thin"
   });
@@ -1112,71 +1116,70 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
   const mainView = (
     <div className="plan-explorer-view">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-b border-white/10 pb-8 mb-10">
-          <div>
-            <div className="flex flex-col md:flex-row md:justify-between items-start">
-              <button
-                onClick={onBack}  
-                data-testid="back-to-home-btn"
-                className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px] mb-6"
-                aria-label={t.common.backToHome}
-              >
-                <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                {t.common.backToHome}
-              </button>
-              <button
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                title={strings.enterFullscreen}
-              >
+        <div>
+          <div className="flex flex-col md:flex-row md:justify-between items-start">
+            <button
+              onClick={onBack}
+              data-testid="back-to-home-btn"
+              className="flex items-center gap-4 text-slate-400 hover:text-brand-accent transition-colors group px-4 py-2 rounded-lg hover:bg-white/5 uppercase font-bold tracking-[0.2em] text-[10px] mb-6"
+              aria-label={t.common.backToHome}
+            >
+              <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+              {t.common.backToHome}
+            </button>
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+              title={strings.enterFullscreen}
+            >
               <Maximize2 className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="flex items-center gap-6 mb-2 uppercase">
-                <MapIcon size={24} className="text-brand-accent" aria-hidden="true" />
-                <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{strings.subtitle}</span>
-                <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
-            </div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-tight mt-2">{strings.title}</h1>
-            <p className="text-slate-400 text-sm md:text-base mt-2">
-              {strings.overview}
-            </p>
+            </button>
           </div>
-          
+          <div className="flex items-center gap-6 mb-2 uppercase">
+            <MapIcon size={24} className="text-brand-accent" aria-hidden="true" />
+            <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{strings.subtitle}</span>
+            <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black tracking-tight mt-2">{strings.title}</h1>
+          <p className="text-slate-400 text-sm md:text-base mt-2">
+            {strings.overview}
+          </p>
+        </div>
+
       </div>
 
       <div
-          className={`bg-[#0A0A0C] text-slate-200 font-sans flex flex-col border-y sm:border border-white/10 ${
-            isFullscreen
-              ? 'fixed inset-0 z-[99999] w-screen h-screen overflow-hidden'
-              : 'w-full h-full lg:h-[calc(100vh-120px)] lg:min-h-[680px]'
+        className={`bg-[#0A0A0C] text-slate-200 font-sans flex flex-col border-y sm:border border-white/10 ${isFullscreen
+            ? 'fixed inset-0 z-[99999] w-screen h-screen overflow-hidden'
+            : 'w-full h-full lg:h-[calc(100vh-120px)] lg:min-h-[680px]'
           }`}
       >
         {isFullscreen &&
           <div className="flex flex-col md:flex-row md:justify-between items-start p-5">
             <div className="flex items-center gap-6 mb-2 uppercase">
-                <MapIcon size={24} className="text-brand-accent" aria-hidden="true" />
-                <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{strings.subtitle}</span>
-                <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
+              <MapIcon size={24} className="text-brand-accent" aria-hidden="true" />
+              <span className="text-xs font-bold tracking-[0.4em] text-slate-500">{strings.subtitle}</span>
+              <div className="h-[1px] flex-grow bg-white/10" aria-hidden="true" />
             </div>
             <button
-                onClick={() => setIsFullscreen(false)}
-                className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
-                title={strings.exitFullscreen}
-              >
+              onClick={() => setIsFullscreen(false)}
+              className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+              title={strings.exitFullscreen}
+            >
               <Minimize2 className="w-4 h-4" />
             </button>
           </div>
-        }  
-  
+        }
+
         {/* Main Workspace Layout: Left Panel & Right Map/Details */}
         <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-visible lg:overflow-hidden">
-          
+
           {/* Left Column: Filterable List Panel (max width to fit contents) */}
           <div className="w-full lg:w-[340px] lg:max-w-[380px] lg:shrink-0 bg-[#0D0D11] border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col overflow-hidden">
-            
+
             {/* Filters Header */}
             <div className="p-4 border-b border-white/10 bg-[#09090B] flex flex-col gap-3 shrink-0">
-              
+
               {/* 1. Free-text Search Input */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center justify-between">
@@ -1320,7 +1323,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                       <span>{strings.loadingMorePlans}</span>
                     </>
                   ) : (
-                      <span>{strings.loadMorePlans}</span>
+                    <span>{strings.loadMorePlans}</span>
                   )}
                 </button>
               )}
@@ -1359,11 +1362,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                       <button
                         key={`${plan.id}-${index}`}
                         onClick={() => handleSelectPlanFromList(plan)}
-                        className={`w-full text-left p-3.5 rounded-xl border transition-all flex flex-col gap-2 group relative overflow-hidden shrink-0 ${
-                          isSelected
+                        className={`w-full text-left p-3.5 rounded-xl border transition-all flex flex-col gap-2 group relative overflow-hidden shrink-0 ${isSelected
                             ? 'bg-[#FFAF00]/10 border-[#FFAF00]/50 shadow-lg shadow-black/50'
                             : 'bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/10'
-                        }`}
+                          }`}
                       >
                         {/* Selected Left Stripe Accent */}
                         {isSelected && (
@@ -1396,11 +1398,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                             const isMaster = getPlanCategory(plan) === 'master';
                             return (
                               <span
-                                className={`px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider shrink-0 border ${
-                                  isMaster
+                                className={`px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider shrink-0 border ${isMaster
                                     ? 'bg-purple-500/10 text-purple-300 border-purple-500/20'
                                     : 'bg-orange-500/10 text-orange-300 border-orange-500/20'
-                                }`}
+                                  }`}
                               >
                                 {planType}
                               </span>
@@ -1423,10 +1424,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
 
           {/* Center/Right Map & Detail Panels */}
           <div className="w-full lg:flex-1 lg:min-w-0 flex flex-col bg-[#0A0A0C] relative lg:h-full lg:overflow-hidden">
-            
+
             {/* Top Half: Interactive Leaflet Map (grows to fill available space on desktop, 360px min height on mobile) */}
             <div className="w-full h-[360px] min-h-[360px] lg:h-auto lg:min-h-[250px] lg:flex-1 relative border-b border-white/10 flex flex-col bg-[#191a1a] shrink-0 lg:shrink">
-              
+
               {/* Map Canvas */}
               <div
                 ref={mapContainerRef}
@@ -1462,11 +1463,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 {currentMunicipalityFeature && (
                   <button
                     onClick={() => setShowMunicipalityBoundaries(!showMunicipalityBoundaries)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
-                      showMunicipalityBoundaries
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${showMunicipalityBoundaries
                         ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
                         : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <Layers className={`w-3.5 h-3.5`} />
                     <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showMunicipalityBoundaries ? 'text-black' : ''}`}>{strings.municipalityBoundary}</span>
@@ -1476,11 +1476,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 {detailedPlans.length > 0 && (
                   <button
                     onClick={() => setShowDetailedPlanLayer(!showDetailedPlanLayer)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
-                      showDetailedPlanLayer
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${showDetailedPlanLayer
                         ? 'bg-orange-500/20 text-orange-300 border-orange-500/40'
                         : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <span className={`w-2.5 h-2.5 rounded-full ${showDetailedPlanLayer ? 'bg-orange-400' : 'bg-slate-500'}`} />
                     <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showDetailedPlanLayer ? 'text-black' : ''}`}>{strings.detailedPlanLayer} ({detailedPlans.length})</span>
@@ -1490,11 +1489,10 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                 {masterPlans.length > 0 && (
                   <button
                     onClick={() => setShowMasterPlanLayer(!showMasterPlanLayer)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${
-                      showMasterPlanLayer
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 backdrop-blur-md border shadow-xl transition-colors ${showMasterPlanLayer
                         ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
                         : 'bg-black/80 text-slate-400 border-white/10 hover:text-white'
-                    }`}
+                      }`}
                   >
                     <span className={`w-2.5 h-2.5 rounded-full ${showMasterPlanLayer ? 'bg-purple-400' : 'bg-slate-500'}`} />
                     <span className={`${(TILE_LAYERS[tileStyle]?.isLight) && showMasterPlanLayer ? 'text-black' : ''}`}>{strings.masterPlanLayer} ({masterPlans.length})</span>
@@ -1553,27 +1551,24 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                     <div className="flex items-center bg-white/5 rounded-xl p-1 border border-white/10 shrink-0">
                       <button
                         onClick={() => setDetailTab('info')}
-                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                          detailTab === 'info' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                        }`}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${detailTab === 'info' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
+                          }`}
                       >
                         <Info className="w-3.5 h-3.5" />
                         <span>{strings.basicInfo}</span>
                       </button>
                       <button
                         onClick={() => setDetailTab('documents')}
-                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                          detailTab === 'documents' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                        }`}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${detailTab === 'documents' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
+                          }`}
                       >
                         <FileText className="w-3.5 h-3.5" />
                         <span>{strings.documents} ({selectedPlanDocuments.length})</span>
                       </button>
                       <button
                         onClick={() => setDetailTab('json')}
-                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                          detailTab === 'json' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
-                        }`}
+                        className={`px-3 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${detailTab === 'json' ? 'bg-[#FFAF00] text-black' : 'text-slate-400 hover:text-white'
+                          }`}
                       >
                         <Code className="w-3.5 h-3.5" />
                         <span>GeoJSON</span>
@@ -1591,7 +1586,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                             <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-white/10 pb-2">
                               {strings.basicInfo}
                             </h4>
-                            
+
                             <div className="flex flex-col gap-2.5 text-xs">
                               <div className="flex justify-between border-b border-white/5 pb-1.5">
                                 <span className="text-slate-400">{strings.municipality}:</span>
@@ -1630,7 +1625,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
                               <div className="flex justify-between border-b border-white/5 pb-1.5">
                                 <span className="text-slate-400">{strings.validityDate}:</span>
                                 <span className="font-semibold text-white">
-                                {(() => {
+                                  {(() => {
                                     const begin = formatPlanDate(selectedPlan.properties?.date_of_validity || selectedPlan.properties?.period_of_validity_begin, '');
                                     const end = formatPlanDate(selectedPlan.properties?.period_of_validity_end, '');
                                     if (begin && end) return `${begin} – ${end}`;
@@ -1749,7 +1744,7 @@ export function PlanExplorerView({ onBack, initialPlans, initialMunicipalities }
           </div>
 
         </div>
-        
+
       </div>
     </div>
   );

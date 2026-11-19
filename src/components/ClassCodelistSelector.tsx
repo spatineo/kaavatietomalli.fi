@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, ChevronDown, Check, FolderOpen, Database, X, Loader2 } from 'lucide-react';
 import { useOramaSearch } from '../hooks/useOramaSearch';
@@ -203,7 +207,7 @@ export function ClassCodelistSelector({
         {/* Dropdown List */}
         {isOpen && (
           <div className="absolute left-0 right-0 z-50 mt-2 max-h-80 overflow-y-auto bg-[#13151a] border border-white/10 rounded-xl shadow-2xl backdrop-blur-xl p-2 flex flex-col gap-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent animate-fade-in">
-            
+
             {isOramaReadyAndSearching ? (
               // 1. Orama Search Results Mode
               searchResults.length > 0 ? (
@@ -221,11 +225,10 @@ export function ClassCodelistSelector({
                       <button
                         key={`${doc.type}:${techName}`}
                         onClick={() => handleSelectItem(doc.type, techName)}
-                        className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors group ${
-                          isSelected 
-                            ? 'bg-brand-accent/10 text-brand-accent' 
+                        className={`w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between transition-colors group ${isSelected
+                            ? 'bg-brand-accent/10 text-brand-accent'
                             : 'text-slate-300 hover:bg-white/[0.04] hover:text-white'
-                        }`}
+                          }`}
                       >
                         <div className="flex items-center gap-3">
                           {doc.type === 'class' ? (
@@ -271,11 +274,10 @@ export function ClassCodelistSelector({
                         <button
                           key={`class:${cls.technicalName}`}
                           onClick={() => handleSelectItem('class', cls.technicalName)}
-                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-colors group ${
-                            isSelected 
-                              ? 'bg-brand-accent/10 text-brand-accent' 
+                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-colors group ${isSelected
+                              ? 'bg-brand-accent/10 text-brand-accent'
                               : 'text-slate-300 hover:bg-white/[0.04] hover:text-white'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             <FolderOpen size={16} className={isSelected ? 'text-brand-accent' : 'text-slate-400 group-hover:text-slate-300'} />
@@ -306,11 +308,10 @@ export function ClassCodelistSelector({
                         <button
                           key={`codelist:${cl.technicalName}`}
                           onClick={() => handleSelectItem('codelist', cl.technicalName)}
-                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-colors group ${
-                            isSelected 
-                              ? 'bg-brand-accent/10 text-brand-accent' 
+                          className={`w-full text-left px-3 py-2 rounded-lg flex items-center justify-between transition-colors group ${isSelected
+                              ? 'bg-brand-accent/10 text-brand-accent'
                               : 'text-slate-300 hover:bg-white/[0.04] hover:text-white'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             <Database size={16} className={isSelected ? 'text-brand-accent' : 'text-slate-400 group-hover:text-slate-300'} />

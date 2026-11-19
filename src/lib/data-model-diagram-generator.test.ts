@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
 import {
   parseDataModelSnippetConfig,
@@ -232,7 +236,7 @@ End of document.`;
   });
 
   it('logs a warning when a codelist is missing', async () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
 
     const mockAccess: DataModelAccess = {
       async getDataModel() {
@@ -312,11 +316,11 @@ classes: ["ClassA"]
             codes: [],
             status: 'VALID',
             originSyncTime: '',
-            allVersions: [] 
+            allVersions: []
           } as Codelist;
         }
         if (uri === 'http://uri.suomi.fi/codelist/test/second_code') {
-          return { 
+          return {
             id: uri,
             uri,
             vocabulary: uri,
@@ -325,7 +329,7 @@ classes: ["ClassA"]
             codes: [],
             status: 'VALID',
             originSyncTime: '',
-            allVersions: []  
+            allVersions: []
           } as Codelist;
         }
         return null;
@@ -407,7 +411,7 @@ classes: ["ClassA", "ClassB"]
 
     // Verify it generated the bi-directional link
     expect(result).toContain('ClassA "1..1" <--> "0..*" ClassB : Assoc A to B / Assoc B to A');
-    
+
     // Verify it did NOT duplicate the relation
     const lines = result.split('\n');
     const bidiLines = lines.filter(line => line.includes('<-->'));
@@ -463,7 +467,7 @@ classes: ["ClassA"]
 
     // Verify they are unidirectional and not bidirectional
     expect(result).not.toContain('<-->');
-    
+
     // Verify each self-association shows up as a separate unidirectional link
     expect(result).toContain('ClassA --> "0..*" ClassA : Itseviittaus 1');
     expect(result).toContain('ClassA --> "1..1" ClassA : Itseviittaus 2');

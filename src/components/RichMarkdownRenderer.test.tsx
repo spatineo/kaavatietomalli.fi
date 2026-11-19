@@ -1,3 +1,7 @@
+/**
+ * @license
+ * SPDX-License-Identifier: MIT
+ */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MarkdownRenderer } from './RichMarkdownRenderer';
@@ -20,7 +24,7 @@ describe('MarkdownRenderer Callout Blocks', () => {
 > It should not have any callout classes.
     `;
     render(<MarkdownRenderer markdownContent={markdown} slug="test-post" />);
-    
+
     const blockquote = screen.getByRole('blockquote');
     expect(blockquote).toBeDefined();
     expect(blockquote.className).not.toContain('callout-block');
@@ -33,16 +37,16 @@ describe('MarkdownRenderer Callout Blocks', () => {
 > Tämä on tärkeä huomautus lukijalle.
     `;
     render(<MarkdownRenderer markdownContent={markdown} slug="test-post" />);
-    
+
     const blockquote = screen.getByRole('blockquote');
     expect(blockquote).toBeDefined();
     expect(blockquote.className).toContain('callout-block');
     expect(blockquote.className).toContain('callout-note');
-    
+
     const title = blockquote.querySelector('.callout-title');
     expect(title).toBeDefined();
     expect(title?.textContent).toBe('Huomautus');
-    
+
     // Check that marker itself [!NOTE] is stripped, but content is preserved
     expect(blockquote.textContent).not.toContain('[!NOTE]');
     expect(blockquote.textContent).toContain('Tämä on tärkeä huomautus lukijalle.');
@@ -54,15 +58,15 @@ describe('MarkdownRenderer Callout Blocks', () => {
 > Älä muuta näitä määrityksiä ilman lupaa.
     `;
     render(<MarkdownRenderer markdownContent={markdown} slug="test-post" />);
-    
+
     const blockquote = screen.getByRole('blockquote');
     expect(blockquote).toBeDefined();
     expect(blockquote.className).toContain('callout-block');
     expect(blockquote.className).toContain('callout-warning');
-    
+
     const title = blockquote.querySelector('.callout-title');
     expect(title?.textContent).toBe('Varoitus');
-    
+
     expect(blockquote.textContent).not.toContain('[!VAROITUS]');
     expect(blockquote.textContent).toContain('Älä muuta näitä määrityksiä ilman lupaa.');
   });
@@ -73,15 +77,15 @@ describe('MarkdownRenderer Callout Blocks', () => {
 > Muista tallentaa säännöllisesti.
     `;
     render(<MarkdownRenderer markdownContent={markdown} slug="test-post" />);
-    
+
     const blockquote = screen.getByRole('blockquote');
     expect(blockquote).toBeDefined();
     expect(blockquote.className).toContain('callout-block');
     expect(blockquote.className).toContain('callout-tip');
-    
+
     const title = blockquote.querySelector('.callout-title');
     expect(title?.textContent).toBe('Tärkeää');
-    
+
     expect(blockquote.textContent).not.toContain('[!TÄRKEÄÄ]');
     expect(blockquote.textContent).toContain('Muista tallentaa säännöllisesti.');
   });
@@ -92,15 +96,15 @@ describe('MarkdownRenderer Callout Blocks', () => {
 > Tämä ominaisuus on vielä kokeellinen.
     `;
     render(<MarkdownRenderer markdownContent={markdown} slug="test-post" />);
-    
+
     const blockquote = screen.getByRole('blockquote');
     expect(blockquote).toBeDefined();
     expect(blockquote.className).toContain('callout-block');
     expect(blockquote.className).toContain('callout-info');
-    
+
     const title = blockquote.querySelector('.callout-title');
     expect(title?.textContent).toBe('Huomaa');
-    
+
     expect(blockquote.textContent).not.toContain('[!HUOMAA]');
     expect(blockquote.textContent).toContain('Tämä ominaisuus on vielä kokeellinen.');
   });
@@ -111,12 +115,12 @@ describe('MarkdownRenderer Callout Blocks', () => {
 > Tämäkin on toimiva muoto.
     `;
     render(<MarkdownRenderer markdownContent={markdown} slug="test-post" />);
-    
+
     const blockquote = screen.getByRole('blockquote');
     expect(blockquote).toBeDefined();
     expect(blockquote.className).toContain('callout-block');
     expect(blockquote.className).toContain('callout-info');
-    
+
     const title = blockquote.querySelector('.callout-title');
     expect(title?.textContent).toBe('Huomaa');
     expect(blockquote.textContent).not.toContain('[HUOMAA]');
@@ -128,12 +132,12 @@ describe('MarkdownRenderer Callout Blocks', () => {
 > Kehityksen alkuvaiheessa arveltiin, että tämä riittää.
     `;
     render(<MarkdownRenderer markdownContent={markdown} slug="test-post" />);
-    
+
     const blockquote = screen.getByRole('blockquote');
     expect(blockquote).toBeDefined();
     expect(blockquote.className).toContain('callout-block');
     expect(blockquote.className).toContain('callout-note');
-    
+
     const title = blockquote.querySelector('.callout-title');
     expect(title?.textContent).toBe('Historiallinen huomio');
     expect(blockquote.textContent).not.toContain('[Note::Historiallinen huomio]');
